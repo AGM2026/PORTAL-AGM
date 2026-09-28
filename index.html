@@ -563,6 +563,13 @@ async function fetchPernoctaForzarAgm(compania){
   (data||[]).forEach(r=>{ (PERNOCTA_FORZAR_AGM[r.semana_inicio] = PERNOCTA_FORZAR_AGM[r.semana_inicio] || new Set()).add(r.dia); });
 }
 function diaForzadoAgm(dia, week){ week = week || ACTIVE_WEEK; return !!(PERNOCTA_FORZAR_AGM[week.key] && PERNOCTA_FORZAR_AGM[week.key].has(dia)); }
+let COMIDA_DESBLOQUEO_DIAS = {}; // semana_inicio (clave) -> Set de días en que se permite desmarcar comidas obligatorias
+async function fetchComidaDesbloqueoDias(compania){
+  const { data } = await sb.from('comida_desbloqueo_dias').select('semana_inicio,dia').eq('compania', compania);
+  COMIDA_DESBLOQUEO_DIAS = {};
+  (data||[]).forEach(r=>{ (COMIDA_DESBLOQUEO_DIAS[r.semana_inicio] = COMIDA_DESBLOQUEO_DIAS[r.semana_inicio] || new Set()).add(r.dia); });
+}
+function diaComidaDesbloqueado(dia, week){ week = week || ACTIVE_WEEK; return !!(COMIDA_DESBLOQUEO_DIAS[week.key] && COMIDA_DESBLOQUEO_DIAS[week.key].has(dia)); }
 function cutoffFor(week, horaCorte){
   if(CORTES_ESPECIALES[week.key]) return new Date(CORTES_ESPECIALES[week.key]);
   const cutoff = new Date(week.days[0]); cutoff.setDate(week.days[0].getDate()-4);
@@ -893,6 +900,7 @@ async function enterAlumno(persona, adminCompania){
   EXTERNADOS = new Set((seccion||[persona]).filter(p=>p.externado).map(p=>p.id));
   await fetchCortesEspeciales(persona.compania);
   await fetchPernoctaForzarAgm(persona.compania);
+  await fetchComidaDesbloqueoDias(persona.compania);
   const { data: ciServ } = await sb.from('companias').select('servicios_visible_alumnos').eq('numero', persona.compania).single();
   document.getElementById('alumno-mod-servicios-btn').classList.toggle('hidden', !(ciServ && ciServ.servicios_visible_alumnos));
   showScreen('screen-alumno');
@@ -908,14 +916,15 @@ async function renderAlumno(){
   document.getElementById('alumno-subtitle').textContent = `${persona.compania}ª Compañía · ${persona.seccion}ª Sección (${code}) · ${seccionPeople.length} efectivos`;
   document.getElementById('alumno-who').textContent = persona.nombre+' '+persona.apellidos;
   document.getElementById('alumno-switch').innerHTML = CURRENT.adminCompania ? `<button class="small-btn" style="margin-right:8px;" onclick="switchToAdmin()">Modo admin</button>` : '';
-  const { data: companiaInfo } = await sb.from('companias').select('permitir_desbloqueo,hora_corte').eq('numero', persona.compania).single();
-  const unlocked = !!(companiaInfo && companiaInfo.permitir_desbloqueo);
+  const { data: companiaInfo } = await sb.from('companias').select('hora_corte').eq('numero', persona.compania).single();
   const horaCorte = companiaInfo ? companiaInfo.hora_corte : '10:00:00';
   await fetchSemanasOcultas(persona.compania);
   if(SEMANAS_OCULTAS.has(ACTIVE_WEEK.key) || weekHasElapsed(ACTIVE_WEEK)) setActiveWeek(firstVisibleWeekIndex());
 
+  const diasDesbloqueados = Array.from({length:7},(_,d)=>d).filter(d=>diaComidaDesbloqueado(d));
+  const diasDesbloqueadosTxt = diasDesbloqueados.map(d=>DAY_NAMES[d]+' '+fmt(ACTIVE_WEEK.days[d])).join(', ');
   document.getElementById('alumno-week-select').innerHTML = weekSelectHtml('onAlumnoWeekChange', horaCorte, true);
-  document.getElementById('alumno-notice').innerHTML = noticeHtml(ACTIVE_WEEK, horaCorte) + (unlocked ? `<div class="notice" style="border-color:var(--brass);"><span>🌉 Tu compañía ha abierto el desbloqueo de obligatorias esta semana (puente)</span><strong>Puedes desmarcar desayuno y comida</strong></div>` : '');
+  document.getElementById('alumno-notice').innerHTML = noticeHtml(ACTIVE_WEEK, horaCorte) + (diasDesbloqueados.length ? `<div class="notice" style="border-color:var(--brass);"><span>🌉 Tu compañía ha abierto el desbloqueo de obligatorias esta semana (puente)</span><strong>Puedes desmarcar desayuno y comida el ${diasDesbloqueadosTxt}</strong></div>` : '');
 
   const cols = COLS();
   const personaIds = seccionPeople.map(p=>p.id);
@@ -977,7 +986,7 @@ async function renderAlumno(){
     tbody += `<tr class="${isMe?'me':''}"><td class="name-cell">${p.apellidos}, ${p.nombre}${isMe?' (tú)':''}</td>`;
     cols.forEach(c=>{
       const val = getVal(p.id, c, apuntesMap);
-      const locked = effectiveObligatorio(p.id, c) && !unlocked;
+      const locked = effectiveObligatorio(p.id, c) && !diaComidaDesbloqueado(c.day);
       const tdClass = isCurrentMealColumn(c) ? 'col-today' : '';
       if(locked){
         tbody += `<td class="${tdClass}"><input type="checkbox" class="chk" checked disabled title="Obligatoria"></td>`;
@@ -1075,6 +1084,7 @@ async function enterAdmin(compania, linkedPersona){
   CURRENT = { mode:'admin', compania, companiaInfo, linkedPersona: linkedPersona || null };
   await fetchCortesEspeciales(compania);
   await fetchPernoctaForzarAgm(compania);
+  await fetchComidaDesbloqueoDias(compania);
   showScreen('screen-admin');
   setActiveWeek(defaultWeekIndex());
   await setModule('comidas');
@@ -1117,11 +1127,19 @@ async function renderAdmin(){
 
   document.getElementById('admin-controls').innerHTML = `
     <div class="admin-panel">
-      <div class="panel-row">
+      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
         <div class="switch-label">Permitir a los alumnos de la ${c}ª desmarcar las comidas obligatorias
-          <span class="sub2">Para puentes y días sueltos</span>
+          <span class="sub2">Elige qué día(s) de esta semana se puede desmarcar desayuno/comida aunque sean obligatorios — para puentes y días sueltos, sin abrir toda la semana entera</span>
         </div>
-        <label class="switch"><input type="checkbox" ${companiaInfo.permitir_desbloqueo?'checked':''} onchange="toggleUnlock(this.checked)"><span class="track"></span><span class="thumb"></span></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          ${Array.from({length:7},(_,d)=>d).map(d=>{
+            const desbloqueado = diaComidaDesbloqueado(d);
+            return `<label style="display:flex;align-items:center;gap:6px;border:1px solid ${desbloqueado?'var(--brass)':'var(--line)'};padding:6px 10px;cursor:pointer;${desbloqueado?'background:rgba(184,134,11,.15);':''}">
+              <input type="checkbox" ${desbloqueado?'checked':''} onchange="toggleComidaDesbloqueo(${d}, this.checked)">
+              ${DAY_NAMES[d]} ${fmt(ACTIVE_WEEK.days[d])}
+            </label>`;
+          }).join('')}
+        </div>
       </div>
       <div class="panel-row">
         <div class="switch-label">Hora de cierre del lunes
@@ -1270,9 +1288,20 @@ async function quitarCorteEspecial(){
   showToast('Corte especial eliminado — esta semana vuelve al horario normal.');
   await (currentModule==='pernoctas' ? renderAdminPernoctas() : renderAdmin());
 }
-async function toggleUnlock(checked){
-  const { error } = await sb.from('companias').update({permitir_desbloqueo: checked}).eq('numero', CURRENT.compania);
-  if(error) showToast('No se pudo cambiar: '+error.message);
+async function toggleComidaDesbloqueo(dia, checked){
+  const c = CURRENT.compania;
+  if(checked){
+    const { error } = await sb.from('comida_desbloqueo_dias').upsert(
+      { compania:c, semana_inicio:ACTIVE_WEEK.key, dia },
+      { onConflict:'compania,semana_inicio,dia' }
+    );
+    if(error){ showToast('No se pudo guardar: '+error.message); return; }
+  } else {
+    const { error } = await sb.from('comida_desbloqueo_dias').delete().eq('compania',c).eq('semana_inicio',ACTIVE_WEEK.key).eq('dia',dia);
+    if(error){ showToast('No se pudo quitar: '+error.message); return; }
+  }
+  await fetchComidaDesbloqueoDias(c);
+  showToast(checked ? `${DAY_NAMES[dia]} pasa a poder desmarcarse aunque sea obligatorio.` : `${DAY_NAMES[dia]} vuelve a ser obligatorio sin poder desmarcarse.`);
   await renderAdmin();
 }
 async function regenerateCode(){
