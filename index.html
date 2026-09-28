@@ -269,7 +269,8 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
             <button type="button" class="pw-toggle" onclick="togglePwVisibility('adminreq-password', this)">👁️ Ver</button>
           </div>
         </div>
-        <div class="field"><label>Compañía que administras</label><select id="adminreq-compania"></select></div>
+        <div class="field"><label>Compañía que administras</label><select id="adminreq-compania" onchange="fillAdminReqSections()"></select></div>
+        <div class="field"><label>Tu sección (para que también aparezcas como alumno de tu sección)</label><select id="adminreq-seccion"></select></div>
         <div class="field"><label>Mensaje (opcional)</label><input type="text" id="adminreq-mensaje" placeholder="Algo que quieras contarle al superadmin"></div>
         <button class="primary-btn" id="adminreq-btn" type="submit">Enviar solicitud</button>
         <div id="adminreq-error" class="error-text hidden"></div>
@@ -820,6 +821,11 @@ function switchAuthTab(tab){
 function loadAdminReqCompanies(){
   const sel = document.getElementById('adminreq-compania');
   sel.innerHTML = COMPANIES.map(c=>`<option value="${c}">${c}ª Compañía</option>`).join('');
+  fillAdminReqSections();
+}
+function fillAdminReqSections(){
+  const sel = document.getElementById('adminreq-seccion');
+  sel.innerHTML = Array.from({length:SECTIONS_PER_COMPANY},(_,i)=>i+1).map(s=>`<option value="${s}">${s}ª Sección</option>`).join('');
 }
 async function pedirResetContrasena(){
   const email = (document.getElementById('login-email').value || '').trim();
@@ -836,8 +842,9 @@ async function doAdminRequest(){
   const email = document.getElementById('adminreq-email').value.trim();
   const password = document.getElementById('adminreq-password').value;
   const compania = parseInt(document.getElementById('adminreq-compania').value, 10);
+  const seccion = parseInt(document.getElementById('adminreq-seccion').value, 10);
   const mensaje = document.getElementById('adminreq-mensaje').value.trim();
-  if(!nombre || !apellidos || !email || !password || !compania){
+  if(!nombre || !apellidos || !email || !password || !compania || !seccion){
     err.textContent = 'Rellena todos los campos.'; err.classList.remove('hidden'); btn.disabled=false; return;
   }
   let session = null;
@@ -861,7 +868,7 @@ async function doAdminRequest(){
     err.classList.remove('hidden'); btn.disabled=false; return;
   }
   const { error: solErr } = await sb.from('admin_solicitudes').insert({
-    auth_user_id: session.user.id, nombre, apellidos, email, compania_solicitada: compania, mensaje: mensaje || null
+    auth_user_id: session.user.id, nombre, apellidos, email, compania_solicitada: compania, seccion_solicitada: seccion, mensaje: mensaje || null
   });
   btn.disabled = false;
   if(solErr){ err.textContent = solErr.message; err.classList.remove('hidden'); return; }
@@ -1331,7 +1338,7 @@ async function renderSuperadmin(){
         <div style="margin-top:8px;">
           ${(solicitudes && solicitudes.length) ? solicitudes.map(s=>`
             <div class="manage-row">
-              <div>${s.apellidos}, ${s.nombre} — ${s.email} — quiere administrar la <b>${s.compania_solicitada}ª Compañía</b>${s.mensaje?`<br><span class="sub2">"${s.mensaje}"</span>`:''}</div>
+              <div>${s.apellidos}, ${s.nombre} — ${s.email} — quiere administrar la <b>${s.compania_solicitada}ª Compañía</b> (su sección: ${s.compania_solicitada}${s.seccion_solicitada})${s.mensaje?`<br><span class="sub2">"${s.mensaje}"</span>`:''}</div>
               <div class="btns">
                 <button class="small-btn" onclick="aprobarAdminSolicitud(${s.id})">✅ Aprobar</button>
                 <button class="small-btn danger" onclick="rechazarAdminSolicitud(${s.id})">❌ Rechazar</button>
