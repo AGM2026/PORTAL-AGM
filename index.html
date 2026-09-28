@@ -778,7 +778,7 @@ async function boot(){
 }
 function startPresenceHeartbeat(){
   if(window._presenceInterval) return;
-  const ping = ()=>{ sb.rpc('actualizar_conexion').catch(()=>{}); };
+  const ping = async ()=>{ try{ await sb.rpc('actualizar_conexion'); }catch(e){} };
   ping();
   window._presenceInterval = setInterval(ping, 60000);
   document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') ping(); });
