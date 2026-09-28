@@ -1224,6 +1224,7 @@ async function renderAlumno(){
     }
     return `<div class="aviso-card">
       <div class="aviso-msg">📢 ${a.mensaje}</div>
+      ${a.imagen_url ? `<img src="${a.imagen_url}" style="max-width:100%;margin-top:8px;border-radius:4px;">` : ''}
       <div class="aviso-meta">${ts} — ${a.creado_por}</div>
       ${extra}
     </div>`;
@@ -1516,6 +1517,10 @@ async function renderAdmin(){
         </label>
         <input type="text" id="aviso-asunto" class="hidden" placeholder="Asunto del correo" style="margin-top:6px;width:100%;padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
         <textarea id="aviso-mensaje" placeholder="Escribe el aviso..." style="margin-top:8px;width:100%;min-height:60px;padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;"></textarea>
+        <label style="display:block;margin-top:8px;font-size:.8rem;color:var(--ink-soft);">Imagen (opcional):
+          <input type="file" id="aviso-imagen" accept="image/*" style="display:block;margin-top:4px;font-size:.8rem;" onchange="previewAvisoImagen()">
+        </label>
+        <div id="aviso-imagen-preview"></div>
         <button class="primary-btn" style="width:auto;margin-top:8px;align-self:flex-start;padding:10px 16px;" onclick="sendAviso()">📢 Enviar aviso</button>
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
           <button class="small-btn" onclick="toggleAvisosIndividuales()">${avisosIndividualesOpen?'Cerrar':'Ver'} avisos individuales y respuestas</button>
@@ -1702,6 +1707,7 @@ async function avisosGeneralesHtml(c){
     const ts = new Date(a.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
     const destino = a.seccion ? `Sección ${c}${a.seccion}` : 'Toda la compañía';
     return `<div class="history-row"><span class="ts">${ts}</span> — <b>${destino}</b>: ${a.mensaje} <span class="ts">(${a.creado_por})</span>
+      ${a.imagen_url ? `<br><img src="${a.imagen_url}" style="max-width:160px;margin-top:4px;border-radius:4px;">` : ''}
       <button class="small-btn danger" style="margin-left:8px;padding:2px 8px;" onclick="deleteAvisoAdmin(${a.id})">Borrar para todos</button></div>`;
   }).join('') + '</div>';
 }
@@ -1728,6 +1734,20 @@ function onAvisoTargetChange(){
   document.getElementById('aviso-seccion').classList.toggle('hidden', t!=='seccion');
   document.getElementById('aviso-persona').classList.toggle('hidden', t!=='persona');
 }
+function previewAvisoImagen(){
+  const f = document.getElementById('aviso-imagen').files[0];
+  const box = document.getElementById('aviso-imagen-preview');
+  if(!f){ box.innerHTML=''; return; }
+  box.innerHTML = `<img src="${URL.createObjectURL(f)}" style="max-width:180px;max-height:180px;margin-top:6px;border:1px solid var(--line);border-radius:4px;">`;
+}
+async function subirImagenAviso(file){
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `${CURRENT.compania}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const { error } = await sb.storage.from('avisos-img').upload(path, file);
+  if(error) throw error;
+  const { data } = sb.storage.from('avisos-img').getPublicUrl(path);
+  return data.publicUrl;
+}
 async function sendAviso(){
   const t = document.getElementById('aviso-target-type').value;
   const mensaje = document.getElementById('aviso-mensaje').value.trim();
@@ -1736,8 +1756,16 @@ async function sendAviso(){
   const expiraEn = dias>0 ? new Date(Date.now()+dias*86400000).toISOString() : null;
   const esAnonimo = document.getElementById('aviso-anonimo').checked;
   const nombreAdmin = CURRENT.linkedPersona ? (CURRENT.linkedPersona.nombre+' '+CURRENT.linkedPersona.apellidos) : CURRENT.companiaInfo.nombre_admin;
+
+  const imgFile = document.getElementById('aviso-imagen').files[0];
+  let imagenUrl = null;
+  if(imgFile){
+    try{ imagenUrl = await subirImagenAviso(imgFile); }
+    catch(err){ showToast('No se pudo subir la imagen: '+err.message); return; }
+  }
+
   const payload = { compania: CURRENT.compania, seccion: null, persona_id: null, mensaje, expira_en: expiraEn,
-    creado_por: esAnonimo ? 'Administración' : nombreAdmin };
+    creado_por: esAnonimo ? 'Administración' : nombreAdmin, imagen_url: imagenUrl };
   let destino = `toda la ${CURRENT.compania}ª Compañía`;
   if(t==='seccion'){
     const s = document.getElementById('aviso-seccion').value;
@@ -1756,12 +1784,14 @@ async function sendAviso(){
     const asunto = document.getElementById('aviso-asunto').value.trim() || 'Aviso — Portal AGM';
     const { data: enviados, error: mailErr } = await sb.rpc('enviar_aviso_email', {
       p_compania: CURRENT.compania, p_seccion: payload.seccion, p_persona_id: payload.persona_id,
-      p_asunto: asunto, p_mensaje: mensaje, p_remitente: esAnonimo ? null : nombreAdmin
+      p_asunto: asunto, p_mensaje: mensaje, p_remitente: esAnonimo ? null : nombreAdmin, p_imagen_url: imagenUrl
     });
     if(mailErr){ showToast('El aviso se guardó, pero el correo falló: '+mailErr.message); }
-    else { showToast('Aviso enviado a '+destino+' y por correo a '+enviados+' persona(s).'); document.getElementById('aviso-mensaje').value=''; return; }
+    else { showToast('Aviso enviado a '+destino+' y por correo a '+enviados+' persona(s).'); document.getElementById('aviso-mensaje').value=''; document.getElementById('aviso-imagen').value=''; document.getElementById('aviso-imagen-preview').innerHTML=''; return; }
   }
   document.getElementById('aviso-mensaje').value = '';
+  document.getElementById('aviso-imagen').value = '';
+  document.getElementById('aviso-imagen-preview').innerHTML = '';
   showToast('Aviso enviado a '+destino+'.');
 }
 async function adminToggle(personaId, type, day, obligatorio, checked){
