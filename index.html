@@ -1209,6 +1209,8 @@ async function renderAlumno(){
   document.getElementById('alumno-avisos').innerHTML = (avisos||[]).map(a=>{
     const ts = new Date(a.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
     const esIndividual = a.persona_id === persona.id;
+    const tipoLabel = esIndividual ? '👤 Personal' : (a.seccion ? `👥 Sección ${persona.compania}${a.seccion}` : `📣 Toda la ${persona.compania}ª Compañía`);
+    const tipoColor = esIndividual ? '#a55' : (a.seccion ? '#8a7f2a' : '#2a6f8a');
     let extra = '';
     if(esIndividual){
       if(a.respuesta){
@@ -1223,6 +1225,7 @@ async function renderAlumno(){
       }
     }
     return `<div class="aviso-card">
+      <div style="display:inline-block;font-size:.7rem;font-weight:bold;color:${tipoColor};border:1px solid ${tipoColor};border-radius:10px;padding:2px 8px;margin-bottom:6px;">${tipoLabel}</div>
       <div class="aviso-msg">📢 ${a.mensaje}</div>
       ${a.imagen_url ? `<img src="${a.imagen_url}" style="max-width:100%;margin-top:8px;border-radius:4px;">` : ''}
       <div class="aviso-meta">${ts} — ${a.creado_por}</div>
