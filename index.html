@@ -239,6 +239,7 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
       <div class="tabs">
         <button class="tab-btn active" id="tab-btn-login" onclick="switchAuthTab('login')">Iniciar sesión</button>
         <button class="tab-btn" id="tab-btn-reg" onclick="switchAuthTab('register')">Alumno — primera vez</button>
+        <button class="tab-btn" id="tab-btn-adminreq" onclick="switchAuthTab('adminreq')">¿Eres admin?</button>
       </div>
 
       <form id="auth-login" autocomplete="on" onsubmit="event.preventDefault(); doLogin();">
@@ -253,6 +254,25 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
         </div>
         <button class="primary-btn" id="login-btn" type="submit">Entrar</button>
         <div id="login-error" class="error-text hidden"></div>
+        <button type="button" class="small-btn" style="margin-top:10px;width:100%;" onclick="pedirResetContrasena()">¿Olvidaste tu contraseña?</button>
+      </form>
+
+      <form id="auth-adminreq" class="hidden" autocomplete="on" onsubmit="event.preventDefault(); doAdminRequest();">
+        <p class="desc">Si eres administrador de una compañía y todavía no tienes acceso, pide que se te dé de alta. Un superadministrador revisará tu solicitud.</p>
+        <div class="field"><label>Nombre</label><input type="text" id="adminreq-nombre" autocomplete="given-name"></div>
+        <div class="field"><label>Apellidos</label><input type="text" id="adminreq-apellidos" autocomplete="family-name"></div>
+        <div class="field"><label>Tu email</label><input type="email" id="adminreq-email" autocomplete="username"></div>
+        <div class="field">
+          <label>Crea una contraseña</label>
+          <div class="pw-field">
+            <input type="password" id="adminreq-password" autocomplete="new-password">
+            <button type="button" class="pw-toggle" onclick="togglePwVisibility('adminreq-password', this)">👁️ Ver</button>
+          </div>
+        </div>
+        <div class="field"><label>Compañía que administras</label><select id="adminreq-compania"></select></div>
+        <div class="field"><label>Mensaje (opcional)</label><input type="text" id="adminreq-mensaje" placeholder="Algo que quieras contarle al superadmin"></div>
+        <button class="primary-btn" id="adminreq-btn" type="submit">Enviar solicitud</button>
+        <div id="adminreq-error" class="error-text hidden"></div>
       </form>
 
       <form id="auth-register" class="hidden" autocomplete="on" onsubmit="event.preventDefault(); doRegister();">
@@ -466,6 +486,38 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
       <div id="admin-cambios-pendientes"></div>
       <h3 class="section-title">Deudas de servicio</h3>
       <div id="admin-deudas-lista"></div>
+    </div>
+  </div>
+
+  <!-- SUPERADMIN -->
+  <div id="screen-superadmin" class="hidden">
+    <div class="masthead">
+      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub">👑 Panel superadmin</div></div></div>
+      <div class="who"><div class="name">Superadmin</div><button class="small-btn" style="margin-right:8px;" onclick="volverDeSuperadmin()">◀ Volver</button><button class="logout" onclick="doLogout()">Salir</button></div>
+    </div>
+    <div id="superadmin-body"></div>
+  </div>
+
+  <!-- RESET DE CONTRASEÑA (llega aquí tras pulsar el enlace del correo) -->
+  <div id="screen-reset-password" class="hidden">
+    <div class="login-brand">
+      <img class="brand-logo" alt="AGM">
+      <h1>PORTAL AGM</h1>
+      <div class="sub">Crea tu nueva contraseña</div>
+    </div>
+    <div class="login-card">
+      <form autocomplete="on" onsubmit="event.preventDefault(); submitNewPassword();">
+        <p class="desc">Escribe tu nueva contraseña para terminar de restablecer el acceso.</p>
+        <div class="field">
+          <label>Nueva contraseña</label>
+          <div class="pw-field">
+            <input type="password" id="reset-password-input" autocomplete="new-password">
+            <button type="button" class="pw-toggle" onclick="togglePwVisibility('reset-password-input', this)">👁️ Ver</button>
+          </div>
+        </div>
+        <button class="primary-btn" id="reset-password-btn" type="submit">Guardar contraseña</button>
+        <div id="reset-password-error" class="error-text hidden"></div>
+      </form>
     </div>
   </div>
 
@@ -684,7 +736,7 @@ function showToast(msg){
   document.body.appendChild(t); setTimeout(()=>t.remove(), 3800);
 }
 function showScreen(id){
-  ['screen-loading','screen-login','screen-alumno','screen-admin'].forEach(s=>{
+  ['screen-loading','screen-login','screen-alumno','screen-admin','screen-superadmin','screen-reset-password'].forEach(s=>{
     document.getElementById(s).classList.toggle('hidden', s!==id);
   });
 }
@@ -725,10 +777,21 @@ async function boot(){
 }
 async function routeAfterAuth(userId){
   try{
-    const { data: adminRow } = await sb.from('admins').select('compania').eq('auth_user_id', userId).maybeSingle();
+    const { data: adminRow } = await sb.from('admins').select('compania, is_superadmin').eq('auth_user_id', userId).maybeSingle();
     const { data: personaRow } = await sb.from('personas').select('*').eq('auth_user_id', userId).maybeSingle();
-    if(adminRow){ await enterAdmin(adminRow.compania, personaRow || null); return; }
+    if(adminRow){ await enterAdmin(adminRow.compania, personaRow || null, !!adminRow.is_superadmin); return; }
     if(personaRow){ await enterAlumno(personaRow, null); return; }
+    const { data: solRow } = await sb.from('admin_solicitudes').select('estado').eq('auth_user_id', userId).order('creado_en',{ascending:false}).maybeSingle();
+    if(solRow && solRow.estado==='pendiente'){
+      showScreen('screen-login');
+      showToast('Tu solicitud de administrador está pendiente de que un superadmin la revise. Te avisaremos cuando esté lista.');
+      return;
+    }
+    if(solRow && solRow.estado==='rechazada'){
+      showScreen('screen-login');
+      showToast('Tu solicitud de administrador fue rechazada. Contacta con el superadmin si crees que es un error.');
+      return;
+    }
     await sb.auth.signOut();
     showScreen('screen-login');
     showToast('Tu cuenta no está vinculada a ningún alumno ni administrador todavía.');
@@ -744,11 +807,65 @@ boot();
 function switchAuthTab(tab){
   document.getElementById('auth-login').classList.toggle('hidden', tab!=='login');
   document.getElementById('auth-register').classList.toggle('hidden', tab!=='register');
+  document.getElementById('auth-adminreq').classList.toggle('hidden', tab!=='adminreq');
   document.getElementById('tab-btn-login').classList.toggle('active', tab==='login');
   document.getElementById('tab-btn-reg').classList.toggle('active', tab==='register');
+  document.getElementById('tab-btn-adminreq').classList.toggle('active', tab==='adminreq');
   document.getElementById('login-error').classList.add('hidden');
   document.getElementById('reg-error').classList.add('hidden');
+  document.getElementById('adminreq-error').classList.add('hidden');
   if(tab==='register') loadRegCompanies();
+  if(tab==='adminreq') loadAdminReqCompanies();
+}
+function loadAdminReqCompanies(){
+  const sel = document.getElementById('adminreq-compania');
+  sel.innerHTML = COMPANIES.map(c=>`<option value="${c}">${c}ª Compañía</option>`).join('');
+}
+async function pedirResetContrasena(){
+  const email = (document.getElementById('login-email').value || '').trim();
+  if(!email){ showToast('Escribe primero tu email en el campo de arriba.'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  if(error){ showToast('No se pudo enviar: '+error.message); return; }
+  showToast('Si ese email existe, te hemos mandado un correo con un enlace para crear una contraseña nueva.');
+}
+async function doAdminRequest(){
+  const btn = document.getElementById('adminreq-btn'); btn.disabled = true;
+  const err = document.getElementById('adminreq-error'); err.classList.add('hidden');
+  const nombre = document.getElementById('adminreq-nombre').value.trim();
+  const apellidos = document.getElementById('adminreq-apellidos').value.trim();
+  const email = document.getElementById('adminreq-email').value.trim();
+  const password = document.getElementById('adminreq-password').value;
+  const compania = parseInt(document.getElementById('adminreq-compania').value, 10);
+  const mensaje = document.getElementById('adminreq-mensaje').value.trim();
+  if(!nombre || !apellidos || !email || !password || !compania){
+    err.textContent = 'Rellena todos los campos.'; err.classList.remove('hidden'); btn.disabled=false; return;
+  }
+  let session = null;
+  const { data: signData, error: signErr } = await sb.auth.signUp({ email, password });
+  if(signErr){
+    if(/regist|exist|already/i.test(signErr.message)){
+      const { data: signInData, error: signInErr } = await sb.auth.signInWithPassword({ email, password });
+      if(signInErr){
+        err.textContent = 'Ya existe una cuenta con ese email, pero la contraseña no coincide.';
+        err.classList.remove('hidden'); btn.disabled=false; return;
+      }
+      session = signInData.session;
+    } else {
+      err.textContent = signErr.message; err.classList.remove('hidden'); btn.disabled=false; return;
+    }
+  } else {
+    session = signData.session;
+  }
+  if(!session){
+    err.textContent = 'Cuenta creada, pero hace falta confirmar el email antes de continuar (revisa la bandeja).';
+    err.classList.remove('hidden'); btn.disabled=false; return;
+  }
+  const { error: solErr } = await sb.from('admin_solicitudes').insert({
+    auth_user_id: session.user.id, nombre, apellidos, email, compania_solicitada: compania, mensaje: mensaje || null
+  });
+  btn.disabled = false;
+  if(solErr){ err.textContent = solErr.message; err.classList.remove('hidden'); return; }
+  await routeAfterAuth(session.user.id);
 }
 function togglePwVisibility(inputId, btn){
   const input = document.getElementById(inputId);
@@ -937,9 +1054,10 @@ async function setVal(personaId, col, val){
 }
 
 /* ================= ALUMNO ================= */
-async function enterAlumno(persona, adminCompania){
+async function enterAlumno(persona, adminCompania, isSuperadmin){
   const { data: seccion } = await sb.from('personas').select('*').eq('compania', persona.compania).eq('seccion', persona.seccion).order('apellidos');
-  CURRENT = { mode:'alumno', persona, seccionPeople: seccion || [persona], adminCompania: adminCompania || null };
+  const wasSuperadmin = CURRENT && CURRENT.isSuperadmin;
+  CURRENT = { mode:'alumno', persona, seccionPeople: seccion || [persona], adminCompania: adminCompania || null, isSuperadmin: (isSuperadmin!=null?isSuperadmin:wasSuperadmin) };
   EXTERNADOS = new Set((seccion||[persona]).filter(p=>p.externado).map(p=>p.id));
   await fetchCortesEspeciales(persona.compania);
   await fetchPernoctaForzarAgm(persona.compania);
@@ -950,7 +1068,7 @@ async function enterAlumno(persona, adminCompania){
   setActiveWeek(defaultWeekIndex());
   await setModule('comidas');
 }
-function switchToAdmin(){ enterAdmin(CURRENT.adminCompania, CURRENT.persona); }
+function switchToAdmin(){ enterAdmin(CURRENT.adminCompania, CURRENT.persona, CURRENT.isSuperadmin); }
 async function onAlumnoWeekChange(v){ setActiveWeek(parseInt(v,10)); selectedDiaComida = null; await (currentModule==='pernoctas' ? renderAlumnoPernoctas() : renderAlumno()); }
 
 async function renderAlumno(){
@@ -958,7 +1076,9 @@ async function renderAlumno(){
   const code = ''+persona.compania+persona.seccion;
   document.getElementById('alumno-subtitle').textContent = `${persona.compania}ª Compañía · ${persona.seccion}ª Sección (${code}) · ${seccionPeople.length} efectivos`;
   document.getElementById('alumno-who').textContent = persona.nombre+' '+persona.apellidos;
-  document.getElementById('alumno-switch').innerHTML = CURRENT.adminCompania ? `<button class="small-btn" style="margin-right:8px;" onclick="switchToAdmin()">Modo admin</button>` : '';
+  document.getElementById('alumno-switch').innerHTML =
+    (CURRENT.adminCompania ? `<button class="small-btn" style="margin-right:8px;" onclick="switchToAdmin()">Modo admin</button>` : '') +
+    (CURRENT.isSuperadmin ? `<button class="small-btn" style="margin-right:8px;" onclick="enterSuperadmin()">👑 Modo superadmin</button>` : '');
   const { data: companiaInfo } = await sb.from('companias').select('hora_corte').eq('numero', persona.compania).single();
   const horaCorte = companiaInfo ? companiaInfo.hora_corte : '10:00:00';
   await fetchSemanasOcultas(persona.compania);
@@ -1147,9 +1267,10 @@ async function toggleMine(type, day, obligatorio, checked){
 }
 
 /* ================= ADMIN ================= */
-async function enterAdmin(compania, linkedPersona){
+async function enterAdmin(compania, linkedPersona, isSuperadmin){
   const { data: companiaInfo } = await sb.from('companias').select('*').eq('numero', compania).single();
-  CURRENT = { mode:'admin', compania, companiaInfo, linkedPersona: linkedPersona || null };
+  const wasSuperadmin = CURRENT && CURRENT.isSuperadmin;
+  CURRENT = { mode:'admin', compania, companiaInfo, linkedPersona: linkedPersona || null, isSuperadmin: (isSuperadmin!=null?isSuperadmin:wasSuperadmin) };
   await fetchCortesEspeciales(compania);
   await fetchPernoctaForzarAgm(compania);
   await fetchComidaDesbloqueoDias(compania);
@@ -1157,7 +1278,112 @@ async function enterAdmin(compania, linkedPersona){
   setActiveWeek(defaultWeekIndex());
   await setModule('comidas');
 }
-function switchToAlumno(){ enterAlumno(CURRENT.linkedPersona, CURRENT.compania); }
+
+/* ================= SUPERADMIN ================= */
+function enterSuperadmin(){
+  showScreen('screen-superadmin');
+  renderSuperadmin();
+}
+function volverDeSuperadmin(){
+  showScreen(CURRENT && CURRENT.mode==='alumno' ? 'screen-alumno' : 'screen-admin');
+}
+let superReset = { compania:null, seccion:null };
+async function renderSuperadmin(){
+  const { data: solicitudes } = await sb.from('admin_solicitudes').select('*').eq('estado','pendiente').order('creado_en');
+  let seccionesHtml = '';
+  let personasHtml = '<option value="">— elige antes una sección —</option>';
+  if(superReset.compania){
+    seccionesHtml = Array.from({length:SECTIONS_PER_COMPANY},(_,i)=>i+1).map(s=>`<option value="${s}" ${superReset.seccion===s?'selected':''}>${superReset.compania}${s}</option>`).join('');
+    if(superReset.seccion){
+      const { data: gente } = await sb.from('personas').select('id,nombre,apellidos,email').eq('compania',superReset.compania).eq('seccion',superReset.seccion).order('apellidos');
+      personasHtml = (gente||[]).map(p=>`<option value="${p.id}">${p.apellidos}, ${p.nombre}${p.email?'':' (sin registrar)'}</option>`).join('') || '<option value="">— nadie en esta sección —</option>';
+    }
+  }
+  document.getElementById('superadmin-body').innerHTML = `
+    <div class="admin-panel">
+      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
+        <div class="switch-label">Ir a una compañía<span class="sub2">Entra en el panel de administración normal de cualquier compañía</span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          ${COMPANIES.map(c=>`<button class="small-btn" onclick="enterAdmin(${c}, null, true)">${c}ª Compañía</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
+        <div class="switch-label">Restablecer la contraseña de alguien<span class="sub2">Elige compañía, sección y persona — se le manda un correo con un enlace para crear una contraseña nueva</span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <select id="super-reset-compania" onchange="onSuperResetCompaniaChange(this.value)" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
+            <option value="">— compañía —</option>
+            ${COMPANIES.map(c=>`<option value="${c}" ${superReset.compania===c?'selected':''}>${c}ª Compañía</option>`).join('')}
+          </select>
+          <select id="super-reset-seccion" onchange="onSuperResetSeccionChange(this.value)" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
+            <option value="">— sección —</option>
+            ${seccionesHtml}
+          </select>
+          <select id="super-reset-persona" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;min-width:220px;">
+            ${personasHtml}
+          </select>
+          <button class="small-btn" onclick="enviarResetPersona()">✉️ Enviar enlace de reseteo</button>
+        </div>
+      </div>
+
+      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
+        <div class="switch-label">Solicitudes de administrador pendientes${solicitudes && solicitudes.length ? ` <span style="color:var(--danger);">(${solicitudes.length})</span>` : ''}</div>
+        <div style="margin-top:8px;">
+          ${(solicitudes && solicitudes.length) ? solicitudes.map(s=>`
+            <div class="manage-row">
+              <div>${s.apellidos}, ${s.nombre} — ${s.email} — quiere administrar la <b>${s.compania_solicitada}ª Compañía</b>${s.mensaje?`<br><span class="sub2">"${s.mensaje}"</span>`:''}</div>
+              <div class="btns">
+                <button class="small-btn" onclick="aprobarAdminSolicitud(${s.id})">✅ Aprobar</button>
+                <button class="small-btn danger" onclick="rechazarAdminSolicitud(${s.id})">❌ Rechazar</button>
+              </div>
+            </div>`).join('') : '<p class="small-note">No hay solicitudes pendientes.</p>'}
+        </div>
+      </div>
+    </div>`;
+}
+function onSuperResetCompaniaChange(v){ superReset = { compania: v?parseInt(v,10):null, seccion:null }; renderSuperadmin(); }
+function onSuperResetSeccionChange(v){ superReset.seccion = v?parseInt(v,10):null; renderSuperadmin(); }
+async function enviarResetPersona(){
+  const pid = document.getElementById('super-reset-persona').value;
+  if(!pid){ showToast('Elige una persona primero.'); return; }
+  const { data: p } = await sb.from('personas').select('email,nombre,apellidos').eq('id', pid).single();
+  if(!p || !p.email){ showToast('Esa persona todavía no tiene email (no se ha registrado en la app).'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(p.email, { redirectTo: location.origin + location.pathname });
+  if(error){ showToast('No se pudo enviar: '+error.message); return; }
+  showToast('Enlace de reseteo enviado a '+p.nombre+' '+p.apellidos+' ('+p.email+').');
+}
+async function aprobarAdminSolicitud(id){
+  const { error } = await sb.rpc('aprobar_admin_solicitud', { p_id: id });
+  if(error){ showToast('No se pudo aprobar: '+error.message); return; }
+  showToast('Solicitud aprobada.');
+  await renderSuperadmin();
+}
+async function rechazarAdminSolicitud(id){
+  const { error } = await sb.rpc('rechazar_admin_solicitud', { p_id: id });
+  if(error){ showToast('No se pudo rechazar: '+error.message); return; }
+  showToast('Solicitud rechazada.');
+  await renderSuperadmin();
+}
+
+/* ================= Reset de contraseña (enlace del correo) ================= */
+async function submitNewPassword(){
+  const btn = document.getElementById('reset-password-btn'); btn.disabled = true;
+  const err = document.getElementById('reset-password-error'); err.classList.add('hidden');
+  const pw = document.getElementById('reset-password-input').value;
+  if(!pw || pw.length < 6){
+    err.textContent = 'La contraseña tiene que tener al menos 6 caracteres.'; err.classList.remove('hidden'); btn.disabled=false; return;
+  }
+  const { error } = await sb.auth.updateUser({ password: pw });
+  btn.disabled = false;
+  if(error){ err.textContent = error.message; err.classList.remove('hidden'); return; }
+  showToast('Contraseña actualizada. Ya puedes usarla para entrar.');
+  const { data: { session } } = await sb.auth.getSession();
+  if(session){ await routeAfterAuth(session.user.id); } else { showScreen('screen-login'); }
+}
+sb.auth.onAuthStateChange((event)=>{
+  if(event === 'PASSWORD_RECOVERY') showScreen('screen-reset-password');
+});
+function switchToAlumno(){ enterAlumno(CURRENT.linkedPersona, CURRENT.compania, CURRENT.isSuperadmin); }
 async function onAdminWeekChange(v){ setActiveWeek(parseInt(v,10)); absenceSelIndex=null; await (currentModule==='pernoctas' ? renderAdminPernoctas() : renderAdmin()); }
 let absenceSelIndex = null;
 let expandedSections = new Set();
@@ -1180,7 +1406,9 @@ async function renderAdmin(){
   CURRENT.companiaInfo = companiaInfo;
   document.getElementById('admin-subtitle').textContent = `${c}ª Compañía`;
   document.getElementById('admin-who').textContent = CURRENT.linkedPersona ? (CURRENT.linkedPersona.nombre+' '+CURRENT.linkedPersona.apellidos) : companiaInfo.nombre_admin;
-  document.getElementById('admin-switch').innerHTML = CURRENT.linkedPersona ? `<button class="small-btn" style="margin-right:8px;" onclick="switchToAlumno()">Modo alumno</button>` : '';
+  document.getElementById('admin-switch').innerHTML =
+    (CURRENT.linkedPersona ? `<button class="small-btn" style="margin-right:8px;" onclick="switchToAlumno()">Modo alumno</button>` : '') +
+    (CURRENT.isSuperadmin ? `<button class="small-btn" style="margin-right:8px;" onclick="enterSuperadmin()">👑 Modo superadmin</button>` : '');
   await fetchSemanasOcultas(c);
   document.getElementById('admin-week-select').innerHTML = weekSelectHtml('onAdminWeekChange', companiaInfo.hora_corte, false);
   document.getElementById('admin-notice').innerHTML = noticeHtml(ACTIVE_WEEK, companiaInfo.hora_corte);
@@ -1276,6 +1504,10 @@ async function renderAdmin(){
         <label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:.8rem;color:var(--ink-soft);">
           <input type="checkbox" id="aviso-anonimo" style="width:16px;height:16px;"> Enviar como anónimo (no se verá tu nombre, solo "Administración")
         </label>
+        <label style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:.8rem;color:var(--ink-soft);">
+          <input type="checkbox" id="aviso-email" style="width:16px;height:16px;" onchange="document.getElementById('aviso-asunto').classList.toggle('hidden', !this.checked)"> Enviar también por correo electrónico
+        </label>
+        <input type="text" id="aviso-asunto" class="hidden" placeholder="Asunto del correo" style="margin-top:6px;width:100%;padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
         <textarea id="aviso-mensaje" placeholder="Escribe el aviso..." style="margin-top:8px;width:100%;min-height:60px;padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;"></textarea>
         <button class="primary-btn" style="width:auto;margin-top:8px;align-self:flex-start;padding:10px 16px;" onclick="sendAviso()">📢 Enviar aviso</button>
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
@@ -1512,6 +1744,16 @@ async function sendAviso(){
   }
   const { error } = await sb.from('avisos').insert(payload);
   if(error){ showToast('No se pudo enviar: '+error.message); return; }
+  const porEmail = document.getElementById('aviso-email').checked;
+  if(porEmail){
+    const asunto = document.getElementById('aviso-asunto').value.trim() || 'Aviso — Portal AGM';
+    const { data: enviados, error: mailErr } = await sb.rpc('enviar_aviso_email', {
+      p_compania: CURRENT.compania, p_seccion: payload.seccion, p_persona_id: payload.persona_id,
+      p_asunto: asunto, p_mensaje: mensaje
+    });
+    if(mailErr){ showToast('El aviso se guardó, pero el correo falló: '+mailErr.message); }
+    else { showToast('Aviso enviado a '+destino+' y por correo a '+enviados+' persona(s).'); document.getElementById('aviso-mensaje').value=''; return; }
+  }
   document.getElementById('aviso-mensaje').value = '';
   showToast('Aviso enviado a '+destino+'.');
 }
@@ -1626,6 +1868,22 @@ function companyAbsencesSummary(secciones, apuntesMap){
   return `${header}<h3 class="section-title" style="margin-top:0;">Quiénes no comen / no cenan</h3>
     <div class="field" style="max-width:360px;"><label>Comida</label><select onchange="onAbsenceMealChange(this.value)">${options}</select></div>
     ${blocks}`;
+}
+let pernoctaConfirmOpen = false;
+function togglePernoctaConfirmSummary(){ pernoctaConfirmOpen = !pernoctaConfirmOpen; renderAdminPernoctas(); }
+function pernoctaConfirmSummary(secciones, confirmMap){
+  const header = `<div style="margin:18px 0 10px;"><button class="small-btn" onclick="togglePernoctaConfirmSummary()">${pernoctaConfirmOpen?'Cerrar':'Ver'} quién no ha confirmado sus pernoctas</button></div>`;
+  if(!pernoctaConfirmOpen) return header;
+  let blocks = '';
+  secciones.forEach(sec=>{
+    const confirmados = sec.people.filter(p=>confirmMap[p.id]).length;
+    const pendientes = sec.people.filter(p=>!confirmMap[p.id]);
+    blocks += `<div style="border:1px solid var(--line);padding:10px 12px;margin-bottom:8px;">
+      <div style="font-weight:700;font-size:.8rem;margin-bottom:4px;">Sección ${sec.code} <span style="color:var(--ink-soft);font-weight:400;">(${confirmados}/${sec.people.length} confirmado)</span></div>
+      ${pendientes.length ? `<div style="font-size:.78rem;color:var(--danger);">Sin confirmar: ${pendientes.map(p=>p.apellidos+', '+p.nombre).join(' · ')}</div>` : `<div style="font-size:.78rem;color:var(--olive);">Todos han confirmado</div>`}
+    </div>`;
+  });
+  return `${header}<h3 class="section-title" style="margin-top:0;">Quién ha revisado y confirmado sus pernoctas esta semana</h3>${blocks}`;
 }
 function companyConfirmSummary(secciones, confirmMap){
   let blocks = '';
@@ -2394,7 +2652,7 @@ async function renderAdminPernoctas(){
     `<div class="stat-card"><div class="num">${nAGM(d)}/${allPeople.length}</div><div class="lbl">AGM ${DAY_NAMES[d]} ${fmt(ACTIVE_WEEK.days[d])}</div></div>`
   ).join('') + `<div class="stat-card"><div class="num">${nConfirmadosPern}/${allPeople.length}</div><div class="lbl">Han confirmado esta semana</div></div>`;
 
-  document.getElementById('admin-pernocta-companies').innerHTML = pernoctaCompanyBlockHtml(c, secciones, pernMap, confirmMapPern);
+  document.getElementById('admin-pernocta-companies').innerHTML = pernoctaCompanyBlockHtml(c, secciones, pernMap, confirmMapPern) + pernoctaConfirmSummary(secciones, confirmMapPern);
 
   let cells = '';
   for(let d=0; d<pernoctaDiasCount(); d++) cells += `<div><div class="num mono">${nAGM(d)}</div><div class="lbl">AGM ${DAY_NAMES[d]}</div></div>`;
