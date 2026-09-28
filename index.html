@@ -1016,16 +1016,18 @@ async function renderAlumno(){
   const nextComidaOpcional = cols.find(c=>c.type==='comida' && !c.obligatorio);
   const comidaQuienes = seccionPeople.filter(p=>getVal(p.id,nextComidaOpcional,apuntesMap));
   const listaNombres = arr => arr.length ? arr.map(p=>p.apellidos+', '+p.nombre).join('<br>') : 'Nadie de tu sección tiene esta comida.';
+  const comidaFecha = `${DAY_NAMES[nextComidaOpcional.day]} ${fmt(ACTIVE_WEEK.days[nextComidaOpcional.day])}`;
+  const cenaFecha = `${DAY_NAMES[nextCenaCol.day]} ${fmt(ACTIVE_WEEK.days[nextCenaCol.day])}`;
   document.getElementById('alumno-summary').innerHTML = `
     <div class="stat-card" style="cursor:pointer;" onclick="document.getElementById('quienes-comida').classList.toggle('hidden')">
-      <div class="num">${comidaQuienes.length}/${seccionPeople.length}</div><div class="lbl">Comida ${DAY_NAMES[nextComidaOpcional.day]} — tu sección<br><span style="text-decoration:underline;">toca para ver quién</span></div>
+      <div class="num">${comidaQuienes.length}/${seccionPeople.length}</div><div class="lbl">Comida ${comidaFecha} — tu sección<br><span style="text-decoration:underline;">toca para ver quién</span></div>
     </div>
     <div class="stat-card" style="cursor:pointer;" onclick="document.getElementById('quienes-cena').classList.toggle('hidden')">
-      <div class="num">${cenaQuienes.length}/${seccionPeople.length}</div><div class="lbl">Cena ${DAY_NAMES[nextCenaCol.day]} — tu sección<br><span style="text-decoration:underline;">toca para ver quién</span></div>
+      <div class="num">${cenaQuienes.length}/${seccionPeople.length}</div><div class="lbl">Cena ${cenaFecha} — tu sección<br><span style="text-decoration:underline;">toca para ver quién</span></div>
     </div>`;
   document.getElementById('alumno-summary-quienes').innerHTML = `
-    <div id="quienes-comida" class="servicio-card hidden"><div class="titulo">Comida ${DAY_NAMES[nextComidaOpcional.day]} — quién de tu sección</div><div class="meta">${listaNombres(comidaQuienes)}</div></div>
-    <div id="quienes-cena" class="servicio-card hidden"><div class="titulo">Cena ${DAY_NAMES[nextCenaCol.day]} — quién de tu sección</div><div class="meta">${listaNombres(cenaQuienes)}</div></div>`;
+    <div id="quienes-comida" class="servicio-card hidden"><div class="titulo">Comida ${comidaFecha} — quién de tu sección</div><div class="meta">${listaNombres(comidaQuienes)}</div></div>
+    <div id="quienes-cena" class="servicio-card hidden"><div class="titulo">Cena ${cenaFecha} — quién de tu sección</div><div class="meta">${listaNombres(cenaQuienes)}</div></div>`;
 
   const nowIso = new Date().toISOString();
   const { data: avisos } = await sb.from('avisos').select('*')
