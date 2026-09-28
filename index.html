@@ -306,7 +306,7 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
       <div class="fixed-row" style="margin-top:24px;">
         <div class="fixed-pill">🔒 Las casillas ya marcadas y bloqueadas son <b>obligatorias</b> — no hace falta tocarlas</div>
         <div class="fixed-pill">✏️ Solo puedes marcar/desmarcar <b>tu cena</b> de cada día, tu <b>comida de viernes, sábado y domingo</b> y tu <b>desayuno del domingo</b></div>
-        <div class="fixed-pill">🔒 Si duermes en la AGM el sábado (Pernoctas), el <b>desayuno del domingo</b> se te pone obligatorio solo</div>
+        <div class="fixed-pill">🔒 El <b>desayuno del domingo</b> es obligatorio salvo que duermas <b>fuera</b> el sábado — si no quieres tenerlo marcado, cambia el sábado a "fuera" en Pernoctas y se desbloqueará solo</div>
       </div>
     </div>
 
@@ -989,7 +989,10 @@ async function renderAlumno(){
       const locked = effectiveObligatorio(p.id, c) && !diaComidaDesbloqueado(c.day);
       const tdClass = isCurrentMealColumn(c) ? 'col-today' : '';
       if(locked){
-        tbody += `<td class="${tdClass}"><input type="checkbox" class="chk" checked disabled title="Obligatoria"></td>`;
+        const tituloObligatoria = (c.type==='desayuno' && c.day===2)
+          ? 'Obligatorio porque duermes en la AGM el sábado — si quieres desmarcarlo, marca "fuera" el sábado en Pernoctas'
+          : 'Obligatoria';
+        tbody += `<td class="${tdClass}"><input type="checkbox" class="chk" checked disabled title="${tituloObligatoria}"></td>`;
       } else if(isMe && open){
         tbody += `<td class="${tdClass}"><input type="checkbox" class="chk editable" ${val?'checked':''} onchange="toggleMine('${c.type}',${c.day},${c.obligatorio},this.checked)"></td>`;
       } else {
