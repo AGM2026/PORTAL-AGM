@@ -1756,7 +1756,7 @@ async function sendAviso(){
     const asunto = document.getElementById('aviso-asunto').value.trim() || 'Aviso — Portal AGM';
     const { data: enviados, error: mailErr } = await sb.rpc('enviar_aviso_email', {
       p_compania: CURRENT.compania, p_seccion: payload.seccion, p_persona_id: payload.persona_id,
-      p_asunto: asunto, p_mensaje: mensaje
+      p_asunto: asunto, p_mensaje: mensaje, p_remitente: esAnonimo ? null : nombreAdmin
     });
     if(mailErr){ showToast('El aviso se guardó, pero el correo falló: '+mailErr.message); }
     else { showToast('Aviso enviado a '+destino+' y por correo a '+enviados+' persona(s).'); document.getElementById('aviso-mensaje').value=''; return; }
