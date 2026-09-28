@@ -1547,11 +1547,9 @@ async function renderAdmin(){
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
           <button class="small-btn" onclick="toggleAvisosIndividuales()">${avisosIndividualesOpen?'Cerrar':'Ver'} avisos individuales y respuestas</button>
           <button class="small-btn" onclick="toggleAvisosGenerales()">${avisosGeneralesOpen?'Cerrar':'Ver'} avisos a toda la compañía / sección (borrar)</button>
-          <button class="small-btn" onclick="toggleConexionAlumnos()">${conexionAlumnosOpen?'Cerrar':'Ver'} conexión de alumnos</button>
         </div>
         <div id="avisos-individuales-panel">${avisosIndividualesOpen ? await avisosIndividualesHtml(c) : ''}</div>
         <div id="avisos-generales-panel">${avisosGeneralesOpen ? await avisosGeneralesHtml(c) : ''}</div>
-        <div id="conexion-alumnos-panel">${conexionAlumnosOpen ? await conexionAlumnosHtml(c) : ''}</div>
       </div>
       <div class="panel-row" style="flex-direction:column;align-items:stretch;">
         <div class="switch-label">Solicitudes de intolerancias${intolPendientesCount ? ` <span style="color:var(--danger);">(${intolPendientesCount} pendiente${intolPendientesCount===1?'':'s'})</span>` : ''}
@@ -1581,7 +1579,7 @@ async function renderAdmin(){
     <div class="stat-card"><div class="num">${cenaTotal}</div><div class="lbl">Cena ${DAY_NAMES[nextCenaCol.day]} marcadas</div></div>
     <div class="stat-card"><div class="num">${confirmadosTotal}/${allPeople.length}</div><div class="lbl">Han revisado y confirmado esta semana</div></div>`;
 
-  document.getElementById('admin-companies').innerHTML = await companyBlockHtml(c, secciones, apuntesMap, confirmMap) + faltanRegistrarseHtml(secciones);
+  document.getElementById('admin-companies').innerHTML = await companyBlockHtml(c, secciones, apuntesMap, confirmMap) + faltanRegistrarseHtml(secciones) + conexionAlumnosHtml(secciones);
 
   document.getElementById('admin-grand').innerHTML = `
     <div><div class="num mono">${registradosCount}</div><div class="lbl">Registrados en la ${c}ª</div></div>
@@ -1723,16 +1721,25 @@ function toggleAvisosIndividuales(){ avisosIndividualesOpen = !avisosIndividuale
 let avisosGeneralesOpen = false;
 function toggleAvisosGenerales(){ avisosGeneralesOpen = !avisosGeneralesOpen; renderAdmin(); }
 let conexionAlumnosOpen = false;
+let conexionSeccionFiltro = 'todas';
 function toggleConexionAlumnos(){ conexionAlumnosOpen = !conexionAlumnosOpen; renderAdmin(); }
-async function conexionAlumnosHtml(c){
-  const { data, error } = await sb.from('personas').select('nombre,apellidos,seccion,ultima_conexion')
-    .eq('compania', c).eq('registrado', true)
-    .order('ultima_conexion', {ascending:false, nullsFirst:false});
-  if(error || !data || data.length===0) return `<div style="font-size:.8rem;color:var(--ink-soft);margin-top:8px;">Nadie registrado todavía.</div>`;
-  return '<div style="margin-top:8px;">' + data.map(p=>{
-    const conectadoAhora = p.ultima_conexion && (Date.now() - new Date(p.ultima_conexion).getTime()) < 120000;
-    return `<div class="history-row">${conectadoAhora?'🟢':'⚪'} <b>${p.apellidos}, ${p.nombre}</b> (Sec. ${c}${p.seccion}) — <span class="ts">${formatRelativeTime(p.ultima_conexion)}</span></div>`;
-  }).join('') + '</div>';
+function onConexionSeccionChange(v){ conexionSeccionFiltro = v; renderAdmin(); }
+function conexionAlumnosHtml(secciones){
+  const totalConectados = secciones.reduce((a,sec)=>a+sec.people.filter(p=>p.registrado && p.ultima_conexion && (Date.now()-new Date(p.ultima_conexion).getTime())<120000).length, 0);
+  const header = `<div style="margin:16px 0 10px;"><button class="small-btn" onclick="toggleConexionAlumnos()">${conexionAlumnosOpen?'Cerrar':'Ver'} conexión de alumnos ${totalConectados?`(🟢 ${totalConectados} ahora)`:''}</button></div>`;
+  if(!conexionAlumnosOpen) return header;
+  const opciones = `<option value="todas" ${conexionSeccionFiltro==='todas'?'selected':''}>Todas las secciones</option>`
+    + secciones.map(sec=>`<option value="${sec.code}" ${conexionSeccionFiltro===sec.code?'selected':''}>Sección ${sec.code}</option>`).join('');
+  const seccionesFiltradas = conexionSeccionFiltro==='todas' ? secciones : secciones.filter(s=>s.code===conexionSeccionFiltro);
+  const personas = seccionesFiltradas.flatMap(sec=>sec.people.filter(p=>p.registrado).map(p=>({...p, seccionCode:sec.code})))
+    .sort((a,b)=>(b.ultima_conexion||'').localeCompare(a.ultima_conexion||''));
+  const filas = personas.length ? personas.map(p=>{
+    const conectadoAhora = p.ultima_conexion && (Date.now()-new Date(p.ultima_conexion).getTime())<120000;
+    return `<div class="history-row">${conectadoAhora?'🟢':'⚪'} <b>${p.apellidos}, ${p.nombre}</b> (Sec. ${p.seccionCode}) — <span class="ts">${formatRelativeTime(p.ultima_conexion)}</span></div>`;
+  }).join('') : `<div style="font-size:.78rem;color:var(--ink-soft);">Nadie registrado en esta sección.</div>`;
+  return `${header}<h3 class="section-title" style="margin-top:0;">Conexión de alumnos</h3>
+    <select onchange="onConexionSeccionChange(this.value)" style="margin-bottom:8px;padding:6px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.8rem;">${opciones}</select>
+    ${filas}`;
 }
 async function avisosGeneralesHtml(c){
   const { data, error } = await sb.from('avisos').select('*')
