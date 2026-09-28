@@ -556,6 +556,13 @@ async function fetchCortesEspeciales(compania){
   CORTES_ESPECIALES = {};
   (data||[]).forEach(r=>{ CORTES_ESPECIALES[r.semana_inicio] = r.corte_en; });
 }
+let PERNOCTA_FORZAR_AGM = {}; // semana_inicio (clave) -> Set de días forzados obligatorios en la AGM por el admin (aparte del viernes normal)
+async function fetchPernoctaForzarAgm(compania){
+  const { data } = await sb.from('pernocta_forzar_agm').select('semana_inicio,dia').eq('compania', compania);
+  PERNOCTA_FORZAR_AGM = {};
+  (data||[]).forEach(r=>{ (PERNOCTA_FORZAR_AGM[r.semana_inicio] = PERNOCTA_FORZAR_AGM[r.semana_inicio] || new Set()).add(r.dia); });
+}
+function diaForzadoAgm(dia, week){ week = week || ACTIVE_WEEK; return !!(PERNOCTA_FORZAR_AGM[week.key] && PERNOCTA_FORZAR_AGM[week.key].has(dia)); }
 function cutoffFor(week, horaCorte){
   if(CORTES_ESPECIALES[week.key]) return new Date(CORTES_ESPECIALES[week.key]);
   const cutoff = new Date(week.days[0]); cutoff.setDate(week.days[0].getDate()-4);
@@ -885,6 +892,7 @@ async function enterAlumno(persona, adminCompania){
   CURRENT = { mode:'alumno', persona, seccionPeople: seccion || [persona], adminCompania: adminCompania || null };
   EXTERNADOS = new Set((seccion||[persona]).filter(p=>p.externado).map(p=>p.id));
   await fetchCortesEspeciales(persona.compania);
+  await fetchPernoctaForzarAgm(persona.compania);
   const { data: ciServ } = await sb.from('companias').select('servicios_visible_alumnos').eq('numero', persona.compania).single();
   document.getElementById('alumno-mod-servicios-btn').classList.toggle('hidden', !(ciServ && ciServ.servicios_visible_alumnos));
   showScreen('screen-alumno');
@@ -1066,6 +1074,7 @@ async function enterAdmin(compania, linkedPersona){
   const { data: companiaInfo } = await sb.from('companias').select('*').eq('numero', compania).single();
   CURRENT = { mode:'admin', compania, companiaInfo, linkedPersona: linkedPersona || null };
   await fetchCortesEspeciales(compania);
+  await fetchPernoctaForzarAgm(compania);
   showScreen('screen-admin');
   setActiveWeek(defaultWeekIndex());
   await setModule('comidas');
@@ -1733,7 +1742,8 @@ const PERNOCTA_DIAS_POR_SEMANA = {
 function pernoctaDiasCountFor(week){ return PERNOCTA_DIAS_POR_SEMANA[week.key] || 2; }
 function pernoctaDiasCount(){ return pernoctaDiasCountFor(ACTIVE_WEEK); }
 function pernoctaObligatoria(personaId, dia){
-  if(pernoctaDiasCount()>2) return false; // semana excepcional (puente): nada obligatorio esa semana
+  if(diaForzadoAgm(dia)) return !EXTERNADOS.has(personaId); // día marcado por el admin como obligatorio en la AGM (ej. puente)
+  if(pernoctaDiasCount()>2) return false; // semana excepcional (puente) sin forzar: nada obligatorio esa semana
   if(dia!==0) return false; // solo el viernes puede ser obligatorio
   if(EXTERNADOS.has(personaId)) return false;
   return true;
@@ -1925,6 +1935,22 @@ function togglePernoctaSectionDetail(code){ if(expandedPernoctaSections.has(code
 async function togglePernoctaUnlock(checked){
   const { error } = await sb.from('companias').update({permitir_desbloqueo_pernocta:checked}).eq('numero', CURRENT.compania);
   if(error) showToast('No se pudo cambiar: '+error.message);
+  await renderAdminPernoctas();
+}
+async function togglePernoctaForzarAgm(dia, checked){
+  const c = CURRENT.compania;
+  if(checked){
+    const { error } = await sb.from('pernocta_forzar_agm').upsert(
+      { compania:c, semana_inicio:ACTIVE_WEEK.key, dia },
+      { onConflict:'compania,semana_inicio,dia' }
+    );
+    if(error){ showToast('No se pudo guardar: '+error.message); return; }
+  } else {
+    const { error } = await sb.from('pernocta_forzar_agm').delete().eq('compania',c).eq('semana_inicio',ACTIVE_WEEK.key).eq('dia',dia);
+    if(error){ showToast('No se pudo quitar: '+error.message); return; }
+  }
+  await fetchPernoctaForzarAgm(c);
+  showToast(checked ? `${DAY_NAMES[dia]} pasa a ser obligatorio dormir en la AGM para todos.` : `${DAY_NAMES[dia]} deja de ser obligatorio.`);
   await renderAdminPernoctas();
 }
 function pernoctaDetailTable(sec, pernMap, confirmMap){
@@ -2141,6 +2167,20 @@ async function renderAdminPernoctas(){
       <div class="panel-row">
         <div class="switch-label">Permitir dormir fuera el viernes<span class="sub2">Permiso extraordinario / pase de horas para TODA la ${c}ª esta semana — para puentes, no lo normal</span></div>
         <label class="switch"><input type="checkbox" ${companiaInfo.permitir_desbloqueo_pernocta?'checked':''} onchange="togglePernoctaUnlock(this.checked)"><span class="track"></span><span class="thumb"></span></label>
+      </div>
+      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
+        <div class="switch-label">Forzar AGM obligatoria algún día de esta semana
+          <span class="sub2">Para puentes: marca qué días (aparte del viernes normal) son obligatorios dormir en la AGM para todos, salvo externados — tú lo cambias aquí, sin que haga falta tocar el código ni subir nada</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          ${Array.from({length:pernoctaDiasCount()},(_,d)=>d).map(d=>{
+            const forzado = diaForzadoAgm(d);
+            return `<label style="display:flex;align-items:center;gap:6px;border:1px solid ${forzado?'var(--brass)':'var(--line)'};padding:6px 10px;cursor:pointer;${forzado?'background:rgba(184,134,11,.15);':''}">
+              <input type="checkbox" ${forzado?'checked':''} onchange="togglePernoctaForzarAgm(${d}, this.checked)">
+              ${DAY_NAMES[d]} ${fmt(ACTIVE_WEEK.days[d])}
+            </label>`;
+          }).join('')}
+        </div>
       </div>
       <div class="panel-row">
         <div class="switch-label">Ocultar esta semana a los alumnos (Comidas y Pernoctas)
