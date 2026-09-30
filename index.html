@@ -1419,6 +1419,11 @@ let absenceSelIndex = null;
 let expandedSections = new Set();
 let managedSections = new Set();
 let historyOpen = false;
+let historyFiltroSeccion = 'todas';
+let historyFiltroPersona = 'todas';
+let historyFiltroDesde = '';
+let historyFiltroHasta = '';
+let historyLimit = 150;
 
 async function fetchCompanySections(compania){
   const secciones = [];
@@ -1980,17 +1985,53 @@ function companyConfirmSummary(secciones, confirmMap){
 
 /* ---- Historial ---- */
 async function toggleHistory(){ historyOpen = !historyOpen; await renderAdmin(); }
-async function historyPanel(){
-  const { data, error } = await sb.from('historial')
-    .select('*, personas(nombre,apellidos,compania,seccion)')
-    .order('created_at',{ascending:false}).limit(40);
-  if(error || !data || data.length===0) return `<div style="font-size:.8rem;color:var(--ink-soft);margin-top:10px;">Sin cambios registrados todavía.</div>`;
-  return '<div style="margin-top:10px;">' + data.map(e=>{
-    const ts = new Date(e.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+function onHistorySeccionChange(v){ historyFiltroSeccion = v; historyFiltroPersona = 'todas'; renderAdmin(); }
+function onHistoryPersonaChange(v){ historyFiltroPersona = v; renderAdmin(); }
+function onHistoryDesdeChange(v){ historyFiltroDesde = v; renderAdmin(); }
+function onHistoryHastaChange(v){ historyFiltroHasta = v; renderAdmin(); }
+function limpiarFiltrosHistorial(){
+  historyFiltroSeccion = 'todas'; historyFiltroPersona = 'todas'; historyFiltroDesde = ''; historyFiltroHasta = ''; historyLimit = 150;
+  renderAdmin();
+}
+function verMasHistorial(){ historyLimit += 150; renderAdmin(); }
+async function historyPanel(secciones){
+  const seccionesFiltradas = historyFiltroSeccion==='todas' ? secciones : secciones.filter(s=>(''+s.seccion)===historyFiltroSeccion);
+  const personasFiltro = seccionesFiltradas.flatMap(sec=>sec.people.filter(p=>p.registrado)).sort((a,b)=>a.apellidos.localeCompare(b.apellidos));
+
+  const opcionesSeccion = `<option value="todas" ${historyFiltroSeccion==='todas'?'selected':''}>Todas las secciones</option>`
+    + secciones.map(sec=>`<option value="${sec.seccion}" ${historyFiltroSeccion===(''+sec.seccion)?'selected':''}>Sección ${sec.code}</option>`).join('');
+  const opcionesPersona = `<option value="todas" ${historyFiltroPersona==='todas'?'selected':''}>Todos</option>`
+    + personasFiltro.map(p=>`<option value="${p.id}" ${historyFiltroPersona===p.id?'selected':''}>${p.apellidos}, ${p.nombre}</option>`).join('');
+
+  const filtrosHtml = `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0;">
+    <select onchange="onHistorySeccionChange(this.value)" style="padding:6px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.8rem;">${opcionesSeccion}</select>
+    <select onchange="onHistoryPersonaChange(this.value)" style="padding:6px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.8rem;">${opcionesPersona}</select>
+    <label style="font-size:.78rem;color:var(--ink-soft);">Desde <input type="date" value="${historyFiltroDesde}" onchange="onHistoryDesdeChange(this.value)" style="padding:5px 7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.78rem;"></label>
+    <label style="font-size:.78rem;color:var(--ink-soft);">Hasta <input type="date" value="${historyFiltroHasta}" onchange="onHistoryHastaChange(this.value)" style="padding:5px 7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.78rem;"></label>
+    <button class="small-btn" onclick="limpiarFiltrosHistorial()">Limpiar filtros</button>
+  </div>`;
+
+  let query = sb.from('historial').select('*, personas!inner(nombre,apellidos,compania,seccion)')
+    .order('created_at',{ascending:false}).limit(historyLimit);
+  if(historyFiltroSeccion!=='todas'){
+    query = query.eq('personas.seccion', parseInt(historyFiltroSeccion,10));
+  }
+  if(historyFiltroPersona!=='todas') query = query.eq('persona_id', historyFiltroPersona);
+  if(historyFiltroDesde) query = query.gte('created_at', historyFiltroDesde+'T00:00:00');
+  if(historyFiltroHasta) query = query.lte('created_at', historyFiltroHasta+'T23:59:59');
+
+  const { data, error } = await query;
+  if(error || !data || data.length===0) return filtrosHtml + `<div style="font-size:.8rem;color:var(--ink-soft);">Sin cambios registrados con estos filtros.</div>`;
+
+  const filas = data.map(e=>{
+    const ts = new Date(e.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
     const nombre = e.personas ? `${e.personas.apellidos}, ${e.personas.nombre}` : '(alumno eliminado)';
     const seccionCode = e.personas ? ''+e.personas.compania+e.personas.seccion : '';
     return `<div class="history-row"><span class="ts">${ts}</span> — ${seccionCode} · <b>${nombre}</b> · ${e.tipo} ${DAY_NAMES[e.dia]}: ${e.valor_anterior===null?'—':(e.valor_anterior?'Sí':'No')} → ${e.valor_nuevo?'Sí':'No'} <span class="ts">(${e.actor})</span></div>`;
-  }).join('') + '</div>';
+  }).join('');
+
+  const verMasBtn = data.length>=historyLimit ? `<div style="margin-top:8px;"><button class="small-btn" onclick="verMasHistorial()">Ver más</button></div>` : '';
+  return filtrosHtml + `<div>${filas}</div>${verMasBtn}`;
 }
 
 /* ---- Excel ---- */
@@ -2218,7 +2259,7 @@ async function companyBlockHtml(c, secciones, apuntesMap, confirmMap){
     if(managedSections.has(sec.code)) details += sectionManagePanel(sec);
   });
 
-  const historyHtml = historyOpen ? await historyPanel() : '';
+  const historyHtml = historyOpen ? await historyPanel(secciones) : '';
 
   return `<div class="company-block">
     <div class="company-head"><h4>${c}ª Compañía</h4><span class="chev">${SECTIONS_PER_COMPANY} secciones</span></div>
