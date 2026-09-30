@@ -88,6 +88,8 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .fixed-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
 .fixed-pill{border:1px solid var(--line);padding:8px 12px;font-size:.78rem;color:var(--ink-soft);display:flex;align-items:center;gap:6px;}
 .fixed-pill b{color:var(--ink);}
+.aviso-desayuno-domingo{margin:10px 0;padding:10px 14px;text-align:center;font-weight:700;font-size:.88rem;border-radius:6px;color:#3a2f05;animation:avisoParpadeo 1.4s ease-in-out infinite;}
+@keyframes avisoParpadeo{0%,100%{background:#f4d35e;box-shadow:0 0 0 0 rgba(244,211,94,.7);}50%{background:#fff3c4;box-shadow:0 0 0 6px rgba(244,211,94,0);}}
 h3.section-title{font-size:.95rem;margin:26px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line);}
 .table-scroll{overflow-x:auto;border:1px solid var(--line);}
 .table-scroll.plazo-abierto{border:2px solid var(--olive);}
@@ -320,6 +322,7 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
       <div id="alumno-dia-resumen" style="margin-bottom:22px;font-size:1.15rem;"></div>
       <h3 class="section-title">Comidas de la semana — desayuno, comida y cena</h3>
       <div id="alumno-view-toggle"></div>
+      <div id="alumno-desayuno-domingo-aviso"></div>
       <div class="table-scroll" id="alumno-table-scroll"><table class="roster" id="alumno-table"></table></div>
       <h3 class="section-title" style="margin-top:18px;">Próximas comidas</h3>
       <div class="summary-grid" id="alumno-summary"></div>
@@ -1068,7 +1071,7 @@ async function fetchPernoctaSabadoAgmSetCompania(compania, semanaKey){
 function getVal(personaId, col, apuntesMap){
   const key = personaId+'|'+col.type+'|'+col.day;
   if(apuntesMap.hasOwnProperty(key)) return apuntesMap[key];
-  return true; // sin confirmar -> por defecto se asume que está en la AGM (comidas obligatorias no cambian, ya eran true)
+  return true; // sin confirmar -> por defecto se asume que está en la AGM (a propósito: fomenta que entren a desmarcar lo que no quieran)
 }
 async function setVal(personaId, col, val){
   const { error } = await sb.from('apuntes').upsert(
@@ -1120,6 +1123,11 @@ async function renderAlumno(){
   const apuntesMap = await fetchApuntesMap(personaIds, ACTIVE_WEEK.key);
   PERNOCTA_SABADO_FUERA = await fetchPernoctaSabadoAgmSetSeccion(persona.compania, persona.seccion, ACTIVE_WEEK.key);
   const open = weekIsOpen(ACTIVE_WEEK, horaCorte);
+  const tienePernoctaFuera = PERNOCTA_SABADO_FUERA.has(persona.id);
+  document.getElementById('alumno-desayuno-domingo-aviso').innerHTML = `
+    <div class="aviso-desayuno-domingo">${tienePernoctaFuera
+      ? '🌙 Tienes pernocta FUERA el sábado — ¿quieres quitar el desayuno del domingo?'
+      : '🍳 Si quieres desmarcar el desayuno del domingo, primero tienes que marcar pernocta FUERA el sábado'}</div>`;
 
   const { data: confRow } = await sb.from('confirmaciones').select('confirmado,confirmado_en').eq('persona_id', persona.id).eq('semana_inicio', ACTIVE_WEEK.key).maybeSingle();
   const confirmado = !!(confRow && confRow.confirmado);
