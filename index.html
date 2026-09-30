@@ -2027,7 +2027,8 @@ async function historyPanel(secciones){
     const ts = new Date(e.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
     const nombre = e.personas ? `${e.personas.apellidos}, ${e.personas.nombre}` : '(alumno eliminado)';
     const seccionCode = e.personas ? ''+e.personas.compania+e.personas.seccion : '';
-    return `<div class="history-row"><span class="ts">${ts}</span> — ${seccionCode} · <b>${nombre}</b> · ${e.tipo} ${DAY_NAMES[e.dia]}: ${e.valor_anterior===null?'—':(e.valor_anterior?'Sí':'No')} → ${e.valor_nuevo?'Sí':'No'} <span class="ts">(${e.actor})</span></div>`;
+    const valorFinal = `<b style="color:${e.valor_nuevo?'#2e7d32':'#8a2a2a'};">${e.valor_nuevo?'Sí':'No'}</b>`;
+    return `<div class="history-row"><span class="ts">${ts}</span> — ${seccionCode} · <b>${nombre}</b> · ${e.tipo} ${DAY_NAMES[e.dia]}: ${e.valor_anterior===null?'—':(e.valor_anterior?'Sí':'No')} → ${valorFinal} <span class="ts">(${e.actor})</span></div>`;
   }).join('');
 
   const verMasBtn = data.length>=historyLimit ? `<div style="margin-top:8px;"><button class="small-btn" onclick="verMasHistorial()">Ver más</button></div>` : '';
