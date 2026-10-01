@@ -89,6 +89,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .fixed-pill{border:1px solid var(--line);padding:8px 12px;font-size:.78rem;color:var(--ink-soft);display:flex;align-items:center;gap:6px;}
 .fixed-pill b{color:var(--ink);}
 .aviso-desayuno-domingo{margin:10px 0;padding:10px 14px;text-align:center;font-weight:700;font-size:.88rem;border-radius:6px;color:#3a2f05;animation:avisoParpadeo 1.4s ease-in-out infinite;}
+.aviso-desayuno-domingo.ok{color:#fff;background:#2e7d32;animation:none;box-shadow:none;}
 @keyframes avisoParpadeo{0%,100%{background:#f4d35e;box-shadow:0 0 0 0 rgba(244,211,94,.7);}50%{background:#fff3c4;box-shadow:0 0 0 6px rgba(244,211,94,0);}}
 h3.section-title{font-size:.95rem;margin:26px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line);}
 .table-scroll{overflow-x:auto;border:1px solid var(--line);}
@@ -536,6 +537,26 @@ var _favicon = document.querySelector("link[rel=icon]"); if(!_favicon){ _favicon
 const SUPABASE_URL = 'https://ihyrminylgtqwnwviopt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloeXJtaW55bGd0cXdud3Zpb3B0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODM3MjEsImV4cCI6MjEwNTU1OTcyMX0.RzkdVJHrH0kO9o0DEb7y-YiEBPYpWeYYuQwsJHYr_wg';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ================= Auto-recarga cuando hay versión nueva ================= */
+// Cada vez que se sube un index.html nuevo, hay que subir también un
+// version.txt con el MISMO texto que APP_VERSION de abajo (o cualquier
+// texto distinto al anterior) junto a él en el repo. La app comprueba ese
+// archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
+// se queda usando una versión vieja sin darse cuenta.
+const APP_VERSION = "2026-10-01T12:20";
+async function comprobarVersionNueva(){
+  try{
+    const r = await fetch('version.txt?t=' + Date.now(), { cache: 'no-store' });
+    if(!r.ok) return;
+    const v = (await r.text()).trim();
+    if(v && v !== APP_VERSION){
+      showToast('Hay una versión nueva de la app — recargando…');
+      setTimeout(()=>location.reload(), 1500);
+    }
+  }catch(e){ /* sin conexión o version.txt no existe todavía: no hacemos nada */ }
+}
+setInterval(comprobarVersionNueva, 120000);
 
 const COMPANIES = [11,12,13,6,7];
 const SECTIONS_PER_COMPANY = 4;
@@ -1124,10 +1145,16 @@ async function renderAlumno(){
   PERNOCTA_SABADO_FUERA = await fetchPernoctaSabadoAgmSetSeccion(persona.compania, persona.seccion, ACTIVE_WEEK.key);
   const open = weekIsOpen(ACTIVE_WEEK, horaCorte);
   const tienePernoctaFuera = PERNOCTA_SABADO_FUERA.has(persona.id);
-  document.getElementById('alumno-desayuno-domingo-aviso').innerHTML = `
-    <div class="aviso-desayuno-domingo">${tienePernoctaFuera
-      ? '🌙 Tienes pernocta FUERA el sábado — ¿quieres quitar el desayuno del domingo?'
-      : '🍳 Si quieres desmarcar el desayuno del domingo, primero tienes que marcar pernocta FUERA el sábado'}</div>`;
+  const desayunoDomingoMarcado = getVal(persona.id, {type:'desayuno', day:2}, apuntesMap);
+  let avisoDesayunoHtml;
+  if(!tienePernoctaFuera){
+    avisoDesayunoHtml = `<div class="aviso-desayuno-domingo">🍳 Si quieres desmarcar el desayuno del domingo, primero tienes que marcar pernocta FUERA el sábado</div>`;
+  } else if(desayunoDomingoMarcado){
+    avisoDesayunoHtml = `<div class="aviso-desayuno-domingo">🌙 Duermes FUERA el sábado y tienes marcado el desayuno del domingo — ¿quieres quitarlo?</div>`;
+  } else {
+    avisoDesayunoHtml = `<div class="aviso-desayuno-domingo ok">✅ Ya has revisado y quitado el desayuno del domingo al dormir fuera el sábado</div>`;
+  }
+  document.getElementById('alumno-desayuno-domingo-aviso').innerHTML = avisoDesayunoHtml;
 
   const { data: confRow } = await sb.from('confirmaciones').select('confirmado,confirmado_en').eq('persona_id', persona.id).eq('semana_inicio', ACTIVE_WEEK.key).maybeSingle();
   const confirmado = !!(confRow && confRow.confirmado);
