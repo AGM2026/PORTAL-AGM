@@ -544,7 +544,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-03T16:30";
+const APP_VERSION = "2026-10-03T16:45";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -1383,6 +1383,21 @@ async function deleteAviso(id){
   await renderAlumno();
 }
 async function onConfirmToggle(checked){
+  if(checked){
+    // Al confirmar se GUARDA tal cual lo que el alumno está viendo en su tabla (también lo que no tocó).
+    // Así lo confirmado queda fijo en la base de datos y ningún cambio de regla posterior puede alterarlo.
+    const id = CURRENT.persona.id;
+    const cols = COLS();
+    const map = await fetchApuntesMap([id], ACTIVE_WEEK.key);
+    const filas = cols.filter(c=>!map.hasOwnProperty(id+'|'+c.type+'|'+c.day)).map(c=>({
+      persona_id:id, semana_inicio:ACTIVE_WEEK.key, tipo:c.type, dia:c.day,
+      obligatoria: effectiveObligatorio(id,c), valor: !!getVal(id,c,map)
+    }));
+    if(filas.length){
+      const { error } = await sb.from('apuntes').upsert(filas, { onConflict:'persona_id,semana_inicio,tipo,dia', ignoreDuplicates:true });
+      if(error){ showToast('No se pudo guardar la confirmación: '+error.message); await renderAlumno(); return; }
+    }
+  }
   await setConfirm(CURRENT.persona.id, checked);
   await renderAlumno();
 }
