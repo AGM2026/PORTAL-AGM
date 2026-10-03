@@ -544,7 +544,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-03T16:15";
+const APP_VERSION = "2026-10-03T16:30";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -1125,7 +1125,7 @@ async function fetchPernoctaSabadoAgmSetCompania(compania, semanaKey){
 // ya no vienen marcadas por defecto: cada uno marca las que vaya a hacer.
 // Las semanas anteriores mantienen el comportamiento antiguo para no alterar
 // recuentos que ya se pasaron a cocina.
-const SEMANA_SIN_DEFECTO_DESDE = '2026-10-02';   // desde aquí, lo no tocado NO sale marcado (salvo obligatorias)
+const SEMANA_SIN_DEFECTO_DESDE = '2026-10-09';   // desde aquí, lo no tocado NO sale marcado (salvo obligatorias)
 const SEMANA_DOMINGO_LIBRE_DESDE = '2026-10-09'; // desde aquí, el desayuno del domingo deja de ser obligatorio
 function getVal(personaId, col, apuntesMap){
   const key = personaId+'|'+col.type+'|'+col.day;
