@@ -544,7 +544,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-03T16:45";
+const APP_VERSION = "2026-10-03T17:55";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -2859,7 +2859,94 @@ async function onAdminPernoctaContacto(personaId, dia){
   await setPernocta(personaId, dia, false, addrInput?addrInput.value:null, telInput?telInput.value:null);
   await renderAdminPernoctas();
 }
+/* ---- Comprobar un Excel de PERNOCTAS contra la app ---- */
+let EXCEL_CHECK_PERN_HTML = '';
+function pintarExcelCheckPern(){ const el = document.getElementById('excel-check-pern-result'); if(el) el.innerHTML = EXCEL_CHECK_PERN_HTML; }
+async function comprobarExcelPernoctas(input){
+  const file = input.files && input.files[0];
+  input.value = '';
+  if(!file) return;
+  EXCEL_CHECK_PERN_HTML = '<p class="small-note">Comprobando…</p>'; pintarExcelCheckPern();
+  try{
+    const wb = XLSX.read(await file.arrayBuffer(), { type:'array' });
+    const c = CURRENT.compania;
+    const secciones = await fetchCompanySections(c);
+    const allIds = secciones.flatMap(s=>s.people.map(p=>p.id));
+    const pernMap = await fetchPernoctaMapAdmin(allIds, ACTIVE_WEEK.key);
+    const valFor = (id,dia)=>{ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true; };
+    const nDias = pernoctaDiasCount();
+    const norm = t => String(t==null?'':t).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+    const cabeceraApp = Array.from({length:nDias},(_,d)=>norm(DAY_NAMES[d]+' '+fmt(ACTIVE_WEEK.days[d])));
+    const difs = [], totDifs = [], avisos = [];
+    let personas = 0, casillas = 0;
+    let exportadoTxt = '';
+    if(wb.Sheets['Totales']){
+      XLSX.utils.sheet_to_json(wb.Sheets['Totales'], { header:1, defval:'', raw:false })
+        .forEach(r=>r.forEach(v=>{ if(String(v).startsWith('Exportado el')) exportadoTxt = String(v); }));
+    }
+    secciones.forEach(sec=>{
+      const ws = wb.Sheets['Sección '+sec.code];
+      if(!ws){ avisos.push(`Falta la hoja "Sección ${sec.code}" en el Excel.`); return; }
+      const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'', raw:false });
+      const cab = (rows[0]||[]).slice(1, nDias+1).map(norm);
+      if(cab.length!==nDias || cab.some((h,i)=>h!==cabeceraApp[i])){
+        avisos.push(`La hoja "Sección ${sec.code}" es de otra semana o no es de pernoctas: elige arriba la semana del Excel y vuelve a comprobar.`);
+        return;
+      }
+      const porNombre = new Map(sec.people.map(p=>[norm(p.apellidos+', '+p.nombre), p]));
+      const vistos = new Set();
+      const cuentaAgm = Array(nDias).fill(0);
+      let filaTotal = null;
+      for(let r=1; r<rows.length; r++){
+        const nombre = rows[r][0];
+        if(!norm(nombre)) continue;
+        if(norm(nombre)==='total'){ filaTotal = rows[r]; break; }
+        const p = porNombre.get(norm(nombre));
+        // aunque no esté en la app, sus celdas cuentan para comprobar el total de la hoja
+        for(let d=0; d<nDias; d++){ if(norm(rows[r][d+1])==='agm') cuentaAgm[d]++; }
+        if(!p){ avisos.push(`Sección ${sec.code}: "${nombre}" está en el Excel pero no en la app.`); continue; }
+        vistos.add(p.id); personas++;
+        for(let d=0; d<nDias; d++){
+          const celda = norm(rows[r][d+1]);
+          const enExcel = celda==='agm' ? 'AGM' : (celda==='x' || celda==='fuera') ? 'FUERA' : (celda ? `"${rows[r][d+1]}"` : '(vacío)');
+          const enApp = valFor(p.id,d) ? 'AGM' : 'FUERA';
+          casillas++;
+          if(enExcel!==enApp) difs.push({ sec:sec.code, nombre:p.apellidos+', '+p.nombre, dia:DAY_NAMES[d]+' '+fmt(ACTIVE_WEEK.days[d]), enExcel, enApp });
+        }
+      }
+      sec.people.forEach(p=>{ if(!vistos.has(p.id)) avisos.push(`Sección ${sec.code}: ${p.apellidos}, ${p.nombre} está en la app pero no en el Excel.`); });
+      if(filaTotal){
+        for(let d=0; d<nDias; d++){
+          const t = String(filaTotal[d+1]).split('/')[0].trim();
+          if(t!=='' && parseInt(t,10)!==cuentaAgm[d]) totDifs.push(`Sección ${sec.code} · ${DAY_NAMES[d]} ${fmt(ACTIVE_WEEK.days[d])}: el total dice ${t} en la AGM pero en la columna hay ${cuentaAgm[d]} "AGM".`);
+        }
+      }
+    });
+    let html = exportadoTxt ? `<p class="small-note">${escHtml(exportadoTxt)} · comparado con la base de datos de ahora mismo</p>` : `<p class="small-note">Este Excel no trae hora de exportación (es de una versión anterior) · comparado con la base de datos de ahora mismo</p>`;
+    if(!difs.length && !totDifs.length && !avisos.length){
+      html += `<div class="notice" style="border-color:#2e7d32;"><span>✅ <b>El Excel de pernoctas coincide al 100% con la app.</b> ${personas} personas y ${casillas} casillas revisadas, y todos los totales cuadran.</span></div>`;
+    } else {
+      if(avisos.length) html += `<div class="notice closed"><span>⚠️ ${avisos.map(escHtml).join('<br>')}</span></div>`;
+      if(totDifs.length) html += `<div class="notice closed"><span><b>❌ Totales que NO cuadran (${totDifs.length}):</b><br>${totDifs.map(escHtml).join('<br>')}</span></div>`;
+      if(difs.length){
+        html += `<div class="notice closed" style="display:block;"><b>❌ Personas/días distintos entre el Excel y la app (${difs.length}):</b>
+          <div class="table-scroll"><table class="roster" style="margin-top:6px;"><thead><tr><th class="name-cell">Persona</th><th>Sección</th><th>Día</th><th>Excel</th><th>App</th></tr></thead><tbody>
+          ${difs.map(d=>`<tr><td class="name-cell">${escHtml(d.nombre)}</td><td>${d.sec}</td><td>${escHtml(d.dia)}</td><td>${escHtml(d.enExcel)}</td><td>${d.enApp}</td></tr>`).join('')}
+          </tbody></table></div>
+          <p class="small-note">Si alguien cambió algo después de exportar, también sale aquí: en ese caso vuelve a exportar.</p></div>`;
+      }
+      if(personas) html += `<p class="small-note">${personas} personas y ${casillas} casillas revisadas.</p>`;
+    }
+    EXCEL_CHECK_PERN_HTML = html;
+  }catch(e){
+    EXCEL_CHECK_PERN_HTML = `<div class="notice closed"><span>No se pudo leer el Excel: ${escHtml(e.message||e)}</span></div>`;
+  }
+  pintarExcelCheckPern();
+}
 async function exportPernoctaExcel(){
+  // Nunca sacar un listado con una versión vieja de la app: si hay nueva, recarga y no exporta.
+  if(await comprobarVersionNueva()) return;
+  const exportadoEn = new Date();
   const c = CURRENT.compania;
   const secciones = await fetchCompanySections(c);
   const allIds = secciones.flatMap(s=>s.people.map(p=>p.id));
@@ -2900,7 +2987,19 @@ async function exportPernoctaExcel(){
   const grandRow = [`TOTAL ${c}ª COMPAÑÍA`];
   for(let d=0; d<pernoctaDiasCount(); d++){ const n = allIds.filter(id=>valFor(id,d)).length; grandRow.push(n+'/'+allIds.length); }
   totRows.push(grandRow);
+  totRows.push([]);
+  totRows.push([`Exportado el ${exportadoEn.toLocaleString('es-ES')} · versión ${APP_VERSION} · los totales cuentan quién duerme en la AGM`]);
   const wsTot = XLSX.utils.aoa_to_sheet(totRows);
+  // Totales como FÓRMULAS: cuentan las "AGM" de cada hoja de sección, así siempre cuadran aunque se edite a mano.
+  for(let d=0; d<pernoctaDiasCount(); d++){
+    const col = XLSX.utils.encode_col(d+1);
+    const partes = secciones.map((sec,si)=>{
+      const rango = `'Sección ${sec.code}'!${col}2:${col}${sec.people.length+1}`;
+      wsTot[XLSX.utils.encode_cell({r:si+1, c:d+1})] = { t:'s', v: totRows[si+1][d+1], f:`COUNTIF(${rango},"AGM")&"/${sec.people.length}"` };
+      return `COUNTIF(${rango},"AGM")`;
+    });
+    wsTot[XLSX.utils.encode_cell({r:secciones.length+1, c:d+1})] = { t:'s', v: grandRow[d+1], f:`(${partes.join('+')})&"/${allIds.length}"` };
+  }
   wsTot['!cols'] = [{wch:22}, {wch:13},{wch:13},{wch:13}];
   xlsxStyleSheet(wsTot, secciones.length, totHeader.length);
   XLSX.utils.book_append_sheet(wb, wsTot, 'Totales');
@@ -2921,12 +3020,18 @@ async function exportPernoctaExcel(){
     totalRow.push('', '');
     rows.push(totalRow);
     const ws = XLSX.utils.aoa_to_sheet(rows);
+    const nS = sec.people.length;
+    for(let d=0; d<pernoctaDiasCount(); d++){
+      const col = XLSX.utils.encode_col(d+1);
+      ws[XLSX.utils.encode_cell({r:nS+1, c:d+1})] = { t:'s', v: totalRow[d+1], f:`COUNTIF(${col}2:${col}${nS+1},"AGM")&"/${nS}"` };
+    }
     ws['!cols'] = [{wch:26}, {wch:13},{wch:13}, {wch:16}, {wch:40}];
     xlsxStyleSheet(ws, sec.people.length, header.length, (rIdx, cIdx)=> cIdx < pernoctaDiasCount() && pernoctaObligatoria(sec.people[rIdx].id, cIdx));
     XLSX.utils.book_append_sheet(wb, ws, 'Sección '+sec.code);
   });
 
-  const filename = `PortalAGM_Pernoctas_${c}Cia_${fmt(ACTIVE_WEEK.days[0]).replace('/','-')}_a_${fmt(ACTIVE_WEEK.days[6]).replace('/','-')}.xlsx`;
+  const sello = String(exportadoEn.getDate()).padStart(2,'0')+'-'+String(exportadoEn.getMonth()+1).padStart(2,'0')+'_'+String(exportadoEn.getHours()).padStart(2,'0')+'h'+String(exportadoEn.getMinutes()).padStart(2,'0');
+  const filename = `PortalAGM_Pernoctas_${c}Cia_${fmt(ACTIVE_WEEK.days[0]).replace('/','-')}_a_${fmt(ACTIVE_WEEK.days[6]).replace('/','-')}_exportado_${sello}.xlsx`;
   XLSX.writeFile(wb, filename);
 }
 async function _renderAdminPernoctasImpl(){
@@ -2990,6 +3095,11 @@ async function _renderAdminPernoctasImpl(){
       <div class="panel-row">
         <div class="switch-label">Exportar la tabla de la ${c}ª Compañía (semana seleccionada)<span class="sub2">Una hoja por sección, más totales y direcciones — lista para imprimir</span></div>
         <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="exportPernoctaExcel()">📄 Exportar a Excel</button>
+      </div>
+      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
+        <div class="switch-label">Comprobar un Excel de pernoctas contra la app<span class="sub2">Sube un Excel de pernoctas exportado (aunque lo hayas abierto en Google Sheets) y la app lo compara persona por persona y día por día con lo que hay ahora en la base de datos, y revisa que cada total cuadra. Elige antes la misma semana que el Excel.</span></div>
+        <label class="small-btn" style="margin-top:8px;align-self:flex-start;cursor:pointer;">🔍 Elegir Excel y comprobar<input type="file" accept=".xlsx,.xls" style="display:none;" onchange="comprobarExcelPernoctas(this)"></label>
+        <div id="excel-check-pern-result" style="margin-top:8px;">${EXCEL_CHECK_PERN_HTML}</div>
       </div>
       <div class="panel-row">
         <div class="switch-label">Confirmar a todos<span class="sub2">Por si se cerró el plazo y hay quien no llegó a confirmar dónde duerme</span></div>
