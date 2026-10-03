@@ -127,6 +127,16 @@ tr.intol-row td.name-cell{background:rgba(211,84,0,.20) !important;}
 .col-today{background:rgba(140,140,140,.18) !important;}
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0 6px;}
 .stat-card{border:1px solid var(--line);background:var(--card);padding:12px 14px;}
+.cuartel-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:12px 0;}
+.cuartel-bar select,.cuartel-bar input{padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;}
+.cuartel-bar .field{margin:0;}
+.cuartel-card{border:1px solid var(--line);background:var(--card);padding:12px 14px;margin-bottom:10px;}
+.cuartel-card h4{margin:0 0 6px;font-size:.95rem;}
+.cuartel-card .big{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--olive);}
+body.mod-pernoctas .cuartel-card .big{color:var(--slate);}
+.cuartel-card details{margin-top:8px;font-size:.82rem;}
+.cuartel-card summary{cursor:pointer;font-weight:700;}
+.cuartel-dias{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px;}
 .stat-card .num{font-family:'JetBrains Mono',monospace;font-size:1.4rem;font-weight:700;color:var(--olive);}
 .stat-card .lbl{font-size:.72rem;color:var(--ink-soft);margin-top:2px;}
 .company-block{margin-bottom:26px;}
@@ -247,7 +257,7 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
 
       <form id="auth-login" autocomplete="on" onsubmit="event.preventDefault(); doLogin();">
         <p class="desc">Para alumnos y administradores ya registrados.</p>
-        <div class="field"><label>Email</label><input type="email" id="login-email" name="email" autocomplete="username"></div>
+        <div class="field"><label>Email (o usuario)</label><input type="text" inputmode="email" autocapitalize="none" id="login-email" name="email" autocomplete="username"></div>
         <div class="field">
           <label>Contraseña</label>
           <div class="pw-field">
@@ -495,6 +505,22 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
   </div>
 
   <!-- SUPERADMIN -->
+  <!-- SERVICIO DE CUARTEL (solo lectura) -->
+  <div id="screen-cuartel" class="hidden">
+    <div class="masthead">
+      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="cuartel-subtitle">Servicio de cuartel</div></div></div>
+      <div class="who"><div class="name">🪖 Servicio de cuartel</div><button class="logout" onclick="doLogout()">Salir</button></div>
+    </div>
+    <div class="module-switch">
+      <button class="module-btn" id="cuartel-mod-comidas-btn" onclick="setCuartelModulo('comidas')">🍽️ Comidas</button>
+      <button class="module-btn" id="cuartel-mod-pernoctas-btn" onclick="setCuartelModulo('pernoctas')">🛏️ Pernoctas</button>
+    </div>
+    <div id="cuartel-week-select"></div>
+    <div id="cuartel-notice"></div>
+    <div id="cuartel-controles"></div>
+    <div id="cuartel-vista"></div>
+  </div>
+
   <div id="screen-superadmin" class="hidden">
     <div class="masthead">
       <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub">👑 Panel superadmin</div></div></div>
@@ -544,7 +570,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-03T17:55";
+const APP_VERSION = "2026-10-03T18:45";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -769,7 +795,7 @@ function showToast(msg){
   document.body.appendChild(t); setTimeout(()=>t.remove(), 3800);
 }
 function showScreen(id){
-  ['screen-loading','screen-login','screen-alumno','screen-admin','screen-superadmin','screen-reset-password'].forEach(s=>{
+  ['screen-loading','screen-login','screen-alumno','screen-admin','screen-superadmin','screen-reset-password','screen-cuartel'].forEach(s=>{
     document.getElementById(s).classList.toggle('hidden', s!==id);
   });
 }
@@ -833,6 +859,8 @@ async function routeAfterAuth(userId){
     const { data: personaRow } = await sb.from('personas').select('*').eq('auth_user_id', userId).maybeSingle();
     if(adminRow){ startPresenceHeartbeat(); await enterAdmin(adminRow.compania, personaRow || null, !!adminRow.is_superadmin); return; }
     if(personaRow){ startPresenceHeartbeat(); await enterAlumno(personaRow, null); return; }
+    const { data: cuartelRow } = await sb.from('cuarteles').select('compania').eq('auth_user_id', userId).maybeSingle();
+    if(cuartelRow){ await enterCuartel(cuartelRow.compania); return; }
     const { data: solRow } = await sb.from('admin_solicitudes').select('estado').eq('auth_user_id', userId).order('creado_en',{ascending:false}).maybeSingle();
     if(solRow && solRow.estado==='pendiente'){
       showScreen('screen-login');
@@ -1003,11 +1031,12 @@ async function doRegister(){
 async function doLogin(){
   const btn = document.getElementById('login-btn'); btn.disabled = true;
   const err = document.getElementById('login-error'); err.classList.add('hidden');
-  const email = document.getElementById('login-email').value.trim();
+  let email = document.getElementById('login-email').value.trim();
+  if(email && !email.includes('@')) email = email.toLowerCase() + '@portalagm.es'; // usuarios sin email, ej. "cuartel"
   const password = document.getElementById('login-password').value;
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   btn.disabled = false;
-  if(error){ err.textContent = 'Email o contraseña incorrectos.'; err.classList.remove('hidden'); return; }
+  if(error){ err.textContent = 'Usuario/email o contraseña incorrectos.'; err.classList.remove('hidden'); return; }
   await routeAfterAuth(data.user.id);
 }
 async function doLogout(){
@@ -1158,6 +1187,233 @@ function serializarRender(fn){
 }
 const renderAdmin = serializarRender(()=>_renderAdminImpl());
 const renderAdminPernoctas = serializarRender(()=>_renderAdminPernoctasImpl());
+
+/* ================= SERVICIO DE CUARTEL (solo lectura) ================= */
+// El cuartel solo LEE: en esta pantalla no hay ninguna llamada que guarde nada,
+// y además en la base de datos solo tiene permisos de lectura (patch 42).
+let CUARTEL = { modulo:'comidas', vista:'dia', dia:null, seccion:'todas', busqueda:'', data:null };
+const cuartelNorm = t => String(t==null?'':t).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+async function enterCuartel(compania){
+  const { data: companiaInfo } = await sb.from('companias').select('*').eq('numero', compania).single();
+  CURRENT = { mode:'cuartel', compania, companiaInfo };
+  await fetchCortesEspeciales(compania);
+  await fetchPernoctaForzarAgm(compania);
+  await fetchComidaDesbloqueoDias(compania);
+  setActiveWeek(semanaEnCursoIndex());
+  document.getElementById('cuartel-subtitle').textContent = `Servicio de cuartel · ${compania}ª Compañía · versión ${APP_VERSION}`;
+  showScreen('screen-cuartel');
+  await setCuartelModulo('comidas');
+}
+async function setCuartelModulo(m){
+  CUARTEL.modulo = m; CUARTEL.vista = 'dia'; CUARTEL.dia = null;
+  document.body.classList.toggle('mod-pernoctas', m==='pernoctas');
+  document.body.classList.remove('mod-servicios');
+  document.getElementById('cuartel-mod-comidas-btn').classList.toggle('active', m==='comidas');
+  document.getElementById('cuartel-mod-pernoctas-btn').classList.toggle('active', m==='pernoctas');
+  await cargarCuartel();
+}
+// El cuartel solo ve la semana EN CURSO (la que contiene el día de hoy), sin selector.
+function semanaEnCursoIndex(){
+  const hoy = ymd(new Date());
+  const i = WEEKS.findIndex(w=>w.days.some(d=>ymd(d)===hoy));
+  return i>=0 ? i : defaultWeekIndex();
+}
+async function cargarCuartel(){
+  const c = CURRENT.compania;
+  const hora = CURRENT.companiaInfo ? CURRENT.companiaInfo.hora_corte : '10:00:00';
+  const esCom = CUARTEL.modulo==='comidas';
+  setActiveWeek(semanaEnCursoIndex());
+  const nP = pernoctaDiasCount();
+  document.getElementById('cuartel-week-select').innerHTML = `<h3 class="section-title" style="margin-top:14px;">${esCom
+    ? `Comidas del viernes ${fmt(ACTIVE_WEEK.days[0])} al jueves ${fmt(ACTIVE_WEEK.days[6])}`
+    : `Pernoctas del fin de semana: noches del ${DAY_NAMES_FULL[0]} ${fmt(ACTIVE_WEEK.days[0])} al ${DAY_NAMES_FULL[nP-1]} ${fmt(ACTIVE_WEEK.days[nP-1])}`}</h3>`;
+  const abierta = weekIsOpen(ACTIVE_WEEK, hora);
+  document.getElementById('cuartel-notice').innerHTML = `<div class="notice"><span>🔒 Solo consulta · ${abierta ? `los alumnos aún pueden cambiar sus ${esCom?'comidas':'pernoctas'} hasta el <b>${fmtCutoff(ACTIVE_WEEK, hora)}</b>` : 'plazo cerrado: estos datos ya son los definitivos (salvo cambios del admin)'}</span></div>`;
+  document.getElementById('cuartel-vista').innerHTML = '<p class="small-note">Cargando…</p>';
+  try{
+    const secciones = await fetchCompanySections(c);
+    const ids = secciones.flatMap(s=>s.people.map(p=>p.id));
+    const data = { secciones, key: ACTIVE_WEEK.key };
+    if(esCom){
+      const apuntesMap = await fetchApuntesMap(ids, ACTIVE_WEEK.key);
+      PERNOCTA_SABADO_FUERA = await fetchPernoctaSabadoAgmSetCompania(c, ACTIVE_WEEK.key);
+      data.cols = COLS();
+      data.V = {};
+      secciones.forEach(sec=>sec.people.forEach(p=>data.cols.forEach(col=>{ data.V[p.id+'|'+col.type+'|'+col.day] = !!getVal(p.id,col,apuntesMap); })));
+    } else {
+      data.pernMap = await fetchPernoctaMapAdmin(ids, ACTIVE_WEEK.key);
+      data.nDias = pernoctaDiasCount();
+    }
+    CUARTEL.data = data;
+    if(CUARTEL.dia===null){
+      const hoy = diaDeHoyEnSemana(ACTIVE_WEEK);
+      const max = esCom ? 7 : data.nDias;
+      CUARTEL.dia = (hoy!==null && hoy<max) ? hoy : 0;
+    }
+  }catch(e){
+    document.getElementById('cuartel-vista').innerHTML = `<div class="notice closed"><span>No se pudieron cargar los datos: ${escHtml(e.message||e)}</span></div>`;
+    return;
+  }
+  pintarCuartel();
+}
+function onCuartelVista(v){ CUARTEL.vista = v; if(v==='buscar') CUARTEL.seccion = 'todas'; pintarCuartel(); }
+function onCuartelDia(d){ CUARTEL.dia = d; pintarCuartel(); }
+function onCuartelSeccion(v){ CUARTEL.seccion = v; if(CUARTEL.vista==='buscar') pintarBusquedaCuartel(); else pintarCuartel(); }
+function onCuartelBusqueda(v){ CUARTEL.busqueda = v; pintarBusquedaCuartel(); }
+function cuartelExportar(){ return CUARTEL.modulo==='comidas' ? exportCompanyExcel() : exportPernoctaExcel(); }
+
+// Helpers de datos
+const cMarca = (id,col)=> CUARTEL.data.V[id+'|'+col.type+'|'+col.day];
+const cPernVal = (id,d)=>{ const k=id+'|'+d; const m=CUARTEL.data.pernMap; return m.hasOwnProperty(k)?m[k].duerme_agm:true; };
+function cPernContacto(id){
+  const m = CUARTEL.data.pernMap; let tel='', dir='';
+  for(let d=0; d<CUARTEL.data.nDias; d++){ const k=id+'|'+d; if(m.hasOwnProperty(k) && !m[k].duerme_agm){ tel = tel || (m[k].telefono||''); dir = dir || (m[k].direccion||''); } }
+  return { tel, dir };
+}
+const tipoNombre = t => t==='desayuno'?'Desayuno':t==='comida'?'Comida':'Cena';
+function seccionSelectHtml(conTodas){
+  const opts = (conTodas?['<option value="todas">Todas las secciones</option>']:[]).concat(
+    CUARTEL.data.secciones.map(sec=>`<option value="${sec.code}" ${CUARTEL.seccion===sec.code?'selected':''}>Sección ${sec.code}</option>`));
+  return `<div class="field"><label>Sección</label><select onchange="onCuartelSeccion(this.value)">${opts.join('')}</select></div>`;
+}
+function listaNombresHtml(arr){ return arr.length ? arr.map(p=>nameCellHtml(p)).join('<br>') : '<span style="color:var(--ink-soft)">Nadie</span>'; }
+
+function pintarCuartel(){
+  const esCom = CUARTEL.modulo==='comidas';
+  const vistas = esCom
+    ? [['dia','📊 Totales por comida (día a día)'],['seccion','🏷️ Totales por sección'],['buscar','🔎 Buscar persona']]
+    : [['dia','📊 Totales por día'],['seccion','🏷️ Totales por sección'],['buscar','🔎 Buscar persona']];
+  document.getElementById('cuartel-controles').innerHTML = `
+    <div class="cuartel-bar">
+      <div class="field"><label>Ver</label><select onchange="onCuartelVista(this.value)">${vistas.map(([v,t])=>`<option value="${v}" ${CUARTEL.vista===v?'selected':''}>${t}</option>`).join('')}</select></div>
+      <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="cuartelExportar()">📄 Exportar a Excel</button>
+    </div>`;
+  const el = document.getElementById('cuartel-vista');
+  if(CUARTEL.vista==='buscar'){
+    if(CUARTEL.seccion!=='todas' && !CUARTEL.data.secciones.some(s=>s.code===CUARTEL.seccion)) CUARTEL.seccion='todas';
+    el.innerHTML = `<div class="cuartel-bar">${seccionSelectHtml(true)}
+        <div class="field" style="flex:1;min-width:200px;"><label>Nombre o apellidos</label><input type="search" placeholder="Escribe para buscar…" value="${escHtml(CUARTEL.busqueda)}" oninput="onCuartelBusqueda(this.value)"></div>
+      </div><div id="cuartel-resultados"></div>`;
+    pintarBusquedaCuartel();
+    return;
+  }
+  if(CUARTEL.vista==='seccion'){
+    if(CUARTEL.seccion==='todas') CUARTEL.seccion = CUARTEL.data.secciones[0].code;
+    el.innerHTML = esCom ? cuartelComidasSeccionHtml() : cuartelPernoctasSeccionHtml();
+    return;
+  }
+  el.innerHTML = esCom ? cuartelComidasDiaHtml() : cuartelPernoctasDiaHtml();
+}
+
+/* --- COMIDAS --- */
+function cuartelComidasDiaHtml(){
+  const { secciones, cols } = CUARTEL.data;
+  const N = secciones.reduce((a,s)=>a+s.people.length,0);
+  const d = CUARTEL.dia;
+  let html = `<div class="cuartel-dias">${DAY_NAMES.map((dn,i)=>`<button class="small-btn${i===d?' active':''}" onclick="onCuartelDia(${i})">${dn} ${fmt(ACTIVE_WEEK.days[i])}</button>`).join('')}</div>`;
+  cols.filter(c=>c.day===d).forEach(col=>{
+    const total = secciones.reduce((a,s)=>a+s.people.filter(p=>cMarca(p.id,col)).length,0);
+    const filas = secciones.map(sec=>{
+      const si = sec.people.filter(p=>cMarca(p.id,col));
+      return `<tr><td class="name-cell">${sec.code}</td><td class="mono">${si.length}/${sec.people.length}</td></tr>`;
+    }).join('');
+    const quien = secciones.map(sec=>{
+      const si = sec.people.filter(p=>cMarca(p.id,col));
+      return `<div style="margin:6px 0;"><b>Sección ${sec.code} (${si.length})</b><br>${listaNombresHtml(si)}</div>`;
+    }).join('');
+    const intol = secciones.flatMap(s=>s.people).filter(p=>isIntol(p) && cMarca(p.id,col));
+    html += `<div class="cuartel-card">
+      <h4>${tipoNombre(col.type)} · ${DAY_NAMES_FULL[d]} ${fmt(ACTIVE_WEEK.days[d])}</h4>
+      <div class="big">${total}/${N}</div>
+      ${intol.length ? `<div style="font-size:.8rem;margin-top:4px;">🍽️⚠️ Con intolerancias: <b>${intol.length}</b> — ${intol.map(p=>escHtml(p.apellidos+', '+p.nombre)+' ('+escHtml(p.intolerancias.trim())+')').join(' · ')}</div>` : ''}
+      <div class="table-scroll"><table class="roster" style="margin-top:8px;min-width:0;"><thead><tr><th class="name-cell">Sección</th><th>Comen</th></tr></thead><tbody>${filas}</tbody></table></div>
+      <details><summary>Ver quién come</summary>${quien}</details>
+    </div>`;
+  });
+  return html;
+}
+function cuartelComidasSeccionHtml(){
+  const { secciones, cols } = CUARTEL.data;
+  let thead = '<thead><tr class="daynames"><th class="name-cell">Sección</th>'+cols.map(c=>`<th>${c.label}<span class="colhead-sub">${c.sub}</span></th>`).join('')+'</tr></thead>';
+  let rows = secciones.map(sec=>`<tr><td class="name-cell">${sec.code} (${sec.people.length})</td>${cols.map(c=>{ const n=sec.people.filter(p=>cMarca(p.id,c)).length; return `<td class="mono ${countCellClass(n,sec.people.length)}">${n}/${sec.people.length}</td>`; }).join('')}</tr>`).join('');
+  const todos = secciones.flatMap(s=>s.people);
+  const tot = `<tfoot><tr><td class="name-cell">TOTAL ${CURRENT.compania}ª CÍA (${todos.length})</td>${cols.map(c=>{ const n=todos.filter(p=>cMarca(p.id,c)).length; return `<td class="mono">${n}/${todos.length}</td>`; }).join('')}</tr></tfoot>`;
+  const sec = secciones.find(s=>s.code===CUARTEL.seccion) || secciones[0];
+  let det = '<thead><tr class="daynames"><th class="name-cell">'+sec.code+'</th>'+cols.map(c=>`<th>${c.label}<span class="colhead-sub">${c.sub}</span></th>`).join('')+'</tr></thead><tbody>';
+  sec.people.forEach(p=>{ det += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}</td>${cols.map(c=>{ const v=cMarca(p.id,c); return `<td><span class="${v?'mark-yes':'mark-no'}">${v?'✓':'—'}</span></td>`; }).join('')}</tr>`; });
+  det += `</tbody><tfoot><tr><td class="name-cell">Total</td>${cols.map(c=>{ const n=sec.people.filter(p=>cMarca(p.id,c)).length; return `<td class="mono">${n}/${sec.people.length}</td>`; }).join('')}</tr></tfoot>`;
+  return `<h3 class="section-title">Totales de la ${CURRENT.compania}ª por sección</h3>
+    <div class="table-scroll"><table class="roster">${thead}<tbody>${rows}</tbody>${tot}</table></div>
+    <div class="cuartel-bar" style="margin-top:16px;">${seccionSelectHtml(false)}</div>
+    <div class="table-scroll"><table class="roster">${det}</table></div>`;
+}
+
+/* --- PERNOCTAS --- */
+function cuartelPernoctasDiaHtml(){
+  const { secciones, nDias } = CUARTEL.data;
+  const N = secciones.reduce((a,s)=>a+s.people.length,0);
+  const d = Math.min(CUARTEL.dia, nDias-1);
+  let html = `<div class="cuartel-dias">${Array.from({length:nDias},(_,i)=>`<button class="small-btn${i===d?' active':''}" onclick="onCuartelDia(${i})">Noche del ${DAY_NAMES[i]} ${fmt(ACTIVE_WEEK.days[i])}</button>`).join('')}</div>`;
+  const agmTot = secciones.reduce((a,s)=>a+s.people.filter(p=>cPernVal(p.id,d)).length,0);
+  const filas = secciones.map(sec=>{ const a = sec.people.filter(p=>cPernVal(p.id,d)).length; return `<tr><td class="name-cell">${sec.code}</td><td class="mono">${a}/${sec.people.length}</td><td class="mono">${sec.people.length-a}</td></tr>`; }).join('');
+  const fuera = secciones.map(sec=>{
+    const f = sec.people.filter(p=>!cPernVal(p.id,d));
+    return `<div style="margin:6px 0;"><b>Sección ${sec.code} (${f.length})</b><br>${f.length ? f.map(p=>{ const k=cPernContacto(p.id); return `${escHtml(p.apellidos+', '+p.nombre)} — 📞 ${escHtml(k.tel||'sin teléfono')} · 📍 ${escHtml(k.dir||'sin dirección')}`; }).join('<br>') : '<span style="color:var(--ink-soft)">Nadie</span>'}</div>`;
+  }).join('');
+  const dentro = secciones.map(sec=>{ const a = sec.people.filter(p=>cPernVal(p.id,d)); return `<div style="margin:6px 0;"><b>Sección ${sec.code} (${a.length})</b><br>${listaNombresHtml(a)}</div>`; }).join('');
+  html += `<div class="cuartel-card">
+    <h4>Noche del ${DAY_NAMES_FULL[d]} ${fmt(ACTIVE_WEEK.days[d])}</h4>
+    <div class="big">${agmTot}/${N} <span style="font-size:.9rem;">en la AGM</span></div>
+    <div style="font-size:.85rem;">Fuera: <b>${N-agmTot}</b></div>
+    <div class="table-scroll"><table class="roster" style="margin-top:8px;min-width:0;"><thead><tr><th class="name-cell">Sección</th><th>AGM</th><th>Fuera</th></tr></thead><tbody>${filas}</tbody></table></div>
+    <details><summary>Ver quién duerme FUERA (con teléfono y dirección)</summary>${fuera}</details>
+    <details><summary>Ver quién duerme en la AGM</summary>${dentro}</details>
+  </div>`;
+  return html;
+}
+function cuartelPernoctasSeccionHtml(){
+  const { secciones, nDias } = CUARTEL.data;
+  const dias = Array.from({length:nDias},(_,i)=>i);
+  const thead = '<thead><tr class="daynames"><th class="name-cell">Sección</th>'+dias.map(d=>`<th>${DAY_NAMES[d]}<span class="colhead-sub">${fmt(ACTIVE_WEEK.days[d])} · AGM</span></th>`).join('')+'</tr></thead>';
+  const rows = secciones.map(sec=>`<tr><td class="name-cell">${sec.code} (${sec.people.length})</td>${dias.map(d=>{ const n=sec.people.filter(p=>cPernVal(p.id,d)).length; return `<td class="mono">${n}/${sec.people.length}</td>`; }).join('')}</tr>`).join('');
+  const todos = secciones.flatMap(s=>s.people);
+  const tot = `<tfoot><tr><td class="name-cell">TOTAL ${CURRENT.compania}ª CÍA (${todos.length})</td>${dias.map(d=>{ const n=todos.filter(p=>cPernVal(p.id,d)).length; return `<td class="mono">${n}/${todos.length}</td>`; }).join('')}</tr></tfoot>`;
+  const sec = secciones.find(s=>s.code===CUARTEL.seccion) || secciones[0];
+  let det = '<thead><tr class="daynames"><th class="name-cell">'+sec.code+'</th>'+dias.map(d=>`<th>${DAY_NAMES[d]}<span class="colhead-sub">${fmt(ACTIVE_WEEK.days[d])}</span></th>`).join('')+'<th>Teléfono</th><th>Dirección</th></tr></thead><tbody>';
+  sec.people.forEach(p=>{ const k=cPernContacto(p.id); det += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}</td>${dias.map(d=>{ const v=cPernVal(p.id,d); return `<td><span class="pernocta-badge ${v?'agm':'fuera'}">${v?'AGM':'FUERA'}</span></td>`; }).join('')}<td>${escHtml(k.tel)}</td><td>${escHtml(k.dir)}</td></tr>`; });
+  det += `</tbody><tfoot><tr><td class="name-cell">Total AGM</td>${dias.map(d=>{ const n=sec.people.filter(p=>cPernVal(p.id,d)).length; return `<td class="mono">${n}/${sec.people.length}</td>`; }).join('')}<td></td><td></td></tr></tfoot>`;
+  return `<h3 class="section-title">Quién duerme en la AGM, por sección</h3>
+    <div class="table-scroll"><table class="roster">${thead}<tbody>${rows}</tbody>${tot}</table></div>
+    <div class="cuartel-bar" style="margin-top:16px;">${seccionSelectHtml(false)}</div>
+    <div class="table-scroll"><table class="roster">${det}</table></div>`;
+}
+
+/* --- BUSCADOR (comidas y pernoctas) --- */
+function pintarBusquedaCuartel(){
+  const el = document.getElementById('cuartel-resultados'); if(!el) return;
+  const q = cuartelNorm(CUARTEL.busqueda);
+  const secs = CUARTEL.data.secciones.filter(s=>CUARTEL.seccion==='todas' || s.code===CUARTEL.seccion);
+  let gente = secs.flatMap(sec=>sec.people.map(p=>({p, sec})));
+  if(q) gente = gente.filter(({p})=>{ const a=cuartelNorm(p.apellidos+' '+p.nombre), b=cuartelNorm(p.nombre+' '+p.apellidos); return q.split(' ').every(w=>a.includes(w)||b.includes(w)); });
+  if(!q && CUARTEL.seccion==='todas'){ el.innerHTML = '<p class="small-note">Escribe un nombre o elige una sección.</p>'; return; }
+  if(!gente.length){ el.innerHTML = '<p class="small-note">No hay nadie con ese nombre.</p>'; return; }
+  const esCom = CUARTEL.modulo==='comidas';
+  el.innerHTML = `<p class="small-note">${gente.length} persona${gente.length===1?'':'s'}</p>` + gente.slice(0,60).map(({p,sec})=>{
+    let cuerpo;
+    if(esCom){
+      const cols = CUARTEL.data.cols;
+      cuerpo = `<div class="table-scroll"><table class="roster" style="min-width:0;"><thead><tr><th class="name-cell"></th>${DAY_NAMES.map((dn,i)=>`<th>${dn}<span class="colhead-sub">${fmt(ACTIVE_WEEK.days[i])}</span></th>`).join('')}</tr></thead><tbody>
+        ${['desayuno','comida','cena'].map(t=>`<tr><td class="name-cell">${tipoNombre(t)}</td>${DAY_NAMES.map((_,i)=>{ const col=cols.find(c=>c.type===t&&c.day===i); const v=cMarca(p.id,col); return `<td><span class="${v?'mark-yes':'mark-no'}">${v?'✓':'—'}</span></td>`; }).join('')}</tr>`).join('')}
+      </tbody></table></div>`;
+    } else {
+      const k = cPernContacto(p.id);
+      cuerpo = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">${Array.from({length:CUARTEL.data.nDias},(_,d)=>{ const v=cPernVal(p.id,d); return `<span class="pernocta-badge ${v?'agm':'fuera'}">${DAY_NAMES[d]} ${fmt(ACTIVE_WEEK.days[d])}: ${v?'AGM':'FUERA'}</span>`; }).join('')}</div>
+        ${(k.tel||k.dir) ? `<div style="font-size:.82rem;">📞 ${escHtml(k.tel||'sin teléfono')} · 📍 ${escHtml(k.dir||'sin dirección')}</div>` : ''}`;
+    }
+    return `<div class="cuartel-card"><h4>${nameCellHtml(p)} <span style="font-weight:400;color:var(--ink-soft);">· Sección ${sec.code}</span></h4>
+      ${isIntol(p) ? `<div style="font-size:.8rem;">🍽️⚠️ Intolerancias: ${escHtml(p.intolerancias.trim())}</div>` : ''}${cuerpo}</div>`;
+  }).join('') + (gente.length>60 ? '<p class="small-note">Hay más resultados: afina la búsqueda.</p>' : '');
+}
 /* ================= ALUMNO ================= */
 async function enterAlumno(persona, adminCompania, isSuperadmin){
   const { data: seccion } = await sb.from('personas').select('*').eq('compania', persona.compania).eq('seccion', persona.seccion).order('apellidos');
