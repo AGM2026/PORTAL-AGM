@@ -570,7 +570,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-03T18:45";
+const APP_VERSION = "2026-10-03T19:20";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -834,6 +834,35 @@ async function boot(){
     showToast('No se pudo cargar tu sesión. Prueba a recargar la página, o entra de nuevo con tu email y contraseña.');
   }
 }
+/* ---- Identificar el dispositivo (solo se usa para la cuenta del servicio de cuartel) ---- */
+function idDispositivo(){
+  try{
+    let id = localStorage.getItem('portalagm_device_id');
+    if(!id){ id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+Math.random().toString(16).slice(2)); localStorage.setItem('portalagm_device_id', id); }
+    return id;
+  }catch(e){
+    if(!window._deviceIdMem) window._deviceIdMem = 'mem-'+Date.now()+Math.random().toString(16).slice(2);
+    return window._deviceIdMem;
+  }
+}
+function describirDispositivo(){
+  const ua = navigator.userAgent || '';
+  let so = 'Otro';
+  if(/iPhone/i.test(ua)) so = 'iPhone';
+  else if(/iPad/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints>1)) so = 'iPad';
+  else if(/Android/i.test(ua)) so = /Mobile/i.test(ua) ? 'Android (móvil)' : 'Android (tablet)';
+  else if(/Windows/i.test(ua)) so = 'Windows (ordenador)';
+  else if(/Macintosh|Mac OS X/i.test(ua)) so = 'Mac (ordenador)';
+  else if(/Linux/i.test(ua)) so = 'Linux (ordenador)';
+  let nav = 'Navegador';
+  if(/SamsungBrowser/i.test(ua)) nav = 'Samsung Internet';
+  else if(/Edg\//i.test(ua)) nav = 'Edge';
+  else if(/OPR\/|Opera/i.test(ua)) nav = 'Opera';
+  else if(/Firefox|FxiOS/i.test(ua)) nav = 'Firefox';
+  else if(/CriOS|Chrome/i.test(ua)) nav = (navigator.brave ? 'Brave' : 'Chrome');
+  else if(/Safari/i.test(ua)) nav = 'Safari';
+  return so + ' · ' + nav;
+}
 function startPresenceHeartbeat(){
   if(window._presenceInterval) return;
   const ping = async ()=>{ try{ await sb.rpc('actualizar_conexion'); }catch(e){} };
@@ -1040,6 +1069,11 @@ async function doLogin(){
   await routeAfterAuth(data.user.id);
 }
 async function doLogout(){
+  if(CURRENT && CURRENT.mode==='cuartel'){
+    try{ await sb.rpc('cuartel_salir', { p_device_id: idDispositivo() }); }catch(e){}
+    try{ sessionStorage.removeItem('portalagm_cuartel_sesion'); }catch(e){}
+    CUARTEL.nombre = null;
+  }
   await sb.auth.signOut();
   CURRENT = null;
   showScreen('screen-login');
@@ -1202,7 +1236,72 @@ async function enterCuartel(compania){
   setActiveWeek(semanaEnCursoIndex());
   document.getElementById('cuartel-subtitle').textContent = `Servicio de cuartel · ${compania}ª Compañía · versión ${APP_VERSION}`;
   showScreen('screen-cuartel');
+  // Si en esta misma pestaña ya se identificó (p. ej. la app se ha recargado sola), no se vuelve a preguntar
+  let yaIdentificado = null;
+  try{ yaIdentificado = sessionStorage.getItem('portalagm_cuartel_sesion'); }catch(e){}
+  if(yaIdentificado){ await iniciarSesionCuartel(yaIdentificado); return; }
+  pedirNombreCuartel();
+}
+function pedirNombreCuartel(){
+  let ultimo = '';
+  try{ ultimo = localStorage.getItem('portalagm_cuartel_nombre') || ''; }catch(e){}
+  document.querySelector('#screen-cuartel .module-switch').classList.add('hidden');
+  ['cuartel-week-select','cuartel-notice','cuartel-controles'].forEach(id=>document.getElementById(id).innerHTML='');
+  document.getElementById('cuartel-vista').innerHTML = `
+    <div class="login-card" style="max-width:420px;margin:24px auto;">
+      <h3 style="margin-top:0;">🪖 ¿Quién está de servicio?</h3>
+      <p class="desc">Escribe tu empleo, nombre y apellidos. Queda registrado quién usa la cuenta del servicio de cuartel y desde qué dispositivo. Máximo 3 dispositivos a la vez.</p>
+      <form onsubmit="event.preventDefault(); confirmarNombreCuartel();">
+        <div class="field"><label>Empleo, nombre y apellidos</label><input type="text" id="cuartel-nombre" value="${escHtml(ultimo)}" placeholder="Ej.: CC García López, Juan" autocomplete="name"></div>
+        <button class="primary-btn" type="submit">Entrar</button>
+      </form>
+    </div>`;
+}
+async function confirmarNombreCuartel(){
+  const v = (document.getElementById('cuartel-nombre').value||'').trim();
+  if(v.length < 5){ showToast('Escribe tu empleo, nombre y apellidos.'); return; }
+  try{ localStorage.setItem('portalagm_cuartel_nombre', v); }catch(e){}
+  await iniciarSesionCuartel(v);
+}
+async function iniciarSesionCuartel(nombre){
+  let r = 'ok';
+  try{
+    const { data, error } = await sb.rpc('cuartel_entrar', { p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_nombre: nombre });
+    if(!error && data) r = data;
+  }catch(e){}
+  if(r==='lleno'){
+    await cerrarCuartelLocal('Ya hay 3 dispositivos conectados con la cuenta del servicio de cuartel. Que alguien pulse "Salir" en otro dispositivo, o espera unos minutos.');
+    return;
+  }
+  try{ sessionStorage.setItem('portalagm_cuartel_sesion', nombre); }catch(e){}
+  CUARTEL.nombre = nombre;
+  document.getElementById('cuartel-subtitle').textContent = `Servicio de cuartel · ${CURRENT.compania}ª Cía · de servicio: ${nombre}`;
+  document.querySelector('#screen-cuartel .module-switch').classList.remove('hidden');
+  if(!window._cuartelPing){
+    window._cuartelPing = setInterval(cuartelPing, 60000);
+    document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') cuartelPing(); });
+  }
   await setCuartelModulo('comidas');
+}
+async function cuartelPing(){
+  if(!CURRENT || CURRENT.mode!=='cuartel' || !CUARTEL.nombre) return;
+  try{
+    const { data, error } = await sb.rpc('cuartel_ping', { p_device_id: idDispositivo() });
+    if(error || !data || data==='ok') return;
+    const msg = data==='expulsado' ? 'El superadmin ha cerrado la sesión de este dispositivo.'
+      : data==='lleno' ? 'Este dispositivo ha estado un rato sin conexión y ya hay 3 dispositivos usando la cuenta de cuartel.'
+      : 'La sesión del servicio de cuartel se ha cerrado.';
+    await cerrarCuartelLocal(msg);
+  }catch(e){}
+}
+async function cerrarCuartelLocal(msg){
+  try{ sessionStorage.removeItem('portalagm_cuartel_sesion'); }catch(e){}
+  CUARTEL.nombre = null;
+  await sb.auth.signOut();
+  CURRENT = null;
+  showScreen('screen-login');
+  switchAuthTab('login');
+  if(msg) showToast(msg);
 }
 async function setCuartelModulo(m){
   CUARTEL.modulo = m; CUARTEL.vista = 'dia'; CUARTEL.dia = null;
@@ -1685,8 +1784,37 @@ function volverDeSuperadmin(){
   showScreen(CURRENT && CURRENT.mode==='alumno' ? 'screen-alumno' : 'screen-admin');
 }
 let superReset = { compania:null, seccion:null };
+async function cuartelSuperHtml(){
+  const { data, error } = await sb.from('cuartel_sesiones').select('*').order('inicio', { ascending:false }).limit(60);
+  if(error) return `<p class="small-note">No se pudo cargar: ${escHtml(error.message)} — ¿has ejecutado el patch 43?</p>`;
+  const filas = data || [];
+  const ahora = Date.now();
+  const activa = r => !r.cerrada && (ahora - new Date(r.ultima).getTime()) < 5*60000;
+  const ts = iso => new Date(iso).toLocaleString('es-ES',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const activas = filas.filter(activa);
+  const conectados = activas.length ? activas.map(r=>`
+      <div class="manage-row">
+        <div>🟢 <b>${escHtml(r.nombre||'(sin nombre)')}</b> — 📱 ${escHtml(r.dispositivo||'?')} · ${r.compania}ª Cía<br>
+          <span class="sub2">Entró ${ts(r.inicio)} · última señal ${formatRelativeTime(r.ultima)}</span></div>
+        <div class="btns"><button class="small-btn danger" onclick="echarCuartel(${r.id})">Cerrar su sesión</button></div>
+      </div>`).join('') : '<p class="small-note">Ahora mismo no hay nadie conectado con la cuenta de cuartel.</p>';
+  const estado = r => activa(r) ? '🟢 conectado' : r.expulsada ? '⛔ echado por el superadmin' : r.cerrada ? 'salió' : 'sin señal (cerró la app)';
+  const historial = filas.length ? filas.map(r=>`<div class="history-row"><span class="ts">${ts(r.inicio)} → ${ts(r.ultima)}</span> — <b>${escHtml(r.nombre||'(sin nombre)')}</b> · 📱 ${escHtml(r.dispositivo||'?')} · ${estado(r)}</div>`).join('')
+    : '<p class="small-note">Todavía nadie ha entrado con la cuenta de cuartel.</p>';
+  return `<div style="font-weight:700;margin:8px 0 4px;">Conectados ahora: ${activas.length}/3</div>${conectados}
+    <details style="margin-top:10px;"><summary style="cursor:pointer;font-weight:700;">Historial de accesos (últimos ${filas.length})</summary>${historial}</details>
+    <button class="small-btn" style="margin-top:8px;" onclick="renderSuperadmin()">↻ Actualizar</button>`;
+}
+async function echarCuartel(id){
+  if(!confirm('¿Cerrar la sesión de ese dispositivo? Se le saca de la app en menos de un minuto.')) return;
+  const { error } = await sb.from('cuartel_sesiones').update({ expulsada:true, cerrada:true }).eq('id', id);
+  if(error){ showToast('No se pudo: '+error.message); return; }
+  showToast('Sesión cerrada. Ese dispositivo saldrá en menos de un minuto.');
+  await renderSuperadmin();
+}
 async function renderSuperadmin(){
   const { data: solicitudes } = await sb.from('admin_solicitudes').select('*').eq('estado','pendiente').order('creado_en');
+  const cuartelHtml = await cuartelSuperHtml();
   let seccionesHtml = '';
   let personasHtml = '<option value="">— elige antes una sección —</option>';
   if(superReset.compania){
@@ -1703,6 +1831,11 @@ async function renderSuperadmin(){
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
           ${COMPANIES.map(c=>`<button class="small-btn" onclick="enterAdmin(${c}, null, true)">${c}ª Compañía</button>`).join('')}
         </div>
+      </div>
+
+      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
+        <div class="switch-label">🪖 Cuenta del servicio de cuartel<span class="sub2">Quién ha entrado, desde qué dispositivo y cuándo. Máximo 3 dispositivos a la vez: si un dispositivo pasa 5 min sin dar señal o pulsa "Salir", deja su hueco libre</span></div>
+        ${cuartelHtml}
       </div>
 
       <div class="panel-row" style="flex-direction:column;align-items:stretch;">
