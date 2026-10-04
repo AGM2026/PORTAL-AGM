@@ -166,13 +166,17 @@ body.mod-pernoctas .cuartel-card .big{color:var(--slate);}
 .serv-view-btn{font-size:1rem;padding:14px 20px;font-weight:700;}
 .celda-vacia-serv{cursor:copy;}
 .serv-grid-wrap{max-height:78vh;overflow:auto;border:1px solid var(--line);}
-table.serv-grid{border-collapse:separate;border-spacing:0;font-size:.66rem;}
+table.serv-grid{border-collapse:separate;border-spacing:0;font-size:.66rem;width:100%;table-layout:fixed;}
+table.serv-grid th.nc{width:210px;}
 table.serv-grid th,table.serv-grid td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:2px 3px;text-align:center;white-space:nowrap;min-width:30px;height:19px;}
 table.serv-grid thead th{position:sticky;top:0;background:var(--paper-alt);z-index:2;font-weight:600;line-height:1.15;font-size:.62rem;}
 table.serv-grid .nc{position:sticky;left:0;background:var(--card);text-align:left;min-width:150px;max-width:200px;overflow:hidden;text-overflow:ellipsis;z-index:1;font-weight:500;}
 table.serv-grid thead th.nc{z-index:3;background:var(--paper-alt);}
 table.serv-grid .fin{background:rgba(32,74,115,.07);}
-table.serv-grid .hoy{box-shadow:inset 0 0 0 2px var(--brass);}
+table.serv-grid td.hoy{background:rgba(184,134,11,.09);}
+table.serv-grid th.hoy{background:rgba(184,134,11,.22);color:var(--ink);}
+table.serv-grid td.vacia{cursor:copy;}
+table.serv-grid td.vacia:hover{background:rgba(78,92,60,.12);}
 table.serv-grid tr:hover td{background:rgba(184,134,11,.08);}
 .serv-cod{display:inline-block;padding:0 3px;border-radius:3px;font-weight:700;cursor:pointer;line-height:1.4;}
 .serv-cod.c{background:rgba(78,92,60,.30);} .serv-cod.ic{background:rgba(78,92,60,.13);}
@@ -460,8 +464,8 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
       <div id="admin-servicios-leyenda" class="fixed-row" style="margin-bottom:8px;"></div>
       <div class="serv-grid-wrap"><table class="serv-grid" id="admin-servicios-tabla"></table></div>
       <div class="admin-panel" style="flex-direction:column;align-items:stretch;margin-top:14px;">
-        <div class="switch-label">Cambiar a mano un servicio suelto
-          <span class="sub2">Toca un código del cuadrante para rellenar aquí la fecha y el servicio, elige quién lo hace y pulsa "Guardar". Lo normal es corregir el Excel y volver a subirlo (al subirlo se sustituye todo).</span>
+        <div class="switch-label"><span id="serv-manual-titulo">Añadir o cambiar un servicio a mano</span>
+          <span class="sub2" id="serv-manual-sub">Toca un código del cuadrante para cambiarlo, o una casilla vacía para añadir un servicio. Lo normal es corregir el Excel y volver a subirlo (al subirlo se sustituye todo).</span>
         </div>
         <div class="serv-ctrl">
           <input type="date" id="serv-fecha">
@@ -473,8 +477,8 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
           </select>
           <select id="serv-turno"><option value="1">Turno 1</option><option value="2">Turno 2</option><option value="3">Turno 3</option><option value="4">Turno 4</option></select>
           <select id="serv-persona"></select>
-          <button class="small-btn" onclick="asignarServicio()">💾 Guardar</button>
-          <button class="small-btn danger" onclick="quitarServicioManual()">Quitar ese servicio</button>
+          <button class="small-btn" id="serv-btn-guardar" onclick="asignarServicio()">💾 Guardar</button>
+          <button class="small-btn danger" id="serv-btn-quitar" onclick="quitarServicioManual()">Quitar ese servicio</button>
         </div>
         <div id="serv-sugerencia" class="small-note"></div>
       </div>
@@ -557,7 +561,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-04T15:30";
+const APP_VERSION = "2026-10-04T16:00";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -3622,6 +3626,10 @@ async function asignarServicio(){
   const turno = tipo==='imaginaria' ? parseInt(document.getElementById('serv-turno').value,10) : 0;
   const persona_id = document.getElementById('serv-persona').value;
   if(!fecha || !persona_id){ showToast('Elige fecha y persona.'); return; }
+  if(window._servModo==='añadir'){
+    const { data: ocupado } = await sb.from('servicios').select('persona_id, personas(nombre,apellidos)').eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo', tipo).eq('turno', turno).maybeSingle();
+    if(ocupado && ocupado.persona_id!==persona_id && !confirm(`Ese día ${servicioLabel({tipo,turno})} ya lo tiene ${ocupado.personas.apellidos}, ${ocupado.personas.nombre}. ¿Se lo quitas a esa persona y se lo pones a la nueva?`)) return;
+  }
   const codigo = tipo==='imaginaria' ? turno+' I' : ({cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'I I'})[tipo];
   const { error } = await sb.from('servicios').upsert(
     { compania: CURRENT.compania, fecha, tipo, turno, persona_id, codigo },
@@ -3649,17 +3657,28 @@ async function eliminarServicio(id){
   if(error){ showToast('No se pudo quitar: '+error.message); return; }
   await renderAdminServicios();
 }
+function servModoManual(modo, texto){
+  window._servModo = modo;
+  document.getElementById('serv-manual-titulo').textContent = texto;
+  document.getElementById('serv-manual-sub').textContent = modo==='añadir'
+    ? 'Elige qué servicio le añades y pulsa "Añadir". Si ese servicio ya lo tenía otra persona ese día, te avisa antes.'
+    : 'Elige quién lo hace ahora y pulsa "Guardar cambio", o quítalo.';
+  document.getElementById('serv-btn-guardar').textContent = modo==='añadir' ? '➕ Añadir servicio' : '💾 Guardar cambio';
+  document.getElementById('serv-btn-quitar').classList.toggle('hidden', modo==='añadir');
+}
 function abrirAsignarRapido(personaId, fecha){
   document.getElementById('serv-fecha').value = fecha;
   document.getElementById('serv-persona').value = personaId;
+  const p = SERV_GRID && SERV_GRID.roster.find(x=>x.id===personaId);
+  servModoManual('añadir', `➕ Añadir un servicio a ${p ? p.apellidos+', '+p.nombre : ''} el ${fmtFecha(fecha)}`);
   document.getElementById('serv-tipo').scrollIntoView({behavior:'smooth', block:'center'});
-  showToast('Fecha y persona ya elegidas. Elige el servicio y pulsa "Guardar".');
 }
 function prellenarSustitucion(fecha, tipo, turno){
   document.getElementById('serv-fecha').value = fecha;
   document.getElementById('serv-tipo').value = tipo;
   onServTipoChange();
   if(tipo==='imaginaria') document.getElementById('serv-turno').value = turno;
+  servModoManual('cambiar', `✏️ Cambiar ${servicioLabel({tipo,turno})} del ${fmtFecha(fecha)}`);
   showToast('Elige quién lo hace y pulsa "Guardar" (o "Quitar ese servicio").');
   document.getElementById('serv-persona').scrollIntoView({behavior:'smooth', block:'center'});
 }
@@ -3921,12 +3940,15 @@ function pintarServGrid(){
       const cont = lista.map(s=> s.tipo==='otro'
         ? `<span class="serv-cod otro" title="${escHtml(s.codigo||'')} (código del Excel)">${escHtml(servCorto(s))}</span>`
         : `<span class="serv-cod ${servClase(s)}" title="${servicioLabel(s)} — toca para cambiar" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno})">${escHtml(servCorto(s))}</span>`).join(' ');
-      tbody += `<td class="${finde?'fin':''} ${f===hoy?'hoy':''}" ${lista.length?'':`ondblclick="abrirAsignarRapido('${p.id}','${f}')"`}>${cont}</td>`;
+      tbody += lista.length ? `<td class="${finde?'fin':''} ${f===hoy?'hoy':''}">${cont}</td>`
+        : `<td class="vacia ${finde?'fin':''} ${f===hoy?'hoy':''}" title="Añadir un servicio a ${escHtml(p.apellidos)} el ${fmt(d)}" onclick="abrirAsignarRapido('${p.id}','${f}')"></td>`;
     });
     tbody += '</tr>';
   });
   tbody += '</tbody>';
-  document.getElementById('admin-servicios-tabla').innerHTML = gente.length ? thead + tbody : '<tbody><tr><td class="small-note">Nadie con ese filtro.</td></tr></tbody>';
+  const tabla = document.getElementById('admin-servicios-tabla');
+  tabla.style.minWidth = (210 + dias.length*36) + 'px';
+  tabla.innerHTML = gente.length ? thead + tbody : '<tbody><tr><td class="small-note">Nadie con ese filtro.</td></tr></tbody>';
 }
 async function renderAdminServicios(){
   document.getElementById('admin-week-select').innerHTML = '';
@@ -3968,7 +3990,7 @@ async function renderAdminServicios(){
     <div class="fixed-pill"><span class="serv-cod i">1 I…4 I</span> Imaginaria turno 1–4</div>
     <div class="fixed-pill"><span class="serv-cod ii">I I</span> Imag. de Imaginaria</div>
     <div class="fixed-pill"><span class="serv-cod otro">Otros</span> Código tal cual del Excel</div>
-    <div class="fixed-pill">Toca un código para cambiarlo</div>`;
+    <div class="fixed-pill">Toca un código para cambiarlo · toca una casilla vacía para añadir</div>`;
   pintarServGrid();
 
   const { data: pendientes } = await sb.from('cambios_servicio')
