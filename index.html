@@ -490,7 +490,17 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
       </div>
       <h3 class="section-title">Solicitudes de cambio pendientes</h3>
       <div id="admin-cambios-pendientes"></div>
-      <h3 class="section-title">Deudas de servicio</h3>
+      <h3 class="section-title">Deudas de servicio <button class="small-btn" style="margin-left:8px;" onclick="toggleNuevaDeuda()">＋ Añadir deuda</button></h3>
+      <div id="nueva-deuda-form" class="admin-panel hidden" style="flex-direction:column;align-items:stretch;">
+        <div class="switch-label">Apuntar una deuda a mano<span class="sub2">Como lo apuntarías en la columna OBS. del Excel. Las deudas apuntadas aquí NO se borran al volver a subir el Excel.</span></div>
+        <div class="serv-ctrl">
+          <select id="deuda-deudor"></select>
+          <span style="font-size:.8rem;">le debe a</span>
+          <select id="deuda-acreedor"></select>
+        </div>
+        <input type="text" id="deuda-texto" placeholder="Qué le debe — ej.: 1 imaginaria del festivo 12/10, 1 cuartelero de fin de semana…" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
+        <button class="small-btn" style="margin-top:8px;align-self:flex-start;" onclick="guardarNuevaDeuda()">💾 Guardar deuda</button>
+      </div>
       <div id="admin-deudas-lista"></div>
     </div>
   </div>
@@ -561,7 +571,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-04T16:00";
+const APP_VERSION = "2026-10-04T17:00";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -3573,7 +3583,7 @@ async function renderAlumnoServicios(){
   document.getElementById('alumno-deudas-lista').innerHTML = (deudas&&deudas.length) ? deudas.map(d=>{
     const esDeudor = d.deudor_id===persona.id;
     const otro = esDeudor ? d.acreedor : d.deudor;
-    return `<div class="servicio-card"><div class="titulo">${esDeudor?'Le debes a':'Te debe'} ${otro.apellidos}, ${otro.nombre}</div><div class="meta">${TIPO_LABEL[d.tipo]||d.tipo}${d.turno?' (turno '+d.turno+')':''} · ${d.entre_semana?'entre semana':'fin de semana'} · desde el ${fmt(new Date(d.fecha_origen+'T00:00:00'))}</div></div>`;
+    return `<div class="servicio-card"><div class="titulo">${esDeudor?'Le debes a':'Te debe'} ${otro.apellidos}, ${otro.nombre}</div><div class="meta">${textoDeuda(d)}</div></div>`;
   }).join('') : '<div class="small-note">Sin deudas pendientes.</div>';
 }
 async function abrirSolicitudCambio(servicioId){
@@ -3706,6 +3716,33 @@ async function rechazarCambio(id){
   showToast('Solicitud rechazada.');
   await renderAdminServicios();
 }
+function toggleNuevaDeuda(){
+  const f = document.getElementById('nueva-deuda-form');
+  f.classList.toggle('hidden');
+  if(!f.classList.contains('hidden')){
+    const opts = (SERV_GRID ? SERV_GRID.roster : []).map(p=>`<option value="${p.id}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${CURRENT.compania}${p.seccion})</option>`).join('');
+    document.getElementById('deuda-deudor').innerHTML = '<option value="">— quién debe —</option>' + opts;
+    document.getElementById('deuda-acreedor').innerHTML = '<option value="">— a quién —</option>' + opts;
+    document.getElementById('deuda-texto').value = '';
+  }
+}
+async function guardarNuevaDeuda(){
+  const deudor_id = document.getElementById('deuda-deudor').value;
+  const acreedor_id = document.getElementById('deuda-acreedor').value;
+  const texto = document.getElementById('deuda-texto').value.trim();
+  if(!deudor_id || !acreedor_id){ showToast('Elige quién debe y a quién.'); return; }
+  if(deudor_id===acreedor_id){ showToast('No puede deberse a sí mismo.'); return; }
+  if(!texto){ showToast('Escribe qué le debe.'); return; }
+  const { error } = await sb.from('deudas_servicio').insert({ compania: CURRENT.compania, deudor_id, acreedor_id, tipo:'nota', turno:null, entre_semana:false, fecha_origen: ymd(new Date()), motivo: texto });
+  if(error){ showToast('No se pudo guardar: '+error.message+' — ¿has ejecutado el patch 45?'); return; }
+  showToast('Deuda apuntada.');
+  document.getElementById('nueva-deuda-form').classList.add('hidden');
+  await renderAdminServicios();
+}
+function textoDeuda(d){
+  if(d.tipo==='nota') return escHtml(d.motivo||'');
+  return `${TIPO_LABEL[d.tipo]||d.tipo}${d.turno?' (turno '+d.turno+')':''} · ${d.entre_semana?'entre semana':'fin de semana / festivo'}`;
+}
 async function marcarDeudaSaldada(id){
   const { error } = await sb.from('deudas_servicio').update({ saldada: true }).eq('id', id);
   if(error){ showToast('No se pudo actualizar: '+error.message); return; }
@@ -3743,6 +3780,53 @@ function interpretarCodigo(raw){
   const m = u.match(/^([1-4]) ?I$/); if(m) return { tipo:'imaginaria', turno:parseInt(m[1],10) };
   return { tipo:'otro', turno:0 };
 }
+/* ---- Deudas escritas en la columna "OBS." del Excel ---- */
+function tipoDeudaDe(pieza){
+  const t = String(pieza).toUpperCase().replace(/[^A-Z]/g,'');
+  if(/^(IMGF|IMGFESTIVO|IMGFINDE|IMGFINDESEMANA|IMAGINARIAF|IMAGINARIAFESTIVO|IMAGINARIAFINDE|IF)$/.test(t)) return { tipo:'imaginaria', finde:true };
+  if(/^(IMG|IMAGINARIA|IMGS|IMAGINARIAS)$/.test(t)) return { tipo:'imaginaria', finde:false };
+  if(/^(CF|CFESTIVO|CFINDE|CUARTELEROF|CUARTELEROFESTIVO|CUARTELEROFINDE)$/.test(t)) return { tipo:'cuartelero', finde:true };
+  if(/^(C|CUARTELERO)$/.test(t)) return { tipo:'cuartelero', finde:false };
+  if(/^(ICF|ICFESTIVO)$/.test(t)) return { tipo:'imaginaria_cuartelero', finde:true };
+  if(/^IC$/.test(t)) return { tipo:'imaginaria_cuartelero', finde:false };
+  return null;
+}
+function piezasDeuda(txt){
+  return String(txt).split(/\s+Y\s+|,/).map(p=>{ const m = p.trim().match(/^(\d+)?\s*(.*)$/); return { n: m[1]?parseInt(m[1],10):1, t: tipoDeudaDe(m[2]||'') }; });
+}
+function buscarPersonaObs(nombre, excluirId, app){
+  const toks = normTxtJS(nombre).split(' ').filter(w=>w.length>1);
+  if(!toks.length) return null;
+  const cands = app.filter(p=>p.id!==excluirId && toks.every(w=>(' '+normTxtJS(p.apellidos+' '+p.nombre)+' ').includes(' '+w+' ')));
+  if(cands.length===1) return cands[0];
+  const pref = cands.filter(p=>normTxtJS(p.apellidos).startsWith(toks[0]));
+  return pref.length===1 ? pref[0] : null;
+}
+function leerObservaciones(gente, app){
+  const deudas = {}, noEntendidas = [];
+  gente.forEach(g=>{
+    if(!g.obs) return;
+    normTxtJS(g.obs).split(/\.\s*/).map(x=>x.trim()).filter(Boolean).forEach(f=>{
+      let m, propio, otroNombre, resto;
+      if((m = f.match(/^(?:LE\s+)?DEBE\s*(.+?)\s+A\s+(.+)$/))){ propio = 'deudor'; resto = m[1]; otroNombre = m[2]; }
+      else if((m = f.match(/^(.+?)\s+LE\s+DEBE\s*(.+)$/))){ propio = 'acreedor'; otroNombre = m[1]; resto = m[2]; }
+      if(!m){ noEntendidas.push({ quien: g.apellidos+', '+g.nombre, texto: g.obs.trim(), motivo:'no entiendo la frase' }); return; }
+      const otro = buscarPersonaObs(otroNombre, g.pid, app);
+      const piezas = piezasDeuda(resto);
+      if(!g.pid || !otro || piezas.some(x=>!x.t)){
+        noEntendidas.push({ quien: g.apellidos+', '+g.nombre, texto: g.obs.trim(), motivo: !otro ? `no sé quién es "${otroNombre.toLowerCase()}"` : !g.pid ? 'esta persona no está emparejada' : 'no entiendo el tipo de servicio' });
+        return;
+      }
+      piezas.forEach(x=>{
+        const deudor_id = propio==='deudor' ? g.pid : otro.id, acreedor_id = propio==='deudor' ? otro.id : g.pid;
+        const k = deudor_id+'|'+acreedor_id+'|'+x.t.tipo+'|'+x.t.finde, prev = deudas[k];
+        deudas[k] = { deudor_id, acreedor_id, tipo:x.t.tipo, entre_semana:!x.t.finde, cantidad: Math.max(prev?prev.cantidad:0, x.n),
+                      textos: Array.from(new Set((prev?prev.textos:[]).concat(g.obs.trim()))) };
+      });
+    });
+  });
+  return { deudas: Object.values(deudas), noEntendidas };
+}
 async function leerExcelServicios(){
   const file = document.getElementById('serv-excel-file').files[0];
   const resEl = document.getElementById('serv-excel-resultado');
@@ -3762,7 +3846,7 @@ async function leerExcelServicios(){
     for(let r=3; r<=R.e.r; r++){
       if(!txt(r,2) && !txt(r,4)) continue;
       const sc = parseInt(txt(r,1),10);
-      gente.push({ r, sc: isNaN(sc)?null:sc, apellidos: (txt(r,2)+' '+txt(r,3)).trim(), nombre: txt(r,4) });
+      gente.push({ r, sc: isNaN(sc)?null:sc, apellidos: (txt(r,2)+' '+txt(r,3)).trim(), nombre: txt(r,4), obs: txt(r,9) });
     }
     // Días: fecha en la fila 2, dos columnas por día (C | IM) desde la columna K
     const dias = [];
@@ -3818,6 +3902,16 @@ async function leerExcelServicios(){
     });
     gente.forEach(g=>{ const p = app.find(p=>p.id===g.pid); g.sim = p ? similitudTxt(p.apellidos+' '+p.nombre, g.apellidos+' '+g.nombre) : 0; });
     SERV_IMPORT = { gente, servicios, app, dias, choques, hoja };
+    const obs = leerObservaciones(gente, app);
+    const nombreApp = id => { const p = app.find(x=>x.id===id); return p ? p.apellidos+', '+p.nombre : '?'; };
+    const etiquetaDeuda = d => `${d.cantidad} ${({imaginaria:'Imaginaria', cuartelero:'Cuartelero', imaginaria_cuartelero:'Imag. de Cuartelero'})[d.tipo]}${d.cantidad>1?'s':''} ${d.entre_semana?'entre semana':'de fin de semana/festivo'}`;
+    const deudasHtml = `
+      <div class="servicio-card">
+        <div class="titulo">Deudas de la columna "OBS.": ${obs.deudas.reduce((a,d)=>a+d.cantidad,0)} deudas entre ${new Set(obs.deudas.map(d=>d.deudor_id+'|'+d.acreedor_id)).size} parejas</div>
+        <div class="meta">Si la misma deuda está apuntada en las dos personas, cuenta una sola vez. Al cargar, sustituyen a las deudas pendientes que haya ahora en la app.</div>
+        ${obs.deudas.map(d=>`<div class="serv-map-row"><span>🔁 <b>${escHtml(nombreApp(d.deudor_id))}</b> le debe <b>${etiquetaDeuda(d)}</b> a <b>${escHtml(nombreApp(d.acreedor_id))}</b></span><span style="font-size:.7rem;color:var(--ink-soft);">(${d.textos.map(escHtml).join(' / ')})</span></div>`).join('') || '<div class="meta">No hay ninguna deuda en la columna OBS.</div>'}
+        ${obs.noEntendidas.length ? `<div class="meta" style="color:var(--danger);margin-top:6px;">⚠️ No he entendido ${obs.noEntendidas.length} anotación(es) — no se cargan, apúntalas tú:<br>${obs.noEntendidas.map(n=>`${escHtml(n.quien)}: "${escHtml(n.texto)}" (${escHtml(n.motivo)})`).join('<br>')}</div>` : ''}
+      </div>`;
 
     const fechas = dias.map(d=>d.fecha);
     const revisar = gente.filter(g=>g.como!=='exacto');
@@ -3840,8 +3934,9 @@ async function leerExcelServicios(){
         </div>`; }).join('')}
         ${sinUsar.length ? `<div class="meta" style="margin-top:6px;">En la app pero no en el Excel (no tendrán servicios): ${sinUsar.map(p=>escHtml(p.apellidos+', '+p.nombre)).join(' · ')}</div>` : ''}
       </div>
+      ${deudasHtml}
       <div class="notice closed" style="display:block;">
-        <b>Al pulsar "Cargar" se BORRA todo el cuadrante actual de la ${c}ª</b> (incluidos los servicios que se generaron hasta diciembre y las solicitudes de cambio pendientes) y queda exactamente lo del Excel.
+        <b>Al pulsar "Cargar" se BORRA todo el cuadrante actual de la ${c}ª y sus deudas pendientes</b> (incluidos los servicios que se generaron hasta diciembre y las solicitudes de cambio pendientes) y queda exactamente lo del Excel.
         <div style="margin-top:8px;"><button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="cargarExcelServicios()">2️⃣ Cargar en la app</button></div>
       </div>`;
   }catch(e){
@@ -3872,11 +3967,14 @@ async function cargarExcelServicios(){
     ocupado.add(sv.fecha+'|'+tipo+'|'+turno);
     filas.push({ fecha: sv.fecha, tipo, turno, persona_id: pid, codigo: sv.codigo });
   });
+  const obs = leerObservaciones(gente, SERV_IMPORT.app);
+  const deudas = [];
+  obs.deudas.forEach(d=>{ for(let i=0;i<d.cantidad;i++) deudas.push({ deudor_id:d.deudor_id, acreedor_id:d.acreedor_id, tipo:d.tipo, entre_semana:d.entre_semana, motivo:'Del Excel (OBS.): '+d.textos.join(' / ') }); });
   resEl.innerHTML = '<div class="small-note">Cargando…</div>';
-  const { data, error } = await sb.rpc('cargar_servicios_excel', { p_compania: CURRENT.compania, p_filas: filas });
-  if(error){ resEl.innerHTML = `<div class="notice closed"><span>No se pudo cargar (no se ha cambiado nada): ${escHtml(error.message)} — ¿has ejecutado el patch 44?</span></div>`; return; }
+  const { data, error } = await sb.rpc('cargar_servicios_excel', { p_compania: CURRENT.compania, p_filas: filas, p_deudas: deudas });
+  if(error){ resEl.innerHTML = `<div class="notice closed"><span>No se pudo cargar (no se ha cambiado nada): ${escHtml(error.message)} — ¿has ejecutado los patches 44 y 45?</span></div>`; return; }
   SERV_IMPORT = null;
-  resEl.innerHTML = `<div class="notice" style="border-color:#2e7d32;"><span>✅ Cuadrante cargado: ${data} servicios, exactamente como en el Excel.</span></div>`;
+  resEl.innerHTML = `<div class="notice" style="border-color:#2e7d32;"><span>✅ Cargado: ${data} servicios y ${deudas.length} deudas, exactamente como en el Excel.${obs.noEntendidas.length?` Ojo: ${obs.noEntendidas.length} anotación(es) de OBS. no se entendieron y no se cargaron.`:''}</span></div>`;
   const primera = filas.map(f=>f.fecha).sort()[0];
   if(primera) servDesde = ymd(lunesDe(new Date()));
   await renderAdminServicios();
@@ -4013,7 +4111,8 @@ async function renderAdminServicios(){
   document.getElementById('admin-deudas-lista').innerHTML = (deudas&&deudas.length) ? deudas.map(d=>`
     <div class="servicio-card">
       <div class="titulo">${d.deudor.apellidos}, ${d.deudor.nombre} le debe a ${d.acreedor.apellidos}, ${d.acreedor.nombre}</div>
-      <div class="meta">${TIPO_LABEL[d.tipo]||d.tipo}${d.turno?' (turno '+d.turno+')':''} · ${d.entre_semana?'entre semana':'fin de semana'} · desde el ${fmt(new Date(d.fecha_origen+'T00:00:00'))}</div>
+      <div class="meta">${textoDeuda(d)} · apuntada el ${fmt(new Date(d.fecha_origen+'T00:00:00'))}${d.tipo==='nota'?' · ✍️ a mano':''}</div>
+      ${d.motivo && d.tipo!=='nota' ? `<div class="meta">${escHtml(d.motivo)}</div>` : ''}
       <button class="small-btn" style="margin-top:6px;" onclick="marcarDeudaSaldada(${d.id})">Marcar saldada</button>
     </div>`).join('') : '<div class="small-note">Sin deudas pendientes.</div>';
 }
