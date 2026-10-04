@@ -165,6 +165,23 @@ body.mod-pernoctas .cuartel-card .big{color:var(--slate);}
 .small-btn.active{background:var(--olive);color:#fff;border-color:var(--olive);}
 .serv-view-btn{font-size:1rem;padding:14px 20px;font-weight:700;}
 .celda-vacia-serv{cursor:copy;}
+.serv-grid-wrap{max-height:78vh;overflow:auto;border:1px solid var(--line);}
+table.serv-grid{border-collapse:separate;border-spacing:0;font-size:.66rem;}
+table.serv-grid th,table.serv-grid td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:2px 3px;text-align:center;white-space:nowrap;min-width:30px;height:19px;}
+table.serv-grid thead th{position:sticky;top:0;background:var(--paper-alt);z-index:2;font-weight:600;line-height:1.15;font-size:.62rem;}
+table.serv-grid .nc{position:sticky;left:0;background:var(--card);text-align:left;min-width:150px;max-width:200px;overflow:hidden;text-overflow:ellipsis;z-index:1;font-weight:500;}
+table.serv-grid thead th.nc{z-index:3;background:var(--paper-alt);}
+table.serv-grid .fin{background:rgba(32,74,115,.07);}
+table.serv-grid .hoy{box-shadow:inset 0 0 0 2px var(--brass);}
+table.serv-grid tr:hover td{background:rgba(184,134,11,.08);}
+.serv-cod{display:inline-block;padding:0 3px;border-radius:3px;font-weight:700;cursor:pointer;line-height:1.4;}
+.serv-cod.c{background:rgba(78,92,60,.30);} .serv-cod.ic{background:rgba(78,92,60,.13);}
+.serv-cod.i{background:rgba(32,74,115,.22);} .serv-cod.ii{background:rgba(32,74,115,.10);}
+.serv-cod.otro{background:rgba(184,134,11,.30);cursor:default;}
+.serv-ctrl{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end;margin:6px 0 10px;}
+.serv-ctrl select,.serv-ctrl input{padding:7px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.8rem;}
+.serv-map-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:5px 0;border-bottom:1px solid var(--line);font-size:.8rem;}
+.serv-map-row select{padding:5px 6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.78rem;max-width:260px;}
 .celda-vacia-serv:hover{background:rgba(184,134,11,.15);}
 .big-btn{background:var(--card);border:1.5px solid var(--olive);color:var(--olive);font-family:inherit;font-size:.85rem;font-weight:600;padding:11px 16px;cursor:pointer;white-space:nowrap;}
 .big-btn:hover{background:var(--olive);color:#fff;}
@@ -381,11 +398,8 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
 
     <div id="alumno-servicios-mod" class="hidden">
       <div id="alumno-serv-week-select"></div>
-      <h3 class="section-title">Tus servicios esta semana</h3>
+      <h3 class="section-title">Tus próximos servicios</h3>
       <div id="alumno-servicios-lista"></div>
-      <h3 class="section-title">Servicios de la compañía esta semana</h3>
-      <div id="admin-servicios-leyenda-alumno" class="fixed-row" style="margin-bottom:10px;"></div>
-      <div class="table-scroll"><table class="roster" id="alumno-servicios-tabla"></table></div>
       <h3 class="section-title">Mis solicitudes de cambio</h3>
       <div id="alumno-cambios-lista"></div>
       <h3 class="section-title">Debo / me deben</h3>
@@ -431,76 +445,45 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
         </div>
       </div>
       <div id="admin-serv-week-select"></div>
-      <div class="admin-panel">
-        <div class="panel-row" style="flex-wrap:wrap;">
-          <div class="switch-label">Mostrar
-            <span class="sub2">Las imaginarias (de noche) o el cuartelero / imaginaria de cuartelero (de día)</span>
-          </div>
-          <select id="serv-familia" onchange="onServFamiliaChange()" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
-            <option value="ambos">Todo</option>
-            <option value="imaginarias">Solo imaginarias (noche)</option>
-            <option value="dia">Solo Cuartelero / Imaginaria de Cuartelero (día)</option>
-          </select>
-        </div>
-      </div>
-      <div class="admin-panel">
-        <div class="panel-row">
-          <div class="switch-label">Exportar la semana a Excel<span class="sub2">Lunes a viernes de la semana seleccionada arriba, con el servicio concreto de cada uno</span></div>
-          <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="exportServiciosExcel()">📄 Exportar a Excel</button>
-        </div>
-      </div>
       <div class="admin-panel" style="flex-direction:column;align-items:stretch;border-color:var(--brass);">
         <div class="switch-label">📤 Subir el Excel de servicios
-          <span class="sub2">El mismo Excel de siempre ("GUARDIAS DE ORDEN"), tal cual — la app lee lo que haya y lo mete en el cuadrante, sin tocar nada de lo que ya había</span>
+          <span class="sub2">El Excel de guardias tal cual (hoja "GUARDIAS DE ORDEN"). Primero la app lo lee y te enseña cómo ha emparejado a cada persona del Excel con su ficha de la app; cuando lo revises pulsas "Cargar" y el cuadrante queda EXACTAMENTE como el Excel. No se inventa ni se calcula nada: solo lo que pone el Excel.</span>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center;">
           <input type="file" id="serv-excel-file" accept=".xlsx,.xls">
-          <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="importarExcelServicios()">Importar</button>
+          <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="leerExcelServicios()">1️⃣ Leer y revisar</button>
         </div>
         <div id="serv-excel-resultado" style="margin-top:8px;"></div>
       </div>
-      <div class="admin-panel" style="flex-direction:column;align-items:stretch;">
-        <div class="switch-label">Asignar un servicio (manual, suelto)
-          <span class="sub2">Compañía entera, en orden de la Z a la A (de abajo hacia arriba, como se turnan) — elige día (de la semana de arriba), tipo y persona</span>
+      <h3 class="section-title">Cuadrante de servicios</h3>
+      <div id="serv-grid-controles"></div>
+      <div id="admin-servicios-leyenda" class="fixed-row" style="margin-bottom:8px;"></div>
+      <div class="serv-grid-wrap"><table class="serv-grid" id="admin-servicios-tabla"></table></div>
+      <div class="admin-panel" style="flex-direction:column;align-items:stretch;margin-top:14px;">
+        <div class="switch-label">Cambiar a mano un servicio suelto
+          <span class="sub2">Toca un código del cuadrante para rellenar aquí la fecha y el servicio, elige quién lo hace y pulsa "Guardar". Lo normal es corregir el Excel y volver a subirlo (al subirlo se sustituye todo).</span>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-          <select id="serv-fecha" onchange="mostrarSugerenciaServicio()" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;"></select>
-          <select id="serv-tipo" onchange="onServTipoChange()" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
-            <option value="cuartelero">Cuartelero</option>
+        <div class="serv-ctrl">
+          <input type="date" id="serv-fecha">
+          <select id="serv-tipo" onchange="onServTipoChange()">
+            <option value="cuartelero">Cuartelero (C)</option>
             <option value="imaginaria">Imaginaria (turno)</option>
-            <option value="imaginaria_cuartelero">Imaginaria de Cuartelero</option>
-            <option value="imaginaria_imaginaria">Imaginaria de Imaginaria</option>
+            <option value="imaginaria_cuartelero">Imaginaria de Cuartelero (IC)</option>
+            <option value="imaginaria_imaginaria">Imaginaria de Imaginaria (I I)</option>
           </select>
-          <select id="serv-turno" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
-            <option value="1">Turno 1</option><option value="2">Turno 2</option><option value="3">Turno 3</option><option value="4">Turno 4</option>
-          </select>
-          <select id="serv-persona" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;"></select>
+          <select id="serv-turno"><option value="1">Turno 1</option><option value="2">Turno 2</option><option value="3">Turno 3</option><option value="4">Turno 4</option></select>
+          <select id="serv-persona"></select>
+          <button class="small-btn" onclick="asignarServicio()">💾 Guardar</button>
+          <button class="small-btn danger" onclick="quitarServicioManual()">Quitar ese servicio</button>
         </div>
-        <div id="serv-sugerencia" class="small-note" style="margin-top:6px;"></div>
-        <button class="small-btn" style="margin-top:8px;align-self:flex-start;" onclick="asignarServicio()">+ Asignar</button>
+        <div id="serv-sugerencia" class="small-note"></div>
       </div>
-      <div class="admin-panel" style="flex-direction:column;align-items:stretch;">
-        <div class="switch-label">Mover a todos desde aquí
-          <span class="sub2">Solo para Cuartelero. Si alguien no puede hacer su turno en la fecha elegida, esto lo salta y desplaza a todos los que venían detrás, un puesto cada uno, hasta diciembre — y recalcula sola la Imaginaria de Cuartelero de cada día afectado. Para las imaginarias de turno, usa mejor sustituir directamente en la tabla.</span>
+      <div class="admin-panel">
+        <div class="panel-row">
+          <div class="switch-label">Exportar a Excel<span class="sub2">Los días que se ven ahora en el cuadrante, con el servicio de cada uno</span></div>
+          <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="exportServiciosExcel()">📄 Exportar a Excel</button>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-          <input type="date" id="desp-fecha" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
-          <select id="desp-tipo" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
-            <option value="cuartelero">Cuartelero</option>
-          </select>
-        </div>
-        <button class="small-btn danger" style="margin-top:8px;align-self:flex-start;" onclick="desplazarTurno()">↪️ Desplazar desde esta fecha</button>
       </div>
-      <h3 class="section-title">Servicios de esta semana — las 113 seguidas</h3>
-      <div class="fixed-row serv-view-row" style="margin-bottom:14px;">
-        <button class="small-btn serv-view-btn" id="serv-view-lista25" onclick="setServView('lista25')">📋 Ver lista de 25</button>
-        <button class="small-btn serv-view-btn" id="serv-view-hoy" onclick="setServView('hoy')">📅 Ver servicios de hoy</button>
-        <button class="small-btn serv-view-btn" id="serv-view-semana" onclick="setServView('semana')">🗓️ Ver servicios de esta semana</button>
-      </div>
-      <div id="admin-servicios-leyenda" class="fixed-row" style="margin-bottom:10px;"></div>
-      <div id="admin-servicios-paginacion" class="fixed-row" style="margin-bottom:10px;"></div>
-      <p class="small-note">🖱️ Doble clic en una casilla vacía para asignar el servicio ahí directamente.</p>
-      <div class="table-scroll"><table class="roster" id="admin-servicios-tabla"></table></div>
       <h3 class="section-title">Solicitudes de cambio pendientes</h3>
       <div id="admin-cambios-pendientes"></div>
       <h3 class="section-title">Deudas de servicio</h3>
@@ -574,7 +557,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-04T14:30";
+const APP_VERSION = "2026-10-04T15:30";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -3519,118 +3502,63 @@ async function _renderAdminPernoctasImpl(){
 
 /* ================= SERVICIOS ================= */
 const TIPO_LABEL = { cuartelero:'Cuartelero', imaginaria:'Imaginaria', imaginaria_cuartelero:'Imaginaria de Cuartelero', imaginaria_imaginaria:'Imaginaria de Imaginaria' };
-function servicioLabel(s){ return TIPO_LABEL[s.tipo] + (s.tipo==='imaginaria' && s.turno ? ` (turno ${s.turno})` : ''); }
+function servicioLabel(s){
+  if(s.tipo==='otro') return 'Servicio ' + (s.codigo || '');
+  return TIPO_LABEL[s.tipo] + (s.tipo==='imaginaria' && s.turno ? ` (turno ${s.turno})` : '');
+}
+// Código tal cual sale en el Excel (C, IC, 1 I…4 I, I I, CCB…)
+function servCorto(s){
+  if(s.codigo) return s.codigo;
+  if(s.tipo==='imaginaria') return s.turno+' I';
+  return ({cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'I I'})[s.tipo] || '?';
+}
+function servClase(s){ return ({cuartelero:'c', imaginaria_cuartelero:'ic', imaginaria:'i', imaginaria_imaginaria:'ii'})[s.tipo] || 'otro'; }
 function fmtFecha(fechaStr){
   const d = new Date(fechaStr+'T00:00:00');
   return d.toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'2-digit'});
 }
 
-/* ---- Alumno ---- */
-async function estimacionProximoServicioHtml(personaId){
-  const { data: hist } = await sb.from('servicios').select('fecha,tipo,turno')
-    .eq('persona_id', personaId).order('fecha');
-  if(!hist || hist.length<2) return '';
-  const grupos = {};
-  hist.forEach(s=>{
-    const k = s.tipo+(s.tipo==='imaginaria' ? ('-turno'+s.turno) : '');
-    (grupos[k] = grupos[k] || []).push(s.fecha);
-  });
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const estimaciones = [];
-  Object.entries(grupos).forEach(([k, fechas])=>{
-    if(fechas.length<2) return;
-    const ultimaFecha = fechas[fechas.length-1];
-    const ultima = new Date(ultimaFecha+'T00:00:00');
-    if(ultima < hoy) return; // ya está en el pasado, no sirve de referencia útil
-    let gaps = [];
-    for(let i=1;i<fechas.length;i++){
-      gaps.push((new Date(fechas[i]+'T00:00:00') - new Date(fechas[i-1]+'T00:00:00')) / 86400000);
-    }
-    const media = Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length);
-    const estimada = new Date(ultima.getTime() + media*86400000);
-    estimaciones.push({ k, fecha: fmt(estimada) });
-  });
-  if(estimaciones.length===0) return '';
-  const TIPO_LABEL2 = { cuartelero:'Cuartelero', imaginaria_cuartelero:'Imaginaria de Cuartelero', imaginaria_imaginaria:'Imaginaria de Imaginaria' };
-  const nombreGrupo = k => k.startsWith('imaginaria-turno') ? 'Imaginaria (turno '+k.split('turno')[1]+')' : (TIPO_LABEL2[k]||k);
-  return `<div class="servicio-card" style="border-color:var(--danger);">
-    <div class="titulo" style="color:var(--danger);">⚠️ Estimación aproximada — no es un dato confirmado</div>
-    <div class="meta">Basado en cada cuánto te ha tocado hasta ahora, no en el cuadrante real:</div>
-    ${estimaciones.map(e=>`<div class="meta" style="color:var(--danger);">${nombreGrupo(e.k)} — sobre el ${e.fecha}</div>`).join('')}
-  </div>`;
-}
+/* ---- Alumno: solo SUS servicios (lo que pone el cuadrante) y con quién le toca ---- */
 async function renderAlumnoServicios(){
   document.getElementById('alumno-week-select').innerHTML = '';
   document.getElementById('alumno-notice').innerHTML = '';
+  document.getElementById('alumno-serv-week-select').innerHTML = '';
   const persona = CURRENT.persona;
-  const week = SERV_WEEKS[servWeekIndex];
-  document.getElementById('alumno-serv-week-select').innerHTML = servWeekSelectHtml();
-  const desde = ymd(week.days[0]), hasta = ymd(week.days[6]);
-  const { data: todos, error } = await sb.from('servicios')
-    .select('*, personas(nombre,apellidos,seccion,compania)')
-    .eq('compania', persona.compania).gte('fecha', desde).lte('fecha', hasta)
-    .order('fecha').order('tipo').order('turno');
-  if(error){ showToast('No se pudo cargar: '+error.message); return; }
-
-  const propios = (todos||[]).filter(s=>s.persona_id===persona.id);
-  let html = '';
-  if(propios.length===0){
-    html = '<div class="small-note">No tienes servicios asignados esta semana.</div>' + await estimacionProximoServicioHtml(persona.id);
+  const hoy = ymd(new Date());
+  const lista = document.getElementById('alumno-servicios-lista');
+  const { data: mios, error } = await sb.from('servicios').select('*').eq('persona_id', persona.id).order('fecha').order('tipo').order('turno');
+  if(error){ lista.innerHTML = `<div class="small-note">No se pudo cargar: ${escHtml(error.message)}</div>`; return; }
+  const proximos = (mios||[]).filter(s=>s.fecha>=hoy);
+  const pasados = (mios||[]).filter(s=>s.fecha<hoy).reverse().slice(0,15);
+  const fechas = Array.from(new Set([...proximos, ...pasados].map(s=>s.fecha)));
+  let otros = [];
+  if(fechas.length){
+    const r = await sb.from('servicios').select('*, personas(nombre,apellidos,seccion,compania)').eq('compania', persona.compania).in('fecha', fechas);
+    otros = (r.data||[]).filter(o=>o.persona_id!==persona.id);
   }
-  propios.forEach(s=>{
-    const restoEseDia = (todos||[]).filter(o=> o.fecha===s.fecha && o.persona_id!==persona.id);
-    let grupo = '';
-    if(restoEseDia.length){
-      grupo = '<div class="grupo"><b>Ese día también tienen servicio:</b><br>' + restoEseDia.map(o=>`${servicioLabel(o)} — ${o.personas.apellidos}, ${o.personas.nombre} (Sección ${o.personas.compania}${o.personas.seccion})`).join('<br>') + '</div>';
-    }
-    html += `<div class="servicio-card">
-      <div class="titulo">${servicioLabel(s)}</div>
-      <div class="meta">${fmtFecha(s.fecha)}</div>
-      ${grupo}
-      <button class="small-btn" style="margin-top:8px;" onclick="abrirSolicitudCambio(${s.id})">Solicitar cambio</button>
-      <div id="cambio-form-${s.id}" class="hidden" style="margin-top:8px;"></div>
+  const ordenTipo = { cuartelero:1, imaginaria_cuartelero:2, imaginaria:3, imaginaria_imaginaria:4, otro:5 };
+  const tarjeta = (s, futuro) => {
+    const mismoDia = otros.filter(o=>o.fecha===s.fecha).sort((a,b)=>(ordenTipo[a.tipo]-ordenTipo[b.tipo]) || (a.turno-b.turno));
+    const conQuien = mismoDia.length
+      ? '<div class="grupo"><b>Ese día también están de servicio:</b><br>' + mismoDia.map(o=>`<span class="serv-cod ${servClase(o)}" style="cursor:default;">${escHtml(servCorto(o))}</span> ${servicioLabel(o)} — ${escHtml(o.personas.apellidos)}, ${escHtml(o.personas.nombre)} (Sec. ${o.personas.compania}${o.personas.seccion})`).join('<br>') + '</div>'
+      : '<div class="grupo">No hay nadie más de servicio ese día en el cuadrante.</div>';
+    return `<div class="servicio-card">
+      <div class="titulo"><span class="serv-cod ${servClase(s)}" style="cursor:default;">${escHtml(servCorto(s))}</span> ${servicioLabel(s)}</div>
+      <div class="meta">${fmtFecha(s.fecha)}${s.fecha===hoy?' · <b>HOY</b>':''}</div>
+      ${conQuien}
+      ${futuro && s.tipo!=='otro' ? `<button class="small-btn" style="margin-top:8px;" onclick="abrirSolicitudCambio(${s.id})">Solicitar cambio</button><div id="cambio-form-${s.id}" class="hidden" style="margin-top:8px;"></div>` : ''}
     </div>`;
-  });
-  document.getElementById('alumno-servicios-lista').innerHTML = html;
-
-  // Tabla de la compañía entera esta semana, en solo lectura
-  document.getElementById('admin-servicios-leyenda-alumno').innerHTML = `
-    <div class="fixed-pill"><span class="pernocta-badge agm">C</span> Cuartelero</div>
-    <div class="fixed-pill"><span class="pernocta-badge agm">I1-I4</span> Imaginaria, turno 1 a 4</div>
-    <div class="fixed-pill"><span class="pernocta-badge agm">IC</span> Imaginaria de Cuartelero</div>
-    <div class="fixed-pill"><span class="pernocta-badge agm">II</span> Imaginaria de Imaginaria</div>`;
-  const SERV_SHORT = { cuartelero:'C', imaginaria:'I', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'II' };
-  const porPersonaDia = {};
-  (todos||[]).forEach(s=>{
-    const k = s.persona_id+'|'+s.fecha;
-    (porPersonaDia[k] = porPersonaDia[k] || []).push(s);
-  });
-  const conServicio = Array.from(new Set((todos||[]).map(s=>s.persona_id)))
-    .map(pid => (todos.find(s=>s.persona_id===pid)).personas ? {id:pid, ...todos.find(s=>s.persona_id===pid).personas} : null)
-    .filter(Boolean)
-    .sort((a,b)=> a.apellidos.localeCompare(b.apellidos));
-  let thead = '<thead><tr class="daynames"><th class="name-cell">Compañía</th>';
-  week.days.forEach((d,i)=> thead += `<th>${SERV_DAY_NAMES[i].slice(0,3)}<span class="colhead-sub">${fmt(d)}</span></th>`);
-  thead += '</tr></thead>';
-  let tbody = '<tbody>';
-  conServicio.forEach(p=>{
-    const esMe = p.id===persona.id;
-    tbody += `<tr${esMe?' style="background:rgba(184,134,11,.12);"':''}><td class="name-cell">${p.apellidos}, ${p.nombre}${esMe?' (tú)':''} <span style="color:var(--ink-soft);">(${persona.compania}${p.seccion})</span></td>`;
-    week.days.forEach(d=>{
-      const asignados = porPersonaDia[p.id+'|'+ymd(d)] || [];
-      tbody += asignados.length ? `<td>${asignados.map(s=>`<span class="pernocta-badge agm">${SERV_SHORT[s.tipo]}${s.tipo==='imaginaria'?s.turno:''}</span>`).join(' ')}</td>` : '<td></td>';
-    });
-    tbody += '</tr>';
-  });
-  tbody += '</tbody>';
-  document.getElementById('alumno-servicios-tabla').innerHTML = conServicio.length ? (thead+tbody) : '<div class="small-note">Nadie tiene servicio asignado esta semana.</div>';
+  };
+  let html = proximos.length ? proximos.map(s=>tarjeta(s,true)).join('') : '<div class="small-note">No tienes ningún servicio en el cuadrante a partir de hoy.</div>';
+  if(pasados.length) html += `<details style="margin-top:8px;"><summary style="cursor:pointer;font-weight:700;font-size:.85rem;">Mis últimos servicios hechos (${pasados.length})</summary>${pasados.map(s=>tarjeta(s,false)).join('')}</details>`;
+  lista.innerHTML = html;
 
   const { data: cambios } = await sb.from('cambios_servicio')
-    .select('*, servicios(fecha,tipo,turno), sustituto:personas!cambios_servicio_sustituto_id_fkey(nombre,apellidos)')
+    .select('*, servicios(fecha,tipo,turno,codigo), sustituto:personas!cambios_servicio_sustituto_id_fkey(nombre,apellidos)')
     .eq('solicitante_id', persona.id).order('creado_en',{ascending:false});
   document.getElementById('alumno-cambios-lista').innerHTML = (cambios&&cambios.length) ? cambios.map(c=>`
     <div class="servicio-card">
-      <div class="titulo">${c.servicios?servicioLabel(c.servicios):'(servicio eliminado)'} ${c.servicios?'— '+fmtFecha(c.servicios.fecha):''}</div>
+      <div class="titulo">${c.servicios?servicioLabel(c.servicios):'(servicio ya no está en el cuadrante)'} ${c.servicios?'— '+fmtFecha(c.servicios.fecha):''}</div>
       <div class="meta">Sustituto: ${c.sustituto?c.sustituto.apellidos+', '+c.sustituto.nombre:''} · <span class="badge-estado ${c.estado}">${c.estado}</span></div>
       ${c.motivo_resolucion ? `<div class="meta">Motivo del admin: ${c.motivo_resolucion}</div>` : ''}
     </div>`).join('') : '<div class="small-note">Sin solicitudes.</div>';
@@ -3671,32 +3599,7 @@ function onServTipoChange(){
   document.getElementById('serv-turno').classList.toggle('hidden', tipo!=='imaginaria');
   mostrarSugerenciaServicio();
 }
-async function mostrarSugerenciaServicio(){
-  const el = document.getElementById('serv-sugerencia');
-  const tipo = document.getElementById('serv-tipo').value;
-  const fecha = document.getElementById('serv-fecha').value;
-  if(!el || !fecha) return;
-  if(tipo!=='cuartelero' && tipo!=='imaginaria_cuartelero'){ el.textContent = ''; return; }
-  el.textContent = 'Buscando quién toca…';
-  const c = CURRENT.compania;
-  const { data: roster } = await sb.from('personas').select('id,nombre,apellidos').eq('compania', c).order('apellidos');
-  const wd = new Date(fecha+'T00:00:00').getDay(); // 0=domingo..6=sabado
-  const esFinde = (wd===0 || wd===6);
-  let query = sb.from('servicios').select('persona_id,fecha').eq('compania', c).eq('tipo', tipo).lt('fecha', fecha).order('fecha',{ascending:false}).limit(30);
-  const { data: ultimos } = await query;
-  let ultimo = null;
-  if(tipo==='cuartelero'){
-    ultimo = (ultimos||[]).find(s=>{ const w = new Date(s.fecha+'T00:00:00').getDay(); const f = (w===0||w===6); return f===esFinde; });
-  } else {
-    ultimo = (ultimos||[])[0];
-  }
-  if(!ultimo){ el.textContent = 'No hay histórico suficiente para sugerir.'; return; }
-  const idx = (roster||[]).findIndex(p=>p.id===ultimo.persona_id);
-  if(idx===-1){ el.textContent = ''; return; }
-  const siguienteIdx = (idx - 1 + roster.length) % roster.length;
-  const sig = roster[siguienteIdx];
-  el.innerHTML = `💡 Según el turno, le tocaría a: <b>${sig.apellidos}, ${sig.nombre}</b>`;
-}
+async function mostrarSugerenciaServicio(){ /* ya no se sugiere nada: el cuadrante es solo lo que pone el Excel */ }
 async function actualizarEspejoServicio(fecha, tipo, turno, persona_id){
   // IC e II son un espejo de lo que toca AL DÍA SIGUIENTE — si cambia el
   // Cuartelero o la Imaginaria turno 1, hay que refrescar el espejo del día de antes
@@ -3719,13 +3622,25 @@ async function asignarServicio(){
   const turno = tipo==='imaginaria' ? parseInt(document.getElementById('serv-turno').value,10) : 0;
   const persona_id = document.getElementById('serv-persona').value;
   if(!fecha || !persona_id){ showToast('Elige fecha y persona.'); return; }
+  const codigo = tipo==='imaginaria' ? turno+' I' : ({cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'I I'})[tipo];
   const { error } = await sb.from('servicios').upsert(
-    { compania: CURRENT.compania, fecha, tipo, turno, persona_id },
+    { compania: CURRENT.compania, fecha, tipo, turno, persona_id, codigo },
     { onConflict: 'compania,fecha,tipo,turno' }
   );
   if(error){ showToast('No se pudo asignar: '+error.message); return; }
   await actualizarEspejoServicio(fecha, tipo, turno, persona_id);
   showToast('Servicio asignado.' + ((tipo==='cuartelero'||(tipo==='imaginaria'&&turno===1)) ? ' Imaginaria de cuartelero/imaginaria del día anterior actualizada también.' : ''));
+  await renderAdminServicios();
+}
+async function quitarServicioManual(){
+  const fecha = document.getElementById('serv-fecha').value;
+  const tipo = document.getElementById('serv-tipo').value;
+  const turno = tipo==='imaginaria' ? parseInt(document.getElementById('serv-turno').value,10) : 0;
+  if(!fecha){ showToast('Elige la fecha.'); return; }
+  if(!confirm(`¿Quitar ${servicioLabel({tipo,turno})} del ${fmtFecha(fecha)} del cuadrante?`)) return;
+  const { error } = await sb.from('servicios').delete().eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo', tipo).eq('turno', turno);
+  if(error){ showToast('No se pudo quitar: '+error.message); return; }
+  showToast('Quitado.');
   await renderAdminServicios();
 }
 async function eliminarServicio(id){
@@ -3737,16 +3652,15 @@ async function eliminarServicio(id){
 function abrirAsignarRapido(personaId, fecha){
   document.getElementById('serv-fecha').value = fecha;
   document.getElementById('serv-persona').value = personaId;
-  mostrarSugerenciaServicio();
   document.getElementById('serv-tipo').scrollIntoView({behavior:'smooth', block:'center'});
-  showToast('Fecha y persona ya elegidas. Falta el tipo — luego pulsa "+ Asignar".');
+  showToast('Fecha y persona ya elegidas. Elige el servicio y pulsa "Guardar".');
 }
 function prellenarSustitucion(fecha, tipo, turno){
   document.getElementById('serv-fecha').value = fecha;
   document.getElementById('serv-tipo').value = tipo;
   onServTipoChange();
   if(tipo==='imaginaria') document.getElementById('serv-turno').value = turno;
-  showToast('Elige quién sustituye en "Asignar un servicio" y pulsa "+ Asignar".');
+  showToast('Elige quién lo hace y pulsa "Guardar" (o "Quitar ese servicio").');
   document.getElementById('serv-persona').scrollIntoView({behavior:'smooth', block:'center'});
 }
 async function desplazarTurno(){
@@ -3781,239 +3695,284 @@ async function marcarDeudaSaldada(id){
 function normTxtJS(s){
   return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/-/g,' ').replace(/\s+/g,' ').trim().toUpperCase();
 }
-async function importarExcelServicios(){
-  const fileInput = document.getElementById('serv-excel-file');
+let SERV_IMPORT = null;
+function levenshtein(a,b){
+  const m=a.length, n=b.length; if(!m) return n; if(!n) return m;
+  let prev = Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){
+    const cur=[i];
+    for(let j=1;j<=n;j++) cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    prev=cur;
+  }
+  return prev[n];
+}
+function similitudTxt(a,b){ a=normTxtJS(a); b=normTxtJS(b); if(!a&&!b) return 1; return 1 - levenshtein(a,b)/Math.max(a.length,b.length); }
+function fechaExcel(v){
+  if(v==null || v==='') return null;
+  if(typeof v==='number'){ return new Date(Date.UTC(1899,11,30) + Math.round(v)*86400000).toISOString().slice(0,10); }
+  if(v instanceof Date) return ymd(v);
+  const m = String(v).match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if(m){ const y = m[3].length===2 ? '20'+m[3] : m[3]; return `${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`; }
+  const m2 = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/); if(m2) return m2[0];
+  return null;
+}
+function interpretarCodigo(raw){
+  const u = String(raw).toUpperCase().replace(/\s+/g,' ').trim();
+  if(u==='C') return { tipo:'cuartelero', turno:0 };
+  if(u==='IC') return { tipo:'imaginaria_cuartelero', turno:0 };
+  if(u==='I I' || u==='II') return { tipo:'imaginaria_imaginaria', turno:0 };
+  const m = u.match(/^([1-4]) ?I$/); if(m) return { tipo:'imaginaria', turno:parseInt(m[1],10) };
+  return { tipo:'otro', turno:0 };
+}
+async function leerExcelServicios(){
+  const file = document.getElementById('serv-excel-file').files[0];
   const resEl = document.getElementById('serv-excel-resultado');
-  const file = fileInput.files[0];
   if(!file){ showToast('Elige primero el archivo Excel.'); return; }
   resEl.innerHTML = '<div class="small-note">Leyendo el Excel…</div>';
   try{
-    const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf, { type:'array', cellDates:true });
-    const sheetName = wb.SheetNames.includes('GUARDIAS DE ORDEN') ? 'GUARDIAS DE ORDEN' : wb.SheetNames[0];
-    const ws = wb.Sheets[sheetName];
-    const range = XLSX.utils.decode_range(ws['!ref']);
-    const cell = (r,c) => { const o = ws[XLSX.utils.encode_cell({r,c})]; return o ? o.v : null; };
-
-    // columnas de días con datos (fila 2 = fecha, en la primera columna de cada pareja C/IM, empezando en col K = índice 10)
-    const filledCols = [];
-    for(let c=10; c<=range.e.c; c+=2){
-      const dateVal = cell(1,c);
-      if(!dateVal) continue;
-      let hasData = false;
-      for(let r=3; r<=range.e.r; r++){ if(cell(r,c) || cell(r,c+1)){ hasData=true; break; } }
-      if(hasData) filledCols.push({ col:c, fecha: ymd(dateVal instanceof Date ? dateVal : new Date(dateVal)) });
-    }
-    if(filledCols.length===0){ resEl.innerHTML = '<div class="small-note" style="color:var(--danger);">No he encontrado ninguna columna de día con datos. ¿Es la hoja "GUARDIAS DE ORDEN"?</div>'; return; }
-
-    const filas = [];
-    for(let r=3; r<=range.e.r; r++){
-      const ap1 = cell(r,2), ap2 = cell(r,3), nom = cell(r,4);
-      if(!ap1 && !nom) continue;
-      const apellidos = `${ap1||''} ${ap2||''}`.trim();
-      filledCols.forEach(({col,fecha})=>{
-        const vC = cell(r,col), vIM = cell(r,col+1);
-        if(vC==='C') filas.push({fecha, tipo:'cuartelero', turno:0, apellidos, nombre:nom});
-        else if(vC==='IC') filas.push({fecha, tipo:'imaginaria_cuartelero', turno:0, apellidos, nombre:nom});
-        if(vIM==='I I') filas.push({fecha, tipo:'imaginaria_imaginaria', turno:0, apellidos, nombre:nom});
-        else if(typeof vIM==='string' && / I$/.test(vIM)){
-          const n = parseInt(vIM.split(' ')[0],10);
-          if(!isNaN(n) && n>=1 && n<=4) filas.push({fecha, tipo:'imaginaria', turno:n, apellidos, nombre:nom});
-        }
-      });
-    }
-    if(filas.length===0){ resEl.innerHTML = '<div class="small-note" style="color:var(--danger);">No he encontrado ninguna fila de servicio en las columnas con datos.</div>'; return; }
-
+    const wb = XLSX.read(await file.arrayBuffer(), { type:'array' });
+    const hoja = wb.SheetNames.find(n=>normTxtJS(n)==='GUARDIAS DE ORDEN') || wb.SheetNames[0];
+    const ws = wb.Sheets[hoja];
+    const R = XLSX.utils.decode_range(ws['!ref']);
+    const raw = (r,c)=>{ const o = ws[XLSX.utils.encode_cell({r,c})]; return o ? o.v : null; };
+    const txt = (r,c)=>{ const v = raw(r,c); return v==null ? '' : String(v).trim(); };
     const c = CURRENT.compania;
-    const { data: roster } = await sb.from('personas').select('id,apellidos,nombre').eq('compania', c);
-    const mapa = new Map();
-    (roster||[]).forEach(p=> mapa.set(normTxtJS(p.apellidos)+'|'+normTxtJS(p.nombre), p.id));
 
-    const porHueco = new Map(); // compania|fecha|tipo|turno -> fila (si hay choque, se queda con la última)
-    const sinEmparejar = new Set();
-    const choques = [];
-    filas.forEach(f=>{
-      const pid = mapa.get(normTxtJS(f.apellidos)+'|'+normTxtJS(f.nombre));
-      if(!pid){ sinEmparejar.add(f.apellidos+', '+f.nombre); return; }
-      const huecoKey = f.fecha+'|'+f.tipo+'|'+f.turno;
-      if(porHueco.has(huecoKey)){
-        const anterior = porHueco.get(huecoKey);
-        if(anterior.persona_id !== pid) choques.push(`${f.fecha} — ${servicioLabel({tipo:f.tipo,turno:f.turno})}: había "${anterior._nombreOriginal}" y también sale "${f.apellidos}, ${f.nombre}" — me quedo con la última`);
-      }
-      porHueco.set(huecoKey, { compania:c, fecha:f.fecha, tipo:f.tipo, turno:f.turno, persona_id:pid, _nombreOriginal: f.apellidos+', '+f.nombre });
-    });
-    const paraInsertar = Array.from(porHueco.values()).map(({_nombreOriginal, ...row})=>row);
-
-    resEl.innerHTML = `<div class="small-note">Importando ${paraInsertar.length} filas…</div>`;
-    // Supabase upsert admite como mucho unos cuantos miles por llamada; con 113x~40 días sobra de sobra en un solo lote, pero lo troceamos por si acaso
-    const LOTE = 500;
-    let importadas = 0;
-    for(let i=0; i<paraInsertar.length; i+=LOTE){
-      const trozo = paraInsertar.slice(i, i+LOTE);
-      const { error } = await sb.from('servicios').upsert(trozo, { onConflict:'compania,fecha,tipo,turno' });
-      if(error){ resEl.innerHTML = `<div class="small-note" style="color:var(--danger);">Fallo importando: ${error.message}</div>`; return; }
-      importadas += trozo.length;
+    // Personas del Excel: columnas B (sección), C y D (apellidos), E (nombre), desde la fila 4
+    const gente = [];
+    for(let r=3; r<=R.e.r; r++){
+      if(!txt(r,2) && !txt(r,4)) continue;
+      const sc = parseInt(txt(r,1),10);
+      gente.push({ r, sc: isNaN(sc)?null:sc, apellidos: (txt(r,2)+' '+txt(r,3)).trim(), nombre: txt(r,4) });
     }
+    // Días: fecha en la fila 2, dos columnas por día (C | IM) desde la columna K
+    const dias = [];
+    for(let col=10; col<=R.e.c; col+=2){
+      const f = fechaExcel(raw(1,col)); if(!f) continue;
+      if(gente.some(g=>txt(g.r,col) || txt(g.r,col+1))) dias.push({ col, fecha:f });
+    }
+    if(!gente.length || !dias.length){ resEl.innerHTML = `<div class="notice closed"><span>No he encontrado personas o días con servicios en la hoja "${escHtml(hoja)}".</span></div>`; return; }
 
+    // Servicios tal cual
+    const servicios = [], porCodigo = {}, otrosPorDia = {};
+    gente.forEach((g,gi)=>{
+      dias.forEach(({col,fecha})=>{
+        [txt(g.r,col), txt(g.r,col+1)].forEach(v=>{
+          if(!v) return;
+          const t = interpretarCodigo(v);
+          let turno = t.turno;
+          if(t.tipo==='otro'){ otrosPorDia[fecha] = (otrosPorDia[fecha]||0)+1; turno = otrosPorDia[fecha]; }
+          servicios.push({ gi, fecha, tipo:t.tipo, turno, codigo: String(v).replace(/\s+/g,' ').trim() });
+          porCodigo[servicios[servicios.length-1].codigo] = (porCodigo[servicios[servicios.length-1].codigo]||0)+1;
+        });
+      });
+    });
+    // Choques: dos personas en el mismo hueco
+    const huecos = {}, choques = [];
+    servicios.forEach(sv=>{ const k = sv.fecha+'|'+sv.tipo+'|'+sv.turno; if(huecos[k]!==undefined) choques.push(sv); else huecos[k] = sv.gi; });
+
+    // Emparejar con las fichas de la app
+    const { data: roster } = await sb.from('personas').select('id,nombre,apellidos,seccion').eq('compania', c).order('apellidos');
+    const app = roster || [];
+    const usados = new Set();
+    gente.forEach(g=>{ g.pid = null; g.como = ''; });
+    // 1) Exactos (sin tildes ni mayúsculas)
+    gente.forEach(g=>{
+      const p = app.find(p=>!usados.has(p.id) && normTxtJS(p.apellidos)===normTxtJS(g.apellidos) && normTxtJS(p.nombre)===normTxtJS(g.nombre));
+      if(p){ g.pid = p.id; g.como = 'exacto'; usados.add(p.id); }
+    });
+    // 2) Por orden de apellido dentro de cada sección (como propones: el orden coincide aunque el nombre no sea idéntico)
+    const secs = Array.from(new Set(gente.map(g=>g.sc)));
+    secs.forEach(sc=>{
+      const secNum = sc!=null ? sc - c*10 : null;
+      const ex = gente.filter(g=>!g.pid && g.sc===sc).sort((a,b)=>normTxtJS(a.apellidos+' '+a.nombre).localeCompare(normTxtJS(b.apellidos+' '+b.nombre)));
+      const ap = app.filter(p=>!usados.has(p.id) && p.seccion===secNum).sort((a,b)=>normTxtJS(a.apellidos+' '+a.nombre).localeCompare(normTxtJS(b.apellidos+' '+b.nombre)));
+      if(ex.length && ex.length===ap.length){
+        ex.forEach((g,i)=>{ g.pid = ap[i].id; g.como = 'orden'; usados.add(ap[i].id); });
+      }
+    });
+    // 3) Lo que quede: el más parecido de toda la compañía
+    gente.filter(g=>!g.pid).forEach(g=>{
+      let best=null, bs=0;
+      app.filter(p=>!usados.has(p.id)).forEach(p=>{ const sim = similitudTxt(p.apellidos+' '+p.nombre, g.apellidos+' '+g.nombre); if(sim>bs){ bs=sim; best=p; } });
+      if(best && bs>=0.5){ g.pid = best.id; g.como = 'parecido'; usados.add(best.id); }
+    });
+    gente.forEach(g=>{ const p = app.find(p=>p.id===g.pid); g.sim = p ? similitudTxt(p.apellidos+' '+p.nombre, g.apellidos+' '+g.nombre) : 0; });
+    SERV_IMPORT = { gente, servicios, app, dias, choques, hoja };
+
+    const fechas = dias.map(d=>d.fecha);
+    const revisar = gente.filter(g=>g.como!=='exacto');
+    const opcionesApp = sel => '<option value="">— sin emparejar (no se carga) —</option>' + app.map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})</option>`).join('');
+    const sinUsar = app.filter(p=>!gente.some(g=>g.pid===p.id));
     resEl.innerHTML = `
       <div class="servicio-card">
-        <div class="titulo">✅ ${importadas} filas importadas (${filledCols.length} días leídos, del ${filledCols[0].fecha} al ${filledCols[filledCols.length-1].fecha})</div>
-        ${sinEmparejar.size ? `<div class="meta" style="color:var(--danger);margin-top:6px;">${sinEmparejar.size} nombres del Excel no encontraron a nadie en la app:<br>${Array.from(sinEmparejar).join('<br>')}</div>` : '<div class="meta">Todos los nombres encajaron.</div>'}
-        ${choques.length ? `<div class="meta" style="color:var(--brass);margin-top:6px;">⚠️ ${choques.length} huecos con más de una persona en el Excel (revisa si es un error tuyo al rellenar):<br>${choques.join('<br>')}</div>` : ''}
+        <div class="titulo">Hoja "${escHtml(hoja)}": ${gente.length} personas · ${dias.length} días con servicios (del ${fmtFecha(fechas[0])} al ${fmtFecha(fechas[fechas.length-1])}) · ${servicios.length} servicios</div>
+        <div class="meta">Códigos encontrados: ${Object.entries(porCodigo).map(([k,v])=>`<b>${escHtml(k)}</b> ×${v}`).join(' · ')}</div>
+        ${choques.length ? `<div class="meta" style="color:var(--danger);margin-top:4px;">⚠️ ${choques.length} huecos con dos personas el mismo día en el Excel (se cargan los dos, tal cual): ${choques.slice(0,8).map(x=>`${fmtFecha(x.fecha)} ${escHtml(x.codigo)} — ${escHtml(gente[x.gi].apellidos)}`).join(' · ')}</div>` : ''}
+      </div>
+      <div class="servicio-card">
+        <div class="titulo">Emparejamiento de nombres: ${gente.length - revisar.length} exactos · ${revisar.length} para revisar</div>
+        <div class="meta">Los que no coinciden letra por letra se han emparejado por el orden de apellido dentro de su sección. Revisa que cada uno es quien tiene que ser; si alguno está mal, cámbialo en el desplegable.</div>
+        ${revisar.map(g=>{ const gi = gente.indexOf(g); return `<div class="serv-map-row">
+          <span style="min-width:220px;"><b>Excel:</b> ${escHtml(g.apellidos)}, ${escHtml(g.nombre)} (${g.sc||'?'})</span>
+          <span>→</span>
+          <select id="serv-map-${gi}">${opcionesApp(g.pid)}</select>
+          <span style="font-size:.72rem;color:${g.sim<0.7?'var(--danger)':'var(--ink-soft)'};">${g.sim<0.7?'⚠️ muy distinto, revísalo':'parecido'}</span>
+        </div>`; }).join('')}
+        ${sinUsar.length ? `<div class="meta" style="margin-top:6px;">En la app pero no en el Excel (no tendrán servicios): ${sinUsar.map(p=>escHtml(p.apellidos+', '+p.nombre)).join(' · ')}</div>` : ''}
+      </div>
+      <div class="notice closed" style="display:block;">
+        <b>Al pulsar "Cargar" se BORRA todo el cuadrante actual de la ${c}ª</b> (incluidos los servicios que se generaron hasta diciembre y las solicitudes de cambio pendientes) y queda exactamente lo del Excel.
+        <div style="margin-top:8px;"><button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="cargarExcelServicios()">2️⃣ Cargar en la app</button></div>
       </div>`;
-    await renderAdminServicios();
   }catch(e){
-    resEl.innerHTML = `<div class="small-note" style="color:var(--danger);">Error leyendo el archivo: ${e.message}</div>`;
+    resEl.innerHTML = `<div class="notice closed"><span>Error leyendo el archivo: ${escHtml(e.message||e)}</span></div>`;
   }
+}
+async function cargarExcelServicios(){
+  const resEl = document.getElementById('serv-excel-resultado');
+  if(!SERV_IMPORT){ showToast('Primero pulsa "Leer y revisar".'); return; }
+  const { gente, servicios } = SERV_IMPORT;
+  gente.forEach((g,gi)=>{ const sel = document.getElementById('serv-map-'+gi); if(sel) g.pid = sel.value || null; });
+  // Nadie de la app puede quedar emparejado con dos personas del Excel
+  const vistos = {}, repetidos = [];
+  gente.forEach(g=>{ if(!g.pid) return; if(vistos[g.pid]) repetidos.push(g.apellidos+', '+g.nombre+' y '+vistos[g.pid]); else vistos[g.pid] = g.apellidos+', '+g.nombre; });
+  if(repetidos.length){ showToast('Hay una ficha de la app elegida para dos personas del Excel: '+repetidos[0]); return; }
+  const sinPid = gente.filter(g=>!g.pid);
+  if(sinPid.length && !confirm(`${sinPid.length} personas del Excel se quedan sin emparejar y sus servicios no se cargarán (${sinPid.map(g=>g.apellidos).join(', ')}). ¿Seguir?`)) return;
+  if(!confirm(`Se va a BORRAR todo el cuadrante de la ${CURRENT.compania}ª y cargar el del Excel. ¿Seguro?`)) return;
+  // Si el Excel pone a dos personas en el mismo hueco (ej. dos "4 I" el mismo día), se cargan LAS DOS:
+  // la segunda se guarda como código suelto con el mismo texto del Excel, para no perder nada.
+  const filas = [], ocupado = new Set(), otrosDia = {};
+  servicios.forEach(sv=>{ if(sv.tipo==='otro') otrosDia[sv.fecha] = Math.max(otrosDia[sv.fecha]||0, sv.turno); });
+  servicios.forEach(sv=>{
+    const pid = gente[sv.gi].pid; if(!pid) return;
+    let tipo = sv.tipo, turno = sv.turno;
+    if(ocupado.has(sv.fecha+'|'+tipo+'|'+turno)){ tipo = 'otro'; turno = (otrosDia[sv.fecha]||0) + 1; otrosDia[sv.fecha] = turno; }
+    if(turno > 4){ showToast('Demasiados códigos sueltos el '+sv.fecha+'; revisa el Excel.'); return; }
+    ocupado.add(sv.fecha+'|'+tipo+'|'+turno);
+    filas.push({ fecha: sv.fecha, tipo, turno, persona_id: pid, codigo: sv.codigo });
+  });
+  resEl.innerHTML = '<div class="small-note">Cargando…</div>';
+  const { data, error } = await sb.rpc('cargar_servicios_excel', { p_compania: CURRENT.compania, p_filas: filas });
+  if(error){ resEl.innerHTML = `<div class="notice closed"><span>No se pudo cargar (no se ha cambiado nada): ${escHtml(error.message)} — ¿has ejecutado el patch 44?</span></div>`; return; }
+  SERV_IMPORT = null;
+  resEl.innerHTML = `<div class="notice" style="border-color:#2e7d32;"><span>✅ Cuadrante cargado: ${data} servicios, exactamente como en el Excel.</span></div>`;
+  const primera = filas.map(f=>f.fecha).sort()[0];
+  if(primera) servDesde = ymd(lunesDe(new Date()));
+  await renderAdminServicios();
 }
 async function exportServiciosExcel(){
   const c = CURRENT.compania;
-  const week = SERV_WEEKS[servWeekIndex];
-  const diasLaborables = week.days.slice(0,5); // lunes a viernes
-  const desde = ymd(diasLaborables[0]), hasta = ymd(diasLaborables[4]);
+  const dias = diasServGrid();
+  const desde = ymd(dias[0]), hasta = ymd(dias[dias.length-1]);
   const { data: servicios } = await sb.from('servicios')
     .select('*, personas(nombre,apellidos,seccion)')
     .eq('compania', c).gte('fecha', desde).lte('fecha', hasta)
     .order('fecha').order('tipo').order('turno');
-  const header = ['Día', 'Sección', 'Nombre y apellidos', 'Servicio'];
+  const header = ['Día', 'Código', 'Servicio', 'Sección', 'Nombre y apellidos'];
   const rows = [header];
-  (servicios||[]).forEach(s=>{
-    const dIdx = diasLaborables.findIndex(d=>ymd(d)===s.fecha);
-    const diaTxt = dIdx>=0 ? `${SERV_DAY_NAMES[dIdx]} ${fmt(diasLaborables[dIdx])}` : s.fecha;
-    rows.push([diaTxt, `${c}${s.personas.seccion}`, `${s.personas.apellidos}, ${s.personas.nombre}`, servicioLabel(s)]);
-  });
-  if(rows.length===1) rows.push(['—','—','Sin servicios asignados esta semana','']);
+  (servicios||[]).forEach(s=>{ rows.push([fmtFecha(s.fecha), servCorto(s), servicioLabel(s), `${c}${s.personas.seccion}`, `${s.personas.apellidos}, ${s.personas.nombre}`]); });
+  if(rows.length===1) rows.push(['—','','Sin servicios en estos días','','']);
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{wch:16},{wch:10},{wch:28},{wch:26}];
+  ws['!cols'] = [{wch:14},{wch:8},{wch:26},{wch:9},{wch:30}];
   xlsxHeaderOnly(ws, header.length);
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Semana '+fmt(diasLaborables[0]).replace('/','-'));
-  const filename = `PortalAGM_Servicios_${c}Cia_${fmt(diasLaborables[0]).replace('/','-')}_a_${fmt(diasLaborables[4]).replace('/','-')}.xlsx`;
-  XLSX.writeFile(wb, filename);
+  XLSX.utils.book_append_sheet(wb, ws, 'Servicios');
+  XLSX.writeFile(wb, `PortalAGM_Servicios_${c}Cia_${desde}_a_${hasta}.xlsx`);
 }
-let servPage = 0;
-const SERV_PAGE_SIZE = 25;
-let servFamilia = 'ambos';
-let servView = 'lista25';
-function servCambiarPagina(p){ servPage = p; renderAdminServicios(); }
-function onServFamiliaChange(){ servFamilia = document.getElementById('serv-familia').value; renderAdminServicios(); }
-function setServView(v){ servView = v; renderAdminServicios(); }
+let servFamilia = 'ambos', servDias = (window.innerWidth>1100 ? 28 : 14), servDesde = null, servSeccion = 'todas', servBuscar = '';
+let SERV_GRID = null;
+function lunesDe(d){ const x = new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; }
+function diasServGrid(){
+  if(!servDesde) servDesde = ymd(lunesDe(new Date()));
+  const d0 = new Date(servDesde+'T00:00:00');
+  return Array.from({length:servDias},(_,i)=>{ const d = new Date(d0); d.setDate(d0.getDate()+i); return d; });
+}
+function servMover(semanas){ const d = new Date(servDesde+'T00:00:00'); d.setDate(d.getDate()+semanas*7); servDesde = ymd(d); renderAdminServicios(); }
+function servIrHoy(){ servDesde = ymd(lunesDe(new Date())); renderAdminServicios(); }
+function onServDias(v){ servDias = parseInt(v,10); renderAdminServicios(); }
+function onServSeccionGrid(v){ servSeccion = v; pintarServGrid(); }
+function onServBuscar(v){ servBuscar = v; pintarServGrid(); }
+function onServFamiliaChange(){ servFamilia = document.getElementById('serv-familia').value; pintarServGrid(); }
+function setServView(){ renderAdminServicios(); }
+function servCambiarPagina(){ renderAdminServicios(); }
+function pintarServGrid(){
+  if(!SERV_GRID) return;
+  const c = CURRENT.compania;
+  const { roster, dias, servicios } = SERV_GRID;
+  const tiposDia = ['cuartelero','imaginaria_cuartelero'], tiposNoche = ['imaginaria','imaginaria_imaginaria'];
+  const mostrar = s => s.tipo==='otro' || servFamilia==='ambos' || (servFamilia==='dia' ? tiposDia.includes(s.tipo) : tiposNoche.includes(s.tipo));
+  const porPD = {};
+  servicios.filter(mostrar).forEach(s=>{ const k = s.persona_id+'|'+s.fecha; (porPD[k] = porPD[k] || []).push(s); });
+  const q = normTxtJS(servBuscar);
+  const gente = roster.filter(p=>(servSeccion==='todas' || String(p.seccion)===String(servSeccion)) && (!q || q.split(' ').every(w=>normTxtJS(p.apellidos+' '+p.nombre).includes(w))));
+  const hoy = ymd(new Date());
+  const LETRA = ['D','L','M','X','J','V','S'];
+  let thead = `<thead><tr><th class="nc">${gente.length} personas</th>`;
+  dias.forEach(d=>{ const f = ymd(d), finde = d.getDay()===0 || d.getDay()===6; thead += `<th class="${finde?'fin':''} ${f===hoy?'hoy':''}">${LETRA[d.getDay()]}<br>${fmt(d)}</th>`; });
+  thead += '</tr></thead>';
+  let tbody = '<tbody>';
+  gente.forEach(p=>{
+    tbody += `<tr><td class="nc" title="${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})">${escHtml(p.apellidos)}, ${escHtml(p.nombre)} <span style="color:var(--ink-soft);">${c}${p.seccion}</span></td>`;
+    dias.forEach(d=>{
+      const f = ymd(d), finde = d.getDay()===0 || d.getDay()===6;
+      const lista = porPD[p.id+'|'+f] || [];
+      const cont = lista.map(s=> s.tipo==='otro'
+        ? `<span class="serv-cod otro" title="${escHtml(s.codigo||'')} (código del Excel)">${escHtml(servCorto(s))}</span>`
+        : `<span class="serv-cod ${servClase(s)}" title="${servicioLabel(s)} — toca para cambiar" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno})">${escHtml(servCorto(s))}</span>`).join(' ');
+      tbody += `<td class="${finde?'fin':''} ${f===hoy?'hoy':''}" ${lista.length?'':`ondblclick="abrirAsignarRapido('${p.id}','${f}')"`}>${cont}</td>`;
+    });
+    tbody += '</tr>';
+  });
+  tbody += '</tbody>';
+  document.getElementById('admin-servicios-tabla').innerHTML = gente.length ? thead + tbody : '<tbody><tr><td class="small-note">Nadie con ese filtro.</td></tr></tbody>';
+}
 async function renderAdminServicios(){
   document.getElementById('admin-week-select').innerHTML = '';
   document.getElementById('admin-notice').innerHTML = '';
+  document.getElementById('admin-serv-week-select').innerHTML = '';
   const c = CURRENT.compania;
   const { data: ci } = await sb.from('companias').select('servicios_visible_alumnos').eq('numero', c).single();
   document.getElementById('serv-visible-toggle').checked = !!(ci && ci.servicios_visible_alumnos);
 
-  ['lista25','hoy','semana'].forEach(v=> document.getElementById('serv-view-'+v).classList.toggle('active', servView===v));
-  document.getElementById('admin-serv-week-select').innerHTML = servView==='hoy' ? '' : servWeekSelectHtml();
-  document.getElementById('admin-servicios-paginacion').innerHTML = '';
-  const week = SERV_WEEKS[servWeekIndex];
-
   const { data: roster } = await sb.from('personas').select('id,nombre,apellidos,seccion').eq('compania', c).order('apellidos');
-  const rosterZA = (roster||[]).slice().reverse(); // orden de abajo hacia arriba, para asignar servicios siguiendo el turno
-  document.getElementById('serv-persona').innerHTML = rosterZA.map(p=>`<option value="${p.id}">${p.apellidos}, ${p.nombre} (${c}${p.seccion})</option>`).join('');
-  document.getElementById('serv-fecha').innerHTML = week.days.map((d,i)=>`<option value="${ymd(d)}">${SERV_DAY_NAMES[i]} ${fmt(d)}</option>`).join('');
+  document.getElementById('serv-persona').innerHTML = (roster||[]).map(p=>`<option value="${p.id}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})</option>`).join('');
   onServTipoChange();
 
-  const SERV_SHORT = { cuartelero:'C', imaginaria:'I', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'II' };
-  const tablaEl = document.getElementById('admin-servicios-tabla');
-  const leyendaEl = document.getElementById('admin-servicios-leyenda');
-  const leyendaBits = [];
-  if(servFamilia!=='imaginarias') leyendaBits.push('<div class="fixed-pill"><span class="pernocta-badge agm">C</span> Cuartelero</div>', '<div class="fixed-pill"><span class="pernocta-badge agm">IC</span> Imaginaria de Cuartelero</div>');
-  if(servFamilia!=='dia') leyendaBits.push('<div class="fixed-pill"><span class="pernocta-badge agm">I1-I4</span> Imaginaria, turno 1 a 4</div>', '<div class="fixed-pill"><span class="pernocta-badge agm">II</span> Imaginaria de Imaginaria</div>');
-  leyendaBits.push('<div class="fixed-pill">Toca cualquier código para sustituir, la ✕ para quitar sin más</div>');
-  leyendaEl.innerHTML = leyendaBits.join('');
+  const dias = diasServGrid();
+  const desde = ymd(dias[0]), hasta = ymd(dias[dias.length-1]);
+  const { data: servicios } = await sb.from('servicios').select('*').eq('compania', c).gte('fecha', desde).lte('fecha', hasta).range(0, 4999);
+  const ordenado = (roster||[]).slice().sort((a,b)=>normTxtJS(a.apellidos+' '+a.nombre).localeCompare(normTxtJS(b.apellidos+' '+b.nombre)));
+  SERV_GRID = { roster: ordenado, dias, servicios: servicios||[] };
 
-  const tiposDia = ['cuartelero','imaginaria_cuartelero'];
-  const tiposNoche = ['imaginaria','imaginaria_imaginaria'];
-  const tiposMostrar = servFamilia==='dia' ? tiposDia : servFamilia==='imaginarias' ? tiposNoche : [...tiposDia, ...tiposNoche];
-  const badgeHtml = s => `<span class="pernocta-badge agm" style="cursor:pointer;" title="${servicioLabel(s)} — click para sustituir" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno})">${SERV_SHORT[s.tipo]}${s.tipo==='imaginaria'?s.turno:''}</span><span style="cursor:pointer;color:var(--danger);font-weight:700;margin-left:2px;" title="Quitar sin sustituir" onclick="eliminarServicio(${s.id})">✕</span>`;
-
-  if(servView==='hoy'){
-    const hoy = ymd(new Date());
-    const { data: servicios } = await sb.from('servicios')
-      .select('*, personas(nombre,apellidos,seccion)')
-      .eq('compania', c).eq('fecha', hoy).in('tipo', tiposMostrar)
-      .order('tipo').order('turno');
-    let thead = `<thead><tr class="daynames"><th class="name-cell">Hoy — ${fmtFecha(hoy)}</th><th>Servicio</th></tr></thead>`;
-    let tbody = '<tbody>';
-    (servicios||[]).forEach(s=>{
-      tbody += `<tr><td class="name-cell">${s.personas.apellidos}, ${s.personas.nombre} <span style="color:var(--ink-soft);">(${c}${s.personas.seccion})</span></td><td>${badgeHtml(s)}</td></tr>`;
-    });
-    tbody += '</tbody>';
-    tablaEl.innerHTML = (servicios&&servicios.length) ? (thead+tbody) : '<div class="small-note">Nadie tiene servicio hoy.</div>';
-
-  } else if(servView==='semana'){
-    const desde = ymd(week.days[0]), hasta = ymd(week.days[6]);
-    const { data: servicios } = await sb.from('servicios')
-      .select('*, personas(nombre,apellidos,seccion)')
-      .eq('compania', c).gte('fecha', desde).lte('fecha', hasta).in('tipo', tiposMostrar)
-      .order('fecha').order('tipo').order('turno');
-    const porPersonaDia = {};
-    (servicios||[]).forEach(s=>{
-      const k = s.persona_id+'|'+s.fecha;
-      (porPersonaDia[k] = porPersonaDia[k] || []).push(s);
-    });
-    const conServicio = (roster||[]).filter(p=> week.days.some(d=> (porPersonaDia[p.id+'|'+ymd(d)]||[]).length>0));
-    let thead = '<thead><tr class="daynames"><th class="name-cell">Con servicio esta semana</th>';
-    week.days.forEach((d,i)=> thead += `<th>${SERV_DAY_NAMES[i].slice(0,3)}<span class="colhead-sub">${fmt(d)}</span></th>`);
-    thead += '</tr></thead>';
-    let tbody = '<tbody>';
-    conServicio.forEach(p=>{
-      tbody += `<tr><td class="name-cell">${p.apellidos}, ${p.nombre} <span style="color:var(--ink-soft);">(${c}${p.seccion})</span></td>`;
-      week.days.forEach(d=>{
-        const asignados = porPersonaDia[p.id+'|'+ymd(d)] || [];
-        tbody += asignados.length ? ('<td>'+asignados.map(badgeHtml).join(' ')+'</td>') : `<td class="celda-vacia-serv" ondblclick="abrirAsignarRapido('${p.id}','${ymd(d)}')" title="Doble clic para asignar"></td>`;
-      });
-      tbody += '</tr>';
-    });
-    tbody += '</tbody>';
-    tablaEl.innerHTML = conServicio.length ? (thead+tbody) : '<div class="small-note">Nadie tiene servicio asignado esta semana.</div>';
-
-  } else {
-    // lista25: las 113 seguidas, paginadas
-    const desde = ymd(week.days[0]), hasta = ymd(week.days[6]);
-    const { data: servicios } = await sb.from('servicios')
-      .select('*, personas(nombre,apellidos,seccion)')
-      .eq('compania', c).gte('fecha', desde).lte('fecha', hasta).in('tipo', tiposMostrar)
-      .order('fecha').order('tipo').order('turno');
-    const porPersonaDia = {};
-    (servicios||[]).forEach(s=>{
-      const k = s.persona_id+'|'+s.fecha;
-      (porPersonaDia[k] = porPersonaDia[k] || []).push(s);
-    });
-
-    const totalPersonas = (roster||[]).length;
-    const totalPaginas = Math.max(1, Math.ceil(totalPersonas / SERV_PAGE_SIZE));
-    if(servPage >= totalPaginas) servPage = totalPaginas - 1;
-    if(servPage < 0) servPage = 0;
-    let pagHtml = '';
-    for(let pg=0; pg<totalPaginas; pg++){
-      const desdeN = pg*SERV_PAGE_SIZE+1, hastaN = Math.min((pg+1)*SERV_PAGE_SIZE, totalPersonas);
-      pagHtml += `<button class="small-btn${pg===servPage?' active':''}" onclick="servCambiarPagina(${pg})">${desdeN}–${hastaN}</button>`;
-    }
-    document.getElementById('admin-servicios-paginacion').innerHTML = pagHtml;
-
-    const pagina = (roster||[]).slice(servPage*SERV_PAGE_SIZE, servPage*SERV_PAGE_SIZE + SERV_PAGE_SIZE);
-    let thead = '<thead><tr class="daynames"><th class="name-cell">'+c+'ª Compañía — las 113</th>';
-    week.days.forEach((d,i)=> thead += `<th>${SERV_DAY_NAMES[i].slice(0,3)}<span class="colhead-sub">${fmt(d)}</span></th>`);
-    thead += '</tr></thead>';
-    let tbody = '<tbody>';
-    pagina.forEach(p=>{
-      tbody += `<tr><td class="name-cell">${p.apellidos}, ${p.nombre} <span style="color:var(--ink-soft);">(${c}${p.seccion})</span></td>`;
-      week.days.forEach(d=>{
-        const asignados = porPersonaDia[p.id+'|'+ymd(d)] || [];
-        tbody += asignados.length ? ('<td>'+asignados.map(badgeHtml).join(' ')+'</td>') : `<td class="celda-vacia-serv" ondblclick="abrirAsignarRapido('${p.id}','${ymd(d)}')" title="Doble clic para asignar"></td>`;
-      });
-      tbody += '</tr>';
-    });
-    tbody += '</tbody>';
-    tablaEl.innerHTML = thead + tbody;
-  }
+  const fmtLargo = d => d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+  document.getElementById('serv-grid-controles').innerHTML = `
+    <div class="serv-ctrl">
+      <button class="small-btn" onclick="servMover(-1)">◀ Semana anterior</button>
+      <button class="small-btn" onclick="servIrHoy()">Hoy</button>
+      <button class="small-btn" onclick="servMover(1)">Semana siguiente ▶</button>
+      <select onchange="onServDias(this.value)">${[7,14,21,28,35].map(n=>`<option value="${n}" ${servDias===n?'selected':''}>${n} días</option>`).join('')}</select>
+      <select onchange="onServSeccionGrid(this.value)"><option value="todas">Todas las secciones</option>${[1,2,3,4].map(n=>`<option value="${n}" ${String(servSeccion)===String(n)?'selected':''}>Sección ${c}${n}</option>`).join('')}</select>
+      <select id="serv-familia" onchange="onServFamiliaChange()">
+        <option value="ambos" ${servFamilia==='ambos'?'selected':''}>Todo</option>
+        <option value="dia" ${servFamilia==='dia'?'selected':''}>Solo C / IC</option>
+        <option value="imaginarias" ${servFamilia==='imaginarias'?'selected':''}>Solo imaginarias</option>
+      </select>
+      <input type="search" placeholder="Buscar nombre…" value="${escHtml(servBuscar)}" oninput="onServBuscar(this.value)">
+    </div>
+    <div class="small-note" style="margin:-4px 0 6px;">Del ${fmtLargo(dias[0])} al ${fmtLargo(dias[dias.length-1])} · ${SERV_GRID.servicios.length} servicios en estos días</div>`;
+  document.getElementById('admin-servicios-leyenda').innerHTML = `
+    <div class="fixed-pill"><span class="serv-cod c">C</span> Cuartelero</div>
+    <div class="fixed-pill"><span class="serv-cod ic">IC</span> Imag. de Cuartelero</div>
+    <div class="fixed-pill"><span class="serv-cod i">1 I…4 I</span> Imaginaria turno 1–4</div>
+    <div class="fixed-pill"><span class="serv-cod ii">I I</span> Imag. de Imaginaria</div>
+    <div class="fixed-pill"><span class="serv-cod otro">Otros</span> Código tal cual del Excel</div>
+    <div class="fixed-pill">Toca un código para cambiarlo</div>`;
+  pintarServGrid();
 
   const { data: pendientes } = await sb.from('cambios_servicio')
-    .select('*, servicios(fecha,tipo,turno), solicitante:personas!cambios_servicio_solicitante_id_fkey(nombre,apellidos), sustituto:personas!cambios_servicio_sustituto_id_fkey(nombre,apellidos)')
+    .select('*, servicios(fecha,tipo,turno,codigo), solicitante:personas!cambios_servicio_solicitante_id_fkey(nombre,apellidos), sustituto:personas!cambios_servicio_sustituto_id_fkey(nombre,apellidos)')
     .eq('compania', c).eq('estado','pendiente').order('creado_en');
   document.getElementById('admin-cambios-pendientes').innerHTML = (pendientes&&pendientes.length) ? pendientes.map(p=>`
     <div class="servicio-card">
