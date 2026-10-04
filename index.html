@@ -30,6 +30,10 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .version-tag{text-align:center;color:var(--ink-soft);font-size:.68rem;margin-top:4px;font-weight:500;}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace;}
 .wrap{max-width:880px;margin:0 auto;padding:28px 18px 60px;}
+/* Ordenador (pantalla grande + ratón): la app ocupa todo el ancho. En móvil y tablet se queda igual. */
+@media (min-width:1024px) and (hover:hover) and (pointer:fine){
+  .wrap{max-width:none;padding:28px 36px 60px;}
+}
 .hidden{display:none !important;}
 .masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;}
 .masthead h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:.01em;}
@@ -570,7 +574,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-03T19:20";
+const APP_VERSION = "2026-10-04T14:30";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
