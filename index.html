@@ -571,7 +571,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-04T17:00";
+const APP_VERSION = "2026-10-04T17:20";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -3973,7 +3973,11 @@ async function cargarExcelServicios(){
   resEl.innerHTML = '<div class="small-note">Cargando…</div>';
   const { data, error } = await sb.rpc('cargar_servicios_excel', { p_compania: CURRENT.compania, p_filas: filas, p_deudas: deudas });
   if(error){ resEl.innerHTML = `<div class="notice closed"><span>No se pudo cargar (no se ha cambiado nada): ${escHtml(error.message)} — ¿has ejecutado los patches 44 y 45?</span></div>`; return; }
+  // El cuadrante se ordena como las filas del Excel
+  const ordenExcel = gente.map(g=>g.pid).filter(Boolean);
+  const { error: errOrden } = await sb.rpc('guardar_orden_servicio', { p_compania: CURRENT.compania, p_ids: ordenExcel });
   SERV_IMPORT = null;
+  if(errOrden) showToast('Cargado, pero no se pudo guardar el orden del Excel (¿patch 46?).');
   resEl.innerHTML = `<div class="notice" style="border-color:#2e7d32;"><span>✅ Cargado: ${data} servicios y ${deudas.length} deudas, exactamente como en el Excel.${obs.noEntendidas.length?` Ojo: ${obs.noEntendidas.length} anotación(es) de OBS. no se entendieron y no se cargaron.`:''}</span></div>`;
   const primera = filas.map(f=>f.fecha).sort()[0];
   if(primera) servDesde = ymd(lunesDe(new Date()));
@@ -4023,7 +4027,10 @@ function pintarServGrid(){
   const porPD = {};
   servicios.filter(mostrar).forEach(s=>{ const k = s.persona_id+'|'+s.fecha; (porPD[k] = porPD[k] || []).push(s); });
   const q = normTxtJS(servBuscar);
-  const gente = roster.filter(p=>(servSeccion==='todas' || String(p.seccion)===String(servSeccion)) && (!q || q.split(' ').every(w=>normTxtJS(p.apellidos+' '+p.nombre).includes(w))));
+  const gente = servOrdenando ? roster : roster.filter(p=>(servSeccion==='todas' || String(p.seccion)===String(servSeccion)) && (!q || q.split(' ').every(w=>normTxtJS(p.apellidos+' '+p.nombre).includes(w))));
+  const barra = document.getElementById('serv-orden-barra');
+  if(barra) barra.innerHTML = servOrdenando ? `<div class="notice" style="display:block;margin-bottom:8px;">↕️ <b>Ordenando:</b> arrastra un nombre a su sitio (o usa ▲ ▼). Se ve la compañía entera, sin filtros.
+      <div style="margin-top:6px;display:flex;gap:6px;"><button class="small-btn" onclick="guardarOrdenServ()">💾 Guardar orden</button><button class="small-btn" onclick="cancelarOrdenServ()">Cancelar</button></div></div>` : '';
   const hoy = ymd(new Date());
   const LETRA = ['D','L','M','X','J','V','S'];
   let thead = `<thead><tr><th class="nc">${gente.length} personas</th>`;
@@ -4031,7 +4038,10 @@ function pintarServGrid(){
   thead += '</tr></thead>';
   let tbody = '<tbody>';
   gente.forEach(p=>{
-    tbody += `<tr><td class="nc" title="${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})">${escHtml(p.apellidos)}, ${escHtml(p.nombre)} <span style="color:var(--ink-soft);">${c}${p.seccion}</span></td>`;
+    const nombreCelda = `${escHtml(p.apellidos)}, ${escHtml(p.nombre)} <span style="color:var(--ink-soft);">${c}${p.seccion}</span>`;
+    tbody += servOrdenando
+      ? `<tr data-id="${p.id}" ondragover="event.preventDefault()" ondrop="soltarFilaServ(event,'${p.id}')"><td class="nc" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" style="cursor:grab;"><span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',-1)">▲</span> <span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',1)">▼</span> ⠿ ${nombreCelda}</td>`
+      : `<tr><td class="nc" title="${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})">${nombreCelda}</td>`;
     dias.forEach(d=>{
       const f = ymd(d), finde = d.getDay()===0 || d.getDay()===6;
       const lista = porPD[p.id+'|'+f] || [];
@@ -4048,7 +4058,45 @@ function pintarServGrid(){
   tabla.style.minWidth = (210 + dias.length*36) + 'px';
   tabla.innerHTML = gente.length ? thead + tbody : '<tbody><tr><td class="small-note">Nadie con ese filtro.</td></tr></tbody>';
 }
+let servOrdenando = false, servOrdenAntes = null;
+function toggleOrdenarServ(){
+  if(servOrdenando){ cancelarOrdenServ(); return; }
+  servOrdenando = true; servOrdenAntes = SERV_GRID.roster.slice();
+  document.getElementById('serv-btn-ordenar').textContent = '✖ Salir de ordenar';
+  pintarServGrid();
+}
+function cancelarOrdenServ(){
+  servOrdenando = false;
+  if(servOrdenAntes) SERV_GRID.roster = servOrdenAntes;
+  servOrdenAntes = null;
+  const b = document.getElementById('serv-btn-ordenar'); if(b) b.textContent = '↕️ Ordenar nombres';
+  pintarServGrid();
+}
+function moverFilaServ(id, delta){
+  const r = SERV_GRID.roster, i = r.findIndex(p=>p.id===id), j = i + delta;
+  if(i<0 || j<0 || j>=r.length) return;
+  [r[i], r[j]] = [r[j], r[i]];
+  pintarServGrid();
+}
+function soltarFilaServ(ev, destinoId){
+  ev.preventDefault();
+  const origenId = ev.dataTransfer.getData('text/plain');
+  if(!origenId || origenId===destinoId) return;
+  const r = SERV_GRID.roster, i = r.findIndex(p=>p.id===origenId);
+  const [fila] = r.splice(i, 1);
+  r.splice(r.findIndex(p=>p.id===destinoId), 0, fila);
+  pintarServGrid();
+}
+async function guardarOrdenServ(){
+  const ids = SERV_GRID.roster.map(p=>p.id);
+  const { error } = await sb.rpc('guardar_orden_servicio', { p_compania: CURRENT.compania, p_ids: ids });
+  if(error){ showToast('No se pudo guardar el orden: '+error.message+' — ¿has ejecutado el patch 46?'); return; }
+  servOrdenando = false; servOrdenAntes = null;
+  showToast('Orden guardado.');
+  await renderAdminServicios();
+}
 async function renderAdminServicios(){
+  if(servOrdenando){ servOrdenando = false; servOrdenAntes = null; }
   document.getElementById('admin-week-select').innerHTML = '';
   document.getElementById('admin-notice').innerHTML = '';
   document.getElementById('admin-serv-week-select').innerHTML = '';
@@ -4056,14 +4104,19 @@ async function renderAdminServicios(){
   const { data: ci } = await sb.from('companias').select('servicios_visible_alumnos').eq('numero', c).single();
   document.getElementById('serv-visible-toggle').checked = !!(ci && ci.servicios_visible_alumnos);
 
-  const { data: roster } = await sb.from('personas').select('id,nombre,apellidos,seccion').eq('compania', c).order('apellidos');
+  let { data: roster, error: errRoster } = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio').eq('compania', c).order('apellidos');
+  if(errRoster){ ({ data: roster } = await sb.from('personas').select('id,nombre,apellidos,seccion').eq('compania', c).order('apellidos')); } // por si aún no está el patch 46
   document.getElementById('serv-persona').innerHTML = (roster||[]).map(p=>`<option value="${p.id}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})</option>`).join('');
   onServTipoChange();
 
   const dias = diasServGrid();
   const desde = ymd(dias[0]), hasta = ymd(dias[dias.length-1]);
   const { data: servicios } = await sb.from('servicios').select('*').eq('compania', c).gte('fecha', desde).lte('fecha', hasta).range(0, 4999);
-  const ordenado = (roster||[]).slice().sort((a,b)=>normTxtJS(a.apellidos+' '+a.nombre).localeCompare(normTxtJS(b.apellidos+' '+b.nombre)));
+  // Orden del Excel (o el que hayas puesto a mano); quien no tenga orden va al final por apellido
+  const ordenado = (roster||[]).slice().sort((a,b)=>{
+    const oa = a.orden_servicio==null ? 1e9 : a.orden_servicio, ob = b.orden_servicio==null ? 1e9 : b.orden_servicio;
+    return (oa-ob) || normTxtJS(a.apellidos+' '+a.nombre).localeCompare(normTxtJS(b.apellidos+' '+b.nombre));
+  });
   SERV_GRID = { roster: ordenado, dias, servicios: servicios||[] };
 
   const fmtLargo = d => d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
@@ -4080,7 +4133,9 @@ async function renderAdminServicios(){
         <option value="imaginarias" ${servFamilia==='imaginarias'?'selected':''}>Solo imaginarias</option>
       </select>
       <input type="search" placeholder="Buscar nombre…" value="${escHtml(servBuscar)}" oninput="onServBuscar(this.value)">
+      <button class="small-btn" id="serv-btn-ordenar" onclick="toggleOrdenarServ()">↕️ Ordenar nombres</button>
     </div>
+    <div id="serv-orden-barra"></div>
     <div class="small-note" style="margin:-4px 0 6px;">Del ${fmtLargo(dias[0])} al ${fmtLargo(dias[dias.length-1])} · ${SERV_GRID.servicios.length} servicios en estos días</div>`;
   document.getElementById('admin-servicios-leyenda').innerHTML = `
     <div class="fixed-pill"><span class="serv-cod c">C</span> Cuartelero</div>
