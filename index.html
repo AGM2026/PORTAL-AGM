@@ -616,7 +616,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-08T09:45";
+const APP_VERSION = "2026-10-08T10:15";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -725,11 +725,12 @@ async function toggleServiciosVisible(checked){
 let weekIndex = 0;
 let ACTIVE_WEEK = WEEKS[0];
 function setActiveWeek(idx){ weekIndex = idx; ACTIVE_WEEK = WEEKS[idx]; }
-let CORTES_ESPECIALES = {}; // semana_inicio (clave) -> timestamp ISO del corte especial de esa semana
+let CORTES_ESPECIALES = {}; // semana_inicio -> { ambos, comidas, pernoctas } (timestamp ISO de cada corte especial)
 async function fetchCortesEspeciales(compania){
-  const { data } = await sb.from('cortes_especiales').select('semana_inicio,corte_en').eq('compania', compania);
+  let { data, error } = await sb.from('cortes_especiales').select('semana_inicio,corte_en,modulo').eq('compania', compania);
+  if(error){ ({ data } = await sb.from('cortes_especiales').select('semana_inicio,corte_en').eq('compania', compania)); } // sin el patch 50
   CORTES_ESPECIALES = {};
-  (data||[]).forEach(r=>{ CORTES_ESPECIALES[r.semana_inicio] = r.corte_en; });
+  (data||[]).forEach(r=>{ (CORTES_ESPECIALES[r.semana_inicio] = CORTES_ESPECIALES[r.semana_inicio] || {})[r.modulo || 'ambos'] = r.corte_en; });
 }
 let PERNOCTA_FORZAR_AGM = {}; // semana_inicio (clave) -> Set de días forzados obligatorios en la AGM por el admin (aparte del viernes normal)
 async function fetchPernoctaForzarAgm(compania){
@@ -746,10 +747,15 @@ async function fetchComidaDesbloqueoDias(compania){
 }
 function diaComidaDesbloqueado(dia, week){ week = week || ACTIVE_WEEK; return !!(COMIDA_DESBLOQUEO_DIAS[week.key] && COMIDA_DESBLOQUEO_DIAS[week.key].has(dia)); }
 function moduloActivo(){ return (CURRENT && CURRENT.mode==='cuartel') ? CUARTEL.modulo : currentModule; }
-function cutoffFor(week, horaCorte){
+// Plazo de cierre de una semana. Comidas y Pernoctas pueden tener cada una el suyo:
+// corte propio del módulo > (semana especial de pernoctas) > corte "ambos" > lo normal.
+function cutoffFor(week, horaCorte, modulo){
+  const mod = modulo || (moduloActivo()==='pernoctas' ? 'pernoctas' : 'comidas');
+  const cortes = CORTES_ESPECIALES[week.key] || {};
+  if(cortes[mod]) return new Date(cortes[mod]);
   const esp = PERNOCTA_SEMANAS_ESPECIALES[week.key];
-  if(esp && esp.cierre && moduloActivo()==='pernoctas') return new Date(esp.cierre);
-  if(CORTES_ESPECIALES[week.key]) return new Date(CORTES_ESPECIALES[week.key]);
+  if(mod==='pernoctas' && esp && esp.cierre) return new Date(esp.cierre);
+  if(cortes.ambos) return new Date(cortes.ambos);
   const cutoff = new Date(week.days[0]); cutoff.setDate(week.days[0].getDate()-4);
   const [hh,mm] = (horaCorte||'10:00:00').split(':').map(Number);
   cutoff.setHours(hh, mm, 0, 0);
@@ -2045,16 +2051,7 @@ async function _renderAdminImpl(){
         </div>
         <label class="switch"><input type="checkbox" ${SEMANAS_OCULTAS.has(ACTIVE_WEEK.key)?'checked':''} onchange="toggleSemanaOculta(this.checked)"><span class="track"></span><span class="thumb"></span></label>
       </div>
-      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
-        <div class="switch-label">Corte especial para la semana seleccionada
-          <span class="sub2">${CORTES_ESPECIALES[ACTIVE_WEEK.key] ? 'Esta semana tiene un corte distinto del normal (afecta a Comidas y Pernoctas)' : 'Por si alguna semana necesita un día/hora de cierre distinto del resto (afecta a Comidas y Pernoctas)'}</span>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-          <input type="datetime-local" id="corte-especial-input" value="${toDatetimeLocalValue(cutoffFor(ACTIVE_WEEK, companiaInfo.hora_corte))}" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
-          <button class="small-btn" onclick="guardarCorteEspecial()">Guardar para esta semana</button>
-          ${CORTES_ESPECIALES[ACTIVE_WEEK.key] ? `<button class="small-btn danger" onclick="quitarCorteEspecial()">Quitar (volver al normal)</button>` : ''}
-        </div>
-      </div>
+      ${corteEspecialPanelHtml(companiaInfo.hora_corte,'comidas')}
       <div class="panel-row">
         <div class="switch-label">Exportar la tabla de la ${c}ª Compañía (semana seleccionada)<span class="sub2">Una hoja por sección, lista para imprimir</span></div>
         <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="exportCompanyExcel()">📄 Exportar a Excel</button>
@@ -2176,24 +2173,54 @@ async function toggleSemanaOculta(checked){
   }
   await (currentModule==='pernoctas' ? renderAdminPernoctas() : renderAdmin());
 }
-async function guardarCorteEspecial(){
-  const value = document.getElementById('corte-especial-input').value;
+const corteModuloSel = {};
+const CORTE_ETIQUETA = { comidas:'Solo Comidas', pernoctas:'Solo Pernoctas', ambos:'Comidas y Pernoctas' };
+function fmtCorteCorto(d){ return d.toLocaleString('es-ES',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+function corteEspecialPanelHtml(horaCorte, panel){
+  const cortes = CORTES_ESPECIALES[ACTIVE_WEEK.key] || {};
+  const sel = corteModuloSel[panel] || panel;
+  const valor = toDatetimeLocalValue(cutoffFor(ACTIVE_WEEK, horaCorte, sel==='ambos' ? 'comidas' : sel));
+  const puestos = ['comidas','pernoctas','ambos'].filter(m=>cortes[m]).map(m=>`
+    <div class="history-row">⏰ <b>${CORTE_ETIQUETA[m]}</b>: cierre especial el ${fmtCorteCorto(new Date(cortes[m]))}
+      <button class="small-btn danger" style="padding:2px 8px;margin-left:6px;" onclick="quitarCorteEspecial('${m}')">Quitar</button></div>`).join('');
+  return `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
+    <div class="switch-label">Plazo de cierre de la semana seleccionada
+      <span class="sub2">Ahora mismo: <b>Comidas</b> cierran el ${fmtCorteCorto(cutoffFor(ACTIVE_WEEK, horaCorte, 'comidas'))} · <b>Pernoctas</b> cierran el ${fmtCorteCorto(cutoffFor(ACTIVE_WEEK, horaCorte, 'pernoctas'))}. Puedes poner un cierre distinto para cada una o el mismo para las dos.</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+      <select id="corte-especial-modulo-${panel}" onchange="corteModuloSel['${panel}']=this.value; document.getElementById('corte-especial-input-${panel}').value=toDatetimeLocalValue(cutoffFor(ACTIVE_WEEK,'${horaCorte}',this.value==='ambos'?'comidas':this.value))" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
+        ${['comidas','pernoctas','ambos'].map(m=>`<option value="${m}" ${sel===m?'selected':''}>${CORTE_ETIQUETA[m]}</option>`).join('')}
+      </select>
+      <input type="datetime-local" id="corte-especial-input-${panel}" value="${valor}" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
+      <button class="small-btn" onclick="guardarCorteEspecial('${panel}')">Guardar para esta semana</button>
+    </div>
+    ${puestos}
+  </div>`;
+}
+async function guardarCorteEspecial(panel){
+  const value = document.getElementById('corte-especial-input-'+panel).value;
+  const modulo = document.getElementById('corte-especial-modulo-'+panel).value;
   if(!value){ showToast('Elige fecha y hora.'); return; }
   const iso = new Date(value).toISOString();
   const { error } = await sb.from('cortes_especiales').upsert(
-    { compania: CURRENT.compania, semana_inicio: ACTIVE_WEEK.key, corte_en: iso },
-    { onConflict: 'compania,semana_inicio' }
+    { compania: CURRENT.compania, semana_inicio: ACTIVE_WEEK.key, modulo, corte_en: iso },
+    { onConflict: 'compania,semana_inicio,modulo' }
   );
-  if(error){ showToast('No se pudo guardar: '+error.message); return; }
+  if(error){ showToast('No se pudo guardar: '+error.message+' — ¿has ejecutado el patch 50?'); return; }
+  if(modulo==='ambos'){ // el mismo para las dos: se quitan los propios de cada una
+    await sb.from('cortes_especiales').delete().eq('compania', CURRENT.compania).eq('semana_inicio', ACTIVE_WEEK.key).in('modulo', ['comidas','pernoctas']);
+  }
   await fetchCortesEspeciales(CURRENT.compania);
-  showToast('Corte especial guardado para esta semana.');
+  showToast(`Cierre guardado (${CORTE_ETIQUETA[modulo]}).`);
   await (currentModule==='pernoctas' ? renderAdminPernoctas() : renderAdmin());
 }
-async function quitarCorteEspecial(){
-  const { error } = await sb.from('cortes_especiales').delete().eq('compania', CURRENT.compania).eq('semana_inicio', ACTIVE_WEEK.key);
+async function quitarCorteEspecial(modulo){
+  let q = sb.from('cortes_especiales').delete().eq('compania', CURRENT.compania).eq('semana_inicio', ACTIVE_WEEK.key);
+  if(modulo) q = q.eq('modulo', modulo);
+  const { error } = await q;
   if(error){ showToast('No se pudo quitar: '+error.message); return; }
   await fetchCortesEspeciales(CURRENT.compania);
-  showToast('Corte especial eliminado — esta semana vuelve al horario normal.');
+  showToast(`Cierre especial quitado (${CORTE_ETIQUETA[modulo]||'todos'}).`);
   await (currentModule==='pernoctas' ? renderAdminPernoctas() : renderAdmin());
 }
 async function toggleComidaDesbloqueo(dia, checked){
@@ -2961,9 +2988,9 @@ async function companyBlockHtml(c, secciones, apuntesMap, confirmMap){
 const PERNOCTA_DIAS_POR_SEMANA = {
   '2026-10-09': 10, // SEMANA ESPECIAL: noches del viernes 9 al domingo 18 de octubre (0=Vie 9 … 9=Dom 18)
 };
-// Semanas especiales de pernoctas: nombre en el selector, días con AGM obligatoria y plazo propio
+// Semanas especiales de pernoctas: nombre en el selector y días con AGM obligatoria
 const PERNOCTA_SEMANAS_ESPECIALES = {
-  '2026-10-09': { nombre: 'Semana especial', forzarAgm: [9], cierre: '2026-10-08T22:00:00+02:00' }, // el domingo 18 dormimos todos en la AGM
+  '2026-10-09': { nombre: 'Semana especial', forzarAgm: [9] }, // el domingo 18 dormimos todos en la AGM (su plazo de pernoctas se pone desde admin: patch 50)
 };
 // Semanas cuyas pernoctas ya están dentro de una semana especial (no salen por separado)
 const PERNOCTA_SEMANAS_INCLUIDAS = { '2026-10-16': '2026-10-09' };
@@ -3531,6 +3558,7 @@ async function _renderAdminPernoctasImpl(){
         </div>
         <label class="switch"><input type="checkbox" ${SEMANAS_OCULTAS.has(ACTIVE_WEEK.key)?'checked':''} onchange="toggleSemanaOculta(this.checked)"><span class="track"></span><span class="thumb"></span></label>
       </div>
+      ${corteEspecialPanelHtml(companiaInfo.hora_corte,'pernoctas')}
       <div class="panel-row" style="flex-direction:column;align-items:stretch;">
         <div class="switch-label">Pase de horas / permiso extraordinario individual
           <span class="sub2">Da permiso a UN alumno concreto para dormir fuera un día, sin tocar al resto de la compañía</span>
