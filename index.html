@@ -616,7 +616,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-08T10:15";
+const APP_VERSION = "2026-10-08T13:20";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -2052,6 +2052,7 @@ async function _renderAdminImpl(){
         <label class="switch"><input type="checkbox" ${SEMANAS_OCULTAS.has(ACTIVE_WEEK.key)?'checked':''} onchange="toggleSemanaOculta(this.checked)"><span class="track"></span><span class="thumb"></span></label>
       </div>
       ${corteEspecialPanelHtml(companiaInfo.hora_corte,'comidas')}
+      ${bloqueComidasHtml(c)}
       <div class="panel-row">
         <div class="switch-label">Exportar la tabla de la ${c}ª Compañía (semana seleccionada)<span class="sub2">Una hoja por sección, lista para imprimir</span></div>
         <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="exportCompanyExcel()">📄 Exportar a Excel</button>
@@ -2172,6 +2173,51 @@ async function toggleSemanaOculta(checked){
     showToast('Semana visible de nuevo para los alumnos.');
   }
   await (currentModule==='pernoctas' ? renderAdminPernoctas() : renderAdmin());
+}
+/* ---- Marcar / desmarcar comidas en bloque (admin) ---- */
+function bloqueComidasHtml(c){
+  const sty = 'padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;';
+  return `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
+    <div class="switch-label">Desmarcar (o marcar) comidas en bloque
+      <span class="sub2">Para la semana seleccionada: elige el día, qué comidas y si es a toda la ${c}ª o a una sección. Se aplica a todos, aunque sea obligatoria (como cuando lo cambias tú a mano), y queda en el historial.</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;">
+      <select id="bloque-dia" style="${sty}">${DAY_NAMES.map((dn,i)=>`<option value="${i}">${DAY_NAMES_FULL[i].charAt(0).toUpperCase()+DAY_NAMES_FULL[i].slice(1)} ${fmt(ACTIVE_WEEK.days[i])}</option>`).join('')}</select>
+      <label style="font-size:.85rem;"><input type="checkbox" class="bloque-tipo" value="desayuno"> Desayuno</label>
+      <label style="font-size:.85rem;"><input type="checkbox" class="bloque-tipo" value="comida"> Comida</label>
+      <label style="font-size:.85rem;"><input type="checkbox" class="bloque-tipo" value="cena"> Cena</label>
+      <select id="bloque-ambito" style="${sty}"><option value="todas">Toda la ${c}ª Compañía</option>${Array.from({length:SECTIONS_PER_COMPANY},(_,i)=>`<option value="${i+1}">Solo la sección ${c}${i+1}</option>`).join('')}</select>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+      <button class="small-btn danger" onclick="aplicarComidasEnBloque(false)">🧹 Desmarcar a todos</button>
+      <button class="small-btn" onclick="aplicarComidasEnBloque(true)">✅ Marcar a todos</button>
+    </div>
+  </div>`;
+}
+async function aplicarComidasEnBloque(valor){
+  const c = CURRENT.compania;
+  const dia = parseInt(document.getElementById('bloque-dia').value, 10);
+  const tipos = Array.from(document.querySelectorAll('.bloque-tipo:checked')).map(x=>x.value);
+  const ambito = document.getElementById('bloque-ambito').value;
+  if(!tipos.length){ showToast('Elige al menos una comida (desayuno, comida o cena).'); return; }
+  const secciones = await fetchCompanySections(c);
+  const gente = secciones.filter(s=>ambito==='todas' || String(s.seccion)===ambito).flatMap(s=>s.people);
+  const cols = COLS();
+  const nombreTipos = tipos.map(t=>t==='desayuno'?'desayuno':t==='comida'?'comida':'cena').join(', ');
+  const diaTxt = DAY_NAMES_FULL[dia] + ' ' + fmt(ACTIVE_WEEK.days[dia]);
+  const ambitoTxt = ambito==='todas' ? `toda la ${c}ª Compañía` : `la sección ${c}${ambito}`;
+  if(!confirm(`¿${valor?'MARCAR':'DESMARCAR'} ${nombreTipos} del ${diaTxt} a ${gente.length} personas (${ambitoTxt})?`)) return;
+  const filas = [];
+  gente.forEach(p=>tipos.forEach(t=>{
+    const col = cols.find(x=>x.type===t && x.day===dia);
+    filas.push({ persona_id: p.id, semana_inicio: ACTIVE_WEEK.key, tipo: t, dia, obligatoria: effectiveObligatorio(p.id, col), valor });
+  }));
+  for(let i=0; i<filas.length; i+=500){
+    const { error } = await sb.from('apuntes').upsert(filas.slice(i,i+500), { onConflict:'persona_id,semana_inicio,tipo,dia' });
+    if(error){ showToast('No se pudo completar: '+error.message); await renderAdmin(); return; }
+  }
+  showToast(`${valor?'Marcado':'Desmarcado'}: ${nombreTipos} del ${diaTxt} para ${gente.length} personas.`);
+  await renderAdmin();
 }
 const corteModuloSel = {};
 const CORTE_ETIQUETA = { comidas:'Solo Comidas', pernoctas:'Solo Pernoctas', ambos:'Comidas y Pernoctas' };
