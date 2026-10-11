@@ -51,7 +51,6 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .masthead .brand{display:flex;align-items:center;gap:10px;}
 .masthead .brand img{height:42px;width:auto;display:block;flex-shrink:0;}
 .masthead .sub{color:var(--ink-soft);font-size:.85rem;margin-top:4px;}
-.masthead .brand img.brand-flag{height:42px;width:auto;border-radius:3px;box-shadow:0 0 0 1px var(--line);}
 .login-brand{text-align:center;padding-top:30px;margin-bottom:8px;}
 .login-brand img{height:140px;width:auto;margin:0 auto 14px;display:block;}
 .login-brand h1{font-size:1.6rem;margin:0;font-weight:800;letter-spacing:.01em;}
@@ -470,7 +469,7 @@ aplicarTema();
   <!-- ALUMNO -->
   <div id="screen-alumno" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><img class="brand-flag" src="bandera-agm.png" alt="" onerror="this.style.display='none'"><div><h1>PORTAL AGM</h1><div class="sub" id="alumno-subtitle"></div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="alumno-subtitle"></div></div></div>
       <div class="who"><div class="name" id="alumno-who"></div><span id="alumno-switch"></span><button class="logout cfg-btn" style="margin-right:6px;" onclick="toggleConfig()" title="Configuración" aria-label="Configuración">⚙️</button><button class="logout" onclick="doLogout()">Salir</button></div>
       <div id="alumno-config" class="config-panel hidden"></div>
     </div>
@@ -556,7 +555,7 @@ aplicarTema();
   <!-- ADMIN -->
   <div id="screen-admin" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><img class="brand-flag" src="bandera-agm.png" alt="" onerror="this.style.display='none'"><div><h1>PORTAL AGM</h1><div class="sub" id="admin-subtitle">Administración</div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="admin-subtitle">Administración</div></div></div>
       <div class="who"><div class="name" id="admin-who"></div><span id="admin-switch"></span><button class="logout cfg-btn" style="margin-right:6px;" onclick="toggleConfig()" title="Configuración" aria-label="Configuración">⚙️</button><button class="logout" onclick="doLogout()">Salir</button></div>
       <div id="admin-config" class="config-panel hidden"></div>
     </div>
@@ -683,7 +682,7 @@ aplicarTema();
   <!-- SERVICIO DE CUARTEL (solo lectura) -->
   <div id="screen-cuartel" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><img class="brand-flag" src="bandera-agm.png" alt="" onerror="this.style.display='none'"><div><h1>PORTAL AGM</h1><div class="sub" id="cuartel-subtitle">Servicio de cuartel</div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="cuartel-subtitle">Servicio de cuartel</div></div></div>
       <div class="who"><div class="name">🪖 Servicio de cuartel</div><button class="logout" id="cuartel-salir-btn" onclick="salirCuartel()">Salir</button></div>
     </div>
     <div class="module-switch">
@@ -698,7 +697,7 @@ aplicarTema();
 
   <div id="screen-superadmin" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><img class="brand-flag" src="bandera-agm.png" alt="" onerror="this.style.display='none'"><div><h1>PORTAL AGM</h1><div class="sub">👑 Panel superadmin</div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub">👑 Panel superadmin</div></div></div>
       <div class="who"><div class="name">Superadmin</div><button class="small-btn" style="margin-right:8px;" onclick="volverDeSuperadmin()">◀ Volver</button><button class="logout" onclick="doLogout()">Salir</button></div>
     </div>
     <div id="superadmin-body"></div>
@@ -747,7 +746,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-12T00:24";
+const APP_VERSION = "2026-10-12T00:30";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
