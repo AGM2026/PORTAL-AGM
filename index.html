@@ -123,6 +123,22 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .cal-fila.sel{background:var(--olive);color:var(--paper);font-weight:700;}
 .cal-fila.actual:not(.sel){border-color:var(--brass);}
 .cal-fila.mani{border:2px dashed var(--slate);}
+.col-mani{background:rgba(32,74,115,.14) !important;}
+/* Selector de fechas tipo vuelos (puentes y maniobras) */
+.rg{max-width:760px;}
+.rg-meses{display:grid;gap:22px;}
+.rg-mes-t{font-weight:700;text-align:center;margin:2px 0 6px;font-size:.95rem;}
+.rg-sem{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;}
+.rg-dn{font-size:.72rem;font-weight:700;color:var(--ink-soft);margin-bottom:4px;}
+.rg-dia{border:none;background:none;padding:10px 0;font:inherit;font-size:.9rem;color:var(--ink);cursor:pointer;border-radius:0;}
+.rg-dia:hover:not(.off):not(.ini):not(.fin){background:rgba(61,107,40,.18);}
+.rg-dia.off{opacity:.25;cursor:default;}
+.rg-dia.en{background:rgba(61,107,40,.22);}
+.rg-dia.ini,.rg-dia.fin{background:var(--olive);color:var(--paper);font-weight:700;}
+.rg-dia.ini{border-radius:22px 0 0 22px;}
+.rg-dia.fin{border-radius:0 22px 22px 0;}
+.rg-dia.ini.fin{border-radius:22px;}
+.rg-dia.hoy{text-decoration:underline;}
 .cal-fila.pasada:not(.sel){opacity:.6;}
 .cal-fila:not(.ok){opacity:.3;}
 .cal-dia{display:block;}
@@ -731,7 +747,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-12T00:04";
+const APP_VERSION = "2026-10-12T00:24";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -2050,7 +2066,7 @@ async function renderAlumno(){
     </div>`;
   const filaPeople = verSoloYoComidas ? seccionPeople.filter(p=>p.id===persona.id) : seccionPeople;
   let thead = '<thead><tr class="daynames"><th class="name-cell">Sección '+code+'</th>';
-  cols.forEach(c=> thead += `<th class="${isCurrentMealColumn(c)?'col-today':''}">${c.label}<span class="colhead-sub">${c.sub}</span></th>`);
+  cols.forEach(c=>{ const mani = comidaEnManiobras(ACTIVE_WEEK, c); thead += `<th class="${isCurrentMealColumn(c)?'col-today':''}${mani?' col-mani':''}">${c.label}<span class="colhead-sub">${c.sub}</span>${mani?'<span class="colhead-sub">⛺</span>':''}</th>`; });
   thead += '</tr></thead>';
 
   let tbody = '<tbody>';
@@ -2060,7 +2076,7 @@ async function renderAlumno(){
     cols.forEach(c=>{
       const val = getVal(p.id, c, apuntesMap);
       const locked = effectiveObligatorio(p.id, c) && !diaComidaDesbloqueado(c.day);
-      const tdClass = isCurrentMealColumn(c) ? 'col-today' : '';
+      const tdClass = (isCurrentMealColumn(c) ? 'col-today' : '') + (comidaEnManiobras(ACTIVE_WEEK, c) ? ' col-mani' : '');
       if(locked){
         // Se pinta el valor REAL guardado (antes salía siempre marcada aunque en la base de datos no lo estuviera,
         // y por eso el alumno veía una cosa y el admin/Excel otra).
@@ -2336,6 +2352,7 @@ async function echarCuartel(id){
 async function renderSuperadmin(){
   const { data: solicitudes } = await sb.from('admin_solicitudes').select('*').eq('estado','pendiente').order('creado_en');
   const { data: puentes, error: errPuentes } = await sb.from('pernocta_puentes').select('*').order('semana_inicio');
+  const { data: maniAcad, error: errManiAcad } = await sb.from('maniobras').select('*').order('fecha_inicio');
   const cuartelHtml = await cuartelSuperHtml();
   let seccionesHtml = '';
   let personasHtml = '<option value="">— elige antes una sección —</option>';
@@ -2415,6 +2432,7 @@ async function renderSuperadmin(){
     adminDesplegable('super-solicitudes', `👤 Solicitudes de administrador${nSol ? ` <span style="color:var(--danger);">(${nSol} pendiente${nSol===1?'':'s'})</span>` : ' (ninguna pendiente)'}`, filaSolicitudes, nSol>0) +
     `<div class="admin-panel">${filaIrCompania}</div>` +
     adminDesplegable('super-puentes', '🌉 Creador de puentes y festivos', puentesSuperHtml(puentes, errPuentes), !!PUENTE_EDIT) +
+    adminDesplegable('super-maniobras', '⛺ Maniobras de la academia', maniobrasPanelHtml('academia', maniAcad, errManiAcad)) +
     adminDesplegable('super-cuartel', '🪖 Servicio de cuartel (cuentas, conexiones y accesos)', filaCuartel) +
     adminDesplegable('super-reset', '🔑 Restablecer la contraseña de un alumno o admin', filaReset);
 }
@@ -2600,7 +2618,8 @@ async function _renderAdminImpl(){
     `<div class="admin-panel">${filaExportar}</div>` +
     adminDesplegable('avisos', '📢 Avisos a los alumnos', filaAviso) +
     adminDesplegable('intol', `🍽️ Solicitudes de intolerancias${avisoPendiente}`, filaIntol) +
-    adminDesplegable('semana', '📅 Ajustes de esta semana', filaDesbloqueo + filaOculta + maniobrasFilaHtml() + corteEspecialPanelHtml(companiaInfo.hora_corte,'comidas')) +
+    adminDesplegable('semana', '📅 Ajustes de esta semana', filaDesbloqueo + filaOculta + corteEspecialPanelHtml(companiaInfo.hora_corte,'comidas')) +
+    adminDesplegable('maniobras', '⛺ Añadir semana de maniobras', maniobrasPanelHtml('compania')) +
     adminDesplegable('bloque', '✏️ Marcar o desmarcar comidas en bloque', bloqueComidasHtml(c)) +
     adminDesplegable('excel', '🔍 Comprobar un Excel contra la app', filaExcel) +
     adminDesplegable('compania', '🏢 Compañía y alumnos', filaEfectivos + filaCodigo + faltanRegistrarseHtml(secciones) + conexionAlumnosHtml(secciones));
@@ -3530,15 +3549,18 @@ function irASemanaPernoctaReal(){
 function pernoctaDiasCountFor(week){ return PERNOCTA_DIAS_POR_SEMANA[week.key] || 2; }
 function pernoctaDiasCount(){ return pernoctaDiasCountFor(ACTIVE_WEEK); }
 
-/* ================= PUENTES (los crea el superadmin) Y SEMANAS DE MANIOBRAS =================
-   Los puentes ya no hay que pedírselos a nadie: el superadmin los crea en "🌉 Creador de puentes" (tabla pernocta_puentes, parche SQL 54).
+/* ================= PUENTES (los crea el superadmin) Y MANIOBRAS =================
+   Los puentes ya no hay que pedírselos a nadie: el superadmin los crea en "🌉 Creador de puentes" (tabla pernocta_puentes, parche SQL 55).
    Si esa tabla todavía no existe, se siguen usando los puentes de abajo (PUENTES_POR_DEFECTO), que son los de siempre. */
 const PUENTES_POR_DEFECTO = [
   { semana_inicio:'2026-10-09', nombre:'Semana especial', num_noches:10, forzar_agm:[9], excluir_companias:[] },
 ];
-let PUENTES_TODOS = null; // filas de pernocta_puentes (null = la tabla no existe: se usan los de por defecto)
-let MANIOBRAS = {};       // semana_inicio -> { nombre, nota } de la compañía actual
+let PUENTES_TODOS = null;   // filas de pernocta_puentes (null = la tabla no existe: se usan los de por defecto)
+let MANIOBRAS_LISTA = [];   // maniobras de la compañía actual (tabla maniobras)
 function fechaMasDias(key, n){ const d = new Date(key+'T00:00:00'); d.setDate(d.getDate()+n); return d; }
+function diasEntre(a, b){ return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00'))/86400000); }
+function fmtLargo(key){ return new Date(key+'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}); }
+const hhmm = t => String(t||'').slice(0,5);
 // Rellena las tres tablas que usa el resto de la app (noches, nombre/días obligatorios y semanas incluidas) con los puentes que valen para ESA compañía
 function aplicarPuentes(compania){
   const filas = PUENTES_TODOS===null ? PUENTES_POR_DEFECTO : PUENTES_TODOS;
@@ -3553,57 +3575,86 @@ async function fetchPuentesYManiobras(compania){
   const { data, error } = await sb.from('pernocta_puentes').select('semana_inicio,nombre,num_noches,forzar_agm,excluir_companias');
   PUENTES_TODOS = error ? null : (data||[]);
   aplicarPuentes(compania);
-  MANIOBRAS = {};
-  const r = await sb.from('semanas_maniobras').select('semana_inicio,nombre,nota').eq('compania', compania);
-  if(!r.error) (r.data||[]).forEach(m=>{ MANIOBRAS[m.semana_inicio] = { nombre: m.nombre || 'Maniobras', nota: m.nota || '' }; });
+  const r = await sb.from('maniobras').select('id,grupo,compania,fecha_inicio,hora_inicio,fecha_fin,hora_fin,nota').eq('compania', compania).order('fecha_inicio');
+  MANIOBRAS_LISTA = r.error ? [] : (r.data||[]);
 }
-// ¿Esa semana es de maniobras? (en Pernoctas también cuentan las semanas que quedan dentro de un puente largo)
-function maniobrasDe(week, esPern){
-  const claves = [week.key];
-  if(esPern){ const n = pernoctaDiasCountFor(week); for(let off=7; off<n; off+=7) claves.push(ymd(fechaMasDias(week.key, off))); }
-  for(const k of claves){ if(MANIOBRAS[k]) return MANIOBRAS[k]; }
-  return null;
+
+/* ---- Maniobras: de qué día/hora a qué día/hora (no tienen que ir de viernes a jueves) ---- */
+function maniDT(m, quien){
+  const ini = quien==='ini';
+  const [h, mi] = String((ini ? m.hora_inicio : m.hora_fin) || '00:00').split(':');
+  const d = new Date((ini ? m.fecha_inicio : m.fecha_fin)+'T00:00:00'); d.setHours(parseInt(h,10)||0, parseInt(mi,10)||0, 0, 0);
+  return d;
 }
+// Maniobras que tocan una semana (en Pernoctas, también las semanas que quedan dentro de un puente largo)
+function maniobrasDeSemana(week, esPern){
+  const ini = new Date(week.days[0]); ini.setHours(0,0,0,0);
+  const fin = new Date(ini); fin.setDate(fin.getDate() + Math.max(7, esPern ? pernoctaDiasCountFor(week) : 7));
+  return MANIOBRAS_LISTA.filter(m=> maniDT(m,'ini') < fin && maniDT(m,'fin') >= ini);
+}
+function maniobrasDe(week, esPern){ return maniobrasDeSemana(week, esPern)[0] || null; }
+function maniobrasTexto(m){ return `del ${fmtCorteCorto(maniDT(m,'ini'))} al ${fmtCorteCorto(maniDT(m,'fin'))}`; }
 function maniobrasBannerHtml(week, esPern){
-  const m = maniobrasDe(week, esPern);
-  if(!m) return '';
-  return `<div class="notice" style="border-color:var(--slate);background:rgba(32,74,115,.14);"><span>⛺ <b>SEMANA DE MANIOBRAS</b>${m.nota ? ' — '+escHtml(m.nota) : ''}</span></div>`;
+  return maniobrasDeSemana(week, esPern).map(m=>`<div class="notice" style="border-color:var(--slate);background:rgba(32,74,115,.14);display:block;"><b>⛺ MANIOBRAS</b> ${maniobrasTexto(m)}${m.nota ? ' — '+escHtml(m.nota) : ''}<br><span style="font-size:.78rem;">Las comidas y las noches de ese periodo salen marcadas con ⛺ en las tablas.</span></div>`).join('');
 }
-// Fila del panel de admin: marcar la semana seleccionada como de maniobras (la pueden poner el admin de compañía y el superadmin)
-function maniobrasFilaHtml(){
-  const m = MANIOBRAS[ACTIVE_WEEK.key];
-  return `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-        <div class="switch-label">⛺ Esta semana es de maniobras
-          <span class="sub2">Les sale un aviso a todos los alumnos de la ${CURRENT.compania}ª, tanto en Comidas como en Pernoctas, y la semana se marca en el calendario</span>
-        </div>
-        <label class="switch"><input type="checkbox" ${m?'checked':''} onchange="guardarManiobras(this.checked)"><span class="track"></span><span class="thumb"></span></label>
-      </div>
-      <input type="text" id="mani-nota" maxlength="200" placeholder="Nota opcional para los alumnos (ej. Salida el lunes a las 06:00)" value="${escHtml(m ? m.nota : '')}" style="margin-top:8px;padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;" onchange="if(MANIOBRAS[ACTIVE_WEEK.key]) guardarManiobras(true)">
-      ${CURRENT.isSuperadmin ? `<label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:.8rem;color:var(--ink-soft);"><input type="checkbox" id="mani-todas" style="width:16px;height:16px;"> Aplicarlo a TODAS las compañías (solo superadmin)</label>` : ''}
-    </div>`;
+// ¿Esa comida / esa noche cae dentro de unas maniobras? (la comida cuenta a su hora de fin: 7:30, 15:30, 20:30; la noche, a las 23:00)
+function comidaEnManiobras(week, col){ const f = comidaTermina(week, col); return MANIOBRAS_LISTA.some(m=> maniDT(m,'ini') <= f && f <= maniDT(m,'fin')); }
+function nocheEnManiobras(week, d){ const f = new Date(diaPern(week, d)); f.setHours(23,0,0,0); return MANIOBRAS_LISTA.some(m=> maniDT(m,'ini') <= f && f <= maniDT(m,'fin')); }
+
+/* ---- Selector de fechas "tipo vuelos": primer clic = salida, segundo clic = vuelta ---- */
+const RANGOS = {};       // id -> { inicio, fin, mes, opts }
+const RANGO_BODY = {};   // id -> función que devuelve el HTML del selector (para repintar solo esa parte)
+function rangoNuevo(id, opts, ini, fin, cuerpo){
+  const base = ini ? new Date(ini+'T00:00:00') : new Date();
+  RANGOS[id] = { inicio: ini||null, fin: fin||null, mes: new Date(base.getFullYear(), base.getMonth(), 1), opts: opts||{} };
+  if(cuerpo) RANGO_BODY[id] = cuerpo;
 }
-async function guardarManiobras(activar){
-  const key = ACTIVE_WEEK.key;
-  const todas = !!(CURRENT.isSuperadmin && document.getElementById('mani-todas') && document.getElementById('mani-todas').checked);
-  const companias = todas ? COMPANIES : [CURRENT.compania];
-  const nota = ((document.getElementById('mani-nota')||{}).value || '').trim();
-  if(/[<>"]/.test(nota)){ showToast('La nota no puede llevar los caracteres  <  >  " .'); await rerenderActual(); return; }
-  if(activar){
-    const { error } = await sb.from('semanas_maniobras').upsert(companias.map(c=>({ compania:c, semana_inicio:key, nombre:'Maniobras', nota: nota || null })), { onConflict:'compania,semana_inicio' });
-    if(error){ showToast('No se pudo guardar: '+error.message+' — ¿has ejecutado el parche SQL 54?'); await rerenderActual(); return; }
-  } else {
-    const { error } = await sb.from('semanas_maniobras').delete().in('compania', companias).eq('semana_inicio', key);
-    if(error){ showToast('No se pudo quitar: '+error.message); await rerenderActual(); return; }
-  }
-  await fetchPuentesYManiobras(CURRENT.compania);
-  showToast(activar ? `Semana de maniobras marcada${todas?' en todas las compañías':''}.` : `Semana de maniobras quitada${todas?' en todas las compañías':''}.`);
-  await rerenderActual();
+function rangoRepintar(id){
+  const el = document.getElementById('rgw-'+id);
+  if(el && RANGO_BODY[id]) el.innerHTML = RANGO_BODY[id]();
+}
+function rangoClick(id, key){
+  const r = RANGOS[id]; if(!r) return;
+  if(r.inicio && !r.fin) r.fin = key; else { r.inicio = key; r.fin = null; }
+  rangoRepintar(id);
+}
+function rangoReset(id){ const r = RANGOS[id]; r.inicio = null; r.fin = null; rangoRepintar(id); }
+function rangoMes(id, d){ const r = RANGOS[id]; r.mes = new Date(r.mes.getFullYear(), r.mes.getMonth()+d, 1); rangoRepintar(id); }
+function rangoHtml(id){
+  const r = RANGOS[id], o = r.opts;
+  const nMeses = window.innerWidth >= 900 ? 2 : 1;
+  const hoyKey = ymd(new Date());
+  const eligiendoFin = !!(r.inicio && !r.fin);
+  const mesHtml = (m)=>{
+    const ultimo = new Date(m.getFullYear(), m.getMonth()+1, 0);
+    let celdas = '';
+    for(let i=0; i<(m.getDay()+6)%7; i++) celdas += '<span></span>'; // el calendario empieza en lunes
+    for(let d=1; d<=ultimo.getDate(); d++){
+      const f = new Date(m.getFullYear(), m.getMonth(), d), k = ymd(f);
+      let off = false;
+      if(o.desdeHoy && k < hoyKey) off = true;
+      if(o.hasta && f > o.hasta) off = true;
+      if(eligiendoFin){
+        const minK = o.finDespues ? ymd(fechaMasDias(r.inicio, 1)) : r.inicio;
+        if(k < minK || f > fechaMasDias(r.inicio, (o.maxDias||60)-1)) off = true;
+      } else if(o.soloViernesInicio && f.getDay()!==5) off = true;
+      const cls = ['rg-dia', off?'off':'', r.inicio===k?'ini':'', r.fin===k?'fin':'', (r.inicio && r.fin && k>r.inicio && k<r.fin)?'en':'', k===hoyKey?'hoy':''].filter(Boolean).join(' ');
+      celdas += `<button type="button" class="${cls}" ${off?'disabled':`onclick="rangoClick('${id}','${k}')"`}>${d}</button>`;
+    }
+    return `<div class="rg-mes"><div class="rg-mes-t">${MESES_ES[m.getMonth()]} ${m.getFullYear()}</div>
+      <div class="rg-sem rg-dn">${['L','M','X','J','V','S','D'].map(x=>`<span>${x}</span>`).join('')}</div><div class="rg-sem">${celdas}</div></div>`;
+  };
+  const meses = Array.from({length:nMeses},(_,i)=> new Date(r.mes.getFullYear(), r.mes.getMonth()+i, 1));
+  return `<div class="rg">
+    <div class="cal-cab"><button type="button" onclick="rangoMes('${id}',-1)" aria-label="Mes anterior">‹</button><b>${r.inicio ? (r.fin ? 'Fechas elegidas' : 'Ahora elige el último día') : 'Elige el primer día'}</b><button type="button" onclick="rangoMes('${id}',1)" aria-label="Mes siguiente">›</button></div>
+    <div class="rg-meses" style="grid-template-columns:repeat(${nMeses},minmax(0,1fr));">${meses.map(mesHtml).join('')}</div>
+    ${r.inicio ? `<button type="button" class="small-btn" style="margin-top:6px;" onclick="rangoReset('${id}')">↺ Borrar las fechas y empezar de nuevo</button>` : ''}
+  </div>`;
 }
 
 /* ---- Creador de puentes (solo superadmin) ---- */
 let PUENTES_LISTA = [];   // puentes tal como están guardados
-let PUENTE_EDIT = null;   // el que se está creando/editando en el formulario
+let PUENTE_EDIT = null;   // el que se está creando/editando: { existente, nombre, excluir_companias } (las fechas están en RANGOS.puente)
 function puenteResumen(p){
   const ini = fechaMasDias(p.semana_inicio, 0), fin = fechaMasDias(p.semana_inicio, p.num_noches-1);
   const forz = (p.forzar_agm||[]).map(d=>`${DAY_NAMES[d%7]} ${fmt(fechaMasDias(p.semana_inicio, d))}`).join(', ');
@@ -3612,10 +3663,18 @@ function puenteResumen(p){
   const sueltas = excl.filter(c=>!COMPANIES_POR_CURSO.some(g=>cursosExcl.includes(g.curso) && g.companias.includes(c)));
   const noAplica = [...cursosExcl, ...sueltas.map(c=>c+'ª Cía')].join(', ');
   return `<b>${escHtml(p.nombre)}</b> — del ${DAY_NAMES[0]} ${fmt(ini)} al ${DAY_NAMES[(p.num_noches-1)%7]} ${fmt(fin)} (${p.num_noches} noches)`
-    + `<br><span class="sub2">${forz ? 'AGM obligatoria: '+forz : 'Ninguna noche obligatoria'}${noAplica ? ' · <b>No se aplica a:</b> '+escHtml(noAplica) : ' · Se aplica a todas las compañías'}</span>`;
+    + `<br><span class="sub2">${forz ? 'La noche del '+forz+' todos duermen en la AGM' : 'Ninguna noche obligatoria'}${noAplica ? ' · <b>No se aplica a:</b> '+escHtml(noAplica) : ' · Se aplica a todas las compañías'}</span>`;
+}
+function puenteRangoBodyHtml(){
+  const r = RANGOS.puente;
+  let txt;
+  if(!r.inicio) txt = 'Elige en el calendario el primer día del puente (tiene que ser viernes).';
+  else if(!r.fin) txt = `Primer día: <b>${fmtLargo(r.inicio)}</b>. Ahora elige el último día del puente (esa noche todos duermen en la AGM).`;
+  else { const n = diasEntre(r.inicio, r.fin)+1; txt = `Del <b>${fmtLargo(r.inicio)}</b> al <b>${fmtLargo(r.fin)}</b> · ${n} noches. Se puede dormir fuera desde la noche del ${fmt(new Date(r.inicio+'T00:00:00'))}; <b>la noche del ${fmt(new Date(r.fin+'T00:00:00'))} todos duermen en la AGM.</b>`; }
+  return rangoHtml('puente') + `<div class="small-note" style="margin-top:8px;">${txt}</div>`;
 }
 function puentesSuperHtml(puentes, errorTabla){
-  if(errorTabla) return `<p class="small-note">⚠️ La tabla de puentes todavía no existe en la base de datos (${escHtml(errorTabla.message||'')}). Ejecuta el parche SQL 54. Mientras tanto la app usa los puentes de siempre.</p>`;
+  if(errorTabla) return `<p class="small-note">⚠️ La tabla de puentes todavía no existe en la base de datos (${escHtml(errorTabla.message||'')}). Ejecuta el parche SQL 55. Mientras tanto la app usa los puentes de siempre.</p>`;
   PUENTES_LISTA = puentes || [];
   const lista = PUENTES_LISTA.length ? PUENTES_LISTA.map(p=>`
       <div class="manage-row">
@@ -3627,64 +3686,54 @@ function puentesSuperHtml(puentes, errorTabla){
     form = `<div style="margin-top:10px;"><button class="small-btn" onclick="puenteNuevo()">➕ Crear un puente</button></div>`;
   } else {
     const p = PUENTE_EDIT;
-    const stySel = 'padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;';
-    const opcionesSemana = WEEKS.filter(w=>w.key===p.semana_inicio || (!weekHasElapsed(w) && !PUENTES_LISTA.some(o=>o.semana_inicio===w.key))).map(w=>`<option value="${w.key}" ${w.key===p.semana_inicio?'selected':''}>Viernes ${fmt(w.days[0])}</option>`).join('');
-    const noches = Array.from({length:p.num_noches},(_,d)=>`<label style="display:flex;align-items:center;gap:6px;border:1px solid ${p.forzar_agm.includes(d)?'var(--brass)':'var(--line)'};padding:6px 10px;cursor:pointer;${p.forzar_agm.includes(d)?'background:rgba(184,134,11,.15);':''}">
-        <input type="checkbox" ${p.forzar_agm.includes(d)?'checked':''} onchange="puenteToggleForzar(${d}, this.checked)"> ${DAY_NAMES[d%7]} ${fmt(fechaMasDias(p.semana_inicio, d))}
-      </label>`).join('');
     const excl = COMPANIES_POR_CURSO.map((g,gi)=>g.companias.length ? `<div style="margin-top:6px;">
         <label style="font-weight:700;font-size:.82rem;"><input type="checkbox" ${g.companias.every(c=>p.excluir_companias.includes(c))?'checked':''} onchange="puenteToggleCurso(${gi}, this.checked)"> ${g.curso} (todo el curso)</label>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 0 18px;">${g.companias.map(c=>`<label style="font-size:.82rem;"><input type="checkbox" ${p.excluir_companias.includes(c)?'checked':''} onchange="puenteToggleCompania(${c}, this.checked)"> ${c}ª</label>`).join('')}</div>
       </div>` : '').join('');
     form = `<div style="border:1px solid var(--brass);border-radius:10px;padding:12px;margin-top:12px;">
       <div style="font-weight:700;margin-bottom:8px;">${p.existente ? '✏️ Editar puente' : '➕ Nuevo puente'}</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-        <div class="field" style="margin:0;"><label>Empieza el</label><select ${p.existente?'disabled':''} onchange="puenteCampo('semana_inicio', this.value)" style="${stySel}">${opcionesSemana}</select></div>
-        <div class="field" style="margin:0;"><label>Nombre</label><input type="text" maxlength="40" value="${escHtml(p.nombre)}" oninput="PUENTE_EDIT.nombre=this.value" style="${stySel}"></div>
-        <div class="field" style="margin:0;"><label>Noches (2–14)</label><input type="number" min="2" max="14" value="${p.num_noches}" onchange="puenteCampo('num_noches', Math.max(2, Math.min(14, parseInt(this.value,10)||2)))" style="${stySel}width:80px;"></div>
-      </div>
-      <div class="switch-label" style="margin-top:12px;">Noches en las que es OBLIGATORIO dormir en la AGM (salvo externados)<span class="sub2">Las demás noches son libres: cada uno elige AGM o fuera</span></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">${noches}</div>
+      <div class="field" style="margin:0 0 10px;max-width:320px;"><label>Nombre</label><input type="text" maxlength="40" value="${escHtml(p.nombre)}" oninput="PUENTE_EDIT.nombre=this.value"></div>
+      <div class="switch-label">Fechas del puente<span class="sub2">Primer clic: el primer día (siempre viernes), en el que ya se puede dormir fuera. Segundo clic: el último día del puente; esa noche todos duermen en la AGM. Las noches de en medio son libres.</span></div>
+      <div id="rgw-puente" style="margin-top:6px;">${puenteRangoBodyHtml()}</div>
       <div class="switch-label" style="margin-top:12px;">No se aplica a…<span class="sub2">Marca el curso o las compañías para las que este puente NO existe (esa semana tendrán su fin de semana normal). Sin marcar nada = vale para todos.</span></div>
       ${excl}
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;"><button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="puenteGuardar()">💾 Guardar puente</button><button class="small-btn" onclick="puenteCancelar()">Cancelar</button></div>
     </div>`;
   }
   return `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
-      <div class="switch-label">Puentes y festivos<span class="sub2">Define aquí cuántas noches cuenta cada puente y cuáles son obligatorias en la AGM. Vale para TODAS las compañías, salvo las que marques como excepción. Solo lo ve y lo puede tocar el superadmin.</span></div>
+      <div class="switch-label">Puentes y festivos<span class="sub2">Define aquí de qué día a qué día va cada puente. Vale para TODAS las compañías, salvo las que marques como excepción. Solo lo ve y lo puede tocar el superadmin.</span></div>
       ${lista}${form}
     </div>`;
 }
 function puenteNuevo(){
-  const w = WEEKS.find(x=>!weekHasElapsed(x) && !PUENTES_LISTA.some(p=>p.semana_inicio===x.key)) || WEEKS[0];
-  PUENTE_EDIT = { existente:false, semana_inicio:w.key, nombre:'Puente', num_noches:3, forzar_agm:[], excluir_companias:[] };
+  rangoNuevo('puente', { soloViernesInicio:true, finDespues:true, maxDias:14, desdeHoy:true, hasta:CALENDAR_END_DATE }, null, null, puenteRangoBodyHtml);
+  PUENTE_EDIT = { existente:false, nombre:'Puente', excluir_companias:[] };
   renderSuperadmin();
 }
 function puenteEditar(key){
   const p = PUENTES_LISTA.find(x=>x.semana_inicio===key); if(!p) return;
-  PUENTE_EDIT = { existente:true, semana_inicio:p.semana_inicio, nombre:p.nombre, num_noches:p.num_noches, forzar_agm:(p.forzar_agm||[]).slice(), excluir_companias:(p.excluir_companias||[]).slice() };
+  rangoNuevo('puente', { soloViernesInicio:true, finDespues:true, maxDias:14, desdeHoy:false, hasta:CALENDAR_END_DATE }, p.semana_inicio, ymd(fechaMasDias(p.semana_inicio, p.num_noches-1)), puenteRangoBodyHtml);
+  PUENTE_EDIT = { existente:true, nombre:p.nombre, excluir_companias:(p.excluir_companias||[]).slice() };
   renderSuperadmin();
 }
 function puenteCancelar(){ PUENTE_EDIT = null; renderSuperadmin(); }
-function puenteCampo(campo, valor){
-  PUENTE_EDIT[campo] = valor;
-  if(campo==='num_noches') PUENTE_EDIT.forzar_agm = PUENTE_EDIT.forzar_agm.filter(d=>d<valor);
-  renderSuperadmin();
-}
-function puenteToggleForzar(d, on){ const s = new Set(PUENTE_EDIT.forzar_agm); on ? s.add(d) : s.delete(d); PUENTE_EDIT.forzar_agm = [...s]; renderSuperadmin(); }
 function puenteToggleCompania(c, on){ const s = new Set(PUENTE_EDIT.excluir_companias); on ? s.add(c) : s.delete(c); PUENTE_EDIT.excluir_companias = [...s]; renderSuperadmin(); }
 function puenteToggleCurso(gi, on){ const s = new Set(PUENTE_EDIT.excluir_companias); COMPANIES_POR_CURSO[gi].companias.forEach(c=> on ? s.add(c) : s.delete(c)); PUENTE_EDIT.excluir_companias = [...s]; renderSuperadmin(); }
 async function puenteGuardar(){
-  const p = PUENTE_EDIT; if(!p) return;
+  const p = PUENTE_EDIT, r = RANGOS.puente; if(!p || !r) return;
   const nombre = (p.nombre||'').trim();
   if(!nombre || nombre.length > 40 || /[<>"]/.test(nombre)){ showToast('Pon un nombre (máximo 40 caracteres y sin los símbolos  <  >  " ).'); return; }
-  if(!WEEKS.some(w=>w.key===p.semana_inicio)){ showToast('Elige un viernes de inicio válido.'); return; }
-  if(!p.existente && PUENTES_LISTA.some(o=>o.semana_inicio===p.semana_inicio)){ showToast('Ya hay un puente que empieza ese viernes. Edítalo desde la lista en vez de crear otro.'); return; }
-  const ini = fechaMasDias(p.semana_inicio, 0).getTime(), fin = fechaMasDias(p.semana_inicio, p.num_noches-1).getTime();
-  const choca = PUENTES_LISTA.find(o=>o.semana_inicio!==p.semana_inicio && fechaMasDias(o.semana_inicio,0).getTime() <= fin && fechaMasDias(o.semana_inicio, o.num_noches-1).getTime() >= ini);
+  if(!r.inicio || !r.fin){ showToast('Elige en el calendario el primer y el último día del puente.'); return; }
+  const noches = diasEntre(r.inicio, r.fin) + 1;
+  if(noches < 2 || noches > 14){ showToast('Un puente tiene entre 2 y 14 noches.'); return; }
+  if(new Date(r.inicio+'T00:00:00').getDay() !== 5){ showToast('El puente tiene que empezar en viernes.'); return; }
+  if(!WEEKS.some(w=>w.key===r.inicio)){ showToast('Ese viernes queda fuera del calendario cargado en la app.'); return; }
+  if(!p.existente && PUENTES_LISTA.some(o=>o.semana_inicio===r.inicio)){ showToast('Ya hay un puente que empieza ese viernes. Edítalo desde la lista en vez de crear otro.'); return; }
+  const ini = fechaMasDias(r.inicio, 0).getTime(), fin = fechaMasDias(r.inicio, noches-1).getTime();
+  const choca = PUENTES_LISTA.find(o=>o.semana_inicio!==r.inicio && fechaMasDias(o.semana_inicio,0).getTime() <= fin && fechaMasDias(o.semana_inicio, o.num_noches-1).getTime() >= ini);
   if(choca){ showToast(`Se solapa con el puente «${choca.nombre}». Cámbiale las fechas o bórralo antes.`); return; }
-  const fila = { semana_inicio:p.semana_inicio, nombre, num_noches:p.num_noches,
-    forzar_agm:p.forzar_agm.slice().sort((a,b)=>a-b), excluir_companias:p.excluir_companias.slice().sort((a,b)=>a-b), actualizado_en:new Date().toISOString() };
+  const fila = { semana_inicio:r.inicio, nombre, num_noches:noches, forzar_agm:[noches-1], // la noche del último día todos duermen en la AGM
+    excluir_companias:p.excluir_companias.slice().sort((a,b)=>a-b), actualizado_en:new Date().toISOString() };
   const { error } = await sb.from('pernocta_puentes').upsert(fila, { onConflict:'semana_inicio' });
   if(error){ showToast('No se pudo guardar el puente: '+error.message); return; }
   PUENTE_EDIT = null;
@@ -3696,10 +3745,96 @@ async function puenteBorrar(key){
   if(!confirm('¿Borrar este puente? Esa semana volverá a ser un fin de semana normal (viernes y sábado).')) return;
   const { error } = await sb.from('pernocta_puentes').delete().eq('semana_inicio', key);
   if(error){ showToast('No se pudo borrar: '+error.message); return; }
-  if(PUENTE_EDIT && PUENTE_EDIT.semana_inicio===key) PUENTE_EDIT = null;
+  if(PUENTE_EDIT && RANGOS.puente && RANGOS.puente.inicio===key) PUENTE_EDIT = null;
   await fetchPuentesYManiobras(CURRENT && CURRENT.compania ? CURRENT.compania : null);
   showToast('Puente borrado.');
   await renderSuperadmin();
+}
+
+/* ---- Maniobras: el admin de compañía las pone para la suya; el superadmin, para toda la academia (eligiendo a quién) ---- */
+const MANI_FORMS = {
+  maniAdmin: { horaIni:'06:00', horaFin:'20:00', nota:'', companias:[] },
+  maniAcad:  { horaIni:'06:00', horaFin:'20:00', nota:'', companias:COMPANIES.slice() }, // por defecto, toda la academia
+};
+function maniRangoBodyHtml(id){
+  const r = RANGOS[id], f = MANI_FORMS[id];
+  let txt;
+  if(!r.inicio) txt = 'Elige en el calendario el día de salida.';
+  else if(!r.fin) txt = `Salen el <b>${fmtLargo(r.inicio)}</b>. Ahora elige el día de vuelta (puede ser el mismo día).`;
+  else txt = `Salen el <b>${fmtLargo(r.inicio)}</b> a las <b>${f.horaIni}</b> y vuelven el <b>${fmtLargo(r.fin)}</b> a las <b>${f.horaFin}</b>.`;
+  return rangoHtml(id) + `<div class="small-note" style="margin-top:8px;">${txt}</div>`;
+}
+function maniobrasListaHtml(filas, modo){
+  if(!filas.length) return '<p class="small-note">No hay maniobras puestas.</p>';
+  if(modo==='academia'){
+    const grupos = {}; filas.forEach(m=>{ (grupos[m.grupo] = grupos[m.grupo] || []).push(m); });
+    return Object.values(grupos).map(g=>{
+      const m = g[0], cias = g.map(x=>x.compania).sort((a,b)=>a-b);
+      return `<div class="manage-row"><div>⛺ ${maniobrasTexto(m)}${m.nota ? ' — '+escHtml(m.nota) : ''}<br><span class="sub2">Compañías: ${cias.join(', ')}${cias.length===COMPANIES.length ? ' (toda la academia)' : ''}</span></div>
+        <div class="btns"><button class="small-btn danger" onclick="maniobrasBorrar(null,'${m.grupo}','academia')">🗑 Borrar</button></div></div>`;
+    }).join('');
+  }
+  return filas.map(m=>`<div class="manage-row"><div>⛺ ${maniobrasTexto(m)}${m.nota ? ' — '+escHtml(m.nota) : ''}</div>
+    <div class="btns"><button class="small-btn danger" onclick="maniobrasBorrar(${m.id},null,'compania')">🗑 Borrar</button></div></div>`).join('');
+}
+// modo 'compania' (panel del admin: solo su compañía) o 'academia' (panel del superadmin: elige a quién). datos/errorTabla solo en 'academia'.
+function maniobrasPanelHtml(modo, datos, errorTabla){
+  const id = modo==='academia' ? 'maniAcad' : 'maniAdmin';
+  if(errorTabla) return `<p class="small-note">⚠️ La tabla de maniobras todavía no existe (${escHtml(errorTabla.message||'')}). Ejecuta el parche SQL 55.</p>`;
+  if(!RANGOS[id]) rangoNuevo(id, { desdeHoy:true, finDespues:false, maxDias:60 }, null, null, ()=>maniRangoBodyHtml(id));
+  else RANGO_BODY[id] = ()=>maniRangoBodyHtml(id);
+  const f = MANI_FORMS[id];
+  const filas = modo==='academia' ? (datos||[]) : MANIOBRAS_LISTA;
+  const stySel = 'padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;';
+  const alcance = modo==='academia' ? `<div class="switch-label" style="margin-top:12px;">¿A quién afecta?<span class="sub2">Por defecto, a TODA la academia (todos los cursos). Desmarca los cursos o compañías que no vayan.</span></div>
+      ${COMPANIES_POR_CURSO.map((g,gi)=>g.companias.length ? `<div style="margin-top:6px;">
+        <label style="font-weight:700;font-size:.82rem;"><input type="checkbox" ${g.companias.every(c=>f.companias.includes(c))?'checked':''} onchange="maniToggleCurso(${gi}, this.checked)"> ${g.curso} (todo el curso)</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 0 18px;">${g.companias.map(c=>`<label style="font-size:.82rem;"><input type="checkbox" ${f.companias.includes(c)?'checked':''} onchange="maniToggleCompania(${c}, this.checked)"> ${c}ª</label>`).join('')}</div>
+      </div>` : '').join('')}` : '';
+  return `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
+      <div class="switch-label">${modo==='academia' ? 'Maniobras de la academia' : `Maniobras de la ${CURRENT.compania}ª`}<span class="sub2">Pon de qué día y hora a qué día y hora está fuera esa gente. Los alumnos lo ven avisado, y las comidas y las noches de ese periodo salen marcadas con ⛺ en Comidas y en Pernoctas.</span></div>
+      ${maniobrasListaHtml(filas, modo)}
+      <div style="border:1px solid var(--brass);border-radius:10px;padding:12px;margin-top:12px;">
+        <div style="font-weight:700;margin-bottom:8px;">➕ Añadir semana de maniobras</div>
+        <div id="rgw-${id}">${maniRangoBodyHtml(id)}</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;">
+          <div class="field" style="margin:0;"><label>Hora de salida (primer día)</label><input type="time" value="${f.horaIni}" oninput="MANI_FORMS.${id}.horaIni=this.value; rangoRepintar('${id}')" style="${stySel}"></div>
+          <div class="field" style="margin:0;"><label>Hora de vuelta (último día)</label><input type="time" value="${f.horaFin}" oninput="MANI_FORMS.${id}.horaFin=this.value; rangoRepintar('${id}')" style="${stySel}"></div>
+          <div class="field" style="margin:0;flex:1 1 220px;"><label>Nota para los alumnos (opcional)</label><input type="text" maxlength="200" value="${escHtml(f.nota)}" placeholder="Ej. Campo de maniobras de San Gregorio" oninput="MANI_FORMS.${id}.nota=this.value" style="${stySel}width:100%;"></div>
+        </div>
+        ${alcance}
+        <div style="margin-top:12px;"><button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="maniobrasAnadir('${modo}')">➕ Añadir maniobras</button></div>
+      </div>
+    </div>`;
+}
+function maniToggleCompania(c, on){ const s = new Set(MANI_FORMS.maniAcad.companias); on ? s.add(c) : s.delete(c); MANI_FORMS.maniAcad.companias = [...s]; renderSuperadmin(); }
+function maniToggleCurso(gi, on){ const s = new Set(MANI_FORMS.maniAcad.companias); COMPANIES_POR_CURSO[gi].companias.forEach(c=> on ? s.add(c) : s.delete(c)); MANI_FORMS.maniAcad.companias = [...s]; renderSuperadmin(); }
+async function maniobrasAnadir(modo){
+  const id = modo==='academia' ? 'maniAcad' : 'maniAdmin', r = RANGOS[id], f = MANI_FORMS[id];
+  if(!r || !r.inicio || !r.fin){ showToast('Elige en el calendario el día de salida y el de vuelta.'); return; }
+  if(!/^\d{2}:\d{2}$/.test(f.horaIni) || !/^\d{2}:\d{2}$/.test(f.horaFin)){ showToast('Pon la hora de salida y la de vuelta.'); return; }
+  if(new Date(r.fin+'T'+f.horaFin) <= new Date(r.inicio+'T'+f.horaIni)){ showToast('La vuelta tiene que ser después de la salida (revisa las horas).'); return; }
+  const nota = (f.nota||'').trim();
+  if(/[<>"]/.test(nota)){ showToast('La nota no puede llevar los caracteres  <  >  " .'); return; }
+  const companias = modo==='academia' ? f.companias.slice() : [CURRENT.compania];
+  if(!companias.length){ showToast('Elige al menos una compañía.'); return; }
+  const grupo = (crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(16)+Math.random().toString(16).slice(2)));
+  const { error } = await sb.from('maniobras').insert(companias.map(c=>({ grupo, compania:c, fecha_inicio:r.inicio, hora_inicio:f.horaIni, fecha_fin:r.fin, hora_fin:f.horaFin, nota: nota || null })));
+  if(error){ showToast('No se pudo guardar: '+error.message+' — ¿has ejecutado el parche SQL 55?'); return; }
+  rangoNuevo(id, { desdeHoy:true, finDespues:false, maxDias:60 }, null, null, ()=>maniRangoBodyHtml(id));
+  f.nota = '';
+  await fetchPuentesYManiobras(CURRENT && CURRENT.compania ? CURRENT.compania : null);
+  showToast(`Maniobras añadidas${modo==='academia' ? ` (${companias.length} compañía${companias.length===1?'':'s'})` : ''}.`);
+  await (modo==='academia' ? renderSuperadmin() : rerenderActual());
+}
+async function maniobrasBorrar(id, grupo, modo){
+  if(!confirm('¿Borrar estas maniobras?'+(modo==='academia' ? ' Se quitan de todas las compañías a las que afectaban.' : ''))) return;
+  const q = sb.from('maniobras').delete();
+  const { error } = await (grupo ? q.eq('grupo', grupo) : q.eq('id', id));
+  if(error){ showToast('No se pudo borrar: '+error.message); return; }
+  await fetchPuentesYManiobras(CURRENT && CURRENT.compania ? CURRENT.compania : null);
+  showToast('Maniobras borradas.');
+  await (modo==='academia' ? renderSuperadmin() : rerenderActual());
 }
 function pernoctaObligatoria(personaId, dia){
   if(diaForzadoAgm(dia)) return !EXTERNADOS.has(personaId); // día marcado por el admin como obligatorio en la AGM (ej. puente)
@@ -3806,15 +3941,15 @@ async function renderAlumnoPernoctas(){
       const tieneExcepcion = (p.id===persona.id) ? ownMap.hasOwnProperty(d) : seccionMap.hasOwnProperty(p.id+'|'+d);
       const locked = pernoctaObligatoria(p.id, d) && !unlocked && !tieneExcepcion;
       if(locked){
-        days += `<div class="pernocta-day"><span class="daylabel">${DAY_NAMES[(d)%7]}</span><span class="pernocta-badge agm">AGM</span></div>`;
+        days += `<div class="pernocta-day"><span class="daylabel">${DAY_NAMES[(d)%7]}${nocheEnManiobras(ACTIVE_WEEK,d)?' ⛺':''}</span><span class="pernocta-badge agm">AGM</span></div>`;
       } else if(isMe && open){
-        days += `<div class="pernocta-day"><span class="daylabel">${DAY_NAMES[(d)%7]}</span>
+        days += `<div class="pernocta-day"><span class="daylabel">${DAY_NAMES[(d)%7]}${nocheEnManiobras(ACTIVE_WEEK,d)?' ⛺':''}</span>
           <select class="pernocta-select" onchange="onPernoctaSelect(${d}, this.value)">
             <option value="agm" ${val?'selected':''}>AGM</option>
             <option value="fuera" ${!val?'selected':''}>Fuera (X)</option>
           </select></div>`;
       } else {
-        days += `<div class="pernocta-day"><span class="daylabel">${DAY_NAMES[(d)%7]}</span><span class="pernocta-badge ${val?'agm':'fuera'}">${val?'AGM':'X'}</span></div>`;
+        days += `<div class="pernocta-day"><span class="daylabel">${DAY_NAMES[(d)%7]}${nocheEnManiobras(ACTIVE_WEEK,d)?' ⛺':''}</span><span class="pernocta-badge ${val?'agm':'fuera'}">${val?'AGM':'X'}</span></div>`;
       }
     }
     if(isMe && open){
@@ -4368,7 +4503,8 @@ async function _renderAdminPernoctasImpl(){
       </div>`;
   document.getElementById('admin-pernocta-controls').innerHTML =
     `<div class="admin-panel">${filaExportarP}</div>` +
-    adminDesplegable('p-semana', '📅 Ajustes de esta semana', filaPermitirFuera + filaForzar + filaOcultaP + maniobrasFilaHtml() + corteEspecialPanelHtml(companiaInfo.hora_corte,'pernoctas')) +
+    adminDesplegable('p-semana', '📅 Ajustes de esta semana', filaPermitirFuera + filaForzar + filaOcultaP + corteEspecialPanelHtml(companiaInfo.hora_corte,'pernoctas')) +
+    adminDesplegable('p-maniobras', '⛺ Añadir semana de maniobras', maniobrasPanelHtml('compania')) +
     adminDesplegable('p-pase', '🛂 Pase de horas individual', filaPase) +
     adminDesplegable('p-excel', '🔍 Comprobar un Excel de pernoctas', filaExcelP);
 
