@@ -51,6 +51,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .masthead .brand{display:flex;align-items:center;gap:10px;}
 .masthead .brand img{height:42px;width:auto;display:block;flex-shrink:0;}
 .masthead .sub{color:var(--ink-soft);font-size:.85rem;margin-top:4px;}
+.masthead .brand img.brand-flag{height:42px;width:auto;border-radius:3px;box-shadow:0 0 0 1px var(--line);}
 .login-brand{text-align:center;padding-top:30px;margin-bottom:8px;}
 .login-brand img{height:140px;width:auto;margin:0 auto 14px;display:block;}
 .login-brand h1{font-size:1.6rem;margin:0;font-weight:800;letter-spacing:.01em;}
@@ -452,7 +453,7 @@ aplicarTema();
   <!-- ALUMNO -->
   <div id="screen-alumno" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="alumno-subtitle"></div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><img class="brand-flag" src="bandera-agm.png" alt="" onerror="this.style.display='none'"><div><h1>PORTAL AGM</h1><div class="sub" id="alumno-subtitle"></div></div></div>
       <div class="who"><div class="name" id="alumno-who"></div><span id="alumno-switch"></span><button class="logout cfg-btn" style="margin-right:6px;" onclick="toggleConfig()" title="Configuración" aria-label="Configuración">⚙️</button><button class="logout" onclick="doLogout()">Salir</button></div>
       <div id="alumno-config" class="config-panel hidden"></div>
     </div>
@@ -471,8 +472,8 @@ aplicarTema();
       <div id="alumno-confirm"></div>
       <h3 class="section-title">Comidas de la semana — desayuno, comida y cena</h3>
       <div id="alumno-view-toggle"></div>
-      <div id="alumno-desayuno-domingo-aviso"></div>
       <div class="table-scroll" id="alumno-table-scroll"><table class="roster" id="alumno-table"></table></div>
+      <div id="alumno-desayuno-domingo-aviso"></div>
       <details class="serv-est" id="alumno-proximas-panel">
         <summary>🍽️ TUS PRÓXIMAS COMIDAS</summary>
         <div class="cuerpo">
@@ -538,7 +539,7 @@ aplicarTema();
   <!-- ADMIN -->
   <div id="screen-admin" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="admin-subtitle">Administración</div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><img class="brand-flag" src="bandera-agm.png" alt="" onerror="this.style.display='none'"><div><h1>PORTAL AGM</h1><div class="sub" id="admin-subtitle">Administración</div></div></div>
       <div class="who"><div class="name" id="admin-who"></div><span id="admin-switch"></span><button class="logout cfg-btn" style="margin-right:6px;" onclick="toggleConfig()" title="Configuración" aria-label="Configuración">⚙️</button><button class="logout" onclick="doLogout()">Salir</button></div>
       <div id="admin-config" class="config-panel hidden"></div>
     </div>
@@ -665,7 +666,7 @@ aplicarTema();
   <!-- SERVICIO DE CUARTEL (solo lectura) -->
   <div id="screen-cuartel" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="cuartel-subtitle">Servicio de cuartel</div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><img class="brand-flag" src="bandera-agm.png" alt="" onerror="this.style.display='none'"><div><h1>PORTAL AGM</h1><div class="sub" id="cuartel-subtitle">Servicio de cuartel</div></div></div>
       <div class="who"><div class="name">🪖 Servicio de cuartel</div><button class="logout" id="cuartel-salir-btn" onclick="salirCuartel()">Salir</button></div>
     </div>
     <div class="module-switch">
@@ -680,7 +681,7 @@ aplicarTema();
 
   <div id="screen-superadmin" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub">👑 Panel superadmin</div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><img class="brand-flag" src="bandera-agm.png" alt="" onerror="this.style.display='none'"><div><h1>PORTAL AGM</h1><div class="sub">👑 Panel superadmin</div></div></div>
       <div class="who"><div class="name">Superadmin</div><button class="small-btn" style="margin-right:8px;" onclick="volverDeSuperadmin()">◀ Volver</button><button class="logout" onclick="doLogout()">Salir</button></div>
     </div>
     <div id="superadmin-body"></div>
@@ -729,7 +730,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-11T23:18";
+const APP_VERSION = "2026-10-11T23:47";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -757,7 +758,7 @@ const COMPANIES_POR_CURSO = [
   { curso:'1.er curso', companias:[11,12,13] },
   { curso:'2.º curso',  companias:[21,22,23] },
   { curso:'3.er curso', companias:[] },
-  { curso:'Otras compañías', companias:[6,7] },
+  // La 6.ª y la 7.ª (de 1.er curso) se quitan de momento: no van a usar la app. Para volver a ponerlas, añádelas a 1.er curso.
 ];
 const COMPANIES = COMPANIES_POR_CURSO.flatMap(g=>g.companias);
 // <option> de compañías agrupados por curso (los cursos sin compañías no salen)
@@ -1018,6 +1019,7 @@ document.addEventListener('click', e=>{
   document.querySelectorAll('.config-panel:not(.hidden)').forEach(p=>{ if(!p.contains(e.target) && !e.target.closest('.cfg-btn')) p.classList.add('hidden'); });
 });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.querySelectorAll('.config-panel').forEach(p=>p.classList.add('hidden')); });
+function cerrarConfig(){ document.querySelectorAll('.config-panel').forEach(p=>p.classList.add('hidden')); }
 function toggleConfig(){
   const el = document.getElementById(prefixPantalla()+'-config');
   el.classList.toggle('hidden');
@@ -1026,7 +1028,22 @@ function toggleConfig(){
 function pintarConfig(){
   const el = document.getElementById(prefixPantalla()+'-config');
   const grupo = (clave, opciones) => `<div class="semanas-toggle">${opciones.map(([v,txt])=>`<button class="${PREFS[clave]===v?'active':''}" onclick="setPref('${clave}','${v}')">${txt}</button>`).join('')}</div>`;
+  // Cambiar de modo (antes eran botones sueltos en la cabecera): solo salen los que te corresponden
+  const modos = [];
+  if(CURRENT){
+    if(CURRENT.mode==='alumno'){
+      if(CURRENT.adminCompania) modos.push(['switchToAdmin()', '🛠️ Modo admin']);
+    } else if(CURRENT.mode==='admin'){
+      if(CURRENT.linkedPersona) modos.push(['switchToAlumno()', '🎓 Modo alumno']);
+    }
+    if(CURRENT.isSuperadmin){
+      modos.push(['enterSuperadmin()', '👑 Modo superadmin']);
+      modos.push(['abrirVerComoCuartel()', '🪖 Ver como cuartel']);
+    }
+  }
   el.innerHTML = `<h4>⚙️ Configuración</h4>
+    ${modos.length ? `<div class="cfg-label">Cambiar de modo</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">${modos.map(([fn,txt])=>`<button class="small-btn" style="padding:10px 12px;text-align:left;font-size:.85rem;" onclick="cerrarConfig();${fn}">${txt}</button>`).join('')}</div>` : ''}
     <div class="cfg-label">Cómo elegir la semana</div>
     ${grupo('semana', [['calendario','📅 Calendario'],['selector','Desplegable'],['ambos','Los dos']])}
     <div class="cfg-label">Tema</div>
@@ -1942,9 +1959,7 @@ async function renderAlumno(){
   const code = ''+persona.compania+persona.seccion;
   document.getElementById('alumno-subtitle').textContent = `${persona.compania}ª Compañía · ${persona.seccion}ª Sección (${code}) · ${seccionPeople.length} efectivos`;
   document.getElementById('alumno-who').textContent = persona.nombre+' '+persona.apellidos;
-  document.getElementById('alumno-switch').innerHTML =
-    (CURRENT.adminCompania ? `<button class="small-btn" style="margin-right:8px;" onclick="switchToAdmin()">Modo admin</button>` : '') +
-    (CURRENT.isSuperadmin ? `<button class="small-btn" style="margin-right:8px;" onclick="enterSuperadmin()">👑 Modo superadmin</button><button class="small-btn" style="margin-right:8px;" onclick="abrirVerComoCuartel()">🪖 Ver como cuartel</button>` : '');
+  document.getElementById('alumno-switch').innerHTML = ''; // los botones de cambio de modo ahora están dentro de ⚙️ (más limpio en el móvil)
   const { data: companiaInfo } = await sb.from('companias').select('hora_corte').eq('numero', persona.compania).single();
   const horaCorte = companiaInfo ? companiaInfo.hora_corte : '10:00:00';
   await fetchSemanasOcultas(persona.compania);
@@ -2244,7 +2259,7 @@ async function cuartelSuperHtml(){
       const mias = filas.filter(r=>r.compania===c);
       const act = mias.filter(activa);
       const cu = cuentaDe(c);
-      const cuentaTxt = cu ? `✅ cuenta vinculada${cu.usuario ? ` · usuario <b class="mono">${escHtml(cu.usuario)}</b>` : ''}` : '⚠️ sin cuenta de cuartel todavía';
+      const cuentaTxt = cu ? `✅ cuenta vinculada${cu.usuario ? ` · usuario <b class="mono">${escHtml(cu.usuario)}</b>` : ''}` : '⚠️ Esta compañía aún no tiene cuenta de cuartel (se crea con el parche SQL 53)';
       const conectados = act.length ? act.map(r=>`
         <div class="manage-row">
           <div>🟢 <b>${escHtml(r.nombre||'(sin nombre)')}</b> — 📱 ${escHtml(r.dispositivo||'?')}<br>
@@ -2253,7 +2268,7 @@ async function cuartelSuperHtml(){
         </div>`).join('') : '<p class="small-note">Ahora mismo no hay nadie conectado.</p>';
       const historial = mias.length ? mias.slice(0,40).map(r=>`<div class="history-row"><span class="ts">${ts(r.inicio)} → ${ts(r.ultima)}</span> — <b>${escHtml(r.nombre||'(sin nombre)')}</b> · 📱 ${escHtml(r.dispositivo||'?')} · ${estado(r)}</div>`).join('')
         : '<p class="small-note">Todavía nadie ha entrado con la cuenta de esta compañía.</p>';
-      return adminDesplegable('cuartel-'+c, `🪖 ${c}ª Compañía — ${act.length ? `🟢 ${act.length} conectado${act.length===1?'':'s'}` : 'sin conexiones'}`, `
+      return adminDesplegable('cuartel-'+c, `${c}ª Compañía — ${!cu ? '⚠️ sin cuenta' : act.length ? `🟢 ${act.length} conectado${act.length===1?'':'s'}` : 'sin conexiones'}`, `
         <div class="panel-row" style="flex-direction:column;align-items:stretch;">
           <div class="switch-label">Cuenta de cuartel de la ${c}ª<span class="sub2">${cuentaTxt}</span></div>
           <div style="margin-top:8px;"><button class="small-btn" onclick="cambiarPasswordCuartel(${c})">🔑 Cambiar contraseña</button></div>
@@ -2262,7 +2277,8 @@ async function cuartelSuperHtml(){
           <details style="margin-top:10px;"><summary style="cursor:pointer;font-weight:700;">Historial de accesos (últimos ${Math.min(mias.length,40)})</summary>${historial}</details>
         </div>`);
     }).join('');
-    return `<div style="font-size:.75rem;color:var(--ink-soft);margin:12px 0 0;">${g.curso}</div>${porCia}`;
+    const conectadosCurso = filas.filter(r=>g.companias.includes(r.compania) && activa(r)).length;
+    return adminDesplegable('cuartel-curso-'+g.curso, `${g.curso}${conectadosCurso ? ` — 🟢 ${conectadosCurso} conectado${conectadosCurso===1?'':'s'}` : ''}`, porCia);
   }).join('');
   return `${bloques}<button class="small-btn" style="margin-top:8px;" onclick="renderSuperadmin()">↻ Actualizar</button>`;
 }
@@ -2274,18 +2290,34 @@ function generarPasswordSegura(n){
   return Array.from(buf, v=>abc[v % abc.length]).join('');
 }
 async function cambiarPasswordCuartel(c){
-  const nueva = generarPasswordSegura(12);
-  abrirModalGlobal(`<h3>🔑 Nueva contraseña de cuartel — ${c}ª Compañía</h3>
-    <p class="modal-nota" style="margin-top:0;">Se va a poner esta contraseña a la cuenta de cuartel de la ${c}ª. La anterior dejará de funcionar. <b>Anótala ahora: después no se puede volver a ver.</b></p>
-    <div class="modal-resumen mono" style="font-size:1.2rem;text-align:center;user-select:all;">${nueva}</div>
-    <div class="modal-botones" style="margin-top:12px;"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" onclick="aplicarPasswordCuartel(${c}, '${nueva}')">Aplicar contraseña</button></div>`);
+  // Puedes escribir la contraseña que quieras (que la sepan los que la tengan que saber) o usar la que se propone
+  abrirModalGlobal(`<h3>🔑 Contraseña de cuartel — ${c}ª Compañía</h3>
+    <p class="modal-nota" style="margin-top:0;">Escribe la contraseña que quieras (mínimo 10 caracteres) o usa la propuesta. La anterior dejará de funcionar y se cerrarán las sesiones abiertas de esa cuenta. <b>Apúntala: después no se puede volver a ver.</b></p>
+    <div class="field"><label>Nueva contraseña</label><input type="text" id="pwd-cuartel" class="mono" style="font-size:1.1rem;" autocomplete="off" autocapitalize="off" spellcheck="false" value="${generarPasswordSegura(12)}" oninput="avisoPasswordCuartel()"></div>
+    <div id="pwd-cuartel-aviso" class="small-note" style="min-height:1.2em;"></div>
+    <div class="modal-botones"><button class="small-btn" onclick="document.getElementById('pwd-cuartel').value=generarPasswordSegura(12);avisoPasswordCuartel()">🎲 Otra propuesta</button><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" onclick="aplicarPasswordCuartel(${c})">Aplicar contraseña</button></div>`);
+  avisoPasswordCuartel();
 }
-async function aplicarPasswordCuartel(c, nueva){
+// Avisos mientras se escribe (la contraseña corta no se deja; la fácil de adivinar se avisa pero se permite)
+function avisoPasswordCuartel(){
+  const v = (document.getElementById('pwd-cuartel')||{}).value || '';
+  const el = document.getElementById('pwd-cuartel-aviso'); if(!el) return;
+  let msg = '';
+  if(v.length < 10) msg = '⚠️ Mínimo 10 caracteres.';
+  else if(v !== v.trim()) msg = '⚠️ No puede empezar ni acabar con espacios.';
+  else if(/^(agm|cuartel|cia|compania)?[\s_-]*\d{1,2}[\s_-]*(19|20)?\d{2}$/i.test(v) || /^(1234|password|contrase)/i.test(v) || v.length < 12) msg = 'ℹ️ Es válida, pero fácil de adivinar. Mejor 12 o más caracteres y sin patrones como AGM11-2026.';
+  else msg = '✅ Buena contraseña.';
+  el.textContent = msg;
+}
+async function aplicarPasswordCuartel(c){
+  const nueva = (document.getElementById('pwd-cuartel')||{}).value || '';
+  if(nueva.length < 10){ showToast('La contraseña tiene que tener al menos 10 caracteres.'); return; }
+  if(nueva !== nueva.trim()){ showToast('La contraseña no puede empezar ni acabar con espacios.'); return; }
   const { error } = await sb.rpc('superadmin_cuartel_set_password', { p_compania: c, p_password: nueva });
   cerrarModalGlobal();
   if(error){ showToast('No se pudo cambiar: '+error.message+' — ¿has ejecutado el parche SQL de cuartel?'); return; }
   abrirModalGlobal(`<h3>✅ Contraseña cambiada — ${c}ª Compañía</h3>
-    <div class="modal-resumen mono" style="font-size:1.2rem;text-align:center;user-select:all;">${nueva}</div>
+    <div class="modal-resumen mono" style="font-size:1.2rem;text-align:center;user-select:all;word-break:break-all;">${escHtml(nueva)}</div>
     <p class="modal-nota">Cópiala y compártela solo con el servicio de cuartel de esa compañía. Esta ventana es la única vez que se muestra.</p>
     <div class="modal-botones"><button class="primary-btn" onclick="cerrarModalGlobal()">Cerrar</button></div>`);
 }
@@ -2326,58 +2358,58 @@ async function renderSuperadmin(){
       <tbody>${totalesCia.map(x=>`<tr><td class="name-cell">${x.c}ª</td><td class="mono">${x.registrados}</td><td class="mono ${x.total-x.registrados===0?'count-full':''}">${x.total-x.registrados}${efectivosReales[x.c]!=null?` <span style="color:var(--ink-soft);">(de ${efectivosReales[x.c]} reales)</span>`:''}</td><td class="mono">${x.total}</td></tr>`).join('')}</tbody>
       <tfoot><tr><td class="name-cell">TOTAL</td><td class="mono">${sumReg}</td><td class="mono">${sumTotal-sumReg}</td><td class="mono">${sumTotal}</td></tr></tfoot>
     </table></div>`;
-  document.getElementById('superadmin-body').innerHTML = `
-    <div class="admin-panel">
-      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
-        <div class="switch-label">📊 Registrados en la app<span class="sub2">Por compañía y en total. Esto solo lo ve el superadmin; los administradores de compañía ya no lo ven</span></div>
-        ${totalesHtml}
-      </div>
-
-      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
+  // De más a menos importante: totales (siempre a la vista) · solicitudes pendientes · ir a una compañía · cuartel · restablecer contraseña
+  const nSol = (solicitudes||[]).length;
+  const filaSolicitudes = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
+        ${nSol ? solicitudes.map(s=>`
+          <div class="manage-row">
+            <div>${escHtml(s.apellidos)}, ${escHtml(s.nombre)} — ${escHtml(s.email)} — quiere administrar la <b>${s.compania_solicitada}ª Compañía</b> (su sección: ${s.compania_solicitada}${s.seccion_solicitada})${s.mensaje?`<br><span class="sub2">"${escHtml(s.mensaje)}"</span>`:''}</div>
+            <div class="btns">
+              <button class="small-btn" onclick="aprobarAdminSolicitud(${s.id})">✅ Aprobar</button>
+              <button class="small-btn danger" onclick="rechazarAdminSolicitud(${s.id})">❌ Rechazar</button>
+            </div>
+          </div>`).join('') : '<p class="small-note">No hay solicitudes pendientes.</p>'}
+      </div>`;
+  const filaIrCompania = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
         <div class="switch-label">Ir a una compañía<span class="sub2">Entra en el panel de administración normal de cualquier compañía</span></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
           ${COMPANIES_POR_CURSO.filter(g=>g.companias.length).map(g=>`<div style="flex-basis:100%;font-size:.75rem;color:var(--ink-soft);margin-top:4px;">${g.curso}</div>${g.companias.map(c=>`<button class="small-btn" onclick="enterAdmin(${c}, null, true)">${c}ª Compañía</button>`).join('')}`).join('')}
         </div>
-      </div>
-
-      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
-        <div class="switch-label">🪖 Cuentas del servicio de cuartel (una por compañía)<span class="sub2">Quién ha entrado en cada una, desde qué dispositivo y cuándo. Máximo 3 dispositivos a la vez: si un dispositivo pasa 5 min sin dar señal o pulsa "Salir", deja su hueco libre. Cada cuenta de cuartel solo ve su compañía.</span></div>
-        <div style="margin:8px 0;"><button class="small-btn" onclick="abrirVerComoCuartel()">👁 Ver como servicio de cuartel…</button></div>
-        ${cuartelHtml}
-      </div>
-
-      <div class="panel-row" style="flex-direction:column;align-items:stretch;">
+      </div>`;
+  const stySel = 'padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;';
+  const filaReset = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
         <div class="switch-label">Restablecer la contraseña de alguien<span class="sub2">Elige compañía, sección y persona — se le manda un correo con un enlace para crear una contraseña nueva</span></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-          <select id="super-reset-compania" onchange="onSuperResetCompaniaChange(this.value)" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
+          <select id="super-reset-compania" onchange="onSuperResetCompaniaChange(this.value)" style="${stySel}">
             <option value="">— compañía —</option>
             ${companiasOptionsHtml(superReset.compania)}
           </select>
-          <select id="super-reset-seccion" onchange="onSuperResetSeccionChange(this.value)" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
+          <select id="super-reset-seccion" onchange="onSuperResetSeccionChange(this.value)" style="${stySel}">
             <option value="">— sección —</option>
             ${seccionesHtml}
           </select>
-          <select id="super-reset-persona" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;min-width:220px;">
+          <select id="super-reset-persona" style="${stySel}min-width:220px;">
             ${personasHtml}
           </select>
           <button class="small-btn" onclick="enviarResetPersona()">✉️ Enviar enlace de reseteo</button>
         </div>
-      </div>
-
+      </div>`;
+  const filaCuartel = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
+        <div class="switch-label">Una cuenta de cuartel por compañía<span class="sub2">Quién ha entrado en cada una, desde qué dispositivo y cuándo. Máximo 3 dispositivos a la vez: si un dispositivo pasa 5 min sin dar señal o pulsa "Salir", deja su hueco libre. Cada cuenta de cuartel solo ve su compañía.</span></div>
+        <div style="margin:8px 0;"><button class="small-btn" onclick="abrirVerComoCuartel()">👁 Ver como servicio de cuartel…</button></div>
+        ${cuartelHtml}
+      </div>`;
+  document.getElementById('superadmin-body').innerHTML = `
+    <div class="admin-panel">
       <div class="panel-row" style="flex-direction:column;align-items:stretch;">
-        <div class="switch-label">Solicitudes de administrador pendientes${solicitudes && solicitudes.length ? ` <span style="color:var(--danger);">(${solicitudes.length})</span>` : ''}</div>
-        <div style="margin-top:8px;">
-          ${(solicitudes && solicitudes.length) ? solicitudes.map(s=>`
-            <div class="manage-row">
-              <div>${escHtml(s.apellidos)}, ${escHtml(s.nombre)} — ${escHtml(s.email)} — quiere administrar la <b>${s.compania_solicitada}ª Compañía</b> (su sección: ${s.compania_solicitada}${s.seccion_solicitada})${s.mensaje?`<br><span class="sub2">"${escHtml(s.mensaje)}"</span>`:''}</div>
-              <div class="btns">
-                <button class="small-btn" onclick="aprobarAdminSolicitud(${s.id})">✅ Aprobar</button>
-                <button class="small-btn danger" onclick="rechazarAdminSolicitud(${s.id})">❌ Rechazar</button>
-              </div>
-            </div>`).join('') : '<p class="small-note">No hay solicitudes pendientes.</p>'}
-        </div>
+        <div class="switch-label">📊 Registrados en la app<span class="sub2">Por compañía y en total. Esto solo lo ve el superadmin</span></div>
+        ${totalesHtml}
       </div>
-    </div>`;
+    </div>` +
+    adminDesplegable('super-solicitudes', `👤 Solicitudes de administrador${nSol ? ` <span style="color:var(--danger);">(${nSol} pendiente${nSol===1?'':'s'})</span>` : ' (ninguna pendiente)'}`, filaSolicitudes, nSol>0) +
+    `<div class="admin-panel">${filaIrCompania}</div>` +
+    adminDesplegable('super-cuartel', '🪖 Servicio de cuartel (cuentas, conexiones y accesos)', filaCuartel) +
+    adminDesplegable('super-reset', '🔑 Restablecer la contraseña de un alumno o admin', filaReset);
 }
 function onSuperResetCompaniaChange(v){ superReset = { compania: v?parseInt(v,10):null, seccion:null }; renderSuperadmin(); }
 function onSuperResetSeccionChange(v){ superReset.seccion = v?parseInt(v,10):null; renderSuperadmin(); }
@@ -2449,9 +2481,7 @@ async function _renderAdminImpl(){
   CURRENT.companiaInfo = companiaInfo;
   document.getElementById('admin-subtitle').textContent = `${c}ª Compañía · versión ${APP_VERSION}`;
   document.getElementById('admin-who').textContent = CURRENT.linkedPersona ? (CURRENT.linkedPersona.nombre+' '+CURRENT.linkedPersona.apellidos) : companiaInfo.nombre_admin;
-  document.getElementById('admin-switch').innerHTML =
-    (CURRENT.linkedPersona ? `<button class="small-btn" style="margin-right:8px;" onclick="switchToAlumno()">Modo alumno</button>` : '') +
-    (CURRENT.isSuperadmin ? `<button class="small-btn" style="margin-right:8px;" onclick="enterSuperadmin()">👑 Modo superadmin</button><button class="small-btn" style="margin-right:8px;" onclick="abrirVerComoCuartel()">🪖 Ver como cuartel</button>` : '');
+  document.getElementById('admin-switch').innerHTML = ''; // los botones de cambio de modo ahora están dentro de ⚙️
   await fetchSemanasOcultas(c);
   pintarSelectorSemanas('comidas', 'admin', 'onAdminWeekChange', companiaInfo.hora_corte, false);
   document.getElementById('admin-notice').innerHTML = noticeHtml(ACTIVE_WEEK, companiaInfo.hora_corte);
@@ -3611,13 +3641,16 @@ async function renderAlumnoPernoctas(){
     if(isMe && open){
       const anyFuera = Array.from({length:pernoctaDiasCount()},(_,i)=>i).some(d=>!valFor(p.id,d));
       if(anyFuera){
-        const existingTel = ((ownMap[0]&&ownMap[0].telefono) || (ownMap[1]&&ownMap[1].telefono) || '').replace(/"/g,'&quot;');
-        const existing = ((ownMap[0]&&ownMap[0].direccion) || (ownMap[1]&&ownMap[1].direccion) || '').replace(/"/g,'&quot;');
+        // Dirección y teléfono guardados en CUALQUIERA de las noches "Fuera" (antes solo se miraban las dos primeras noches)
+        const filasFuera = Object.values(ownMap).filter(r=>r && !r.duerme_agm);
+        const existingTel = (filasFuera.map(r=>r.telefono).find(Boolean) || '').replace(/"/g,'&quot;');
+        const existing = (filasFuera.map(r=>r.direccion).find(Boolean) || '').replace(/"/g,'&quot;');
         const hab = (HABITUAL && (HABITUAL.direccion || HABITUAL.telefono)) ? HABITUAL : null;
         days += `<div style="flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <button class="small-btn" ${hab?'':'disabled'} onclick="usarHabitual()" title="Rellena la dirección y el teléfono con los que usas siempre">⭐ Habitual</button>
-          ${hab ? `<span class="sub2">${escHtml(hab.direccion||'')} · ${escHtml(hab.telefono||'')}</span><button class="small-btn" onclick="borrarHabitual()" title="Borrar mis datos habituales">🗑</button>`
-                : `<span class="sub2">${PREFS.habitual==='no' ? 'El guardado de datos habituales está desactivado en ⚙️' : 'Se guardarán la primera vez que rellenes dirección y teléfono'}</span>`}
+          <button class="small-btn" onclick="usarHabitual()" title="Rellena la dirección y el teléfono con los que usas siempre">⭐ Habitual</button>
+          <button class="small-btn" onclick="guardarHabitualManual()" title="Guarda como habituales la dirección y el teléfono que has escrito abajo">💾 Guardar como habitual</button>
+          ${hab ? `<span class="sub2">Habitual: ${escHtml(hab.direccion||'')} · ${escHtml(hab.telefono||'')}</span><button class="small-btn" onclick="borrarHabitual()" title="Borrar mis datos habituales">🗑</button>`
+                : `<span class="sub2">${HABITUAL_ERROR ? 'No se pudieron cargar tus datos habituales ('+escHtml(HABITUAL_ERROR)+')' : PREFS.habitual==='no' ? 'El guardado de datos habituales está desactivado en ⚙️' : 'Aún no tienes datos habituales: rellena abajo la dirección y el teléfono y se guardarán'}</span>`}
         </div>`;
         days += `<input type="tel" class="pernocta-addr" id="pernocta-tel-shared" placeholder="Teléfono de contacto" value="${existingTel}" onchange="onPernoctaContacto()" style="flex-basis:100%;">`;
         days += `<input type="text" class="pernocta-addr" id="pernocta-addr-shared" placeholder="Dirección donde duermes fuera (una para todo el finde)" value="${existing}" onchange="onPernoctaContacto()" style="flex-basis:100%;">`;
@@ -3709,26 +3742,42 @@ async function onPernoctaContacto(){
 /* ---- Datos habituales (dirección y teléfono que el alumno usa siempre): botón "⭐ Habitual" ----
    Se guardan solo para la propia persona (tabla datos_habituales, parche SQL 51). Si la tabla aún no existe, todo esto se ignora sin romper nada. */
 let HABITUAL = null;
+let HABITUAL_ERROR = '';
 async function fetchHabitual(personaId){
+  HABITUAL_ERROR = '';
   try{
     const { data, error } = await sb.from('datos_habituales').select('direccion,telefono').eq('persona_id', personaId).maybeSingle();
-    return error ? null : data;
-  }catch(e){ return null; }
+    if(error){ HABITUAL_ERROR = error.message || 'error'; return null; }
+    return data;
+  }catch(e){ HABITUAL_ERROR = e.message || 'error'; return null; }
 }
-async function guardarHabitual(direccion, telefono){
-  if(PREFS.habitual==='no') return;
+// Guarda como habituales la dirección y el teléfono (si están los dos). Devuelve true si quedó guardado.
+async function guardarHabitual(direccion, telefono, avisar){
+  if(PREFS.habitual==='no' && !avisar) return false;
   direccion = (direccion||'').trim(); telefono = (telefono||'').trim();
-  if(!direccion || !telefono) return;
-  if(HABITUAL && HABITUAL.direccion===direccion && HABITUAL.telefono===telefono) return; // ya es el habitual
+  if(!direccion || !telefono) return false;
+  if(HABITUAL && HABITUAL.direccion===direccion && HABITUAL.telefono===telefono) return true; // ya es el habitual
   const { error } = await sb.from('datos_habituales').upsert({ persona_id: CURRENT.persona.id, direccion, telefono, actualizado_en: new Date().toISOString() }, { onConflict:'persona_id' });
-  if(!error) HABITUAL = { direccion, telefono };
+  if(error){ showToast('No se pudieron guardar tus datos habituales: '+error.message); return false; }
+  HABITUAL = { direccion, telefono };
+  return true;
 }
-async function usarHabitual(){
-  if(!HABITUAL) return;
+// Botón "💾 Guardar como habitual": guarda lo que hay escrito en los dos cuadros
+async function guardarHabitualManual(){
   const tel = document.getElementById('pernocta-tel-shared'), dir = document.getElementById('pernocta-addr-shared');
   if(!tel || !dir) return;
+  if(!tel.value.trim() || !dir.value.trim()){ showToast('Escribe primero la dirección y el teléfono.'); return; }
+  const ok = await guardarHabitual(dir.value, tel.value, true);
+  if(ok){ showToast('Guardado como habitual ⭐'); await renderAlumnoPernoctas(); }
+}
+// Botón "⭐ Habitual": rellena los cuadros de teléfono y dirección con los datos habituales y los aplica a las noches "Fuera"
+async function usarHabitual(){
+  if(!HABITUAL){ showToast('Todavía no tienes datos habituales. Escribe tu dirección y teléfono una vez (o pulsa «Guardar como habitual») y la próxima vez te los pone este botón.'); return; }
+  const tel = document.getElementById('pernocta-tel-shared'), dir = document.getElementById('pernocta-addr-shared');
+  if(!tel || !dir){ showToast('Marca primero alguna noche como «Fuera» para poder rellenar la dirección.'); return; }
   tel.value = HABITUAL.telefono || ''; dir.value = HABITUAL.direccion || '';
   await onPernoctaContacto();
+  showToast('Datos habituales aplicados ⭐');
 }
 async function borrarHabitual(){
   const { error } = await sb.from('datos_habituales').delete().eq('persona_id', CURRENT.persona.id);
