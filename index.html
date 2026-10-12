@@ -121,7 +121,13 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .cal-fila.ok:hover{border-color:var(--olive);}
 .cal-fila.sel{background:var(--olive);color:var(--paper);font-weight:700;}
 .cal-fila.actual:not(.sel){border-color:var(--brass);}
-.cal-fila.mani{border:2px dashed var(--slate);}
+/* Aviso de en qué modo estás (solo lo ven los admins y el superadmin) */
+.modo-badge{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.modo-chip{font-size:.72rem;font-weight:800;letter-spacing:.05em;padding:3px 10px;border-radius:999px;color:#fff;}
+.modo-chip.alumno{background:#3d6b28;}
+.modo-chip.admin{background:#a9780c;}
+.modo-chip.super{background:#6a3fa0;}
+.modo-chip.cuartel{background:#204a73;}
 .col-mani{background:rgba(32,74,115,.14) !important;}
 /* Selector de fechas tipo vuelos (puentes y maniobras) */
 .rg{max-width:760px;}
@@ -158,6 +164,12 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .cal-dia.cub.fin{border-radius:0 10px 10px 0;}
 .cal-dia.cub.ini.fin{border-radius:10px;}
 .cal-dia.cub.sel{background:var(--olive);color:var(--paper);font-weight:700;}
+/* Días de maniobras: del día exacto de salida al de vuelta, bien marcados (no la semana entera) */
+.cal-dia.mani{background:rgba(32,74,115,.40);box-shadow:inset 0 0 0 2px var(--slate);font-weight:800;}
+.cal-dia.mani.mani-ini{border-radius:10px 0 0 10px;}
+.cal-dia.mani.mani-fin{border-radius:0 10px 10px 0;}
+.cal-dia.mani.mani-ini.mani-fin{border-radius:10px;}
+.cal-dia.mani.fuera{opacity:.7;}
 .admin-panel.adm-in{border:none;background:none;padding:0;margin:0;}
 .cal-leyenda{margin-top:8px;font-size:.72rem;color:var(--ink-soft);}
 /* Aviso de "tienes cambios sin confirmar": barra fija abajo, no se puede cerrar; solo desaparece al confirmar */
@@ -469,7 +481,7 @@ aplicarTema();
   <!-- ALUMNO -->
   <div id="screen-alumno" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="alumno-subtitle"></div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="alumno-subtitle"></div><div id="alumno-modo" class="modo-badge hidden"></div></div></div>
       <div class="who"><div class="name" id="alumno-who"></div><span id="alumno-switch"></span><button class="logout cfg-btn" style="margin-right:6px;" onclick="toggleConfig()" title="Configuración" aria-label="Configuración">⚙️</button><button class="logout" onclick="doLogout()">Salir</button></div>
       <div id="alumno-config" class="config-panel hidden"></div>
     </div>
@@ -555,7 +567,7 @@ aplicarTema();
   <!-- ADMIN -->
   <div id="screen-admin" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="admin-subtitle">Administración</div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="admin-subtitle">Administración</div><div id="admin-modo" class="modo-badge hidden"></div></div></div>
       <div class="who"><div class="name" id="admin-who"></div><span id="admin-switch"></span><button class="logout cfg-btn" style="margin-right:6px;" onclick="toggleConfig()" title="Configuración" aria-label="Configuración">⚙️</button><button class="logout" onclick="doLogout()">Salir</button></div>
       <div id="admin-config" class="config-panel hidden"></div>
     </div>
@@ -682,7 +694,7 @@ aplicarTema();
   <!-- SERVICIO DE CUARTEL (solo lectura) -->
   <div id="screen-cuartel" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="cuartel-subtitle">Servicio de cuartel</div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub" id="cuartel-subtitle">Servicio de cuartel</div><div id="cuartel-modo" class="modo-badge hidden"></div></div></div>
       <div class="who"><div class="name">🪖 Servicio de cuartel</div><button class="logout" id="cuartel-salir-btn" onclick="salirCuartel()">Salir</button></div>
     </div>
     <div class="module-switch">
@@ -697,7 +709,7 @@ aplicarTema();
 
   <div id="screen-superadmin" class="hidden">
     <div class="masthead">
-      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub">👑 Panel superadmin</div></div></div>
+      <div class="brand"><img class="brand-logo" alt="AGM"><div><h1>PORTAL AGM</h1><div class="sub">👑 Panel superadmin</div><div class="modo-badge"><span class="modo-chip super">👑 MODO SUPERADMIN</span></div></div></div>
       <div class="who"><div class="name">Superadmin</div><button class="small-btn" style="margin-right:8px;" onclick="volverDeSuperadmin()">◀ Volver</button><button class="logout" onclick="doLogout()">Salir</button></div>
     </div>
     <div id="superadmin-body"></div>
@@ -746,7 +758,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-12T00:30";
+const APP_VERSION = "2026-10-12T20:15";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -810,12 +822,13 @@ function buildWeeks(untilDate, weeksBack){
     if(days[0] > untilDate) break; // el viernes de esta semana ya se pasa de la fecha límite
     weeks.push({key: ymd(days[0]), days});
     w++;
-    if(w>80) break; // límite de seguridad, nunca debería llegar aquí
+    if(w>150) break; // límite de seguridad, nunca debería llegar aquí
   }
   return weeks;
 }
 const CALENDAR_END_DATE = new Date(2026,11,23); // 23 de diciembre de 2026 — hasta aquí hay semanas cargadas
-const WEEKS = buildWeeks(CALENDAR_END_DATE, 12); // 12 semanas hacia atrás, para que el admin pueda ver semanas pasadas
+const CURSO_END_DATE = new Date(2027,6,4); // 4 de julio de 2027: fin de curso. Hasta aquí hay semanas cargadas (el admin decide hasta cuándo las abre a los alumnos)
+const WEEKS = buildWeeks(CURSO_END_DATE, 12); // 12 semanas hacia atrás, para que el admin pueda ver semanas pasadas
 function weekHasElapsed(w){
   const today = new Date(); today.setHours(0,0,0,0);
   const ultimoDia = new Date(w.days[6]); ultimoDia.setHours(23,59,59,999);
@@ -915,10 +928,24 @@ function fmtCutoff(week, horaCorte){
   const c = cutoffFor(week, horaCorte);
   return c.toLocaleDateString('es-ES',{weekday:'long',day:'2-digit',month:'2-digit'}) + ` a las ${String(c.getHours()).padStart(2,'0')}:${String(c.getMinutes()).padStart(2,'0')}`;
 }
-let SEMANAS_OCULTAS = new Set();
+// Los alumnos solo ven las semanas hasta una fecha que decide el admin (companias.plazos_hasta, parche SQL 56). Por defecto, hasta el 23/12/2026 como hasta ahora.
+const PLAZOS_HASTA_DEFECTO = '2026-12-23';
+let PLAZOS_HASTA = PLAZOS_HASTA_DEFECTO;
+let SEMANAS_OCULTAS_REAL = new Set(); // las que el admin ha ocultado a mano
+let SEMANAS_OCULTAS = new Set();      // para los alumnos: las ocultas a mano + las que todavía no están abiertas (las usa todo el selector/calendario)
+async function fetchPlazosHasta(compania){
+  try{
+    const { data, error } = await sb.from('companias').select('plazos_hasta').eq('numero', compania).maybeSingle();
+    if(!error && data && data.plazos_hasta) return String(data.plazos_hasta).slice(0,10);
+  }catch(e){}
+  return PLAZOS_HASTA_DEFECTO;
+}
 async function fetchSemanasOcultas(compania){
   const { data } = await sb.from('semanas_ocultas').select('semana_inicio').eq('compania', compania);
-  SEMANAS_OCULTAS = new Set((data||[]).map(r=>r.semana_inicio));
+  SEMANAS_OCULTAS_REAL = new Set((data||[]).map(r=>r.semana_inicio));
+  PLAZOS_HASTA = await fetchPlazosHasta(compania);
+  SEMANAS_OCULTAS = new Set(SEMANAS_OCULTAS_REAL);
+  WEEKS.forEach(w=>{ if(w.key > PLAZOS_HASTA) SEMANAS_OCULTAS.add(w.key); });
 }
 function firstVisibleWeekIndex(){
   const start = defaultWeekIndex();
@@ -1036,6 +1063,11 @@ document.addEventListener('click', e=>{
   document.querySelectorAll('.config-panel:not(.hidden)').forEach(p=>{ if(!p.contains(e.target) && !e.target.closest('.cfg-btn')) p.classList.add('hidden'); });
 });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.querySelectorAll('.config-panel').forEach(p=>p.classList.add('hidden')); });
+function pintarModo(prefix, chips){
+  const el = document.getElementById(prefix+'-modo'); if(!el) return;
+  el.innerHTML = (chips||[]).map(([c,t])=>`<span class="modo-chip ${c}">${t}</span>`).join('');
+  el.classList.toggle('hidden', !(chips && chips.length));
+}
 function cerrarConfig(){ document.querySelectorAll('.config-panel').forEach(p=>p.classList.add('hidden')); }
 function toggleConfig(){
   const el = document.getElementById(prefixPantalla()+'-config');
@@ -1133,7 +1165,6 @@ function pintarCalendario(){
       for(let i=0;i<7;i++){ const x = new Date(d); x.setDate(d.getDate()+i); dias.push(x); }
       const esActual = dias.some(x=>ymd(x)===hoy);
       const seleccionada = disponible && k===weekIndex;
-      const esManiobras = k>=0 && !!maniobrasDe(WEEKS[k], esPern); // semana de maniobras: trazo discontinuo azul
       const cub = dias.map(x=> k>=0 && Math.round((x - WEEKS[k].days[0])/86400000) < nNoches); // días que cuentan (en Pernoctas, solo las noches del fin de semana)
       const celdas = dias.map((x,i)=>{
         let c = 'cal-dia';
@@ -1142,16 +1173,18 @@ function pintarCalendario(){
           if(cub[i]){ c += ' cub'; if(!cub[i-1]) c += ' ini'; if(!cub[i+1]) c += ' fin'; if(seleccionada) c += ' sel'; }
           else c += ' nocub';
         }
+        const mdia = maniobraDia(ymd(x)); // día de maniobras: se marca ese día exacto (del de salida al de vuelta)
+        if(mdia) c += ' mani' + (mdia.ini?' mani-ini':'') + (mdia.fin?' mani-fin':'');
         if(ymd(x)===hoy) c += ' hoy';
         const click = (esPern && cub[i] && disponible) ? ` onclick="${CAL_CFG.handler}(${k})"` : '';
         return `<span class="${c}"${click}><b class="n">${x.getDate()}</b></span>`;
       }).join('');
       if(esPern){
         // Pernoctas: la franja verde va solo sobre las noches del fin de semana; la fila entera no se resalta
-        const clases = ['cal-fila','pern', disponible?'ok':'', seleccionada?'selp':'', esManiobras?'mani':'', (disponible && weekHasElapsed(WEEKS[k]))?'pasada':''].filter(Boolean).join(' ');
+        const clases = ['cal-fila','pern', disponible?'ok':'', seleccionada?'selp':'', (disponible && weekHasElapsed(WEEKS[k]))?'pasada':''].filter(Boolean).join(' ');
         filas += `<div class="${clases}">${celdas}</div>`;
       } else {
-        const clases = ['cal-fila', disponible?'ok':'', seleccionada?'sel':'', esActual?'actual':'', esManiobras?'mani':'', (disponible && weekHasElapsed(WEEKS[k]))?'pasada':''].filter(Boolean).join(' ');
+        const clases = ['cal-fila', disponible?'ok':'', seleccionada?'sel':'', esActual?'actual':'', (disponible && weekHasElapsed(WEEKS[k]))?'pasada':''].filter(Boolean).join(' ');
         filas += `<div class="${clases}" ${disponible?`onclick="${CAL_CFG.handler}(${k})"`:''}>${celdas}</div>`;
       }
       d.setDate(d.getDate()+7);
@@ -1168,7 +1201,7 @@ function pintarCalendario(){
   el.innerHTML = `<div class="cal-semanas${nMeses>1?' multi':''}">
     <div class="cal-cab"><button onclick="calMover(-1)" aria-label="Mes anterior">‹</button><b>${titulo}</b><button onclick="calMover(1)" aria-label="Mes siguiente">›</button></div>
     <div class="cal-meses" style="grid-template-columns:repeat(${nMeses},minmax(0,1fr));">${meses.map(mesHtml).join('')}</div>
-    <div class="cal-leyenda">${esPern ? 'En verde, las noches de cada fin de semana (o puente). Toca una para verla. Círculo dorado = hoy.' : 'Cada franja es una semana, de viernes a jueves. Toca una para verla. Contorno dorado = semana en curso · círculo dorado = hoy.'} Trazo azul discontinuo = semana de maniobras ⛺. Usa las flechas para cambiar de mes.</div>
+    <div class="cal-leyenda">${esPern ? 'En verde, las noches de cada fin de semana (o puente). Toca una para verla. Círculo dorado = hoy.' : 'Cada franja es una semana, de viernes a jueves. Toca una para verla. Contorno dorado = semana en curso · círculo dorado = hoy.'} Azul = días de maniobras ⛺ (del día de salida al de vuelta). Usa las flechas para cambiar de mes.</div>
   </div>`;
 }
 // Si se cambia el tamaño de la ventana, se vuelve a calcular cuántos meses caben
@@ -1670,6 +1703,7 @@ async function enterCuartel(compania, opts){
   setActiveWeek(semanaEnCursoIndex());
   document.getElementById('cuartel-subtitle').textContent = `Servicio de cuartel · ${compania}ª Compañía · versión ${APP_VERSION}`;
   document.getElementById('cuartel-salir-btn').textContent = vistaPrevia ? '◀ Volver' : 'Salir';
+  pintarModo('cuartel', vistaPrevia ? [['cuartel','🪖 VISTA PREVIA CUARTEL'],['super','👑 superadmin']] : []);
   showScreen('screen-cuartel');
   if(vistaPrevia){ // vista previa del superadmin: sin pedir nombre, sin registrar dispositivo y sin "latido"
     CUARTEL.nombre = 'Vista previa (superadmin)';
@@ -1962,6 +1996,7 @@ async function enterAlumno(persona, adminCompania, isSuperadmin){
   const wasSuperadmin = CURRENT && CURRENT.isSuperadmin;
   CURRENT = { mode:'alumno', persona, seccionPeople: seccion || [persona], adminCompania: adminCompania || null, isSuperadmin: (isSuperadmin!=null?isSuperadmin:wasSuperadmin) };
   EXTERNADOS = new Set((seccion||[persona]).filter(p=>p.externado).map(p=>p.id));
+  pintarModo('alumno', (CURRENT.adminCompania || CURRENT.isSuperadmin) ? [['alumno','🎓 MODO ALUMNO']].concat(CURRENT.isSuperadmin ? [['super','👑 superadmin']] : []) : []); // el aviso de modo solo les sale a los admins y al superadmin
   await fetchCortesEspeciales(persona.compania);
   await fetchPernoctaForzarAgm(persona.compania);
   await fetchComidaDesbloqueoDias(persona.compania);
@@ -2224,10 +2259,11 @@ async function ejecutarConfirmComidas(){
   const map = await fetchApuntesMap([id], ACTIVE_WEEK.key);
   const filas = cols.filter(c=>!map.hasOwnProperty(id+'|'+c.type+'|'+c.day)).map(c=>({
     persona_id:id, semana_inicio:ACTIVE_WEEK.key, tipo:c.type, dia:c.day,
-    obligatoria: effectiveObligatorio(id,c), valor: !!getVal(id,c,map)
+    obligatoria: effectiveObligatorio(id,c), valor: !!getVal(id,c,map), origen:'confirmacion'
   }));
   if(filas.length){
-    const { error } = await sb.from('apuntes').upsert(filas, { onConflict:'persona_id,semana_inicio,tipo,dia', ignoreDuplicates:true });
+    let { error } = await sb.from('apuntes').upsert(filas, { onConflict:'persona_id,semana_inicio,tipo,dia', ignoreDuplicates:true });
+    if(error && /origen/.test(error.message||'')) ({ error } = await sb.from('apuntes').upsert(filas.map(({origen, ...r})=>r), { onConflict:'persona_id,semana_inicio,tipo,dia', ignoreDuplicates:true })); // sin el parche 56 todavía
     if(error){ showToast('No se pudo guardar la confirmación: '+error.message); await renderAlumno(); return; }
   }
   await setConfirm(id, true);
@@ -2244,6 +2280,7 @@ async function enterAdmin(compania, linkedPersona, isSuperadmin){
   const { data: companiaInfo } = await sb.from('companias').select('*').eq('numero', compania).single();
   const wasSuperadmin = CURRENT && CURRENT.isSuperadmin;
   CURRENT = { mode:'admin', compania, companiaInfo, linkedPersona: linkedPersona || null, isSuperadmin: (isSuperadmin!=null?isSuperadmin:wasSuperadmin) };
+  pintarModo('admin', [['admin','🛠️ MODO ADMIN']].concat(CURRENT.isSuperadmin ? [['super','👑 superadmin']] : []));
   await fetchCortesEspeciales(compania);
   await fetchPernoctaForzarAgm(compania);
   await fetchComidaDesbloqueoDias(compania);
@@ -2543,7 +2580,7 @@ async function _renderAdminImpl(){
         <div class="switch-label">Ocultar esta semana a los alumnos (Comidas y Pernoctas)
           <span class="sub2">No borra nada — tú sigues viendo todas las semanas, pasadas incluidas, solo desaparece del desplegable de los alumnos. Las semanas ya pasadas se les ocultan solas, sin que tengas que hacer nada</span>
         </div>
-        <label class="switch"><input type="checkbox" ${SEMANAS_OCULTAS.has(ACTIVE_WEEK.key)?'checked':''} onchange="toggleSemanaOculta(this.checked)"><span class="track"></span><span class="thumb"></span></label>
+        <label class="switch"><input type="checkbox" ${SEMANAS_OCULTAS_REAL.has(ACTIVE_WEEK.key)?'checked':''} onchange="toggleSemanaOculta(this.checked)"><span class="track"></span><span class="thumb"></span></label>
       </div>`;
   const filaEfectivos = `<div class="panel-row">
         <div class="switch-label">Efectivos totales reales de la ${c}ª
@@ -2619,6 +2656,7 @@ async function _renderAdminImpl(){
     adminDesplegable('intol', `🍽️ Solicitudes de intolerancias${avisoPendiente}`, filaIntol) +
     adminDesplegable('semana', '📅 Ajustes de esta semana', filaDesbloqueo + filaOculta + corteEspecialPanelHtml(companiaInfo.hora_corte,'comidas')) +
     adminDesplegable('maniobras', '⛺ Añadir semana de maniobras', maniobrasPanelHtml('compania')) +
+    adminDesplegable('plazos', '📆 Abrir plazos hasta fin de curso', plazosFilaHtml()) +
     adminDesplegable('bloque', '✏️ Marcar o desmarcar comidas en bloque', bloqueComidasHtml(c)) +
     adminDesplegable('excel', '🔍 Comprobar un Excel contra la app', filaExcel) +
     adminDesplegable('compania', '🏢 Compañía y alumnos', filaEfectivos + filaCodigo + faltanRegistrarseHtml(secciones) + conexionAlumnosHtml(secciones));
@@ -3592,6 +3630,12 @@ function maniobrasDeSemana(week, esPern){
   return MANIOBRAS_LISTA.filter(m=> maniDT(m,'ini') < fin && maniDT(m,'fin') >= ini);
 }
 function maniobrasDe(week, esPern){ return maniobrasDeSemana(week, esPern)[0] || null; }
+// ¿Ese día (YYYY-MM-DD) está dentro de unas maniobras? Devuelve si es el primer día y/o el último, para dibujarlas como una franja continua
+function maniobraDia(key){
+  let r = null;
+  MANIOBRAS_LISTA.forEach(m=>{ if(m.fecha_inicio <= key && key <= m.fecha_fin){ r = r || { ini:false, fin:false }; if(key===m.fecha_inicio) r.ini = true; if(key===m.fecha_fin) r.fin = true; } });
+  return r;
+}
 function maniobrasTexto(m){ return `del ${fmtCorteCorto(maniDT(m,'ini'))} al ${fmtCorteCorto(maniDT(m,'fin'))}`; }
 function maniobrasBannerHtml(week, esPern){
   return maniobrasDeSemana(week, esPern).map(m=>`<div class="notice" style="border-color:var(--slate);background:rgba(32,74,115,.14);display:block;"><b>⛺ MANIOBRAS</b> ${maniobrasTexto(m)}${m.nota ? ' — '+escHtml(m.nota) : ''}<br><span style="font-size:.78rem;">Las comidas y las noches de ese periodo salen marcadas con ⛺ en las tablas.</span></div>`).join('');
@@ -3662,16 +3706,27 @@ function puenteResumen(p){
   const sueltas = excl.filter(c=>!COMPANIES_POR_CURSO.some(g=>cursosExcl.includes(g.curso) && g.companias.includes(c)));
   const noAplica = [...cursosExcl, ...sueltas.map(c=>c+'ª Cía')].join(', ');
   return `<b>${escHtml(p.nombre)}</b> — del ${DAY_NAMES[0]} ${fmt(ini)} al ${DAY_NAMES[(p.num_noches-1)%7]} ${fmt(fin)} (${p.num_noches} noches)`
-    + `<br><span class="sub2">${forz ? 'La noche del '+forz+' todos duermen en la AGM' : 'Ninguna noche obligatoria'}${noAplica ? ' · <b>No se aplica a:</b> '+escHtml(noAplica) : ' · Se aplica a todas las compañías'}</span>`;
+    + `<br><span class="sub2">${forz ? 'La noche del '+forz+' todos duermen en la academia' : 'Todas las noches libres (también la del último día)'}${noAplica ? ' · <b>No se aplica a:</b> '+escHtml(noAplica) : ' · Se aplica a todas las compañías'}</span>`;
 }
 function puenteRangoBodyHtml(){
-  const r = RANGOS.puente;
+  const r = RANGOS.puente, ag = PUENTE_EDIT.ultimaNocheAgm !== false; // por defecto, la noche del último día se duerme en la academia
   let txt;
   if(!r.inicio) txt = 'Elige en el calendario el primer día del puente (tiene que ser viernes).';
-  else if(!r.fin) txt = `Primer día: <b>${fmtLargo(r.inicio)}</b>. Ahora elige el último día del puente (esa noche todos duermen en la AGM).`;
-  else { const n = diasEntre(r.inicio, r.fin)+1; txt = `Del <b>${fmtLargo(r.inicio)}</b> al <b>${fmtLargo(r.fin)}</b> · ${n} noches. Se puede dormir fuera desde la noche del ${fmt(new Date(r.inicio+'T00:00:00'))}; <b>la noche del ${fmt(new Date(r.fin+'T00:00:00'))} todos duermen en la AGM.</b>`; }
-  return rangoHtml('puente') + `<div class="small-note" style="margin-top:8px;">${txt}</div>`;
+  else if(!r.fin) txt = `Primer día: <b>${fmtLargo(r.inicio)}</b>. Ahora elige el último día del puente.`;
+  else {
+    const n = diasEntre(r.inicio, r.fin)+1, f = fmt(new Date(r.fin+'T00:00:00'));
+    txt = `Del <b>${fmtLargo(r.inicio)}</b> al <b>${fmtLargo(r.fin)}</b> · ${n} noches. Se puede dormir fuera desde la noche del ${fmt(new Date(r.inicio+'T00:00:00'))}; `
+        + (ag ? `<b>la noche del ${f} todos duermen en la academia.</b>` : `<b>la noche del ${f} también se puede dormir fuera</b> (no hay ninguna noche obligatoria).`);
+  }
+  const dia = r.fin ? fmt(new Date(r.fin+'T00:00:00')) : 'último día';
+  return rangoHtml('puente') + `<div class="small-note" style="margin-top:8px;">${txt}</div>
+    <div class="switch-label" style="margin-top:10px;">La noche del ${dia} (el día que acaba el puente), ¿dónde se duerme?</div>
+    <div class="semanas-toggle" style="max-width:460px;margin-top:6px;">
+      <button type="button" class="${ag?'active':''}" onclick="puenteUltimaNoche(true)">🏫 En la academia (todos)</button>
+      <button type="button" class="${ag?'':'active'}" onclick="puenteUltimaNoche(false)">🌙 Se puede dormir fuera</button>
+    </div>`;
 }
+function puenteUltimaNoche(enAcademia){ PUENTE_EDIT.ultimaNocheAgm = !!enAcademia; rangoRepintar('puente'); }
 function puentesSuperHtml(puentes, errorTabla){
   if(errorTabla) return `<p class="small-note">⚠️ La tabla de puentes todavía no existe en la base de datos (${escHtml(errorTabla.message||'')}). Ejecuta el parche SQL 55. Mientras tanto la app usa los puentes de siempre.</p>`;
   PUENTES_LISTA = puentes || [];
@@ -3692,7 +3747,7 @@ function puentesSuperHtml(puentes, errorTabla){
     form = `<div style="border:1px solid var(--brass);border-radius:10px;padding:12px;margin-top:12px;">
       <div style="font-weight:700;margin-bottom:8px;">${p.existente ? '✏️ Editar puente' : '➕ Nuevo puente'}</div>
       <div class="field" style="margin:0 0 10px;max-width:320px;"><label>Nombre</label><input type="text" maxlength="40" value="${escHtml(p.nombre)}" oninput="PUENTE_EDIT.nombre=this.value"></div>
-      <div class="switch-label">Fechas del puente<span class="sub2">Primer clic: el primer día (siempre viernes), en el que ya se puede dormir fuera. Segundo clic: el último día del puente; esa noche todos duermen en la AGM. Las noches de en medio son libres.</span></div>
+      <div class="switch-label">Fechas del puente<span class="sub2">Primer clic: el primer día (siempre viernes), en el que ya se puede dormir fuera. Segundo clic: el último día del puente. Las noches de en medio son libres, y debajo eliges si la noche del último día se duerme en la academia (por defecto) o se puede dormir fuera.</span></div>
       <div id="rgw-puente" style="margin-top:6px;">${puenteRangoBodyHtml()}</div>
       <div class="switch-label" style="margin-top:12px;">No se aplica a…<span class="sub2">Marca el curso o las compañías para las que este puente NO existe (esa semana tendrán su fin de semana normal). Sin marcar nada = vale para todos.</span></div>
       ${excl}
@@ -3705,14 +3760,14 @@ function puentesSuperHtml(puentes, errorTabla){
     </div>`;
 }
 function puenteNuevo(){
-  rangoNuevo('puente', { soloViernesInicio:true, finDespues:true, maxDias:14, desdeHoy:true, hasta:CALENDAR_END_DATE }, null, null, puenteRangoBodyHtml);
-  PUENTE_EDIT = { existente:false, nombre:'Puente', excluir_companias:[] };
+  rangoNuevo('puente', { soloViernesInicio:true, finDespues:true, maxDias:14, desdeHoy:true, hasta:CURSO_END_DATE }, null, null, puenteRangoBodyHtml);
+  PUENTE_EDIT = { existente:false, nombre:'Puente', excluir_companias:[], ultimaNocheAgm:true }; // por defecto, la última noche se duerme en la academia
   renderSuperadmin();
 }
 function puenteEditar(key){
   const p = PUENTES_LISTA.find(x=>x.semana_inicio===key); if(!p) return;
-  rangoNuevo('puente', { soloViernesInicio:true, finDespues:true, maxDias:14, desdeHoy:false, hasta:CALENDAR_END_DATE }, p.semana_inicio, ymd(fechaMasDias(p.semana_inicio, p.num_noches-1)), puenteRangoBodyHtml);
-  PUENTE_EDIT = { existente:true, nombre:p.nombre, excluir_companias:(p.excluir_companias||[]).slice() };
+  rangoNuevo('puente', { soloViernesInicio:true, finDespues:true, maxDias:14, desdeHoy:false, hasta:CURSO_END_DATE }, p.semana_inicio, ymd(fechaMasDias(p.semana_inicio, p.num_noches-1)), puenteRangoBodyHtml);
+  PUENTE_EDIT = { existente:true, nombre:p.nombre, excluir_companias:(p.excluir_companias||[]).slice(), ultimaNocheAgm:(p.forzar_agm||[]).includes(p.num_noches-1) };
   renderSuperadmin();
 }
 function puenteCancelar(){ PUENTE_EDIT = null; renderSuperadmin(); }
@@ -3731,7 +3786,7 @@ async function puenteGuardar(){
   const ini = fechaMasDias(r.inicio, 0).getTime(), fin = fechaMasDias(r.inicio, noches-1).getTime();
   const choca = PUENTES_LISTA.find(o=>o.semana_inicio!==r.inicio && fechaMasDias(o.semana_inicio,0).getTime() <= fin && fechaMasDias(o.semana_inicio, o.num_noches-1).getTime() >= ini);
   if(choca){ showToast(`Se solapa con el puente «${choca.nombre}». Cámbiale las fechas o bórralo antes.`); return; }
-  const fila = { semana_inicio:r.inicio, nombre, num_noches:noches, forzar_agm:[noches-1], // la noche del último día todos duermen en la AGM
+  const fila = { semana_inicio:r.inicio, nombre, num_noches:noches, forzar_agm: p.ultimaNocheAgm !== false ? [noches-1] : [], // si se elige 'en la academia', la noche del último día es obligatoria en la AGM; si no, ninguna noche es obligatoria
     excluir_companias:p.excluir_companias.slice().sort((a,b)=>a-b), actualizado_en:new Date().toISOString() };
   const { error } = await sb.from('pernocta_puentes').upsert(fila, { onConflict:'semana_inicio' });
   if(error){ showToast('No se pudo guardar el puente: '+error.message); return; }
@@ -3752,38 +3807,74 @@ async function puenteBorrar(key){
 
 /* ---- Maniobras: el admin de compañía las pone para la suya; el superadmin, para toda la academia (eligiendo a quién) ---- */
 const MANI_FORMS = {
-  maniAdmin: { horaIni:'06:00', horaFin:'20:00', nota:'', companias:[] },
-  maniAcad:  { horaIni:'06:00', horaFin:'20:00', nota:'', companias:COMPANIES.slice() }, // por defecto, toda la academia
+  maniAdmin: { horaIni:'06:00', horaFin:'20:00', nota:'', companias:[], asignar:true, excepciones:new Set() },
+  maniAcad:  { horaIni:'06:00', horaFin:'20:00', nota:'', companias:COMPANIES.slice(), asignar:true, excepciones:new Set() }, // por defecto, toda la academia
 };
+let MANI_ACAD_DATOS = []; // maniobras de toda la academia (las usa el panel del superadmin)
+const TIPOS_COMIDA = ['desayuno','comida','cena'];
+const NOMBRE_COMIDA = { desayuno:'Desayuno', comida:'Comida', cena:'Cena' };
+function semanaKeyDeFecha(fecha){ const d = new Date(fecha+'T00:00:00'); d.setDate(d.getDate() - ((d.getDay()-5+7)%7)); return ymd(d); } // viernes de la semana de esa fecha
+// Las comidas (día + tipo) que caen entre la salida y la vuelta (cada comida cuenta a su hora de fin: 7:30, 15:30, 20:30)
+function comidasDeManiobra(fIni, hIni, fFin, hFin){
+  const ini = new Date(fIni+'T'+hIni), fin = new Date(fFin+'T'+hFin), out = [];
+  for(let d = fIni; d <= fFin; d = ymd(fechaMasDias(d, 1))){
+    TIPOS_COMIDA.forEach(tipo=>{
+      const f = new Date(d+'T00:00:00'); f.setHours(COMIDA_FIN[tipo][0], COMIDA_FIN[tipo][1], 0, 0);
+      if(ini <= f && f <= fin) out.push({ fecha:d, tipo });
+    });
+  }
+  return out;
+}
+// Bloque "asignar todas las comidas" + excepciones (desmarcar las que NO se quieren asignar)
+function maniComidasHtml(id){
+  const r = RANGOS[id], f = MANI_FORMS[id];
+  const okHoras = /^\d{2}:\d{2}$/.test(f.horaIni) && /^\d{2}:\d{2}$/.test(f.horaFin);
+  const lista = (r.inicio && r.fin && okHoras) ? comidasDeManiobra(r.inicio, f.horaIni, r.fin, f.horaFin) : [];
+  let html = `<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:700;"><input type="checkbox" style="width:18px;height:18px;" ${f.asignar?'checked':''} onchange="MANI_FORMS.${id}.asignar=this.checked; rangoRepintar('${id}')"> 🍽️ Asignar todas las comidas en maniobras</label>
+    <div class="sub2" style="margin:2px 0 0 26px;">Al añadirlas se marcan como "sí" todas las comidas de esos días para toda la gente de la compañía. <b>No se tocan las que cada persona ya haya editado.</b> Si te equivocas, puedes quitar solo las que puso la app con el botón "Quitar comidas autoasignadas".</div>`;
+  if(f.asignar && lista.length){
+    const porDia = {}; lista.forEach(x=>{ (porDia[x.fecha] = porDia[x.fecha] || []).push(x.tipo); });
+    html += `<div style="margin:8px 0 0 26px;"><div class="sub2">Excepciones: desmarca las comidas que NO quieres asignar.</div>`
+      + Object.keys(porDia).map(d=>`<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:4px;"><b style="min-width:150px;font-size:.8rem;">${fmtLargo(d)}</b>${porDia[d].map(tipo=>`<label style="font-size:.8rem;"><input type="checkbox" ${f.excepciones.has(d+'|'+tipo)?'':'checked'} onchange="maniExcepcion('${id}','${d}','${tipo}',this.checked)"> ${NOMBRE_COMIDA[tipo]}</label>`).join('')}</div>`).join('')
+      + `</div>`;
+  } else if(f.asignar){
+    html += `<div class="small-note" style="margin-left:26px;">Elige las fechas y las horas para ver qué comidas entran.</div>`;
+  }
+  return html;
+}
+function maniExcepcion(id, d, tipo, marcada){ const s = MANI_FORMS[id].excepciones; marcada ? s.delete(d+'|'+tipo) : s.add(d+'|'+tipo); }
 function maniRangoBodyHtml(id){
   const r = RANGOS[id], f = MANI_FORMS[id];
   let txt;
   if(!r.inicio) txt = 'Elige en el calendario el día de salida.';
   else if(!r.fin) txt = `Salen el <b>${fmtLargo(r.inicio)}</b>. Ahora elige el día de vuelta (puede ser el mismo día).`;
   else txt = `Salen el <b>${fmtLargo(r.inicio)}</b> a las <b>${f.horaIni}</b> y vuelven el <b>${fmtLargo(r.fin)}</b> a las <b>${f.horaFin}</b>.`;
-  return rangoHtml(id) + `<div class="small-note" style="margin-top:8px;">${txt}</div>`;
+  return rangoHtml(id) + `<div class="small-note" style="margin-top:8px;">${txt}</div>` + maniComidasHtml(id);
 }
 function maniobrasListaHtml(filas, modo){
   if(!filas.length) return '<p class="small-note">No hay maniobras puestas.</p>';
+  const botones = (id, grupo, m)=>`<div class="btns" style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="small-btn" onclick="maniobrasAsignarDeNuevo(${id===null?'null':id},'${grupo}','${modo}')" title="Marca todas las comidas de estas maniobras (sin tocar lo que cada persona haya editado)">🍽️ Asignar comidas</button>
+      <button class="small-btn" onclick="maniobrasQuitarComidas('${grupo}','${modo}')" title="Quita solo las comidas que puso la app, no las que editó cada persona">🧹 Quitar comidas autoasignadas</button>
+      <button class="small-btn danger" onclick="maniobrasBorrar(${id===null?'null':id},'${grupo}','${modo}')">🗑 Borrar</button></div>`;
   if(modo==='academia'){
     const grupos = {}; filas.forEach(m=>{ (grupos[m.grupo] = grupos[m.grupo] || []).push(m); });
     return Object.values(grupos).map(g=>{
       const m = g[0], cias = g.map(x=>x.compania).sort((a,b)=>a-b);
-      return `<div class="manage-row"><div>⛺ ${maniobrasTexto(m)}${m.nota ? ' — '+escHtml(m.nota) : ''}<br><span class="sub2">Compañías: ${cias.join(', ')}${cias.length===COMPANIES.length ? ' (toda la academia)' : ''}</span></div>
-        <div class="btns"><button class="small-btn danger" onclick="maniobrasBorrar(null,'${m.grupo}','academia')">🗑 Borrar</button></div></div>`;
+      return `<div class="manage-row"><div>⛺ ${maniobrasTexto(m)}${m.nota ? ' — '+escHtml(m.nota) : ''}<br><span class="sub2">Compañías: ${cias.join(', ')}${cias.length===COMPANIES.length ? ' (toda la academia)' : ''}</span></div>${botones(null, m.grupo, m)}</div>`;
     }).join('');
   }
-  return filas.map(m=>`<div class="manage-row"><div>⛺ ${maniobrasTexto(m)}${m.nota ? ' — '+escHtml(m.nota) : ''}</div>
-    <div class="btns"><button class="small-btn danger" onclick="maniobrasBorrar(${m.id},null,'compania')">🗑 Borrar</button></div></div>`).join('');
+  return filas.map(m=>`<div class="manage-row"><div>⛺ ${maniobrasTexto(m)}${m.nota ? ' — '+escHtml(m.nota) : ''}</div>${botones(m.id, m.grupo, m)}</div>`).join('');
 }
 // modo 'compania' (panel del admin: solo su compañía) o 'academia' (panel del superadmin: elige a quién). datos/errorTabla solo en 'academia'.
 function maniobrasPanelHtml(modo, datos, errorTabla){
   const id = modo==='academia' ? 'maniAcad' : 'maniAdmin';
-  if(errorTabla) return `<p class="small-note">⚠️ La tabla de maniobras todavía no existe (${escHtml(errorTabla.message||'')}). Ejecuta el parche SQL 55.</p>`;
+  if(errorTabla) return `<p class="small-note">⚠️ La tabla de maniobras todavía no existe (${escHtml(errorTabla.message||'')}). Ejecuta el parche SQL 56.</p>`;
   if(!RANGOS[id]) rangoNuevo(id, { desdeHoy:true, finDespues:false, maxDias:60 }, null, null, ()=>maniRangoBodyHtml(id));
   else RANGO_BODY[id] = ()=>maniRangoBodyHtml(id);
   const f = MANI_FORMS[id];
-  const filas = modo==='academia' ? (datos||[]) : MANIOBRAS_LISTA;
+  if(modo==='academia') MANI_ACAD_DATOS = datos || [];
+  const filas = modo==='academia' ? MANI_ACAD_DATOS : MANIOBRAS_LISTA;
   const stySel = 'padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;';
   const alcance = modo==='academia' ? `<div class="switch-label" style="margin-top:12px;">¿A quién afecta?<span class="sub2">Por defecto, a TODA la academia (todos los cursos). Desmarca los cursos o compañías que no vayan.</span></div>
       ${COMPANIES_POR_CURSO.map((g,gi)=>g.companias.length ? `<div style="margin-top:6px;">
@@ -3791,7 +3882,7 @@ function maniobrasPanelHtml(modo, datos, errorTabla){
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 0 18px;">${g.companias.map(c=>`<label style="font-size:.82rem;"><input type="checkbox" ${f.companias.includes(c)?'checked':''} onchange="maniToggleCompania(${c}, this.checked)"> ${c}ª</label>`).join('')}</div>
       </div>` : '').join('')}` : '';
   return `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
-      <div class="switch-label">${modo==='academia' ? 'Maniobras de la academia' : `Maniobras de la ${CURRENT.compania}ª`}<span class="sub2">Pon de qué día y hora a qué día y hora está fuera esa gente. Los alumnos lo ven avisado, y las comidas y las noches de ese periodo salen marcadas con ⛺ en Comidas y en Pernoctas.</span></div>
+      <div class="switch-label">${modo==='academia' ? 'Maniobras de la academia' : `Maniobras de la ${CURRENT.compania}ª`}<span class="sub2">Pon de qué día y hora a qué día y hora está fuera esa gente. Los alumnos lo ven avisado, los días salen marcados en el calendario y las comidas y noches de ese periodo con ⛺ en las tablas.</span></div>
       ${maniobrasListaHtml(filas, modo)}
       <div style="border:1px solid var(--brass);border-radius:10px;padding:12px;margin-top:12px;">
         <div style="font-weight:700;margin-bottom:8px;">➕ Añadir semana de maniobras</div>
@@ -3808,6 +3899,35 @@ function maniobrasPanelHtml(modo, datos, errorTabla){
 }
 function maniToggleCompania(c, on){ const s = new Set(MANI_FORMS.maniAcad.companias); on ? s.add(c) : s.delete(c); MANI_FORMS.maniAcad.companias = [...s]; renderSuperadmin(); }
 function maniToggleCurso(gi, on){ const s = new Set(MANI_FORMS.maniAcad.companias); COMPANIES_POR_CURSO[gi].companias.forEach(c=> on ? s.add(c) : s.delete(c)); MANI_FORMS.maniAcad.companias = [...s]; renderSuperadmin(); }
+
+/* ---- Asignar / quitar las comidas de unas maniobras ----
+   Las comidas que pone la app llevan la marca  origen = 'maniobras:<grupo>'  (parche SQL 56). En cuanto una persona (o un admin) toca esa
+   casilla, la base de datos le quita la marca: así "Quitar comidas autoasignadas" solo quita lo que puso la app, nunca lo que editó alguien. */
+async function asignarComidasManiobra(maniobras, excepciones){
+  let escritas = 0, saltadas = 0;
+  for(const m of maniobras){
+    const comidas = comidasDeManiobra(m.fecha_inicio, hhmm(m.hora_inicio), m.fecha_fin, hhmm(m.hora_fin)).filter(x=>!excepciones.has(x.fecha+'|'+x.tipo));
+    if(!comidas.length) continue;
+    const secciones = await fetchCompanySections(m.compania); // también deja al día EXTERNADOS, que hace falta para saber qué es obligatorio
+    const gente = secciones.flatMap(s=>s.people);
+    const filas = [];
+    comidas.forEach(x=>{
+      const semKey = semanaKeyDeFecha(x.fecha), week = WEEKS.find(w=>w.key===semKey);
+      if(!week) return;
+      const dia = diasEntre(semKey, x.fecha);
+      const col = buildColumnsForWeek(week).find(c=>c.type===x.tipo && c.day===dia);
+      if(!col) return;
+      gente.forEach(p=> filas.push({ persona_id:p.id, semana_inicio:semKey, tipo:x.tipo, dia, obligatoria:effectiveObligatorio(p.id, col), valor:true }));
+    });
+    for(let i = 0; i < filas.length; i += 500){
+      const { data, error } = await sb.rpc('asignar_comidas_maniobras', { p_origen:'maniobras:'+m.grupo, p_filas: filas.slice(i, i+500) });
+      if(error){ showToast('No se pudieron asignar las comidas: '+error.message+' — ¿has ejecutado el parche SQL 56?'); return { escritas, saltadas, error:true }; }
+      escritas += (data && data.escritas) || 0; saltadas += (data && data.saltadas) || 0;
+    }
+  }
+  return { escritas, saltadas };
+}
+const resumenAsignacion = r => r && !r.error ? `${r.escritas} comidas asignadas${r.saltadas ? ` (${r.saltadas} no se tocaron porque la persona ya las había editado)` : ''}` : '';
 async function maniobrasAnadir(modo){
   const id = modo==='academia' ? 'maniAcad' : 'maniAdmin', r = RANGOS[id], f = MANI_FORMS[id];
   if(!r || !r.inicio || !r.fin){ showToast('Elige en el calendario el día de salida y el de vuelta.'); return; }
@@ -3818,22 +3938,69 @@ async function maniobrasAnadir(modo){
   const companias = modo==='academia' ? f.companias.slice() : [CURRENT.compania];
   if(!companias.length){ showToast('Elige al menos una compañía.'); return; }
   const grupo = (crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(16)+Math.random().toString(16).slice(2)));
-  const { error } = await sb.from('maniobras').insert(companias.map(c=>({ grupo, compania:c, fecha_inicio:r.inicio, hora_inicio:f.horaIni, fecha_fin:r.fin, hora_fin:f.horaFin, nota: nota || null })));
-  if(error){ showToast('No se pudo guardar: '+error.message+' — ¿has ejecutado el parche SQL 55?'); return; }
+  const { data: nuevas, error } = await sb.from('maniobras')
+    .insert(companias.map(c=>({ grupo, compania:c, fecha_inicio:r.inicio, hora_inicio:f.horaIni, fecha_fin:r.fin, hora_fin:f.horaFin, nota: nota || null })))
+    .select('id,grupo,compania,fecha_inicio,hora_inicio,fecha_fin,hora_fin');
+  if(error){ showToast('No se pudo guardar: '+error.message+' — ¿has ejecutado el parche SQL 56?'); return; }
+  let extra = '';
+  if(f.asignar) extra = ' · ' + (resumenAsignacion(await asignarComidasManiobra(nuevas || [], new Set(f.excepciones))) || 'sin comidas asignadas');
   rangoNuevo(id, { desdeHoy:true, finDespues:false, maxDias:60 }, null, null, ()=>maniRangoBodyHtml(id));
-  f.nota = '';
+  f.nota = ''; f.excepciones = new Set();
   await fetchPuentesYManiobras(CURRENT && CURRENT.compania ? CURRENT.compania : null);
-  showToast(`Maniobras añadidas${modo==='academia' ? ` (${companias.length} compañía${companias.length===1?'':'s'})` : ''}.`);
+  showToast(`Maniobras añadidas${modo==='academia' ? ` (${companias.length} compañía${companias.length===1?'':'s'})` : ''}${extra}.`);
+  await (modo==='academia' ? renderSuperadmin() : rerenderActual());
+}
+// Botón "🍽️ Asignar comidas" de una maniobra que ya existe (sin excepciones: todas las comidas del periodo)
+async function maniobrasAsignarDeNuevo(id, grupo, modo){
+  const filas = modo==='academia' ? MANI_ACAD_DATOS.filter(m=>m.grupo===grupo) : MANIOBRAS_LISTA.filter(m=>m.id===id);
+  if(!filas.length) return;
+  if(!confirm('¿Asignar todas las comidas de estas maniobras? Se marcan como "sí" para toda la gente de la compañía, salvo las que cada persona ya haya editado.')) return;
+  const res = await asignarComidasManiobra(filas, new Set());
+  if(!res.error) showToast('Hecho: '+resumenAsignacion(res)+'.');
+  await (modo==='academia' ? renderSuperadmin() : rerenderActual());
+}
+// Botón "🧹 Quitar comidas autoasignadas": solo las que puso la app para esas maniobras (las editadas por una persona no se tocan)
+async function maniobrasQuitarComidas(grupo, modo){
+  if(!confirm('¿Quitar las comidas que la app asignó automáticamente en estas maniobras? Solo se quitan las que puso la app; las que cada persona haya editado se quedan como están.')) return;
+  const { data, error } = await sb.rpc('quitar_comidas_maniobras', { p_origen:'maniobras:'+grupo });
+  if(error){ showToast('No se pudieron quitar: '+error.message+' — ¿has ejecutado el parche SQL 56?'); return; }
+  showToast(`Quitadas ${data||0} comidas autoasignadas.`);
   await (modo==='academia' ? renderSuperadmin() : rerenderActual());
 }
 async function maniobrasBorrar(id, grupo, modo){
-  if(!confirm('¿Borrar estas maniobras?'+(modo==='academia' ? ' Se quitan de todas las compañías a las que afectaban.' : ''))) return;
+  if(!confirm('¿Borrar estas maniobras?'+(modo==='academia' ? ' Se quitan de todas las compañías a las que afectaban.' : '')+' También se quitan las comidas que la app había asignado (no las que haya editado cada persona).')) return;
+  await sb.rpc('quitar_comidas_maniobras', { p_origen:'maniobras:'+grupo }); // si el parche aún no está, se ignora el error
   const q = sb.from('maniobras').delete();
-  const { error } = await (grupo ? q.eq('grupo', grupo) : q.eq('id', id));
+  const { error } = await (modo==='academia' ? q.eq('grupo', grupo) : q.eq('id', id));
   if(error){ showToast('No se pudo borrar: '+error.message); return; }
   await fetchPuentesYManiobras(CURRENT && CURRENT.compania ? CURRENT.compania : null);
   showToast('Maniobras borradas.');
   await (modo==='academia' ? renderSuperadmin() : rerenderActual());
+}
+
+/* ---- Abrir plazos a los alumnos hasta una fecha (como mucho, el fin de curso) ---- */
+function plazosFilaHtml(){
+  const finKey = ymd(CURSO_END_DATE), hoy = ymd(new Date());
+  const stySel = 'padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;';
+  return `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
+      <div class="switch-label">📆 Abrir plazos a los alumnos hasta…<span class="sub2">Los alumnos de la ${CURRENT.compania}ª solo ven (y pueden marcar) las semanas hasta esta fecha. Ahora: <b>${fmtLargo(PLAZOS_HASTA)}</b>. Se puede abrir hasta el fin de curso (4 de julio de 2027). Cada semana sigue cerrándose a su hora de cierre.</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center;">
+        <input type="date" id="plazos-hasta" value="${PLAZOS_HASTA}" min="${hoy}" max="${finKey}" style="${stySel}">
+        <button class="small-btn" onclick="guardarPlazosHasta(document.getElementById('plazos-hasta').value)">Guardar fecha</button>
+        <button class="small-btn" onclick="guardarPlazosHasta('${finKey}')">Abrir hasta fin de curso (4 jul 2027)</button>
+      </div>
+    </div>`;
+}
+async function guardarPlazosHasta(v){
+  const finKey = ymd(CURSO_END_DATE);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v||'')){ showToast('Elige una fecha.'); return; }
+  if(v > finKey){ showToast('El máximo es el fin de curso (4 de julio de 2027).'); return; }
+  if(v < ymd(new Date())){ showToast('La fecha no puede ser anterior a hoy.'); return; }
+  const { error } = await sb.from('companias').update({ plazos_hasta: v }).eq('numero', CURRENT.compania);
+  if(error){ showToast('No se pudo guardar: '+error.message+' — ¿has ejecutado el parche SQL 56?'); return; }
+  await fetchSemanasOcultas(CURRENT.compania);
+  showToast(`Plazos abiertos a los alumnos hasta el ${fmtLargo(v)}.`);
+  await rerenderActual();
 }
 function pernoctaObligatoria(personaId, dia){
   if(diaForzadoAgm(dia)) return !EXTERNADOS.has(personaId); // día marcado por el admin como obligatorio en la AGM (ej. puente)
@@ -4473,7 +4640,7 @@ async function _renderAdminPernoctasImpl(){
         <div class="switch-label">Ocultar esta semana a los alumnos (Comidas y Pernoctas)
           <span class="sub2">No borra nada — tú sigues viendo todas las semanas, pasadas incluidas. Las ya pasadas se les ocultan solas a los alumnos</span>
         </div>
-        <label class="switch"><input type="checkbox" ${SEMANAS_OCULTAS.has(ACTIVE_WEEK.key)?'checked':''} onchange="toggleSemanaOculta(this.checked)"><span class="track"></span><span class="thumb"></span></label>
+        <label class="switch"><input type="checkbox" ${SEMANAS_OCULTAS_REAL.has(ACTIVE_WEEK.key)?'checked':''} onchange="toggleSemanaOculta(this.checked)"><span class="track"></span><span class="thumb"></span></label>
       </div>`;
   const filaPase = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
         <div class="switch-label">Pase de horas / permiso extraordinario individual
@@ -4504,6 +4671,7 @@ async function _renderAdminPernoctasImpl(){
     `<div class="admin-panel">${filaExportarP}</div>` +
     adminDesplegable('p-semana', '📅 Ajustes de esta semana', filaPermitirFuera + filaForzar + filaOcultaP + corteEspecialPanelHtml(companiaInfo.hora_corte,'pernoctas')) +
     adminDesplegable('p-maniobras', '⛺ Añadir semana de maniobras', maniobrasPanelHtml('compania')) +
+    adminDesplegable('p-plazos', '📆 Abrir plazos hasta fin de curso', plazosFilaHtml()) +
     adminDesplegable('p-pase', '🛂 Pase de horas individual', filaPase) +
     adminDesplegable('p-excel', '🔍 Comprobar un Excel de pernoctas', filaExcelP);
 
