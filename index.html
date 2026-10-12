@@ -985,7 +985,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-13T01:30";
+const APP_VERSION = "2026-10-13T01:51";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
@@ -6272,7 +6272,11 @@ async function estIr(id){
   scrollToFechaServ(g.min);
 }
 function cerrarFichaServ(){ servFichaId = null; pintarServGrid(); pintarFichaServ(); }
-const esFindeServ = f => { const dw = new Date(f+'T00:00:00').getDay(); const fe = (window._servFest||{})[f]; return dw===0 || dw===6 || !!(fe && fe.tipo==='puente'); };
+const esFindeServ = f => {
+  const fe = (window._servFest||{})[f];
+  if(fe && fe.tipo==='puente' && fe.borde){ const c = cfgPuente(fe.ini); return (fe.borde==='primero' ? c.primero : c.ultimo)==='finde'; } // el día de salida y el de la vuelta cuentan como se haya elegido (por defecto, entre semana)
+  const dw = new Date(f+'T00:00:00').getDay(); return dw===0 || dw===6 || !!(fe && fe.tipo==='puente');
+};
 function pintarFichaServ(){
   const el = document.getElementById('serv-ficha'); if(!el) return;
   const p = (SERV_GRID && servFichaId) ? SERV_GRID.roster.find(x=>x.id===servFichaId) : null;
@@ -6347,8 +6351,7 @@ function calcularCuentasServ(servs){
     let k = esGS(s) ? 'GS' : ({ cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria:'I', imaginaria_imaginaria:'II' })[s.tipo];
     if(!k) return;
     if(k!=='GS'){
-      const dw = new Date(s.fecha+'T00:00:00').getDay();
-      if(dw===0 || dw===6 || (fest[s.fecha] && fest[s.fecha].tipo==='puente')) k += '(F)';
+      if(esFindeServ(s.fecha)) k += '(F)';
     }
     const o = out[s.persona_id] = out[s.persona_id] || {}; o[k] = (o[k]||0) + 1;
   });
@@ -6441,7 +6444,15 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   const roster = rosterCompleto.filter(p=>!p.sin_servicios); // quien no hace servicios (furriel…) no entra en las colas
   const N = roster.length, pos = {}; roster.forEach((p,i)=>pos[p.id]=i);
   const idAt = i => roster[((i % N) + N) % N].id;
-  const esFinde = f => op.festivos.has(f) || [0,6].includes(new Date(f+'T00:00:00').getDay());
+  // Puentes: día → cómo se trata. El día de salida (el viernes) y el de la vuelta cuentan como «entre semana» o «fin de semana/festivo» según se haya elegido
+  // (por defecto entre semana: es lo que dice la tabla); los días de en medio son festivos. Se tienen en cuenta TODOS los puentes, también los de antes de "Desde",
+  // para leer bien en qué cola va cada día ya puesto.
+  const puenteDia = {};
+  Object.values(op.puentes || {}).forEach(p=>(p.dias||[]).forEach(d=>{
+    const primero = d===p.ini, ultimo = d===p.fin;
+    puenteDia[d] = { modo:p.modo, ini:p.ini, esPrimero:primero, esUltimo:ultimo, finde: primero ? (p.primero==='finde') : ultimo ? (p.ultimo==='finde') : undefined };
+  }));
+  const esFinde = f => { const pu = puenteDia[f]; if(pu && pu.finde!==undefined) return pu.finde; return op.festivos.has(f) || [0,6].includes(new Date(f+'T00:00:00').getDay()); };
   const porFecha = {};
   existentes.forEach(s=>{ (porFecha[s.fecha] = porFecha[s.fecha] || []).push(s); });
   const pC = { semana:null, finde:null }, pI = { semana:null, finde:null };
@@ -6518,9 +6529,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   const nombreCola = (k, q) => (k==='C' ? 'cuarteleros ' : 'imaginarias ') + (q==='finde' ? 'de fin de semana' : 'entre semana');
   if(quiereC){ ['semana','finde'].forEach(q=>{ if(pC[q]!==null && pC[q]<0) finCola.add(nombreCola('C',q)); }); }
   if(quiereI){ ['semana','finde'].forEach(q=>{ if(pI[q]!==null && pI[q]<0) finCola.add(nombreCola('I',q)); }); }
-  // Puentes dentro del rango: día → cómo se trata el cuartelero ese día (op.puentes lo rellena la pregunta al previsualizar)
-  const puenteDia = {};
-  Object.values(op.puentes || {}).forEach(p=>(p.dias||[]).forEach(d=>{ puenteDia[d] = { modo:p.modo, ini:p.ini, esPrimero: d===p.ini, esUltimo: d===p.fin }; }));
+
   const filas = [], porDia = [], arranque = { C:{...pC}, I:{...pI} };
   // 2) Recorrer los días a estimar
   for(let f = op.desde; f <= op.hasta; f = sumarDia(f,1)){
@@ -6648,26 +6657,39 @@ const MODOS_PUENTE = {
   avanza: 'Sigue avanzando: hay cuartelero cada día del puente, como un festivo normal',
   ninguno: 'No hay cuartelero ningún día del puente y la cola no avanza'
 };
+/* Cómo se trata cada puente (se recuerda en este dispositivo): modo del cuartelero + si el día de salida (viernes) y el de la vuelta cuentan como entre semana o como fin de semana/festivo */
+const PUENTE_CFG_KEY = 'portalagm_puentes_cfg';
+function cfgPuente(ini){
+  let c = {}; try{ c = JSON.parse(localStorage.getItem(PUENTE_CFG_KEY)||'{}')[ini] || {}; }catch(e){}
+  return { modo: ['repite','avanza','ninguno'].includes(c.modo) ? c.modo : 'repite', primero: c.primero==='finde' ? 'finde' : 'semana', ultimo: c.ultimo==='finde' ? 'finde' : 'semana' };
+}
+function guardarCfgPuente(ini, cfg){ try{ const all = JSON.parse(localStorage.getItem(PUENTE_CFG_KEY)||'{}'); all[ini] = cfg; localStorage.setItem(PUENTE_CFG_KEY, JSON.stringify(all)); }catch(e){} }
 function preguntarPuentesEstimacion(pus){
-  window._estPuenteModos = window._estPuenteModos || {};
+  const tipoOpts = sel => `<option value="semana" ${sel==='semana'?'selected':''}>Entre semana</option><option value="finde" ${sel==='finde'?'selected':''}>Fin de semana / festivo</option>`;
   abrirModalGlobal(`<h3>🎌 La estimación incluye un puente</h3>
-    <p class="modal-nota" style="margin-top:0;">En un puente el batallón cierra. Elige cómo avanza el <b>cuartelero</b> en cada uno (las imaginarias ya se ponen solo la última noche, la que se duerme en la academia).</p>
-    ${pus.map(p=>`<div class="field"><label><b>${escHtml(p.nombre)}</b> · del ${fmtFecha(p.ini)} al ${fmtFecha(p.fin)}</label>
-      <select id="est-pu-${p.ini}">${Object.entries(MODOS_PUENTE).map(([v,t])=>`<option value="${v}" ${((window._estPuenteModos[p.ini])||'repite')===v?'selected':''}>${t}</option>`).join('')}</select></div>`).join('')}
+    <p class="modal-nota" style="margin-top:0;">En un puente el batallón cierra. Elige cómo se trata el <b>cuartelero</b> (las imaginarias ya se ponen solo la última noche, la que se duerme en la academia) y a qué cola pertenecen el día de salida y el de la vuelta. Los días de en medio cuentan como festivo.</p>
+    ${pus.map(p=>{ const c = cfgPuente(p.ini); return `<div class="servicio-card" style="margin-bottom:8px;"><div class="titulo">${escHtml(p.nombre)} · del ${fmtFecha(p.ini)} al ${fmtFecha(p.fin)}</div>
+      <div class="field"><label>Cuartelero</label><select id="est-pu-modo-${p.ini}">${Object.entries(MODOS_PUENTE).map(([v,t])=>`<option value="${v}" ${c.modo===v?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="field"><label>El día de salida (${fmtFecha(p.ini)}) cuenta como</label><select id="est-pu-pri-${p.ini}">${tipoOpts(c.primero)}</select></div>
+      <div class="field"><label>El día de la vuelta (${fmtFecha(p.fin)}) cuenta como</label><select id="est-pu-ult-${p.ini}">${tipoOpts(c.ultimo)}</select></div></div>`; }).join('')}
+    <p class="modal-nota">«Entre semana» significa que ese día usa la misma cola de cuarteleros que el resto de días laborables; «fin de semana / festivo», la de los fines de semana. Si el viernes de la tabla ya lo hizo alguien de la cola de entre semana, déjalo en «Entre semana».</p>
     <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" onclick="confirmarPuentesEstimacion()">Continuar</button></div>`);
   window._estPuentesPregunta = pus.map(p=>p.ini);
 }
 function confirmarPuentesEstimacion(){
-  (window._estPuentesPregunta||[]).forEach(ini=>{ const s = document.getElementById('est-pu-'+ini); if(s) window._estPuenteModos[ini] = s.value; });
+  (window._estPuentesPregunta||[]).forEach(ini=>{
+    const v = id => (document.getElementById(id)||{}).value;
+    guardarCfgPuente(ini, { modo: v('est-pu-modo-'+ini), primero: v('est-pu-pri-'+ini), ultimo: v('est-pu-ult-'+ini) });
+  });
   cerrarModalGlobal();
   previsualizarEstimacion(true);
-}
-async function previsualizarEstimacion(sinPreguntar){
+}async function previsualizarEstimacion(sinPreguntar){
   const el = document.getElementById('est-resultado');
   const op = opcionesEstimacion(); if(!op) return;
   const pus = (window._servPuentes||[]).filter(p=>p.fin>=op.desde && p.ini<=op.hasta);
   if(pus.length && (op.que==='todos' || op.que==='cuartel') && sinPreguntar!==true){ preguntarPuentesEstimacion(pus); return; }
-  op.puentes = {}; pus.forEach(p=>{ op.puentes[p.ini] = { ...p, modo: (window._estPuenteModos||{})[p.ini] || 'repite' }; });
+  // Se pasan TODOS los puentes (también los de antes de "Desde"): hace falta para leer en qué cola cae cada día ya puesto de la tabla
+  op.puentes = {}; (window._servPuentes||[]).forEach(p=>{ op.puentes[p.ini] = { ...p, ...cfgPuente(p.ini) }; });
   el.innerHTML = '<p class="small-note">Calculando…</p>';
   try{
     const roster = SERV_GRID.roster;
@@ -6689,7 +6711,7 @@ async function previsualizarEstimacion(sinPreguntar){
         <div class="titulo">Saldrían ${r.filas.length} servicios estimados en ${r.porDia.length} días (del ${fmtFecha(op.desde)} al ${fmtFecha(op.hasta)})</div>
         <div class="meta">Arranque según la tabla — Cuartelero: entre semana por el #${r.arranque.C.semana?puesto(r.arranque.C.semana):'—'}, fin de semana por el #${r.arranque.C.finde?puesto(r.arranque.C.finde):'—'} · Imaginarias: entre semana por el #${r.arranque.I.semana?puesto(r.arranque.I.semana):'—'}, fin de semana por el #${r.arranque.I.finde?puesto(r.arranque.I.finde):'—'} (puesto en la lista del cuadrante)${roster.some(p=>p.sin_servicios)?' · Se salta a: '+roster.filter(p=>p.sin_servicios).map(p=>escHtml(p.apellidos)).join(', '):''}</div>
         ${r.finCola && r.finCola.length ? `<div class="notice closed" style="display:block;margin-top:8px;"><span>⛔ <b>Se acabó la lista en:</b> ${r.finCola.join(', ')}. Esa cola no vuelve a empezar por abajo sola: pon a mano a quien empieza la siguiente vuelta, o marca «🔄 Vuelta de un servicio» (abajo, antes de previsualizar) y la estimación seguirá desde ahí.</span></div>` : ''}
-        ${(op.que==='todos' || op.que==='cuartel') && Object.keys(op.puentes||{}).length ? `<div class="notice" style="display:block;border-color:#2e7d32;margin-top:8px;">🎌 <b>Puentes en esta estimación (cuartelero):</b><br>${Object.values(op.puentes).map(p=>`${escHtml(p.nombre)} (${fmtFecha(p.ini)}–${fmtFecha(p.fin)}): ${MODOS_PUENTE[p.modo]}`).join('<br>')}</div>` : ''}
+        ${(op.que==='todos' || op.que==='cuartel') && pus.length ? `<div class="notice" style="display:block;border-color:#2e7d32;margin-top:8px;">🎌 <b>Puentes en esta estimación (cuartelero):</b><br>${pus.map(p=>{ const c = op.puentes[p.ini]; return `${escHtml(p.nombre)} (${fmtFecha(p.ini)}–${fmtFecha(p.fin)}): ${MODOS_PUENTE[c.modo]}. El día de salida cuenta como ${c.primero==='finde'?'fin de semana/festivo':'entre semana'} y el de la vuelta como ${c.ultimo==='finde'?'fin de semana/festivo':'entre semana'}.`; }).join('<br>')}</div>` : ''}
         ${sinImagPrev.length && (op.que==='todos' || op.que==='imag') ? `<div class="notice" style="display:block;border-color:#2e7d32;margin-top:8px;">🎌 <b>Puente, batallón cerrado:</b> no se ponen imaginarias el ${sinImagPrev.map(f=>fmtFecha(f)).join(', ')}. La última noche del puente (la que se duerme en la academia) sí.</div>` : ''}
         ${saltadas.length ? `<div class="notice" style="display:block;border-color:#2e7d32;margin-top:8px;">⛺ <b>Se saltan las maniobras:</b> ${saltadas.map(f=>fmtFecha(f)).join(', ')}. Esos servicios los hacen los rebajados: ponlos a mano.</div>` : ''}
         ${r.gsInfo && r.gsInfo.avisos.length ? `<div class="notice closed" style="display:block;margin-top:8px;"><span>⚠️ <b>Guardias de seguridad:</b><br>${r.gsInfo.avisos.map(escHtml).join('<br>')}</span></div>` : ''}
@@ -6922,7 +6944,7 @@ function diasFestivosServicios(compania){
   window._servPuentes = propios.map(p=>({ ini:p.semana_inicio, fin:ymd(fechaMasDias(p.semana_inicio, p.num_noches-1)), nombre:p.nombre || 'Puente', dias:Array.from({length:p.num_noches},(_,i)=>ymd(fechaMasDias(p.semana_inicio,i))) }));
   propios.forEach(p=>{
     // agm = esa noche se duerme en la academia (la última del puente, o las que el superadmin haya forzado): solo entonces hay imaginarias
-    for(let i=0;i<p.num_noches;i++) mapa[ymd(fechaMasDias(p.semana_inicio,i))] = { tipo:'puente', nombre:p.nombre || 'Puente', agm: (p.forzar_agm||[]).includes(i) || i===p.num_noches-1 };
+    for(let i=0;i<p.num_noches;i++) mapa[ymd(fechaMasDias(p.semana_inicio,i))] = { tipo:'puente', nombre:p.nombre || 'Puente', ini:p.semana_inicio, borde: i===0 ? 'primero' : (i===p.num_noches-1 ? 'ultimo' : null), agm: (p.forzar_agm||[]).includes(i) || i===p.num_noches-1 };
   });
   (MANIOBRAS_LISTA||[]).forEach(m=>{
     for(let f=m.fecha_inicio, n=0; f<=m.fecha_fin && n<400; f=sumarDia(f,1), n++) mapa[f] = { tipo:'mani', nombre:'Maniobras' + (m.nota ? ': '+m.nota : '') };
