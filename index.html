@@ -361,6 +361,40 @@ table.serv-grid tr.exento td.nc{color:var(--danger);background:rgba(160,63,44,.1
 .serv-cod.c{background:rgba(78,92,60,.30);} .serv-cod.ic{background:rgba(78,92,60,.13);}
 .serv-cod.i{background:rgba(32,74,115,.22);} .serv-cod.ii{background:rgba(32,74,115,.10);}
 .serv-cod.otro{background:rgba(184,134,11,.30);cursor:default;}
+.serv-cod.gs{background:#c0392b;color:#fff;font-size:.82em;padding:0 3px;}
+.serv-cod.gs.est{color:#c0392b;}
+table.serv-grid th.rsf{background:#f39c12 !important;color:#1b1b1b !important;font-weight:800;box-shadow:inset 0 -3px 0 #b86e00;}
+.serv-cod.rsx{position:relative;z-index:2;background:#ffeb3b !important;color:#000 !important;font-weight:900;outline:3px solid #ff9800;outline-offset:1px;transform:scale(1.55);box-shadow:0 0 0 4px rgba(255,152,0,.6),0 0 14px 5px rgba(255,193,7,.95);animation:rsxPulse 1.1s ease-in-out infinite;}
+@keyframes rsxPulse{0%,100%{box-shadow:0 0 0 4px rgba(255,152,0,.6),0 0 12px 4px rgba(255,193,7,.8);}50%{box-shadow:0 0 0 7px rgba(255,152,0,.9),0 0 24px 10px rgba(255,235,59,1);}}
+.serv-nav{grid-template-columns:auto 1fr auto !important;align-items:center;}
+.serv-nav input[type=date]{padding:7px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.78rem;}
+.serv-grid-wrap:focus{outline:none;}
+.serv-cod.rs{outline:2px solid #f39c12 !important;opacity:1 !important;box-shadow:0 0 6px rgba(243,156,18,.85);}
+table.serv-grid th.cnt,table.serv-grid td.cnt{width:64px;min-width:56px;max-width:80px;text-align:center;font-size:.72rem;white-space:nowrap;overflow:hidden;background:var(--card);}
+.cnt-n{cursor:pointer;display:inline-block;min-width:26px;padding:1px 6px;border-radius:10px;background:rgba(184,134,11,.20);font-weight:700;}
+.cnt-n:hover{background:rgba(184,134,11,.40);}
+table.serv-grid tr.sel td{background:rgba(184,134,11,.16);}
+.ficha-serv h4{margin:0 0 6px;font-size:.95rem;}
+.ficha-serv h5{margin:14px 0 6px;font-size:.8rem;color:var(--olive);}
+.ficha-serv .history-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.76rem;}
+table.serv-grid thead th.cnt{background:var(--paper-alt);}
+table.serv-grid td.cnt .serv-cod{margin-right:1px;}
+@media(min-width:1024px){
+  .serv-grid-wrap{max-height:none;} /* en el ordenador la lista ocupa todo su alto: se desplaza la página, no la tabla */
+  table.serv-grid th.cnt,table.serv-grid td.cnt{position:sticky;left:210px;z-index:1;}
+  table.serv-grid thead th.cnt{z-index:3;}
+}
+@media(max-width:560px){ table.serv-grid th.cnt,table.serv-grid td.cnt{width:56px;min-width:48px;} }
+table.serv-grid th.fes,table.serv-grid td.fes{background:rgba(192,57,43,.14);}
+table.serv-grid th.mani,table.serv-grid td.mani{background:rgba(46,125,50,.16);}
+.serv-leg.fes{background:rgba(192,57,43,.14);}
+.serv-leg.mani{background:rgba(46,125,50,.16);}
+.gs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0;}
+.gs-campo{font-size:.7rem;color:var(--ink-soft);display:flex;flex-direction:column;gap:3px;}
+.gs-campo input{padding:7px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.82rem;width:100%;box-sizing:border-box;}
+.serv-cod.deu{box-shadow:0 0 0 2px #8e44ad;}
+.serv-casco{font-size:.7rem;margin-left:2px;cursor:help;}
+.serv-leg.deu{box-shadow:0 0 0 2px #8e44ad;}
 .serv-cod.est{background:transparent !important;outline:1.5px dashed currentColor;outline-offset:-1px;opacity:.75;font-style:italic;}
 details.serv-est{border:1px solid var(--brass);background:var(--card);margin:14px 0;}
 details.serv-est>summary{cursor:pointer;padding:12px 14px;font-weight:700;font-size:.92rem;list-style:none;display:flex;justify-content:space-between;align-items:center;}
@@ -464,6 +498,26 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
 .caja-h:first-child{margin-top:0;padding-top:0;border-top:none;}
 @media(max-width:560px){.cajas-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.caja{min-height:88px;padding:12px;}}
 .caja-panel{font-size:.8rem;}
+.serv-ctrl.serv-filtros{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-items:stretch;gap:8px;}
+.serv-filtros select,.serv-filtros input,.serv-filtros button{width:100%;min-width:0;box-sizing:border-box;}
+.serv-nav{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin:8px 0 2px;}
+.serv-nav .small-btn{padding:11px 10px;font-size:.78rem;}
+.serv-acciones{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;}
+.serv-acciones .small-btn{padding:11px 16px;font-size:.82rem;}
+.serv-acciones .primary-btn{width:auto;padding:10px 16px;}
+.serv-info-tit{font-weight:700;font-size:.9rem;margin-bottom:8px;}
+.serv-info>div{display:flex;gap:10px;align-items:flex-start;margin:8px 0;font-size:.8rem;line-height:1.35;}
+.serv-info>div>.serv-cod,.serv-info>div>.serv-leg{flex:0 0 64px;text-align:center;}
+.serv-leg{display:inline-block;padding:3px 6px;border:1px solid var(--line);font-size:.68rem;}
+.serv-leg.hoy{background:rgba(184,134,11,.22);}
+.serv-leg.fin{background:rgba(32,74,115,.12);}
+.serv-leg.exento{background:rgba(160,63,44,.12);color:var(--danger);}
+@media(max-width:560px){
+  .serv-acciones>*{flex:1 1 100%;}
+  table.serv-grid th.nc{width:118px;}
+  table.serv-grid .nc{min-width:104px;max-width:118px;font-size:.58rem;}
+  .serv-grid-wrap{max-height:68vh;}
+}
 .caja-panel .sub2{font-size:.72rem;color:var(--ink-soft);line-height:1.4;}
 .caja-panel .switch-label{font-size:.82rem;}
 .caja-panel .panel-row + .panel-row{margin-top:10px;padding-top:10px;}
@@ -702,9 +756,9 @@ aplicarTema();
       <div id="admin-controls"></div>
       <div class="summary-grid" id="admin-comidas-summary"></div>
       <div id="admin-companies"></div>
-      <div class="grand-total" id="admin-grand"></div>
       <div id="admin-cajas"></div>
       <div id="admin-confirm-bottom"></div>
+      <div class="grand-total" id="admin-grand"></div>
     </div>
 
     <div id="admin-pernoctas-mod" class="hidden">
@@ -716,39 +770,81 @@ aplicarTema();
     </div>
 
     <div id="admin-servicios-mod" class="hidden">
-      <div class="admin-panel">
-        <div class="panel-row">
-          <div class="switch-label">Mostrar la pestaña Servicios a los alumnos
-            <span class="sub2">Mientras la estás montando puedes dejarla oculta — tú la sigues viendo siempre</span>
-          </div>
-          <label class="switch"><input type="checkbox" id="serv-visible-toggle" onchange="toggleServiciosVisible(this.checked)"><span class="track"></span><span class="thumb"></span></label>
-        </div>
-      </div>
       <div id="admin-serv-week-select"></div>
-      <div class="admin-panel" style="flex-direction:column;align-items:stretch;border-color:var(--brass);">
-        <div class="switch-label">📤 Subir el Excel de servicios
-          <span class="sub2">El Excel de guardias tal cual (hoja "GUARDIAS DE ORDEN"). Primero la app lo lee y te enseña cómo ha emparejado a cada persona del Excel con su ficha de la app; cuando lo revises pulsas "Cargar" y el cuadrante queda EXACTAMENTE como el Excel. No se inventa ni se calcula nada: solo lo que pone el Excel.</span>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center;">
-          <input type="file" id="serv-excel-file" accept=".xlsx,.xls">
-          <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="leerExcelServicios()">1️⃣ Leer y revisar</button>
-        </div>
-        <div id="serv-excel-resultado" style="margin-top:8px;"></div>
-      </div>
       <h3 class="section-title">Cuadrante de servicios</h3>
       <div id="serv-grid-controles"></div>
-      <div id="admin-servicios-leyenda" class="fixed-row" style="margin-bottom:8px;"></div>
+      <div id="serv-grid-nav"></div>
+      <div id="serv-pag-barra"></div>
       <div class="serv-grid-wrap"><table class="serv-grid" id="admin-servicios-tabla"></table></div>
-      <details class="serv-est" id="serv-est-panel">
-        <summary>🔮 Añadir estimación de servicios</summary>
-        <div class="cuerpo">
-          <p class="small-note" style="margin-top:0;">Rellena el cuadrante siguiendo las reglas, a partir de donde va la tabla ahora mismo: colas distintas entre semana y fin de semana, por orden de la lista (de abajo hacia arriba), la Imaginaria de Cuartelero es el Cuartelero del siguiente día de su cola, y la Imaginaria de Imaginaria es la 1ª Imaginaria de la siguiente noche. Lo estimado se ve con borde de puntos y se puede borrar cuando quieras; lo que ya esté en la tabla no se toca.</p>
+      <div id="serv-ficha" class="admin-panel hidden" style="flex-direction:column;align-items:stretch;margin-top:12px;"></div>
+      <div class="serv-acciones">
+        <button type="button" class="small-btn" id="serv-info-btn" onclick="toggleInfografiaServ()">ℹ️ Infografía</button>
+        <button type="button" class="primary-btn" onclick="exportServiciosExcel()">📄 Exportar a Excel</button>
+      </div>
+      <div id="serv-infografia" class="admin-panel hidden"><div id="admin-servicios-leyenda"></div></div>
+      <div class="cajas-grid" id="serv-cajas">
+        <button type="button" class="caja" data-caja="serv|manual" onclick="abrirCaja('serv','manual')"><span class="caja-ico">✍️</span><span class="caja-tit">Añadir o cambiar</span><span class="caja-sub">Un servicio a mano</span></button>
+        <button type="button" class="caja" data-caja="serv|estimar" onclick="abrirCaja('serv','estimar')"><span class="caja-ico">🔮</span><span class="caja-tit">Estimar servicios</span><span class="caja-sub">Rellenar el cuadrante</span></button>
+        <button type="button" class="caja" data-caja="serv|deudas" onclick="abrirCaja('serv','deudas')"><span class="caja-ico">💸</span><span class="caja-tit">Deudas de servicio</span><span class="caja-sub">Quién le debe a quién</span><span class="caja-badge hidden" id="serv-badge-deudas"></span></button>
+        <button type="button" class="caja" data-caja="serv|cambios" onclick="abrirCaja('serv','cambios')"><span class="caja-ico">🔁</span><span class="caja-tit">Cambios pendientes</span><span class="caja-sub">Solicitudes de los alumnos</span><span class="caja-badge hidden" id="serv-badge-cambios"></span></button>
+        <button type="button" class="caja" data-caja="serv|excel" onclick="abrirCaja('serv','excel')"><span class="caja-ico">📤</span><span class="caja-tit">Subir el Excel</span><span class="caja-sub">Guardias de orden</span></button>
+        <button type="button" class="caja" data-caja="serv|visible" onclick="abrirCaja('serv','visible')"><span class="caja-ico">👁️</span><span class="caja-tit">Mostrar a alumnos</span><span class="caja-sub">Pestaña Servicios</span></button>
+      </div>
+      <div class="caja-panel hidden" data-caja="serv|cambios">
+        <div class="caja-panel-cab"><b>🔁 Solicitudes de cambio pendientes</b><button type="button" class="small-btn" onclick="abrirCaja('serv','cambios')">Cerrar ✕</button></div>
+        <div id="admin-cambios-pendientes"></div>
+      </div>
+      <div class="caja-panel hidden" data-caja="serv|deudas">
+        <div class="caja-panel-cab"><b>💸 Deudas de servicio</b><button type="button" class="small-btn" onclick="abrirCaja('serv','deudas')">Cerrar ✕</button></div>
+        <button class="small-btn" onclick="toggleNuevaDeuda()">＋ Añadir deuda</button>
+        <div id="nueva-deuda-form" class="admin-panel hidden" style="flex-direction:column;align-items:stretch;margin-top:10px;">
+        <div class="switch-label">Apuntar una deuda a mano<span class="sub2">Como lo apuntarías en la columna OBS. del Excel. Las deudas apuntadas aquí NO se borran al volver a subir el Excel.</span></div>
+        <div class="serv-ctrl">
+          <select id="deuda-deudor"></select>
+          <span style="font-size:.8rem;">le debe a</span>
+          <select id="deuda-acreedor"></select>
+        </div>
+        <input type="text" id="deuda-texto" placeholder="Qué le debe — ej.: 1 imaginaria del festivo 12/10, 1 cuartelero de fin de semana…" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
+        <button class="small-btn" style="margin-top:8px;align-self:flex-start;" onclick="guardarNuevaDeuda()">💾 Guardar deuda</button>
+      </div>
+        <div id="admin-deudas-lista" style="margin-top:10px;"></div>
+      </div>
+      <div class="caja-panel hidden" data-caja="serv|manual">
+        <div class="caja-panel-cab"><b>✍️ Añadir o cambiar un servicio</b><button type="button" class="small-btn" onclick="abrirCaja('serv','manual')">Cerrar ✕</button></div>
+        <div class="admin-panel adm-in" style="flex-direction:column;align-items:stretch;">
+          <div class="switch-label"><span id="serv-manual-titulo">Añadir o cambiar un servicio a mano</span>
+          <span class="sub2" id="serv-manual-sub">Toca un código del cuadrante para cambiarlo, o una casilla vacía para añadir un servicio. Lo normal es corregir el Excel y volver a subirlo (al subirlo se sustituye todo).</span>
+        </div>
+        <div class="serv-ctrl">
+          <input type="date" id="serv-fecha">
+          <select id="serv-tipo" onchange="onServTipoChange()">
+            <option value="cuartelero">Cuartelero (C)</option>
+            <option value="imaginaria">Imaginaria (turno)</option>
+            <option value="imaginaria_cuartelero">Imaginaria de Cuartelero (IC)</option>
+            <option value="imaginaria_imaginaria">Imaginaria de Imaginaria (I I)</option>
+            <option value="guardia_seguridad">Guardia de seguridad (GS)</option>
+          </select>
+          <select id="serv-turno"><option value="1">Turno 1</option><option value="2">Turno 2</option><option value="3">Turno 3</option><option value="4">Turno 4</option></select>
+          <select id="serv-persona" onchange="actualizarDeudasPersonaServ()"></select>
+          <select id="serv-deuda" class="hidden" title="Si este servicio sirve para saldar una deuda, elígela"></select>
+          <button class="small-btn" id="serv-btn-guardar" onclick="asignarServicio()">💾 Guardar</button>
+          <button class="small-btn danger" id="serv-btn-quitar" onclick="quitarServicioManual()">Quitar ese servicio</button>
+        </div>
+        <div id="serv-sugerencia" class="small-note"></div>
+        </div>
+      </div>
+      <div class="caja-panel hidden" data-caja="serv|estimar">
+        <div class="caja-panel-cab"><b>🔮 Añadir estimación de servicios</b><button type="button" class="small-btn" onclick="abrirCaja('serv','estimar')">Cerrar ✕</button></div>
+        <div class="admin-panel adm-in">
+          <p class="small-note" style="margin-top:0;">Rellena el cuadrante siguiendo las reglas, a partir de donde va la tabla ahora mismo: colas distintas entre semana y fin de semana, por orden de la lista (de abajo hacia arriba) y saltándose a quien ya ha hecho ese servicio hasta que todos lo hayan hecho (cuartelero e imaginaria, entre semana y fin de semana por separado), la Imaginaria de Cuartelero es el Cuartelero del siguiente día de su cola, y la Imaginaria de Imaginaria es la 1ª Imaginaria de la siguiente noche. Lo estimado se ve con borde de puntos y se puede borrar cuando quieras; lo que ya esté en la tabla no se toca.</p>
+          <div id="est-gs-info"></div>
           <div class="serv-est-grid">
             <div class="field"><label>Qué servicios estimar</label>
               <select id="est-que">
                 <option value="todos">Todos (C, IC, imaginarias e I I)</option>
                 <option value="cuartel">Solo cuarteleros (C + Imaginaria de Cuartelero)</option>
                 <option value="imag">Solo imaginarias de noche (1 I–4 I + I I)</option>
+                <option value="gs">Solo guardias de seguridad (GS)</option>
               </select></div>
             <div class="field"><label>Qué días</label>
               <select id="est-dias">
@@ -759,7 +855,7 @@ aplicarTema();
             <div class="field"><label>Desde (incluido)</label><input type="date" id="est-desde"></div>
             <div class="field"><label>Hasta (incluido)</label><input type="date" id="est-hasta"></div>
             <div class="field"><label>Días SIN servicio (no avanza nadie)</label><input type="text" id="est-sin" placeholder="ej.: 12/10, 1/11, 8/12"></div>
-            <div class="field"><label>Festivos (cuentan como fin de semana)</label><input type="text" id="est-festivos" placeholder="ej.: 12/10, 1/11"></div>
+            <div class="field"><label>Festivos extra (los puentes/festivos del superadmin ya cuentan solos)</label><input type="text" id="est-festivos" placeholder="ej.: 12/10, 1/11"></div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
             <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="previsualizarEstimacion()">👁️ Ver cómo quedaría</button>
@@ -767,47 +863,33 @@ aplicarTema();
             <button class="small-btn danger" onclick="borrarEstimaciones()">🗑️ Borrar estimaciones desde "Desde"</button>
           </div>
           <div id="est-resultado" style="margin-top:10px;"></div>
-        </div>
-      </details>
-      <div class="admin-panel" style="flex-direction:column;align-items:stretch;margin-top:14px;">
-        <div class="switch-label"><span id="serv-manual-titulo">Añadir o cambiar un servicio a mano</span>
-          <span class="sub2" id="serv-manual-sub">Toca un código del cuadrante para cambiarlo, o una casilla vacía para añadir un servicio. Lo normal es corregir el Excel y volver a subirlo (al subirlo se sustituye todo).</span>
-        </div>
-        <div class="serv-ctrl">
-          <input type="date" id="serv-fecha">
-          <select id="serv-tipo" onchange="onServTipoChange()">
-            <option value="cuartelero">Cuartelero (C)</option>
-            <option value="imaginaria">Imaginaria (turno)</option>
-            <option value="imaginaria_cuartelero">Imaginaria de Cuartelero (IC)</option>
-            <option value="imaginaria_imaginaria">Imaginaria de Imaginaria (I I)</option>
-          </select>
-          <select id="serv-turno"><option value="1">Turno 1</option><option value="2">Turno 2</option><option value="3">Turno 3</option><option value="4">Turno 4</option></select>
-          <select id="serv-persona"></select>
-          <button class="small-btn" id="serv-btn-guardar" onclick="asignarServicio()">💾 Guardar</button>
-          <button class="small-btn danger" id="serv-btn-quitar" onclick="quitarServicioManual()">Quitar ese servicio</button>
-        </div>
-        <div id="serv-sugerencia" class="small-note"></div>
-      </div>
-      <div class="admin-panel">
-        <div class="panel-row">
-          <div class="switch-label">Exportar a Excel<span class="sub2">Los días que se ven ahora en el cuadrante, con el servicio de cada uno</span></div>
-          <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="exportServiciosExcel()">📄 Exportar a Excel</button>
+          <div id="est-pendientes" style="margin-top:16px;border-top:1px solid var(--line);padding-top:10px;"></div>
         </div>
       </div>
-      <h3 class="section-title">Solicitudes de cambio pendientes</h3>
-      <div id="admin-cambios-pendientes"></div>
-      <h3 class="section-title">Deudas de servicio <button class="small-btn" style="margin-left:8px;" onclick="toggleNuevaDeuda()">＋ Añadir deuda</button></h3>
-      <div id="nueva-deuda-form" class="admin-panel hidden" style="flex-direction:column;align-items:stretch;">
-        <div class="switch-label">Apuntar una deuda a mano<span class="sub2">Como lo apuntarías en la columna OBS. del Excel. Las deudas apuntadas aquí NO se borran al volver a subir el Excel.</span></div>
-        <div class="serv-ctrl">
-          <select id="deuda-deudor"></select>
-          <span style="font-size:.8rem;">le debe a</span>
-          <select id="deuda-acreedor"></select>
+      <div class="caja-panel hidden" data-caja="serv|excel">
+        <div class="caja-panel-cab"><b>📤 Subir el Excel de servicios</b><button type="button" class="small-btn" onclick="abrirCaja('serv','excel')">Cerrar ✕</button></div>
+        <div class="admin-panel adm-in" style="flex-direction:column;align-items:stretch;">
+          <div class="switch-label">📤 Subir el Excel de servicios
+          <span class="sub2">El Excel de guardias tal cual (hoja "GUARDIAS DE ORDEN"). Primero la app lo lee y te enseña cómo ha emparejado a cada persona del Excel con su ficha de la app; cuando lo revises pulsas "Cargar" y el cuadrante queda EXACTAMENTE como el Excel. No se inventa ni se calcula nada: solo lo que pone el Excel.</span>
         </div>
-        <input type="text" id="deuda-texto" placeholder="Qué le debe — ej.: 1 imaginaria del festivo 12/10, 1 cuartelero de fin de semana…" style="padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;">
-        <button class="small-btn" style="margin-top:8px;align-self:flex-start;" onclick="guardarNuevaDeuda()">💾 Guardar deuda</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center;">
+          <input type="file" id="serv-excel-file" accept=".xlsx,.xls">
+          <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="leerExcelServicios()">1️⃣ Leer y revisar</button>
+        </div>
+        <div id="serv-excel-resultado" style="margin-top:8px;"></div>
+        </div>
       </div>
-      <div id="admin-deudas-lista"></div>
+      <div class="caja-panel hidden" data-caja="serv|visible">
+        <div class="caja-panel-cab"><b>👁️ Mostrar la pestaña Servicios a los alumnos</b><button type="button" class="small-btn" onclick="abrirCaja('serv','visible')">Cerrar ✕</button></div>
+        <div class="admin-panel adm-in">
+          <div class="panel-row">
+          <div class="switch-label">Mostrar la pestaña Servicios a los alumnos
+            <span class="sub2">Mientras la estás montando puedes dejarla oculta — tú la sigues viendo siempre</span>
+          </div>
+          <label class="switch"><input type="checkbox" id="serv-visible-toggle" onchange="toggleServiciosVisible(this.checked)"><span class="track"></span><span class="thumb"></span></label>
+        </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -886,7 +968,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-12T22:35";
+const APP_VERSION = "2026-10-13T00:46";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
@@ -1148,10 +1230,18 @@ function nameCellHtml(p){
   return `${nombre}<span class="intol-badge" title="Intolerancias: ${p.intolerancias.trim().replace(/"/g,'&quot;')}">🍽️⚠️</span>`;
 }
 // Admin: duerme en la AGM el sábado pero no tiene marcado el desayuno del domingo (por si hay algún problema)
+let SABADO_AGM_ADMIN = new Set(); // quiénes duermen en la AGM la noche del sábado (calculado en el panel de admin a partir de las pernoctas guardadas)
 function avisoDomingoAdmin(p, apuntesMap){
-  return !!(ACTIVE_WEEK && ACTIVE_WEEK.key >= SEMANA_DOMINGO_LIBRE_DESDE && !PERNOCTA_SABADO_FUERA.has(p.id) && !getVal(p.id, {type:'desayuno', day:2}, apuntesMap));
+  return !!(ACTIVE_WEEK && ACTIVE_WEEK.key >= SEMANA_DOMINGO_LIBRE_DESDE && SABADO_AGM_ADMIN.has(p.id) && !getVal(p.id, {type:'desayuno', day:2}, apuntesMap));
 }
-const domingoMarca = (p, apuntesMap) => avisoDomingoAdmin(p, apuntesMap) ? '<span class="dom-badge" title="Duerme en la AGM el sábado pero NO tiene marcado el desayuno del domingo">🍳❓</span>' : '';
+// Apartado de «Compañía y alumnos»: quién duerme en la AGM el sábado y no tiene el desayuno del domingo marcado
+function domingoRevisionHtml(secciones, apuntesMap){
+  if(ACTIVE_WEEK.key < SEMANA_DOMINGO_LIBRE_DESDE) return '<p class="small-note" style="margin-top:0;">En esta semana el desayuno del domingo todavía era obligatorio: no hay nada que revisar.</p>';
+  const lista = secciones.map(sec=>({ code:sec.code, gente:sec.people.filter(p=>avisoDomingoAdmin(p, apuntesMap)) })).filter(s=>s.gente.length);
+  if(!lista.length) return '<p class="small-note" style="margin-top:0;">✅ Todos los que duermen en la AGM el sábado tienen marcado el desayuno del domingo.</p>';
+  return `<p class="small-note" style="margin-top:0;">Duermen en la AGM el sábado y <b>no tienen marcado</b> el desayuno del domingo (por si hay algún problema). No cuentan los que duermen fuera, los externados ni los de maniobras.</p>`
+    + lista.map(s=>`<div style="border:1px solid var(--line);padding:8px 10px;margin-bottom:6px;"><div style="font-weight:700;font-size:.78rem;">Sección ${s.code} <span style="color:var(--ink-soft);font-weight:400;">(${s.gente.length})</span></div><div style="font-size:.76rem;">${s.gente.map(p=>escHtml(p.apellidos+', '+p.nombre)).join(' · ')}</div></div>`).join('');
+}
 function nameCellClass(p){ return 'name-cell' + (isIntol(p) ? ' intol' : ''); }
 // Hora a la que se da por terminada cada comida (a partir de ahí ya no cuenta como "próxima")
 const COMIDA_FIN = { desayuno:[7,30], comida:[15,30], cena:[20,30] };
@@ -1263,7 +1353,7 @@ function pintarConfig(){
     ${grupo('totales', [['tabla','Tabla'],['cajas','Cajas'],['ambas','Las dos']])}` : ''}
     ${CURRENT && CURRENT.mode==='alumno' ? `<div class="cfg-label">Guardar mi dirección y teléfono habituales (botón "Habitual" en Pernoctas)</div>
     ${grupo('habitual', [['si','Sí'],['no','No']])}` : ''}
-    ${CURRENT && CURRENT.mode==='alumno' ? `<div class="cfg-label">Aviso del desayuno del domingo (si duermes en la AGM el sábado)</div>
+    ${CURRENT && CURRENT.mode==='alumno' ? `<div class="cfg-label">Aviso del desayuno del domingo</div>
     ${grupo('avisoDomingo', [['si','Mostrarlo'],['no','Quitarlo']])}
     <div class="cfg-label">Totales de pernoctas de la sección</div>
     ${grupo('totalesSiempre', [['no','Solo con «Toda la sección»'],['si','Verlos siempre']])}` : ''}
@@ -2320,8 +2410,8 @@ async function renderAlumno(){
   let avisoDesayunoHtml = '';
   if(ACTIVE_WEEK.key < SEMANA_DOMINGO_LIBRE_DESDE){
     // semana antigua (ya cerrada): sin avisos
-  } else if(PREFS.avisoDomingo==='no' && !tienePernoctaFuera){
-    // el alumno ha pedido (en ⚙️) no ver este aviso cuando duerme en la AGM el sábado
+  } else if(PREFS.avisoDomingo==='no'){
+    // el alumno ha pedido (en ⚙️) no ver ningún aviso del desayuno del domingo
   } else {
   if(!tienePernoctaFuera && !desayunoDomingoMarcado){
     avisoDesayunoHtml += `<div class="aviso-desayuno-domingo">🍳 Duermes en la AGM el sábado — si vas a desayunar el domingo, márcalo tú</div>`;
@@ -2898,6 +2988,64 @@ async function echarCuartel(id){
   showToast('Sesión cerrada. Ese dispositivo saldrá en menos de un minuto.');
   await renderSuperadmin();
 }
+/* ---- Superadmin: calendario de guardias de seguridad (tabla gs_dias, patch 61) ---- */
+const gsNum = v => { v = String(v==null?'':v).trim(); return v==='' ? null : parseInt(v,10); };
+async function gsCalendarioHtml(){
+  const { data, error } = await sb.from('gs_dias').select('*').order('fecha');
+  if(error) return `<p class="small-note" style="margin-top:0;">No se pudo leer el calendario de guardias de seguridad: ${escHtml(error.message)} — ¿has ejecutado el patch 61?</p>`;
+  const campo = (id, fecha, etiqueta, valor, ph) => `<label class="gs-campo">${etiqueta}<input type="number" min="0" id="gs-${id}-${fecha}" value="${valor==null?'':valor}" placeholder="${ph||''}"></label>`;
+  const tarjeta = d => {
+    const pend = d.externos==null || (d.sobrante_de!=null && d.sobrante_n==null);
+    return `<div class="servicio-card" style="${pend?'border-color:var(--danger);':''}">
+      <div class="titulo">${pend?'⚠️ ':''}${fmtFecha(d.fecha)}/${d.fecha.slice(0,4)} · ${d.compania}ª compañía${d.sobrante_de!=null?` + sobrante de la ${d.sobrante_de}ª`:''}</div>
+      <div class="gs-grid">
+        ${campo('cia', d.fecha, 'Compañía', d.compania)}
+        ${campo('plazas', d.fecha, 'Plazas', d.plazas)}
+        ${campo('ext', d.fecha, 'De fuera de la app (ej. 6ª)', d.externos, '¿cuántos?')}
+        ${campo('sobde', d.fecha, 'Sobrante de la compañía', d.sobrante_de, '—')}
+        ${campo('sobn', d.fecha, 'Personas del sobrante', d.sobrante_n, '¿cuántas?')}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="small-btn" onclick="gsGuardarDia('${d.fecha}')">💾 Guardar</button><button class="small-btn danger" onclick="gsBorrarDia('${d.fecha}')">Quitar día</button></div>
+    </div>`;
+  };
+  return `<p class="small-note" style="margin-top:0;">Los días de guardia de seguridad (GS). Cada día entran 22 alumnos de una compañía, en el orden de la lista del cuadrante, de arriba abajo desde la primera fila; quien ya ha hecho GS no repite y la promoción interna (🪖) se salta. <b>Deja en blanco lo que todavía no se sepa</b>: la estimación se para en ese día y avisa. «De fuera de la app» = plazas ocupadas por gente de otras compañías que no están aquí (la 6ª). «Sobrante» = personas de otra compañía que completan ese día; cuando una compañía acaba sus días, la estimación le dice cuántas le quedan por hacer GS.</p>
+    ${(data||[]).map(tarjeta).join('') || '<p class="small-note">Todavía no hay ningún día.</p>'}
+    <div class="servicio-card"><div class="titulo">➕ Añadir un día de GS</div>
+      <div class="gs-grid">
+        <label class="gs-campo">Fecha<input type="date" id="gs-new-fecha"></label>
+        <label class="gs-campo">Compañía<input type="number" min="1" id="gs-new-cia"></label>
+        <label class="gs-campo">Plazas<input type="number" min="1" id="gs-new-plazas" value="22"></label>
+        <label class="gs-campo">De fuera de la app<input type="number" min="0" id="gs-new-ext" placeholder="0"></label>
+        <label class="gs-campo">Sobrante de la compañía<input type="number" min="1" id="gs-new-sobde" placeholder="—"></label>
+        <label class="gs-campo">Personas del sobrante<input type="number" min="0" id="gs-new-sobn"></label>
+      </div>
+      <button class="small-btn" onclick="gsAnadirDia()">➕ Añadir</button>
+    </div>`;
+}
+async function gsGuardarDia(fecha){
+  const g = id => (document.getElementById(`gs-${id}-${fecha}`)||{}).value;
+  const fila = { fecha, compania:gsNum(g('cia')), plazas:gsNum(g('plazas')), externos:gsNum(g('ext')), sobrante_de:gsNum(g('sobde')), sobrante_n:gsNum(g('sobn')), actualizado_en:new Date().toISOString() };
+  if(!fila.compania || !fila.plazas){ showToast('Pon la compañía y las plazas.'); return; }
+  if(fila.sobrante_de==null) fila.sobrante_n = null;
+  const { error } = await sb.from('gs_dias').upsert(fila, { onConflict:'fecha' });
+  if(error){ showToast('No se pudo guardar: '+error.message); return; }
+  showToast('Día de GS guardado.'); await renderSuperadmin();
+}
+async function gsAnadirDia(){
+  const g = id => (document.getElementById('gs-new-'+id)||{}).value;
+  const fila = { fecha:g('fecha'), compania:gsNum(g('cia')), plazas:gsNum(g('plazas'))||22, externos:gsNum(g('ext')), sobrante_de:gsNum(g('sobde')), sobrante_n:gsNum(g('sobn')) };
+  if(!fila.fecha || !fila.compania){ showToast('Pon la fecha y la compañía.'); return; }
+  if(fila.sobrante_de==null) fila.sobrante_n = null;
+  const { error } = await sb.from('gs_dias').upsert(fila, { onConflict:'fecha' });
+  if(error){ showToast('No se pudo añadir: '+error.message); return; }
+  showToast('Día de GS añadido.'); await renderSuperadmin();
+}
+async function gsBorrarDia(fecha){
+  if(!confirm('¿Quitar el día de GS del '+fecha+' del calendario? (No borra servicios ya puestos.)')) return;
+  const { error } = await sb.from('gs_dias').delete().eq('fecha', fecha);
+  if(error){ showToast('No se pudo quitar: '+error.message); return; }
+  await renderSuperadmin();
+}
 async function renderSuperadmin(){
   const { data: solicitudes } = await sb.from('admin_solicitudes').select('*').eq('estado','pendiente').order('creado_en');
   const { data: puentes, error: errPuentes } = await sb.from('pernocta_puentes').select('*').order('semana_inicio');
@@ -2973,6 +3121,7 @@ async function renderSuperadmin(){
       </div>`;
   if(PUENTE_EDIT) CAJAS_ABIERTA.super = 'puentes';
   else if(CAJAS_ABIERTA.super===undefined && nSol>0) CAJAS_ABIERTA.super = 'solicitudes';
+  const gsHtml = await gsCalendarioHtml();
   document.getElementById('superadmin-body').innerHTML = `
     <div class="admin-panel">
       <div class="panel-row" style="flex-direction:column;align-items:stretch;">
@@ -2985,6 +3134,7 @@ async function renderSuperadmin(){
       { id:'solicitudes', icono:'👤', titulo:'Solicitudes de admin', sub: nSol ? 'Pendientes de aprobar' : 'Ninguna pendiente', badge:(nSol||''), tituloPanel:'Solicitudes de administrador', cuerpo:filaSolicitudes },
       { id:'puentes', icono:'🌉', titulo:'Puentes y festivos', sub:'Creador de puentes', cuerpo:puentesSuperHtml(puentes, errPuentes) },
       { id:'maniobras', icono:'⛺', titulo:'Maniobras', sub:'De toda la academia', tituloPanel:'Maniobras de la academia', cuerpo:maniobrasPanelHtml('academia', maniAcad, errManiAcad) },
+      { id:'gs', icono:'🛡️', titulo:'Guardias de seguridad', sub:'Calendario de GS', tituloPanel:'Guardias de seguridad (calendario)', cuerpo:gsHtml },
       { id:'conectados', icono:'🟢', titulo:'Personas conectadas', sub:'En total y por compañía', alAbrir:'cargarConectadosSuper()', cuerpo:'<div id="super-conectados-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'historial', icono:'📜', titulo:'Historial de cambios', sub:'Por compañía y sección', alAbrir:'cargarHistorialSuper()', cuerpo:'<div id="super-historial-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'cuartel', icono:'🪖', titulo:'Servicio de cuartel', sub:'Cuentas, conexiones y accesos', tituloPanel:'Servicio de cuartel (cuentas, conexiones y accesos)', cuerpo:filaCuartel },
@@ -3177,6 +3327,13 @@ async function _renderAdminImpl(){
   const cenaTotal = allPeople.filter(p=>getVal(p.id,nextCenaCol,apuntesMap)).length;
   const confirmadosTotal = allPeople.filter(p=>confirmMap[p.id]).length;
 
+  // Quiénes duermen en la AGM el sábado (pernoctas guardadas; sin dato = AGM; fuera los externados, los que han marcado FUERA y los de maniobras no cuentan como "fuera")
+  const pernMapSab = await fetchPernoctaMapAdmin(personaIds, ACTIVE_WEEK.key);
+  SABADO_AGM_ADMIN = new Set(allPeople.filter(p=>{
+    if(nocheObligatoriaManiobra(p.id, ACTIVE_WEEK, 1)) return false; // en maniobras no se les asignan comidas: no se revisa
+    if(p.externado || PERNOCTA_SABADO_FUERA.has(p.id)) return false;
+    const r = pernMapSab[p.id+'|1']; return !(r && r.duerme_agm===false);
+  }).map(p=>p.id));
   document.getElementById('admin-companies').innerHTML = await companyBlockHtml(c, secciones, apuntesMap, confirmMap);
   document.getElementById('admin-comidas-summary').innerHTML = PREFS.totales==='tabla' ? '' : cols.map(col=>{
     const n = allPeople.filter(p=>getVal(p.id,col,apuntesMap)).length;
@@ -3191,6 +3348,8 @@ async function _renderAdminImpl(){
   const historyHtml = historyOpen ? await historyPanel(secciones) : '';
   const filaHistorial = `<div style="margin:10px 0;"><button class="small-btn" onclick="toggleHistory()">${historyOpen?'Cerrar historial':'Ver historial de cambios'}</button></div>${historyHtml}`;
   document.getElementById('admin-cajas').innerHTML = adminCajas('admin', [
+    { id:'editar', icono:'✏️', titulo:'Editar', sub:'Marcar comidas por sección', tituloPanel:'Editar comidas', cuerpo:adminEditarHtml(secciones, apuntesMap) },
+    { id:'gestionar', icono:'⚙️', titulo:'Gestionar', sub:'Alumnos y datos de cada sección', tituloPanel:'Gestionar secciones', cuerpo:adminGestionarHtml(secciones) },
     { id:'avisos', icono:'📢', titulo:'Avisos', sub:'A la compañía, una sección o una persona', tituloPanel:'Avisos a los alumnos', cuerpo:filaAviso },
     { id:'semana', icono:'📅', titulo:'Ajustes de semana', sub:'Desbloqueos, ocultar, cierre y maniobras', tituloPanel:'Ajustes de esta semana',
       cuerpo: cajaSub('cs-desbloqueo','🔓 Permitir desmarcar comidas obligatorias', filaDesbloqueo) + cajaSub('cs-oculta','🙈 Ocultar esta semana a los alumnos', filaOculta)
@@ -3200,7 +3359,7 @@ async function _renderAdminImpl(){
         + cajaSub('cg-confirmar','✅ Confirmar a todos', filaConfirmarTodos) + cajaSub('cg-nocomen','🍽️ Quiénes no comen / no cenan', companyAbsencesSummary(secciones, apuntesMap)) + cajaSub('cg-hist','📜 Historial de cambios', filaHistorial) },
     { id:'excel', icono:'🔍', titulo:'Comprobar Excel', sub:'Compáralo con lo que hay en la app', tituloPanel:'Comprobar un Excel contra la app', cuerpo:filaExcel },
     { id:'compania', icono:'🏢', titulo:'Compañía y alumnos', sub:'Efectivos, código y conexiones', tituloPanel:'Compañía y alumnos',
-      cuerpo: cajaSub('cc-efectivos','👥 Efectivos y código de invitación', filaEfectivos + filaCodigo) + cajaSub('cc-faltan','📝 Quién falta por registrarse', faltanRegistrarseHtml(secciones)) + cajaSub('cc-conex','🟢 Conexión de los alumnos', conexionAlumnosHtml(secciones)) },
+      cuerpo: cajaSub('cc-efectivos','👥 Efectivos y código de invitación', filaEfectivos + filaCodigo) + cajaSub('cc-domingo','🍳 Desayuno del domingo sin marcar', domingoRevisionHtml(secciones, apuntesMap)) + cajaSub('cc-faltan','📝 Quién falta por registrarse', faltanRegistrarseHtml(secciones)) + cajaSub('cc-conex','🟢 Conexión de los alumnos', conexionAlumnosHtml(secciones)) },
     { id:'intol', icono:'🍽️', titulo:'Intolerancias', sub:'Peticiones de los alumnos', badge:(intolPendientesCount||''), tituloPanel:'Solicitudes de intolerancias', cuerpo:filaIntol },
   ]);
 
@@ -4014,7 +4173,7 @@ function adminDetailTable(sec, apuntesMap){
   thead += '</tr></thead>';
   let tbody = '<tbody>';
   sec.people.forEach(p=>{
-    tbody += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}${domingoMarca(p,apuntesMap)}</td>`;
+    tbody += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}</td>`;
     cols.forEach(c=>{
       const val = getVal(p.id,c,apuntesMap);
       tbody += `<td><input type="checkbox" class="chk editable" ${val?'checked':''} onchange="adminToggle('${p.id}','${c.type}',${c.day},${c.obligatorio},this.checked)"></td>`;
@@ -4030,6 +4189,17 @@ function adminDetailTable(sec, apuntesMap){
 }
 let viewedSections = new Set();
 function toggleSectionView(code){ if(viewedSections.has(code)) viewedSections.delete(code); else viewedSections.add(code); renderAdmin(); }
+// Cajas «Editar» y «Gestionar» del admin: un botón por sección y, debajo, la tabla o el panel de las secciones que estén abiertas
+function adminEditarHtml(secciones, apuntesMap){
+  const botones = secciones.map(sec=>`<button class="big-btn" onclick="toggleSectionDetail('${sec.code}')">${expandedSections.has(sec.code)?'Cerrar':'✎ Editar'} ${sec.code}</button>`).join('');
+  const tablas = secciones.filter(sec=>expandedSections.has(sec.code)).map(sec=>adminDetailTable(sec, apuntesMap)).join('');
+  return `<div class="section-btn-row">${botones}</div>${tablas || '<p class="small-note">Elige una sección para marcar o desmarcar sus comidas, incluidas las obligatorias.</p>'}`;
+}
+function adminGestionarHtml(secciones){
+  const botones = secciones.map(sec=>`<button class="big-btn" onclick="toggleManage('${sec.code}')">${managedSections.has(sec.code)?'Cerrar gestión':'⚙ Gestionar'} ${sec.code}</button>`).join('');
+  const paneles = secciones.filter(sec=>managedSections.has(sec.code)).map(sec=>sectionManagePanel(sec)).join('');
+  return `<div class="section-btn-row">${botones}</div>${paneles || '<p class="small-note">Elige una sección para gestionarla (alumnos, externados, etc.).</p>'}`;
+}
 function comidaViewOnlyTable(sec, apuntesMap){
   const cols = COLS();
   let thead = '<thead><tr class="daynames"><th class="name-cell">'+sec.code+'</th>';
@@ -4037,7 +4207,7 @@ function comidaViewOnlyTable(sec, apuntesMap){
   thead += '</tr></thead>';
   let tbody = '<tbody>';
   sec.people.forEach(p=>{
-    tbody += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}${domingoMarca(p,apuntesMap)}</td>`;
+    tbody += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}</td>`;
     cols.forEach(c=>{
       const val = getVal(p.id,c,apuntesMap);
       tbody += `<td><span class="${val?'mark-yes':'mark-no'}">${val?'✓':'—'}</span></td>`;
@@ -4070,7 +4240,6 @@ function faltanRegistrarseHtml(secciones){
 async function companyBlockHtml(c, secciones, apuntesMap, confirmMap){
   const cols = COLS();
   const allPeopleBlock = secciones.flatMap(s=>s.people);
-  const nDomingo = allPeopleBlock.filter(p=>avisoDomingoAdmin(p, apuntesMap)).length;
   let rows = '';
   secciones.forEach(sec=>{
     rows += `<tr><td class="name-cell"><button class="small-btn" style="border:none;background:none;padding:0;font-weight:600;color:var(--ink);text-decoration:underline;cursor:pointer;" onclick="toggleSectionView('${sec.code}')">${sec.code}</button> <span style="color:var(--ink-soft)">(${sec.people.length})</span></td>`;
@@ -4084,26 +4253,14 @@ async function companyBlockHtml(c, secciones, apuntesMap, confirmMap){
   cols.forEach(col=>{ const n = allPeopleBlock.filter(p=>getVal(p.id,col,apuntesMap)).length; tfootTotal += `<td class="mono ${countCellClass(n, allPeopleBlock.length)}">${n}/${allPeopleBlock.length}</td>`; });
   tfootTotal += '</tr></tfoot>';
 
-  let sectionButtons = '';
-  secciones.forEach(sec=>{
-    sectionButtons += `<button class="big-btn" onclick="toggleSectionDetail('${sec.code}')">${expandedSections.has(sec.code)?'Cerrar':'✎ Editar'} ${sec.code}</button>`;
-    sectionButtons += `<button class="big-btn" onclick="toggleManage('${sec.code}')">${managedSections.has(sec.code)?'Cerrar gestión':'⚙ Gestionar'} ${sec.code}</button>`;
-  });
-
   let details = '';
-  secciones.forEach(sec=>{
-    if(viewedSections.has(sec.code)) details += comidaViewOnlyTable(sec, apuntesMap);
-    if(expandedSections.has(sec.code)) details += adminDetailTable(sec, apuntesMap);
-    if(managedSections.has(sec.code)) details += sectionManagePanel(sec);
-  });
+  secciones.forEach(sec=>{ if(viewedSections.has(sec.code)) details += comidaViewOnlyTable(sec, apuntesMap); });
 
   return `<div class="company-block">
     <div class="company-head"><h4>${c}ª Compañía</h4><span class="chev">${SECTIONS_PER_COMPANY} secciones</span></div>
     <div class="company-body">
-      <div class="section-btn-row">${sectionButtons}</div>
       ${PREFS.totales==='cajas' ? '' : `<p class="small-note" style="margin-top:0;">Toca el número de sección (ej. "111") para verla sin entrar en modo edición.</p>
       <div class="table-scroll"><table class="roster">${thead}<tbody>${rows}</tbody>${tfootTotal}</table></div>`}
-      ${nDomingo ? `<p class="small-note" style="margin-top:8px;">🍳❓ <b>${nDomingo}</b> persona${nDomingo===1?'':'s'} duerme${nDomingo===1?'':'n'} en la AGM el sábado y no ${nDomingo===1?'tiene':'tienen'} marcado el desayuno del domingo (sale la marca al lado del nombre al abrir su sección).</p>` : ''}
       ${details}
     </div>
   </div>`;
@@ -5149,6 +5306,12 @@ function pernoctaViewOnlyTable(sec, pernMap, confirmMap){
   return `<div class="admin-edit-note">Solo consulta — para cambiar algo usa "Editar ${sec.code}"</div>
     <div class="table-scroll"><table class="roster">${thead}${tbody}${tfoot}</table></div>`;
 }
+// Caja «Editar» de pernoctas: un botón por sección y, debajo, la tabla de las secciones abiertas
+function pernoctaEditarHtml(secciones, pernMap, confirmMap){
+  const botones = secciones.map(sec=>`<button class="big-btn" onclick="togglePernoctaSectionDetail('${sec.code}')">${expandedPernoctaSections.has(sec.code)?'Cerrar':'✎ Editar'} ${sec.code}</button>`).join('');
+  const tablas = secciones.filter(sec=>expandedPernoctaSections.has(sec.code)).map(sec=>pernoctaDetailTable(sec, pernMap, confirmMap)).join('');
+  return `<div class="section-btn-row">${botones}</div>${tablas || '<p class="small-note">Elige una sección para cambiar dónde duerme cada persona.</p>'}`;
+}
 function pernoctaCompanyBlockHtml(c, secciones, pernMap, confirmMap){
   function valFor(id,dia){ const k=id+'|'+dia; return nocheObligatoriaManiobra(id,ACTIVE_WEEK,dia) ? true : (pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true); }
   const allPeopleBlock = secciones.flatMap(s=>s.people);
@@ -5169,19 +5332,12 @@ function pernoctaCompanyBlockHtml(c, secciones, pernMap, confirmMap){
   tfootTotal += `<td class="mono ${countCellClass(nConfTotal, allPeopleBlock.length)}">${nConfTotal}/${allPeopleBlock.length}</td>`;
   tfootTotal += '</tr></tfoot>';
 
-  let sectionButtons = '';
-  secciones.forEach(sec=> sectionButtons += `<button class="big-btn" onclick="togglePernoctaSectionDetail('${sec.code}')">${expandedPernoctaSections.has(sec.code)?'Cerrar':'✎ Editar'} ${sec.code}</button>`);
-
   let details = '';
-  secciones.forEach(sec=>{
-    if(viewedPernoctaSections.has(sec.code)) details += pernoctaViewOnlyTable(sec, pernMap, confirmMap);
-    if(expandedPernoctaSections.has(sec.code)) details += pernoctaDetailTable(sec, pernMap, confirmMap);
-  });
+  secciones.forEach(sec=>{ if(viewedPernoctaSections.has(sec.code)) details += pernoctaViewOnlyTable(sec, pernMap, confirmMap); });
 
   return `<div class="company-block">
     <div class="company-head"><h4>${c}ª Compañía</h4><span class="chev">${SECTIONS_PER_COMPANY} secciones</span></div>
     <div class="company-body">
-      <div class="section-btn-row">${sectionButtons}</div>
       ${PREFS.totales==='cajas' ? '' : `<p class="small-note" style="margin-top:0;">Toca el número de sección (ej. "111") para verla sin entrar en modo edición.</p>
       <div class="table-scroll"><table class="roster">${thead}<tbody>${rows}</tbody>${tfootTotal}</table></div>`}
       ${details}
@@ -5440,7 +5596,7 @@ async function _renderAdminPernoctasImpl(){
         <div class="switch-label">Confirmar a todos<span class="sub2">Por si se cerró el plazo y hay quien no llegó a confirmar dónde duerme</span></div>
         <button class="small-btn" onclick="confirmarTodosPernocta()">✅ Confirmar todos</button>
       </div>`;
-  document.getElementById('admin-pernocta-cajas').innerHTML = adminCajas('admin-p', [
+  const cajasPernBase = ([
     { id:'semana', icono:'📅', titulo:'Ajustes de semana', sub:'Dormir fuera, AGM forzada, pases y maniobras', tituloPanel:'Ajustes de esta semana',
       cuerpo: cajaSub('ps-fuera','🌙 Permitir dormir fuera el viernes', filaPermitirFuera) + cajaSub('ps-forzar','🏠 Forzar AGM', filaForzar) + cajaSub('ps-oculta','🙈 Ocultar esta semana a los alumnos', filaOcultaP)
         + cajaSub('ps-corte','⏰ Plazo de cierre de la semana', corteEspecialPanelHtml(companiaInfo.hora_corte,'pernoctas')) + cajaSub('ps-pase','🛂 Pase de horas individual', filaPase) + cajaSub('ps-mani','⛺ Añadir semana de maniobras', maniobrasPanelHtml('compania')) },
@@ -5454,6 +5610,10 @@ async function _renderAdminPernoctasImpl(){
   function valFor(id,dia){ const k=id+'|'+dia; return nocheObligatoriaManiobra(id,ACTIVE_WEEK,dia) ? true : (pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true); }
   const nAGM = (dia)=> allPeople.filter(p=>valFor(p.id,dia)).length;
   const nConfirmadosPern = allPeople.filter(p=>confirmMapPern[p.id]).length;
+  document.getElementById('admin-pernocta-cajas').innerHTML = adminCajas('admin-p', [
+    { id:'editar', icono:'✏️', titulo:'Editar', sub:'Dónde duerme cada persona', tituloPanel:'Editar pernoctas', cuerpo:pernoctaEditarHtml(secciones, pernMap, confirmMapPern) },
+    ...cajasPernBase,
+  ]);
 
   document.getElementById('admin-pernocta-summary').innerHTML = PREFS.totales==='tabla' ? '' : Array.from({length:pernoctaDiasCount()},(_,d)=>
     `<div class="stat-card"><div class="num">${nAGM(d)}/${allPeople.length}</div><div class="lbl">AGM ${DAY_NAMES[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))}</div></div>`
@@ -5466,8 +5626,11 @@ async function _renderAdminPernoctasImpl(){
 }
 
 /* ================= SERVICIOS ================= */
-const TIPO_LABEL = { cuartelero:'Cuartelero', imaginaria:'Imaginaria', imaginaria_cuartelero:'Imaginaria de Cuartelero', imaginaria_imaginaria:'Imaginaria de Imaginaria' };
+const TIPO_LABEL = { cuartelero:'Cuartelero', imaginaria:'Imaginaria', imaginaria_cuartelero:'Imaginaria de Cuartelero', imaginaria_imaginaria:'Imaginaria de Imaginaria', guardia_seguridad:'Guardia de seguridad' };
+// Guardia de seguridad (GS). También se reconoce si todavía viene como código suelto "GS" del Excel
+const esGS = s => !!s && (s.tipo==='guardia_seguridad' || (s.tipo==='otro' && /^GS$/i.test(String(s.codigo||'').trim())));
 function servicioLabel(s){
+  if(esGS(s)) return 'Guardia de seguridad';
   if(s.tipo==='otro') return 'Servicio ' + (s.codigo || '');
   return TIPO_LABEL[s.tipo] + (s.tipo==='imaginaria' && s.turno ? ` (turno ${s.turno})` : '');
 }
@@ -5475,9 +5638,9 @@ function servicioLabel(s){
 function servCorto(s){
   if(s.codigo) return s.codigo;
   if(s.tipo==='imaginaria') return s.turno+' I';
-  return ({cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'I I'})[s.tipo] || '?';
+  return ({cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'I I', guardia_seguridad:'GS'})[s.tipo] || '?';
 }
-function servClase(s){ return ({cuartelero:'c', imaginaria_cuartelero:'ic', imaginaria:'i', imaginaria_imaginaria:'ii'})[s.tipo] || 'otro'; }
+function servClase(s){ return esGS(s) ? 'gs' : (({cuartelero:'c', imaginaria_cuartelero:'ic', imaginaria:'i', imaginaria_imaginaria:'ii'})[s.tipo] || 'otro'); }
 function fmtFecha(fechaStr){
   const d = new Date(fechaStr+'T00:00:00');
   return d.toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'2-digit'});
@@ -5501,15 +5664,25 @@ async function renderAlumnoServicios(){
     const r = await sb.from('servicios').select('*, personas(nombre,apellidos,seccion,compania)').eq('compania', persona.compania).in('fecha', fechas);
     otros = (r.data||[]).filter(o=>o.persona_id!==persona.id);
   }
-  const ordenTipo = { cuartelero:1, imaginaria_cuartelero:2, imaginaria:3, imaginaria_imaginaria:4, otro:5 };
+  // Servicios que se han puesto para saldar una deuda: "para saldar la deuda del … con …"
+  const idsDeuda = Array.from(new Set((mios||[]).filter(s=>s.deuda_id).map(s=>s.deuda_id)));
+  const deudaPorId = {};
+  if(idsDeuda.length){
+    const rd = await sb.from('deudas_servicio').select('id,fecha_origen,tipo,acreedor:personas!deudas_servicio_acreedor_id_fkey(nombre,apellidos)').in('id', idsDeuda);
+    (rd.data||[]).forEach(d=>{ deudaPorId[d.id] = d; });
+  }
+  const textoSaldar = s => { if(!s.deuda_id) return ''; const d = deudaPorId[s.deuda_id];
+    return `<div class="meta" style="color:#8e44ad;font-weight:700;">💸 Para saldar la deuda${d && d.fecha_origen ? ' del '+fmtFecha(d.fecha_origen) : ''}${d && d.acreedor ? ' con '+escHtml(d.acreedor.apellidos+', '+d.acreedor.nombre) : ''}</div>`; };
+  const ordenTipo = { cuartelero:1, guardia_seguridad:2, imaginaria_cuartelero:3, imaginaria:4, imaginaria_imaginaria:5, otro:6 };
   const tarjeta = (s, futuro) => {
     const mismoDia = otros.filter(o=>o.fecha===s.fecha).sort((a,b)=>(ordenTipo[a.tipo]-ordenTipo[b.tipo]) || (a.turno-b.turno));
     const conQuien = mismoDia.length
       ? '<div class="grupo"><b>Ese día también están de servicio:</b><br>' + mismoDia.map(o=>`<span class="serv-cod ${servClase(o)}${o.estimado?' est':''}" style="cursor:default;">${escHtml(servCorto(o))}</span> ${servicioLabel(o)} — ${escHtml(o.personas.apellidos)}, ${escHtml(o.personas.nombre)} (Sec. ${o.personas.compania}${o.personas.seccion})${o.estimado?' <i>(estimado)</i>':''}`).join('<br>') + '</div>'
       : '<div class="grupo">No hay nadie más de servicio ese día en el cuadrante.</div>';
     return `<div class="servicio-card">
-      <div class="titulo"><span class="serv-cod ${servClase(s)}${s.estimado?' est':''}" style="cursor:default;">${escHtml(servCorto(s))}</span> ${servicioLabel(s)}</div>
+      <div class="titulo"><span class="serv-cod ${servClase(s)}${s.estimado?' est':''}${s.deuda_id?' deu':''}" style="cursor:default;">${escHtml(servCorto(s))}</span> ${servicioLabel(s)}</div>
       <div class="meta">${fmtFecha(s.fecha)}${s.fecha===hoy?' · <b>HOY</b>':''}</div>
+      ${textoSaldar(s)}
       ${s.estimado ? '<div class="meta" style="color:var(--danger);">⚠️ Estimado: todavía no está confirmado en el cuadrante oficial</div>' : ''}
       ${conQuien}
       ${futuro && s.tipo!=='otro' ? `<button class="small-btn" style="margin-top:8px;" onclick="abrirSolicitudCambio(${s.id})">Solicitar cambio</button><div id="cambio-form-${s.id}" class="hidden" style="margin-top:8px;"></div>` : ''}
@@ -5566,46 +5739,36 @@ function onServTipoChange(){
   mostrarSugerenciaServicio();
 }
 async function mostrarSugerenciaServicio(){ /* ya no se sugiere nada: el cuadrante es solo lo que pone el Excel */ }
-async function actualizarEspejoServicio(fecha, tipo, turno, persona_id){
-  // IC e II son un espejo de lo que toca AL DÍA SIGUIENTE — si cambia el
-  // Cuartelero o la Imaginaria turno 1, hay que refrescar el espejo del día de antes
-  const diaAnterior = ymd(new Date(new Date(fecha+'T00:00:00').getTime() - 86400000));
-  if(tipo==='cuartelero'){
-    await sb.from('servicios').upsert(
-      { compania: CURRENT.compania, fecha: diaAnterior, tipo: 'imaginaria_cuartelero', turno: 0, persona_id },
-      { onConflict: 'compania,fecha,tipo,turno' }
-    );
-  } else if(tipo==='imaginaria' && turno===1){
-    await sb.from('servicios').upsert(
-      { compania: CURRENT.compania, fecha: diaAnterior, tipo: 'imaginaria_imaginaria', turno: 0, persona_id },
-      { onConflict: 'compania,fecha,tipo,turno' }
-    );
-  }
+async function siguienteTurnoGS(fecha){
+  const { data } = await sb.from('servicios').select('turno').eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo','guardia_seguridad').order('turno',{ascending:false}).limit(1);
+  return ((data && data[0]) ? data[0].turno : 0) + 1;
 }
 async function asignarServicio(){
   const fecha = document.getElementById('serv-fecha').value;
   const tipo = document.getElementById('serv-tipo').value;
-  const turno = tipo==='imaginaria' ? parseInt(document.getElementById('serv-turno').value,10) : 0;
+  let turno = tipo==='imaginaria' ? parseInt(document.getElementById('serv-turno').value,10) : 0;
   const persona_id = document.getElementById('serv-persona').value;
   if(!fecha || !persona_id){ showToast('Elige fecha y persona.'); return; }
+  // La guardia de seguridad la hacen varias personas el mismo día: cada una es un "turno" (1, 2, 3…). Al cambiar una existente se mantiene su turno
+  if(tipo==='guardia_seguridad') turno = (window._servGsTurno!=null) ? window._servGsTurno : await siguienteTurnoGS(fecha);
   if(window._servModo==='añadir'){
     const { data: ocupado } = await sb.from('servicios').select('persona_id, personas(nombre,apellidos)').eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo', tipo).eq('turno', turno).maybeSingle();
     if(ocupado && ocupado.persona_id!==persona_id && !confirm(`Ese día ${servicioLabel({tipo,turno})} ya lo tiene ${ocupado.personas.apellidos}, ${ocupado.personas.nombre}. ¿Se lo quitas a esa persona y se lo pones a la nueva?`)) return;
   }
-  const codigo = tipo==='imaginaria' ? turno+' I' : ({cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'I I'})[tipo];
-  const { error } = await sb.from('servicios').upsert(
-    { compania: CURRENT.compania, fecha, tipo, turno, persona_id, codigo, estimado: false },
-    { onConflict: 'compania,fecha,tipo,turno' }
-  );
-  if(error){ showToast('No se pudo asignar: '+error.message); return; }
-  await actualizarEspejoServicio(fecha, tipo, turno, persona_id);
-  showToast('Servicio asignado.' + ((tipo==='cuartelero'||(tipo==='imaginaria'&&turno===1)) ? ' Imaginaria de cuartelero/imaginaria del día anterior actualizada también.' : ''));
+  const codigo = tipo==='imaginaria' ? turno+' I' : ({cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'I I', guardia_seguridad:'GS'})[tipo];
+  const fila = { compania: CURRENT.compania, fecha, tipo, turno, persona_id, codigo, estimado: false };
+  if(window._servTieneDeudaId){ const dsel = document.getElementById('serv-deuda'); fila.deuda_id = (dsel && dsel.value) ? parseInt(dsel.value,10) : null; }
+  const { error } = await sb.from('servicios').upsert(fila, { onConflict: 'compania,fecha,tipo,turno' });
+  if(error){ showToast('No se pudo asignar: '+error.message+(/tipo|check|constraint/i.test(error.message) ? ' — ¿has ejecutado el patch 60?' : '')); return; }
+  window._servGsTurno = null;
+  showToast('Servicio asignado.'); // solo este servicio: no se toca ninguna imaginaria de otro día
   await renderAdminServicios();
 }
 async function quitarServicioManual(){
   const fecha = document.getElementById('serv-fecha').value;
   const tipo = document.getElementById('serv-tipo').value;
-  const turno = tipo==='imaginaria' ? parseInt(document.getElementById('serv-turno').value,10) : 0;
+  let turno = tipo==='imaginaria' ? parseInt(document.getElementById('serv-turno').value,10) : 0;
+  if(tipo==='guardia_seguridad'){ if(window._servGsTurno==null){ showToast('Para quitar una guardia de seguridad, toca su «GS» en la tabla.'); return; } turno = window._servGsTurno; }
   if(!fecha){ showToast('Elige la fecha.'); return; }
   if(!confirm(`¿Quitar ${servicioLabel({tipo,turno})} del ${fmtFecha(fecha)} del cuadrante?`)) return;
   const { error } = await sb.from('servicios').delete().eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo', tipo).eq('turno', turno);
@@ -5619,7 +5782,10 @@ async function eliminarServicio(id){
   if(error){ showToast('No se pudo quitar: '+error.message); return; }
   await renderAdminServicios();
 }
+function abrirCajaSi(grupo, id){ if(CAJAS_ABIERTA[grupo]!==id) abrirCaja(grupo, id); }
+function toggleInfografiaServ(){ const p = document.getElementById('serv-infografia'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')) p.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
 function servModoManual(modo, texto){
+  abrirCajaSi('serv', 'manual'); // el formulario está dentro de la caja «Añadir o cambiar»
   window._servModo = modo;
   document.getElementById('serv-manual-titulo').textContent = texto;
   document.getElementById('serv-manual-sub').textContent = modo==='añadir'
@@ -5631,6 +5797,8 @@ function servModoManual(modo, texto){
 function abrirAsignarRapido(personaId, fecha){
   document.getElementById('serv-fecha').value = fecha;
   document.getElementById('serv-persona').value = personaId;
+  window._servGsTurno = null;
+  actualizarDeudasPersonaServ();
   const p = SERV_GRID && SERV_GRID.roster.find(x=>x.id===personaId);
   servModoManual('añadir', `➕ Añadir un servicio a ${p ? p.apellidos+', '+p.nombre : ''} el ${fmtFecha(fecha)}`);
   document.getElementById('serv-tipo').scrollIntoView({behavior:'smooth', block:'center'});
@@ -5640,6 +5808,7 @@ function prellenarSustitucion(fecha, tipo, turno){
   document.getElementById('serv-tipo').value = tipo;
   onServTipoChange();
   if(tipo==='imaginaria') document.getElementById('serv-turno').value = turno;
+  window._servGsTurno = (tipo==='guardia_seguridad') ? turno : null; // la GS la hacen varias personas el mismo día: se cambia ESA
   servModoManual('cambiar', `✏️ Cambiar ${servicioLabel({tipo,turno})} del ${fmtFecha(fecha)}`);
   showToast('Elige quién lo hace y pulsa "Guardar" (o "Quitar ese servicio").');
   document.getElementById('serv-persona').scrollIntoView({behavior:'smooth', block:'center'});
@@ -5668,6 +5837,15 @@ async function rechazarCambio(id){
   showToast('Solicitud rechazada.');
   await renderAdminServicios();
 }
+// Si la persona elegida debe algún servicio, deja elegir si este servicio sirve para saldarlo
+function actualizarDeudasPersonaServ(){
+  const sel = document.getElementById('serv-deuda'), pid = document.getElementById('serv-persona').value;
+  if(!sel) return;
+  const mias = (window._servDeudasPend||[]).filter(d=>d.deudor_id===pid && d.tipo!=='nota' && !d._programada);
+  sel.classList.toggle('hidden', !(window._servTieneDeudaId && mias.length));
+  sel.innerHTML = '<option value="">— no es para saldar una deuda —</option>' + mias.map(d=>`<option value="${d.id}">Saldar: ${escHtml(textoDeudaPlano(d))} con ${escHtml(d.acreedor?d.acreedor.apellidos:'?')}</option>`).join('');
+}
+function textoDeudaPlano(d){ return `${TIPO_LABEL[d.tipo]||d.tipo}${(d.tipo==='imaginaria' && d.turno)?' (turno '+d.turno+')':''} ${d.entre_semana?'entre semana':'de fin de semana/festivo'}`; }
 function toggleNuevaDeuda(){
   const f = document.getElementById('nueva-deuda-form');
   f.classList.toggle('hidden');
@@ -5693,10 +5871,11 @@ async function guardarNuevaDeuda(){
 }
 function textoDeuda(d){
   if(d.tipo==='nota') return escHtml(d.motivo||'');
-  return `${TIPO_LABEL[d.tipo]||d.tipo}${d.turno?' (turno '+d.turno+')':''} · ${d.entre_semana?'entre semana':'fin de semana / festivo'}`;
+  return `${TIPO_LABEL[d.tipo]||d.tipo}${(d.tipo==='imaginaria' && d.turno)?' (turno '+d.turno+')':''} · ${d.entre_semana?'entre semana':'fin de semana / festivo'}`;
 }
 async function marcarDeudaSaldada(id){
-  const { error } = await sb.from('deudas_servicio').update({ saldada: true }).eq('id', id);
+  let { error } = await sb.from('deudas_servicio').update({ saldada: true, saldada_en: new Date().toISOString() }).eq('id', id);
+  if(error) ({ error } = await sb.from('deudas_servicio').update({ saldada: true }).eq('id', id)); // sin el patch 60 todavía
   if(error){ showToast('No se pudo actualizar: '+error.message); return; }
   await renderAdminServicios();
 }
@@ -5727,6 +5906,7 @@ function fechaExcel(v){
 function interpretarCodigo(raw){
   const u = String(raw).toUpperCase().replace(/\s+/g,' ').trim();
   if(u==='C') return { tipo:'cuartelero', turno:0 };
+  if(u==='GS') return { tipo:'guardia_seguridad', turno:0 };
   if(u==='IC') return { tipo:'imaginaria_cuartelero', turno:0 };
   if(u==='I I' || u==='II') return { tipo:'imaginaria_imaginaria', turno:0 };
   const m = u.match(/^([1-4]) ?I$/); if(m) return { tipo:'imaginaria', turno:parseInt(m[1],10) };
@@ -5739,6 +5919,8 @@ function tipoDeudaDe(pieza){
   if(/^(IMG|IMAGINARIA|IMGS|IMAGINARIAS)$/.test(t)) return { tipo:'imaginaria', finde:false };
   if(/^(CF|CFESTIVO|CFINDE|CUARTELEROF|CUARTELEROFESTIVO|CUARTELEROFINDE)$/.test(t)) return { tipo:'cuartelero', finde:true };
   if(/^(C|CUARTELERO)$/.test(t)) return { tipo:'cuartelero', finde:false };
+  if(/^(GSF|GSFESTIVO|GSFINDE|GSFINDESEMANA|GUARDIASEGURIDADF|GUARDIASEGURIDADFESTIVO|GUARDIASEGURIDADFINDE)$/.test(t)) return { tipo:'guardia_seguridad', finde:true };
+  if(/^(GS|GUARDIASEGURIDAD)$/.test(t)) return { tipo:'guardia_seguridad', finde:false };
   if(/^(ICF|ICFESTIVO)$/.test(t)) return { tipo:'imaginaria_cuartelero', finde:true };
   if(/^IC$/.test(t)) return { tipo:'imaginaria_cuartelero', finde:false };
   return null;
@@ -5809,7 +5991,7 @@ async function leerExcelServicios(){
     if(!gente.length || !dias.length){ resEl.innerHTML = `<div class="notice closed"><span>No he encontrado personas o días con servicios en la hoja "${escHtml(hoja)}".</span></div>`; return; }
 
     // Servicios tal cual
-    const servicios = [], porCodigo = {}, otrosPorDia = {};
+    const servicios = [], porCodigo = {}, otrosPorDia = {}, gsPorDia = {};
     gente.forEach((g,gi)=>{
       dias.forEach(({col,fecha})=>{
         [txt(g.r,col), txt(g.r,col+1)].forEach(v=>{
@@ -5817,6 +5999,7 @@ async function leerExcelServicios(){
           const t = interpretarCodigo(v);
           let turno = t.turno;
           if(t.tipo==='otro'){ otrosPorDia[fecha] = (otrosPorDia[fecha]||0)+1; turno = otrosPorDia[fecha]; }
+          if(t.tipo==='guardia_seguridad'){ gsPorDia[fecha] = (gsPorDia[fecha]||0)+1; turno = gsPorDia[fecha]; } // varias GS el mismo día: turno 1, 2, 3…
           servicios.push({ gi, fecha, tipo:t.tipo, turno, codigo: String(v).replace(/\s+/g,' ').trim() });
           porCodigo[servicios[servicios.length-1].codigo] = (porCodigo[servicios[servicios.length-1].codigo]||0)+1;
         });
@@ -5856,7 +6039,7 @@ async function leerExcelServicios(){
     SERV_IMPORT = { gente, servicios, app, dias, choques, hoja };
     const obs = leerObservaciones(gente, app);
     const nombreApp = id => { const p = app.find(x=>x.id===id); return p ? p.apellidos+', '+p.nombre : '?'; };
-    const etiquetaDeuda = d => `${d.cantidad} ${({imaginaria:'Imaginaria', cuartelero:'Cuartelero', imaginaria_cuartelero:'Imag. de Cuartelero'})[d.tipo]}${d.cantidad>1?'s':''} ${d.entre_semana?'entre semana':'de fin de semana/festivo'}`;
+    const etiquetaDeuda = d => `${d.cantidad} ${({imaginaria:'Imaginaria', cuartelero:'Cuartelero', imaginaria_cuartelero:'Imag. de Cuartelero', guardia_seguridad:'Guardia de seguridad'})[d.tipo]}${d.cantidad>1?'s':''} ${d.entre_semana?'entre semana':'de fin de semana/festivo'}`;
     const deudasHtml = `
       <div class="servicio-card">
         <div class="titulo">Deudas de la columna "OBS.": ${obs.deudas.reduce((a,d)=>a+d.cantidad,0)} deudas entre ${new Set(obs.deudas.map(d=>d.deudor_id+'|'+d.acreedor_id)).size} parejas</div>
@@ -5915,7 +6098,7 @@ async function cargarExcelServicios(){
     const pid = gente[sv.gi].pid; if(!pid) return;
     let tipo = sv.tipo, turno = sv.turno;
     if(ocupado.has(sv.fecha+'|'+tipo+'|'+turno)){ tipo = 'otro'; turno = (otrosDia[sv.fecha]||0) + 1; otrosDia[sv.fecha] = turno; }
-    if(turno > 4){ showToast('Demasiados códigos sueltos el '+sv.fecha+'; revisa el Excel.'); return; }
+    if(tipo!=='guardia_seguridad' && turno > 4){ showToast('Demasiados códigos sueltos el '+sv.fecha+'; revisa el Excel.'); return; }
     ocupado.add(sv.fecha+'|'+tipo+'|'+turno);
     filas.push({ fecha: sv.fecha, tipo, turno, persona_id: pid, codigo: sv.codigo });
   });
@@ -5954,61 +6137,231 @@ async function exportServiciosExcel(){
   XLSX.utils.book_append_sheet(wb, ws, 'Servicios');
   XLSX.writeFile(wb, `PortalAGM_Servicios_${c}Cia_${desde}_a_${hasta}.xlsx`);
 }
-let servFamilia = 'ambos', servDias = (window.innerWidth>1100 ? 28 : 14), servDesde = null, servSeccion = 'todas', servBuscar = '';
+let servFamilia = 'ambos', servDias = (window.innerWidth>1100 ? 120 : 60), servDesde = null, servSeccion = 'todas', servBuscar = '';
 let SERV_GRID = null;
 function lunesDe(d){ const x = new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; }
 function diasServGrid(){
-  if(!servDesde) servDesde = ymd(lunesDe(new Date()));
+  if(!servDesde) servDesde = rangoInicialServ();
   const d0 = new Date(servDesde+'T00:00:00');
   return Array.from({length:servDias},(_,i)=>{ const d = new Date(d0); d.setDate(d0.getDate()+i); return d; });
 }
 function servMover(semanas){ const d = new Date(servDesde+'T00:00:00'); d.setDate(d.getDate()+semanas*7); servDesde = ymd(d); renderAdminServicios(); }
-function servIrHoy(){ servDesde = ymd(lunesDe(new Date())); renderAdminServicios(); }
 function onServDias(v){ servDias = parseInt(v,10); renderAdminServicios(); }
 function onServSeccionGrid(v){ servSeccion = v; pintarServGrid(); }
 function onServBuscar(v){ servBuscar = v; pintarServGrid(); }
 function onServFamiliaChange(){ servFamilia = document.getElementById('serv-familia').value; pintarServGrid(); }
 function setServView(){ renderAdminServicios(); }
 function servCambiarPagina(){ renderAdminServicios(); }
+// Para el cuadrante del admin: a qué deuda corresponde un servicio puesto para saldarla
+/* ---- Ficha de una persona (al tocar su nombre o su total): sus servicios con fechas, y sus deudas ---- */
+let servFichaId = null;
+function abrirFichaServ(id){
+  servFichaId = (servFichaId===id) ? null : id;
+  pintarServGrid(); pintarFichaServ();
+  const el = document.getElementById('serv-ficha');
+  if(servFichaId && el) el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+/* ---- Cuadrante en barra continua: se desliza con el trackpad, con la rueda (Mayús + rueda) o con las flechas ← → (sin botones de semana) ---- */
+const OPC_DIAS_SERV = [28, 60, 120, 180, 240];
+function rangoInicialServ(){ const d = new Date(); d.setDate(d.getDate()-14); return ymd(lunesDe(d)); } /* empieza 2 semanas antes de hoy */
+// Si esas fechas no caben en lo que se ve, mueve/amplía el rango (devuelve true si hay que volver a cargar la tabla)
+function asegurarRangoServ(minF, maxF){
+  if(servDesde && minF>=servDesde && maxF<=sumarDia(servDesde, servDias-1)) return false;
+  const d = new Date(minF+'T00:00:00'); d.setDate(d.getDate()-14); servDesde = ymd(lunesDe(d));
+  const necesarios = diasEntre(servDesde, maxF) + 8;
+  const opc = OPC_DIAS_SERV.find(n=>n>=necesarios) || OPC_DIAS_SERV[OPC_DIAS_SERV.length-1];
+  if(opc>servDias) servDias = opc;
+  return true;
+}
+// Desliza la tabla hasta que ese día quede a la vista, justo después de las columnas fijas (nombre y total)
+function scrollToFechaServ(f, comportamiento){
+  const w = document.querySelector('.serv-grid-wrap'), th = document.querySelector(`#admin-servicios-tabla thead th[data-f="${f}"]`);
+  if(!w || !th) return;
+  const nc = document.querySelector('#admin-servicios-tabla thead th.nc'), cnt = document.querySelector('#admin-servicios-tabla thead th.cnt');
+  const fijo = (nc ? nc.offsetWidth : 0) + ((cnt && getComputedStyle(cnt).position==='sticky') ? cnt.offsetWidth : 0);
+  const x = th.getBoundingClientRect().left - w.getBoundingClientRect().left + w.scrollLeft;
+  w.scrollTo({ left: Math.max(0, x - fijo - 36), behavior: comportamiento || 'smooth' });
+}
+document.addEventListener('keydown', e=>{
+  if(e.key!=='ArrowLeft' && e.key!=='ArrowRight') return;
+  const tag = (e.target && e.target.tagName || '').toLowerCase();
+  if(tag==='input' || tag==='select' || tag==='textarea') return;
+  const w = document.querySelector('.serv-grid-wrap');
+  if(!w || w.offsetParent===null) return; /* la pestaña Servicios no está a la vista */
+  e.preventDefault();
+  w.scrollBy({ left: (e.key==='ArrowRight' ? 1 : -1) * (e.shiftKey ? 12 : 4) * 36, behavior:'smooth' });
+});
+/* ---- Resaltados: el día de la cabecera dura 30 s; el servicio en concreto 1 min (o hasta «Quitar el resalte»); el de una estimación, hasta quitarlo ---- */
+let _tColFecha = null, _tServ = null;
+function syncBotonResalte(){
+  const w = document.getElementById('serv-quitar-resalte');
+  if(w) w.classList.toggle('hidden', !(window._servResaltaEst || window._servResaltaFecha || window._servResaltaServ));
+}
+function resaltarDiaServ(fecha, personaId){
+  window._servResaltaFecha = fecha; window._servResaltaServ = { fecha, persona: personaId };
+  clearTimeout(_tColFecha); clearTimeout(_tServ);
+  _tColFecha = setTimeout(()=>{ window._servResaltaFecha = null; pintarServGrid(); syncBotonResalte(); }, 30000);
+  _tServ = setTimeout(()=>{ window._servResaltaServ = null; pintarServGrid(); syncBotonResalte(); }, 60000);
+  syncBotonResalte();
+}
+function servQuitarResalte(){
+  clearTimeout(_tColFecha); clearTimeout(_tServ);
+  window._servResaltaEst = null; window._servResaltaFecha = null; window._servResaltaServ = null;
+  pintarServGrid(); syncBotonResalte();
+  if(document.getElementById('est-pendientes')) pintarEstimacionesPendientes();
+}
+async function servIrHoy(){ const hoy = ymd(new Date()); if(asegurarRangoServ(hoy, hoy)) await renderAdminServicios(); scrollToFechaServ(hoy); }
+async function servIrAFecha(v){ if(!v) return; if(asegurarRangoServ(v, v)) await renderAdminServicios(); scrollToFechaServ(v); }
+// Desde la ficha: lleva la tabla al día de ese servicio y lo resalta (el día en la cabecera y ese servicio, bien grande)
+async function irAFechaServ(fecha){
+  const p = (SERV_GRID && servFichaId) ? SERV_GRID.roster.find(x=>x.id===servFichaId) : null;
+  let filtros = false;
+  servPag = 'todos';
+  if(p){ /* que la persona se vea: se quitan los filtros que la dejarían fuera */
+    if(servSeccion!=='todas' && String(p.seccion)!==String(servSeccion)){ servSeccion = 'todas'; filtros = true; }
+    if(servBuscar && !normTxtJS(servBuscar).split(' ').every(w=>normTxtJS(p.apellidos+' '+p.nombre).includes(w))){ servBuscar = ''; filtros = true; }
+  }
+  const mover = asegurarRangoServ(fecha, fecha);
+  resaltarDiaServ(fecha, servFichaId);
+  if(mover || filtros) await renderAdminServicios(); else pintarServGrid();
+  const t = document.getElementById('serv-grid-nav'); if(t) t.scrollIntoView({ behavior:'smooth', block:'start' });
+  scrollToFechaServ(fecha);
+}
+async function estIr(id){
+  const g = (window._estLotes||{})[id]; if(!g) return;
+  window._servResaltaEst = id; /* los servicios de esta estimación salen resaltados en la tabla */
+  servPag = 'todos';
+  const mover = asegurarRangoServ(g.min, g.max);
+  syncBotonResalte();
+  if(mover) await renderAdminServicios(); else pintarServGrid();
+  const t = document.getElementById('serv-grid-nav'); if(t) t.scrollIntoView({ behavior:'smooth', block:'start' });
+  scrollToFechaServ(g.min);
+}
+function cerrarFichaServ(){ servFichaId = null; pintarServGrid(); pintarFichaServ(); }
+const esFindeServ = f => { const dw = new Date(f+'T00:00:00').getDay(); const fe = (window._servFest||{})[f]; return dw===0 || dw===6 || !!(fe && fe.tipo==='puente'); };
+function pintarFichaServ(){
+  const el = document.getElementById('serv-ficha'); if(!el) return;
+  const p = (SERV_GRID && servFichaId) ? SERV_GRID.roster.find(x=>x.id===servFichaId) : null;
+  if(!p){ servFichaId = null; el.classList.add('hidden'); el.innerHTML = ''; return; }
+  const c = CURRENT.compania, hoy = ymd(new Date());
+  const nom = x => x ? escHtml(x.apellidos+', '+x.nombre) : '?';
+  const mios = (window._servTodos||[]).filter(s=>s.persona_id===p.id).sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:((a.turno||0)-(b.turno||0)));
+  const enlaces = (window._servConDeuda||[]).filter(s=>s.persona_id===p.id);
+  const fila = s => {
+    const dl = enlaces.find(x=>x.fecha===s.fecha && x.tipo===s.tipo), d = dl ? (window._servDeudasTodas||[]).find(y=>y.id===dl.deuda_id) : null;
+    return `<div class="history-row"><button class="small-btn" style="min-width:92px;" title="Ver este día en la tabla" onclick="irAFechaServ('${s.fecha}')">📍 ${fmtFecha(s.fecha)}</button>
+      <span class="serv-cod ${servClase(s)}${s.estimado?' est':''}${dl?' deu':''}" style="cursor:default;">${escHtml(servCorto(s))}</span>
+      <span>${escHtml(servicioLabel(s))} · ${esGS(s)?'guardia':(esFindeServ(s.fecha)?'fin de semana / festivo':'entre semana')}${s.estimado?' · <i>estimado</i>':''}${dl?` · <b style="color:#8e44ad;">💸 para saldar deuda${d&&d.fecha_origen?' del '+fmtFecha(d.fecha_origen):''}${d&&d.acreedor?' con '+nom(d.acreedor):''}</b>`:''}</span>
+      ${(s.tipo!=='otro' && s.fecha>=hoy) ? `<button class="small-btn" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno||0})">✏️ Cambiar</button>` : ''}
+    </div>`;
+  };
+  const proximos = mios.filter(s=>s.fecha>=hoy), pasados = mios.filter(s=>s.fecha<hoy).reverse();
+  // Deudas de esta persona
+  const todas = window._servDeudasTodas || [];
+  const debe = todas.filter(d=>!d.saldada && d.deudor_id===p.id), leDeben = todas.filter(d=>!d.saldada && d.acreedor_id===p.id);
+  const saldadas = todas.filter(d=>d.saldada && (d.deudor_id===p.id || d.acreedor_id===p.id));
+  const filaDeuda = (d, rol) => `<div class="history-row"><span>${rol==='debe' ? 'Debe a <b>'+nom(d.acreedor)+'</b>' : '<b>'+nom(d.deudor)+'</b> le debe'}: ${textoDeuda(d)} <span class="ts">(apuntada el ${fmt(new Date(d.fecha_origen+'T00:00:00'))})</span></span>
+      ${d._programada ? `<span style="color:#8e44ad;font-weight:700;">💸 se saldará el ${fmtFecha(d._programada.fecha)}</span>` : ''}
+      <button class="small-btn" onclick="marcarDeudaSaldada(${d.id})">Marcar saldada</button></div>`;
+  const filaSaldada = d => `<div class="history-row"><span>✅ ${d.deudor_id===p.id ? 'Debía a <b>'+nom(d.acreedor)+'</b>' : '<b>'+nom(d.deudor)+'</b> le debía'}: ${textoDeuda(d)} <span class="ts">· saldada${d.saldada_fecha ? ' el '+fmtFecha(d.saldada_fecha) : (d.saldada_en ? ' el '+new Date(d.saldada_en).toLocaleDateString('es-ES') : '')}</span></span></div>`;
+  const cuentas = ((window._servCuentas||{})[p.id]||{});
+  el.className = 'admin-panel ficha-serv'; el.style.cssText = 'flex-direction:column;align-items:stretch;margin-top:12px;';
+  el.innerHTML = `<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+      <h4>${nom(p)} <span style="color:var(--ink-soft);font-weight:400;">· sección ${c}${p.seccion}${p.sin_gs?' · 🪖 promoción interna (no hace GS)':''}${p.sin_servicios?' · no hace servicios':''}</span></h4>
+      <button class="small-btn" onclick="cerrarFichaServ()">Cerrar ✕</button></div>
+    <div style="font-size:.8rem;margin-bottom:4px;"><b>${cuentas.total||0}</b> servicio${(cuentas.total||0)===1?'':'s'} en total ${cuentas.total ? '· '+cuentaServHtml(p.id) : ''}</div>
+    <div style="margin:6px 0;"><button class="small-btn" onclick="abrirAsignarRapido('${p.id}','${hoy}')">✍️ Añadir un servicio a esta persona</button></div>
+    <h5>Próximos servicios (${proximos.length})</h5>
+    ${proximos.length ? proximos.map(fila).join('') : '<p class="small-note" style="margin:0;">Ninguno a partir de hoy.</p>'}
+    <details class="caja-det" style="margin-top:10px;"><summary>Servicios anteriores (${pasados.length})</summary><div class="caja-sub-body">${pasados.length ? pasados.map(fila).join('') : '<p class="small-note" style="margin:0;">Ninguno.</p>'}</div></details>
+    <h5>Deudas</h5>
+    ${debe.length ? debe.map(d=>filaDeuda(d,'debe')).join('') : '<p class="small-note" style="margin:0;">No debe ningún servicio.</p>'}
+    ${leDeben.length ? leDeben.map(d=>filaDeuda(d,'acreedor')).join('') : '<p class="small-note" style="margin:2px 0 0;">Nadie le debe ningún servicio.</p>'}
+    ${saldadas.length ? `<details class="caja-det" style="margin-top:8px;"><summary>Deudas saldadas (${saldadas.length})</summary><div class="caja-sub-body">${saldadas.map(filaSaldada).join('')}</div></details>` : ''}`;
+}
+function textoSaldarCorto(s){
+  const d = (window._servDeudasTodas||[]).find(x=>x.id===s.deuda_id);
+  return 'PARA SALDAR DEUDA' + (d && d.fecha_origen ? ' del '+fmtFecha(d.fecha_origen) : '') + (d && d.acreedor ? ' con '+d.acreedor.apellidos+', '+d.acreedor.nombre : '');
+}
+// Cuenta de servicios por persona y tipo (todos los que hay en la tabla, también los estimados). Entre semana: C, IC, I, II · fin de semana o festivo: C(F), IC(F), I(F), II(F) · guardia de seguridad: GS
+const ORDEN_CUENTA_SERV = ['C','C(F)','IC','IC(F)','I','I(F)','II','II(F)','GS'];
+const NOMBRE_CUENTA_SERV = { C:'Cuartelero', IC:'Imaginaria de Cuartelero', I:'Imaginaria', II:'Imaginaria de Imaginaria', GS:'Guardia de seguridad' };
+function calcularCuentasServ(servs){
+  const fest = window._servFest || {}, out = {};
+  (servs||[]).forEach(s=>{
+    const o0 = out[s.persona_id] = out[s.persona_id] || {}; o0.total = (o0.total||0) + 1; // servicios totales de la persona (cualquier tipo)
+    let k = esGS(s) ? 'GS' : ({ cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria:'I', imaginaria_imaginaria:'II' })[s.tipo];
+    if(!k) return;
+    if(k!=='GS'){
+      const dw = new Date(s.fecha+'T00:00:00').getDay();
+      if(dw===0 || dw===6 || (fest[s.fecha] && fest[s.fecha].tipo==='puente')) k += '(F)';
+    }
+    const o = out[s.persona_id] = out[s.persona_id] || {}; o[k] = (o[k]||0) + 1;
+  });
+  return out;
+}
+function cuentaServHtml(personaId){
+  const c = (window._servCuentas||{})[personaId] || {};
+  return ORDEN_CUENTA_SERV.filter(k=>c[k]).map(k=>{
+    const base = k.replace('(F)',''), clase = base==='GS' ? 'gs' : base.toLowerCase();
+    return `<span class="serv-cod ${clase}" style="cursor:default;" title="${NOMBRE_CUENTA_SERV[base]}${k.includes('(F)')?' de fin de semana / festivo':(base==='GS'?'':' entre semana')}: ${c[k]}">${k} ${c[k]}</span>`;
+  }).join(' ') || '<span style="color:var(--ink-soft);">—</span>';
+}
+// ¿Este servicio pertenece a la estimación que se está mirando ("Ir a la estimación")?
+const esResalte = s => !!window._servResaltaEst && !!s.estimado && (window._servResaltaEst==='sin' ? !s.estimacion_id : s.estimacion_id===window._servResaltaEst);
+// El servicio en concreto al que se ha ido desde la ficha de una persona (📍 fecha): sale bien grande
+const esResalteServ = s => !!window._servResaltaServ && s.fecha===window._servResaltaServ.fecha && s.persona_id===window._servResaltaServ.persona;
 function pintarServGrid(){
   if(!SERV_GRID) return;
   const c = CURRENT.compania;
   const { roster, dias, servicios } = SERV_GRID;
   const tiposDia = ['cuartelero','imaginaria_cuartelero'], tiposNoche = ['imaginaria','imaginaria_imaginaria'];
-  const mostrar = s => s.tipo==='otro' || servFamilia==='ambos' || (servFamilia==='dia' ? tiposDia.includes(s.tipo) : tiposNoche.includes(s.tipo));
+  const mostrar = s => servFamilia==='ambos' || (servFamilia==='gs' ? esGS(s) : s.tipo==='otro' || (servFamilia==='dia' ? tiposDia.includes(s.tipo) : tiposNoche.includes(s.tipo)));
   const porPD = {};
   servicios.filter(mostrar).forEach(s=>{ const k = s.persona_id+'|'+s.fecha; (porPD[k] = porPD[k] || []).push(s); });
   const q = normTxtJS(servBuscar);
-  const gente = servOrdenando ? roster : roster.filter(p=>(servSeccion==='todas' || String(p.seccion)===String(servSeccion)) && (!q || q.split(' ').every(w=>normTxtJS(p.apellidos+' '+p.nombre).includes(w))));
+  const genteTodos = servOrdenando ? roster : roster.filter(p=>(servSeccion==='todas' || String(p.seccion)===String(servSeccion)) && (!q || q.split(' ').every(w=>normTxtJS(p.apellidos+' '+p.nombre).includes(w))));
+  // Para no ver 113 filas de golpe: «Toda la gente», «Primeros 55» o «Los restantes»
+  const TAM_PAG = 55;
+  const gente = (!servOrdenando && genteTodos.length>TAM_PAG && servPag!=='todos') ? (servPag==='p2' ? genteTodos.slice(TAM_PAG) : genteTodos.slice(0, TAM_PAG)) : genteTodos;
+  const barraPag = document.getElementById('serv-pag-barra');
+  if(barraPag) barraPag.innerHTML = (servOrdenando || genteTodos.length<=TAM_PAG) ? '' : `<div class="semanas-toggle" style="max-width:600px;margin:6px 0;">
+      <button class="${servPag==='todos'?'active':''}" onclick="setServPag('todos')">Toda la gente (${genteTodos.length})</button>
+      <button class="${servPag==='p1'?'active':''}" onclick="setServPag('p1')">Primeros ${TAM_PAG} (1–${TAM_PAG})</button>
+      <button class="${servPag==='p2'?'active':''}" onclick="setServPag('p2')">Los restantes (${TAM_PAG+1}–${genteTodos.length})</button></div>`;
   const barra = document.getElementById('serv-orden-barra');
-  if(barra) barra.innerHTML = servOrdenando ? `<div class="notice" style="display:block;margin-bottom:8px;">↕️ <b>Ordenando:</b> arrastra un nombre a su sitio (o usa ▲ ▼). Con 🚫 marcas o desmarcas a quien no hace servicios (la estimación se lo salta). Se ve la compañía entera, sin filtros.
+  if(barra) barra.innerHTML = servOrdenando ? `<div class="notice" style="display:block;margin-bottom:8px;">↕️ <b>Ordenando:</b> arrastra un nombre a su sitio (o usa ▲ ▼). Con 🚫 marcas o desmarcas a quien no hace servicios (la estimación se lo salta). Con 🪖 marcas a quien es de promoción interna y de momento no hace guardia de seguridad (la estimación se lo salta, pero a mano sí se le puede poner). Se ve la compañía entera, sin filtros.
       <div style="margin-top:6px;display:flex;gap:6px;"><button class="small-btn" onclick="guardarOrdenServ()">💾 Guardar orden</button><button class="small-btn" onclick="cancelarOrdenServ()">Cancelar</button></div></div>` : '';
   const hoy = ymd(new Date());
   const LETRA = ['D','L','M','X','J','V','S'];
-  let thead = `<thead><tr><th class="nc">${gente.length} personas</th>`;
-  dias.forEach(d=>{ const f = ymd(d), finde = d.getDay()===0 || d.getDay()===6; thead += `<th class="${finde?'fin':''} ${f===hoy?'hoy':''}">${LETRA[d.getDay()]}<br>${fmt(d)}</th>`; });
+  let thead = `<thead><tr><th class="nc">${gente.length} personas</th><th class="cnt" title="Servicios totales de cada persona. Toca el número (o el nombre) para ver sus servicios, fechas y deudas">Total</th>`;
+  const fest = window._servFest || {}, claseFest = f => fest[f] ? (fest[f].tipo==='mani' ? ' mani' : ' fes') : '';
+  dias.forEach(d=>{ const f = ymd(d), finde = d.getDay()===0 || d.getDay()===6; thead += `<th data-f="${f}" class="${finde?'fin':''}${claseFest(f)}${f===window._servResaltaFecha?' rsf':''} ${f===hoy?'hoy':''}"${fest[f]?` title="${escHtml(fest[f].nombre)}"`:''}>${LETRA[d.getDay()]}<br>${fmt(d)}${fest[f]?`<br><span style="font-size:.9em;">${fest[f].tipo==='mani'?'⛺':'🎌'}</span>`:''}</th>`; });
   thead += '</tr></thead>';
   let tbody = '<tbody>';
   gente.forEach(p=>{
-    const nombreCelda = `${escHtml(p.apellidos)}, ${escHtml(p.nombre)} <span style="color:var(--ink-soft);">${c}${p.seccion}</span>${p.sin_servicios?' <span style="font-size:.6rem;">· no hace servicios</span>':''}`;
+    const nombreCelda = `${escHtml(p.apellidos)}, ${escHtml(p.nombre)} <span style="color:var(--ink-soft);">${c}${p.seccion}</span>${p.sin_gs?' <span class="serv-casco" title="Promoción interna: de momento no hace guardia de seguridad (la estimación se lo salta; a mano sí se le puede poner)">🪖</span>':''}${p.sin_servicios?' <span style="font-size:.6rem;">· no hace servicios</span>':''}`;
     tbody += servOrdenando
-      ? `<tr data-id="${p.id}" class="${p.sin_servicios?'exento':''}" ondragover="event.preventDefault()" ondrop="soltarFilaServ(event,'${p.id}')"><td class="nc" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" style="cursor:grab;"><span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',-1)">▲</span> <span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',1)">▼</span> <span style="cursor:pointer;" title="Marcar / desmarcar que no hace servicios" onclick="toggleExentoServ('${p.id}')">🚫</span> ⠿ ${nombreCelda}</td>`
-      : `<tr class="${p.sin_servicios?'exento':''}"><td class="nc" title="${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})${p.sin_servicios?' — no hace servicios':''}">${nombreCelda}</td>`;
+      ? `<tr data-id="${p.id}" class="${p.sin_servicios?'exento':''}" ondragover="event.preventDefault()" ondrop="soltarFilaServ(event,'${p.id}')"><td class="nc" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" style="cursor:grab;"><span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',-1)">▲</span> <span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',1)">▼</span> <span style="cursor:pointer;" title="Marcar / desmarcar que no hace servicios" onclick="toggleExentoServ('${p.id}')">🚫</span> <span style="cursor:pointer;" title="Marcar / desmarcar promoción interna: no hace guardia de seguridad" onclick="toggleSinGsServ('${p.id}')">🪖</span> ⠿ ${nombreCelda}</td>`
+      : `<tr class="${p.sin_servicios?'exento':''}${p.id===servFichaId?' sel':''}"><td class="nc" style="cursor:pointer;" onclick="abrirFichaServ('${p.id}')" title="Toca para ver sus servicios y deudas — ${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})${p.sin_servicios?' — no hace servicios':''}">${nombreCelda}</td>`;
+    tbody += `<td class="cnt"><span class="cnt-n" onclick="abrirFichaServ('${p.id}')" title="Ver sus servicios, fechas y deudas">${((window._servCuentas||{})[p.id]||{}).total||0}</span></td>`;
     dias.forEach(d=>{
       const f = ymd(d), finde = d.getDay()===0 || d.getDay()===6;
       const lista = porPD[p.id+'|'+f] || [];
       const cont = lista.map(s=> s.tipo==='otro'
-        ? `<span class="serv-cod otro" title="${escHtml(s.codigo||'')} (código del Excel)">${escHtml(servCorto(s))}</span>`
-        : `<span class="serv-cod ${servClase(s)}${s.estimado?' est':''}" title="${servicioLabel(s)}${s.estimado?' (ESTIMADO)':''} — toca para cambiar" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno})">${escHtml(servCorto(s))}</span>`).join(' ');
-      tbody += lista.length ? `<td class="${finde?'fin':''} ${f===hoy?'hoy':''}">${cont}</td>`
-        : `<td class="vacia ${finde?'fin':''} ${f===hoy?'hoy':''}" title="Añadir un servicio a ${escHtml(p.apellidos)} el ${fmt(d)}" onclick="abrirAsignarRapido('${p.id}','${f}')"></td>`;
+        ? `<span class="serv-cod ${esGS(s)?'gs':'otro'}" title="${escHtml(s.codigo||'')} (código del Excel)">${escHtml(servCorto(s))}</span>`
+        : `<span class="serv-cod ${servClase(s)}${s.estimado?' est':''}${s.deuda_id?' deu':''}${esResalte(s)?' rs':''}${esResalteServ(s)?' rsx':''}" title="${servicioLabel(s)}${s.estimado?' (ESTIMADO)':''}${s.deuda_id?' · '+textoSaldarCorto(s):''} — toca para cambiar" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno})">${escHtml(servCorto(s))}</span>`).join(' ');
+      tbody += lista.length ? `<td class="${finde?'fin':''}${claseFest(f)} ${f===hoy?'hoy':''}">${cont}</td>`
+        : `<td class="vacia ${finde?'fin':''}${claseFest(f)} ${f===hoy?'hoy':''}" title="Añadir un servicio a ${escHtml(p.apellidos)} el ${fmt(d)}" onclick="abrirAsignarRapido('${p.id}','${f}')"></td>`;
     });
     tbody += '</tr>';
   });
   tbody += '</tbody>';
   const tabla = document.getElementById('admin-servicios-tabla');
-  tabla.style.minWidth = (210 + dias.length*36) + 'px';
+  tabla.style.minWidth = (210 + 64 + dias.length*36) + 'px';
+  const wrapSG = document.querySelector('.serv-grid-wrap'), slSG = wrapSG ? wrapSG.scrollLeft : 0; // se conserva por dónde ibas deslizando
   tabla.innerHTML = gente.length ? thead + tbody : '<tbody><tr><td class="small-note">Nadie con ese filtro.</td></tr></tbody>';
+  if(wrapSG) wrapSG.scrollLeft = slSG;
 }
 /* ================= Estimación de servicios ================= */
 let EST_PREVIA = null;
@@ -6024,7 +6377,7 @@ function fechasCortasConAnio(txt, desde){
   return out;
 }
 function sumarDia(f, n){ const d = new Date(f+'T00:00:00'); d.setDate(d.getDate()+n); return ymd(d); }
-function generarEstimacion(op, rosterCompleto, existentes){
+function generarEstimacion(op, rosterCompleto, existentes, deudas){
   const roster = rosterCompleto.filter(p=>!p.sin_servicios); // quien no hace servicios (furriel…) no entra en las colas
   const N = roster.length, pos = {}; roster.forEach((p,i)=>pos[p.id]=i);
   const idAt = i => roster[((i % N) + N) % N].id;
@@ -6034,15 +6387,24 @@ function generarEstimacion(op, rosterCompleto, existentes){
   const pC = { semana:null, finde:null }, pI = { semana:null, finde:null };
   const enLista = s => s && pos[s.persona_id]!==undefined;
   const mod = x => ((x % N) + N) % N;
+  // Norma: cada persona hace UN servicio de cada tipo (cuartelero, imaginaria) —entre semana y fin de semana por separado— y hasta que todos lo han hecho no se vuelve a empezar.
+  // Por eso se apunta quién lo ha hecho en la "ronda" actual y la cola se salta a quien ya lo hizo (cuando todos lo han hecho, la ronda empieza de nuevo).
+  const hecho = { C:{ semana:new Set(), finde:new Set() }, I:{ semana:new Set(), finde:new Set() } };
+  const marca = (k, q, id) => { if(pos[id]===undefined) return; const s = hecho[k][q]; s.add(id); if(s.size>=N) s.clear(); };
+  // Primera persona desde "idx" hacia ARRIBA que aún no lo ha hecho. Si se llega arriba del todo de la lista devuelve -1: la cola NO vuelve a empezar por abajo
+  // (hasta que alguien ponga a mano el principio de la siguiente vuelta, que la estimación lee al sincronizar).
+  const sig = (k, q, idx) => { const s = hecho[k][q]; let i = Math.min(idx, N-1); while(i>=0 && s.has(roster[i].id)) i--; return i; };
+  const finCola = new Set(); // colas que han llegado al final de la lista
   // Lee un día ya hecho y deja la cola apuntando a quien toca después.
   // Si en ese día hay un cambio suelto, no se arrastra (regla 3): se mira qué servicios
   // de ese día siguen la cola y se ignora el que no encaja.
   const sincronizar = (f, lista) => {
     const q = esFinde(f) ? 'finde' : 'semana';
+    lista.forEach(s=>{ if(s.tipo==='cuartelero') marca('C', q, s.persona_id); else if(s.tipo==='imaginaria' && s.turno>=1 && s.turno<=4) marca('I', q, s.persona_id); });
     const c = lista.find(s=>s.tipo==='cuartelero'), ic = lista.find(s=>s.tipo==='imaginaria_cuartelero');
-    const vc = enLista(c) ? mod(pos[c.persona_id]-1) : null, vic = enLista(ic) ? mod(pos[ic.persona_id]) : null;
+    const vc = enLista(c) ? pos[c.persona_id]-1 : null, vic = enLista(ic) ? pos[ic.persona_id] : null; // sin dar la vuelta: -1 = se acabó la lista
     if(vc!==null || vic!==null){
-      const esperado = pC[q]!==null ? mod(pC[q]-1) : null; // lo que tocaría si este día fue normal
+      const esperado = pC[q]!==null ? pC[q]-1 : null; // lo que tocaría si este día fue normal
       if(vc!==null && vic!==null && vc!==vic){
         if(esperado!==null && vic===esperado) pC[q] = vic;        // el Cuartelero de hoy fue un cambio
         else if(esperado!==null && vc===esperado) pC[q] = vc;     // la IC de hoy fue un cambio
@@ -6051,12 +6413,12 @@ function generarEstimacion(op, rosterCompleto, existentes){
     }
     const votos = [];
     lista.forEach(s=>{ if(!enLista(s)) return;
-      if(s.tipo==='imaginaria' && s.turno>=1 && s.turno<=4) votos.push(mod(pos[s.persona_id] - (5 - s.turno)));
-      if(s.tipo==='imaginaria_imaginaria') votos.push(mod(pos[s.persona_id])); });
+      if(s.tipo==='imaginaria' && s.turno>=1 && s.turno<=4) votos.push(pos[s.persona_id] - (5 - s.turno));
+      if(s.tipo==='imaginaria_imaginaria') votos.push(pos[s.persona_id]); });
     if(votos.length){
       const cnt = {}; votos.forEach(v=>cnt[v]=(cnt[v]||0)+1);
       const ii = lista.find(s=>s.tipo==='imaginaria_imaginaria');
-      const vii = enLista(ii) ? mod(pos[ii.persona_id]) : null;
+      const vii = enLista(ii) ? pos[ii.persona_id] : null;
       if(vii!==null) pI[q] = vii;   // regla 3: la I I de esta noche es la 1ª Imaginaria de la siguiente
       else { let best = null, bc = 0; Object.entries(cnt).forEach(([k,n])=>{ k=+k; if(n>bc){ best=k; bc=n; } }); pI[q] = best; }
     }
@@ -6064,12 +6426,15 @@ function generarEstimacion(op, rosterCompleto, existentes){
   // 1) Leer la tabla hasta el día anterior a "desde" para saber por dónde va cada cola
   //    (regla 2: la IC del último día dice quién es el siguiente Cuartelero; regla 3: la I I, la siguiente 1ª Imaginaria)
   Object.keys(porFecha).filter(f=>f<op.desde).sort().forEach(f=>{ if(!op.sinServicio.has(f)) sincronizar(f, porFecha[f]); });
-  const quiereC = op.que!=='imag', quiereI = op.que!=='cuartel';
+  const quiereC = op.que==='todos' || op.que==='cuartel', quiereI = op.que==='todos' || op.que==='imag', quiereG = op.que==='todos' || op.que==='gs';
   const faltan = [];
   if(quiereC && pC.semana===null) faltan.push('cuarteleros entre semana');
   if(quiereC && pC.finde===null) faltan.push('cuarteleros de fin de semana');
   if(quiereI && pI.semana===null) faltan.push('imaginarias entre semana');
   if(quiereI && pI.finde===null) faltan.push('imaginarias de fin de semana');
+  const nombreCola = (k, q) => (k==='C' ? 'cuarteleros ' : 'imaginarias ') + (q==='finde' ? 'de fin de semana' : 'entre semana');
+  if(quiereC){ ['semana','finde'].forEach(q=>{ if(pC[q]!==null && pC[q]<0) finCola.add(nombreCola('C',q)); }); }
+  if(quiereI){ ['semana','finde'].forEach(q=>{ if(pI[q]!==null && pI[q]<0) finCola.add(nombreCola('I',q)); }); }
   const filas = [], porDia = [], arranque = { C:{...pC}, I:{...pI} };
   // 2) Recorrer los días a estimar
   for(let f = op.desde; f <= op.hasta; f = sumarDia(f,1)){
@@ -6083,22 +6448,85 @@ function generarEstimacion(op, rosterCompleto, existentes){
     if(quiereC && pC[q]!==null){
       const c = ya.find(s=>s.tipo==='cuartelero');
       if(c){ sincronizar(f, ya.filter(s=>s.tipo==='cuartelero'||s.tipo==='imaginaria_cuartelero'));
-             if(!ya.find(s=>s.tipo==='imaginaria_cuartelero')) add('imaginaria_cuartelero',0,pC[q],'IC'); }
-      else { add('cuartelero',0,pC[q],'C'); pC[q]--; if(!ya.find(s=>s.tipo==='imaginaria_cuartelero')) add('imaginaria_cuartelero',0,pC[q],'IC'); }
+             if(!ya.find(s=>s.tipo==='imaginaria_cuartelero')){ const j = sig('C',q,pC[q]); if(j>=0) add('imaginaria_cuartelero',0,j,'IC'); else finCola.add(nombreCola('C',q)); } }
+      else {
+        const i = sig('C',q,pC[q]); // si le toca a alguien que ya ha hecho este servicio en la ronda, pasa a la siguiente persona
+        if(i<0){ finCola.add(nombreCola('C',q)); pC[q] = -1; } // se acabó la lista: no vuelve a empezar por abajo
+        else {
+          add('cuartelero',0,i,'C'); marca('C',q,idAt(i)); pC[q] = i-1;
+          if(!ya.find(s=>s.tipo==='imaginaria_cuartelero')){ const j = sig('C',q,pC[q]); if(j>=0) add('imaginaria_cuartelero',0,j,'IC'); else finCola.add(nombreCola('C',q)); } // la IC es el Cuartelero del siguiente día de su cola
+        }
+      }
     }
     if(quiereI && pI[q]!==null){
       const hayImag = ya.some(s=>s.tipo==='imaginaria'||s.tipo==='imaginaria_imaginaria');
       if(hayImag) sincronizar(f, ya.filter(s=>s.tipo==='imaginaria'||s.tipo==='imaginaria_imaginaria'));
-      else { const p0 = pI[q]; add('imaginaria',1,p0,'1 I'); add('imaginaria',2,p0-1,'2 I'); add('imaginaria',3,p0-2,'3 I'); add('imaginaria',4,p0-3,'4 I'); add('imaginaria_imaginaria',0,p0-4,'I I'); pI[q] = p0-4; }
+      else {
+        let i = pI[q], completa = true;
+        for(let turno=1; turno<=4; turno++){ i = sig('I',q,i); if(i<0){ completa = false; break; } add('imaginaria',turno,i,turno+' I'); marca('I',q,idAt(i)); i--; } // quien ya ha hecho imaginaria en la ronda se salta
+        const j = completa ? sig('I',q,i) : -1;
+        if(j>=0){ add('imaginaria_imaginaria',0,j,'I I'); pI[q] = j; } // la I I es la 1ª Imaginaria de la siguiente noche
+        else { pI[q] = -1; finCola.add(nombreCola('I',q)); } // se acabó la lista: no vuelve a empezar por abajo
+      }
     }
     if(dia.nuevos.length) porDia.push(dia);
   }
-  const aId = v => v===null ? null : idAt(v);
-  return { filas, porDia, faltan, arranque: { C:{ semana:aId(arranque.C.semana), finde:aId(arranque.C.finde) }, I:{ semana:aId(arranque.I.semana), finde:aId(arranque.I.finde) } } };
+  // Guardia de seguridad: NO es diaria. Hay días concretos (tabla gs_dias, la rellena el superadmin), cada uno con 22 plazas, de una compañía.
+  // Dentro de cada compañía van en el orden de la lista del cuadrante, de ARRIBA ABAJO desde la primera fila; quien ya ha hecho GS no vuelve a entrar.
+  // Se recorren TODOS los días de esa compañía desde el primero (para saber por dónde va la lista) y solo se generan los que caen entre "Desde" y "Hasta".
+  const gsInfo = { dias:[], restantes:null, avisos:[] };
+  if(quiereG){
+    const cia = op.compania;
+    const diasGS = (op.gsDias||[]).filter(x=>x.compania===cia || x.sobrante_de===cia).slice().sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:0);
+    const elegibles = rosterCompleto.filter(p=>!p.sin_servicios && !p.sin_gs); // en el orden de la lista del cuadrante, de arriba abajo
+    const hechos = new Set(existentes.filter(esGS).map(s=>s.persona_id)), gsPorFecha = {};
+    existentes.filter(esGS).forEach(s=>{ (gsPorFecha[s.fecha] = gsPorFecha[s.fecha] || []).push(s); });
+    let parado = false;
+    diasGS.forEach(d=>{
+      if(parado) return;
+      const yaDia = gsPorFecha[d.fecha] || []; // GS que ya hay puestas ese día (sus personas ya cuentan como hechas): la estimación solo rellena las plazas que faltan
+      const principal = d.compania===cia;
+      let cupo;
+      if(principal){
+        if(d.externos==null || (d.sobrante_de!=null && d.sobrante_n==null)){ gsInfo.avisos.push(`GS del ${fmtFecha(d.fecha)}: falta indicar cuántas plazas ocupan otras compañías (lo apunta el superadmin en «Guardias de seguridad»). Se estima hasta el día anterior`); parado = true; return; }
+        cupo = d.plazas - d.externos - (d.sobrante_de!=null ? d.sobrante_n : 0);
+      } else {
+        if(d.sobrante_n==null){ gsInfo.avisos.push(`GS del ${fmtFecha(d.fecha)}: falta indicar cuántas personas sobran de la ${cia}ª (lo apunta el superadmin en «Guardias de seguridad»). Se estima hasta el día anterior`); parado = true; return; }
+        cupo = d.sobrante_n;
+      }
+      const toman = elegibles.filter(p=>!hechos.has(p.id)).slice(0, Math.max(0, cupo - yaDia.length));
+      toman.forEach(p=>hechos.add(p.id));
+      if(d.fecha>=op.desde && d.fecha<=op.hasta){
+        const turnoBase = Math.max(0, ...yaDia.filter(s=>s.tipo==='guardia_seguridad').map(s=>s.turno||0));
+        toman.forEach((p,i)=>filas.push({ fecha:d.fecha, tipo:'guardia_seguridad', turno:turnoBase+i+1, persona_id:p.id, codigo:'GS', estimado:true }));
+        gsInfo.dias.push({ fecha:d.fecha, cupo, n:toman.length, yaHay:yaDia.length, principal, compania:d.compania });
+      }
+    });
+    gsInfo.restantes = elegibles.filter(p=>!hechos.has(p.id)).length;
+  }
+  // Deudas: si a quien le deben un servicio le toca EXACTAMENTE ese servicio (mismo tipo, y entre semana o fin de semana igual), lo hace quien se lo debe y queda marcado
+  const usadas = new Set(existentes.filter(s=>s.deuda_id).map(s=>s.deuda_id));
+  const pend = (deudas||[]).filter(d=>!usadas.has(d.id) && d.tipo!=='nota' && pos[d.deudor_id]!==undefined);
+  const ocupado = new Set(existentes.map(s=>s.persona_id+'|'+s.fecha)); filas.forEach(r=>ocupado.add(r.persona_id+'|'+r.fecha));
+  const deudasAplicadas = [];
+  filas.forEach(r=>{
+    const entre = !esFinde(r.fecha);
+    const d = pend.find(x=>!x._u && x.acreedor_id===r.persona_id && x.tipo===r.tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+r.fecha)
+                         && !(r.tipo==='guardia_seguridad' && roster[pos[x.deudor_id]].sin_gs));
+    if(!d) return;
+    d._u = true;
+    const antes = r.persona_id;
+    ocupado.delete(antes+'|'+r.fecha); r.persona_id = d.deudor_id; r.deuda_id = d.id; ocupado.add(d.deudor_id+'|'+r.fecha);
+    // solo se cambia ESTE servicio: ninguna imaginaria de otro día se toca
+    deudasAplicadas.push({ fecha:r.fecha, tipo:r.tipo, de:antes, a:d.deudor_id, deuda:d });
+  });
+  const aId = v => (v===null || v<0) ? null : idAt(v);
+  return { filas, porDia, faltan, deudasAplicadas, gsInfo, finCola: [...finCola], arranque: { C:{ semana:aId(arranque.C.semana), finde:aId(arranque.C.finde) }, I:{ semana:aId(arranque.I.semana), finde:aId(arranque.I.finde) } } };
 }
 async function cargarDatosEstimacion(){
   const c = CURRENT.compania;
-  const { data, error } = await sb.from('servicios').select('fecha,tipo,turno,persona_id,estimado').eq('compania', c).order('fecha').range(0, 19999);
+  let { data, error } = await sb.from('servicios').select('fecha,tipo,turno,codigo,persona_id,estimado,deuda_id').eq('compania', c).order('fecha').range(0, 19999);
+  if(error) ({ data, error } = await sb.from('servicios').select('fecha,tipo,turno,codigo,persona_id,estimado').eq('compania', c).order('fecha').range(0, 19999)); // sin el patch 60 todavía
   if(error) throw error;
   return data || [];
 }
@@ -6107,8 +6535,8 @@ function opcionesEstimacion(){
   if(!desde || !hasta || hasta < desde){ showToast('Elige bien las fechas "desde" y "hasta".'); return null; }
   return {
     que: document.getElementById('est-que').value, dias: document.getElementById('est-dias').value, desde, hasta,
-    sinServicio: fechasCortasConAnio(document.getElementById('est-sin').value, desde),
-    festivos: fechasCortasConAnio(document.getElementById('est-festivos').value, desde)
+    sinServicio: new Set([ ...fechasCortasConAnio(document.getElementById('est-sin').value, desde), ...Object.keys(window._servFest || {}).filter(f=>window._servFest[f].tipo==='mani') ]), // en maniobras los servicios los hacen los rebajados: se ponen a mano y la estimación se los salta
+    festivos: new Set([ ...fechasCortasConAnio(document.getElementById('est-festivos').value, desde), ...Object.keys(window._servFest || {}).filter(f=>window._servFest[f].tipo==='puente') ]) // los puentes/festivos del superadmin cuentan solos como festivo
   };
 }
 async function previsualizarEstimacion(){
@@ -6118,17 +6546,26 @@ async function previsualizarEstimacion(){
   try{
     const roster = SERV_GRID.roster;
     const existentes = await cargarDatosEstimacion();
-    const r = generarEstimacion(op, roster, existentes);
+    const rd = await sb.from('deudas_servicio').select('id,deudor_id,acreedor_id,tipo,turno,entre_semana,fecha_origen').eq('compania', CURRENT.compania).eq('saldada', false);
+    const rg = await sb.from('gs_dias').select('*').order('fecha'); // calendario de guardias de seguridad (patch 61)
+    const r = generarEstimacion({ ...op, compania: CURRENT.compania, gsDias: rg.error ? [] : (rg.data||[]) }, roster, existentes, rd.error ? [] : (rd.data||[]));
+    if(rg.error && (op.que==='todos' || op.que==='gs')) r.gsInfo.avisos.push('No se pudo leer el calendario de guardias de seguridad (¿has ejecutado el patch 61?)');
     EST_PREVIA = { op, filas: r.filas };
+    const saltadas = Object.keys(window._servFest||{}).filter(f=>window._servFest[f].tipo==='mani' && f>=op.desde && f<=op.hasta).sort();
     const nm = id => { const p = roster.find(x=>x.id===id); return p ? escHtml(p.apellidos.split(' ')[0]+' '+(p.apellidos.split(' ')[1]||'').charAt(0)+'., '+p.nombre.split(' ')[0]) : '?'; };
     const puesto = id => roster.findIndex(x=>x.id===id)+1;
-    const celda = (d,tipo,turno) => { const x = d.nuevos.find(n=>n.tipo===tipo && n.turno===turno); return x ? `${nm(x.persona_id)} <span style="color:var(--ink-soft);">#${puesto(x.persona_id)}</span>` : '<span style="color:var(--ink-soft);">—</span>'; };
+    const celda = (d,tipo,turno) => { const x = d.nuevos.find(n=>n.tipo===tipo && n.turno===turno); return x ? `${nm(x.persona_id)} <span style="color:var(--ink-soft);">#${puesto(x.persona_id)}</span>${x.deuda_id ? ' <span style="color:#8e44ad;" title="Para saldar una deuda">💸</span>' : ''}` : '<span style="color:var(--ink-soft);">—</span>'; };
     const L = ['D','L','M','X','J','V','S'];
     el.innerHTML = `
       ${r.faltan.length ? `<div class="notice closed"><span>⚠️ No hay datos en la tabla para saber por dónde van: ${r.faltan.join(', ')}. Esas colas no se estiman.</span></div>` : ''}
       <div class="servicio-card">
         <div class="titulo">Saldrían ${r.filas.length} servicios estimados en ${r.porDia.length} días (del ${fmtFecha(op.desde)} al ${fmtFecha(op.hasta)})</div>
         <div class="meta">Arranque según la tabla — Cuartelero: entre semana por el #${r.arranque.C.semana?puesto(r.arranque.C.semana):'—'}, fin de semana por el #${r.arranque.C.finde?puesto(r.arranque.C.finde):'—'} · Imaginarias: entre semana por el #${r.arranque.I.semana?puesto(r.arranque.I.semana):'—'}, fin de semana por el #${r.arranque.I.finde?puesto(r.arranque.I.finde):'—'} (puesto en la lista del cuadrante)${roster.some(p=>p.sin_servicios)?' · Se salta a: '+roster.filter(p=>p.sin_servicios).map(p=>escHtml(p.apellidos)).join(', '):''}</div>
+        ${r.finCola && r.finCola.length ? `<div class="notice closed" style="display:block;margin-top:8px;"><span>⛔ <b>Se acabó la lista en:</b> ${r.finCola.join(', ')}. Esa cola no vuelve a empezar por abajo sola: pon a mano a quien empieza la siguiente vuelta y la estimación seguirá desde ahí.</span></div>` : ''}
+        ${saltadas.length ? `<div class="notice" style="display:block;border-color:#2e7d32;margin-top:8px;">⛺ <b>Se saltan las maniobras:</b> ${saltadas.map(f=>fmtFecha(f)).join(', ')}. Esos servicios los hacen los rebajados: ponlos a mano.</div>` : ''}
+        ${r.gsInfo && r.gsInfo.avisos.length ? `<div class="notice closed" style="display:block;margin-top:8px;"><span>⚠️ <b>Guardias de seguridad:</b><br>${r.gsInfo.avisos.map(escHtml).join('<br>')}</span></div>` : ''}
+        ${r.gsInfo && r.gsInfo.restantes!==null ? `<div class="notice" style="display:block;border-color:#c0392b;margin-top:8px;"><b>🛡️ Guardias de seguridad:</b> ${r.gsInfo.dias.length ? r.gsInfo.dias.map(g=>`${fmtFecha(g.fecha)}: ${g.n} persona${g.n===1?'':'s'} nueva${g.n===1?'':'s'}${g.yaHay?` (ya había ${g.yaHay} puesta${g.yaHay===1?'':'s'} a mano o del Excel)`:''}${g.n+(g.yaHay||0)<g.cupo?` (faltan ${g.cupo-g.n-(g.yaHay||0)}: no quedan más en la lista)`:''}`).join(' · ') : 'ningún día de GS de tu compañía entre esas fechas.'}<br>Después de los días del calendario quedan <b>${r.gsInfo.restantes}</b> persona${r.gsInfo.restantes===1?'':'s'} de tu compañía sin hacer GS (sin contar a la promoción interna 🪖).</div>` : ''}
+        ${r.deudasAplicadas.length ? `<div class="notice" style="display:block;border-color:#8e44ad;margin-top:8px;"><b>💸 ${r.deudasAplicadas.length} deuda${r.deudasAplicadas.length===1?'':'s'} se saldarían con esta estimación:</b><br>${r.deudasAplicadas.map(x=>`${nm(x.a)} hace el ${escHtml(servicioLabel({tipo:x.tipo}))} del ${fmtFecha(x.fecha)} que le tocaba a ${nm(x.de)} (deuda del ${x.deuda.fecha_origen?fmtFecha(x.deuda.fecha_origen):'—'})`).join('<br>')}</div>` : ''}
         <div class="table-scroll" style="max-height:340px;overflow:auto;"><table class="est-prev"><thead><tr><th>Día</th><th>C</th><th>IC</th><th>1 I</th><th>2 I</th><th>3 I</th><th>4 I</th><th>I I</th></tr></thead><tbody>
           ${r.porDia.map(d=>{ const dd = new Date(d.fecha+'T00:00:00'); return `<tr style="${d.finde?'background:rgba(32,74,115,.06);':''}"><td><b>${L[dd.getDay()]} ${fmt(dd)}</b>${d.finde?' <span style="color:var(--ink-soft);">finde</span>':''}</td><td>${celda(d,'cuartelero',0)}</td><td>${celda(d,'imaginaria_cuartelero',0)}</td><td>${celda(d,'imaginaria',1)}</td><td>${celda(d,'imaginaria',2)}</td><td>${celda(d,'imaginaria',3)}</td><td>${celda(d,'imaginaria',4)}</td><td>${celda(d,'imaginaria_imaginaria',0)}</td></tr>`; }).join('')}
         </tbody></table></div>
@@ -6139,16 +6576,111 @@ async function previsualizarEstimacion(){
 async function guardarEstimacion(){
   if(!EST_PREVIA || !EST_PREVIA.filas.length) return;
   const el = document.getElementById('est-resultado');
-  const filas = EST_PREVIA.filas.map(f=>({ compania: CURRENT.compania, ...f }));
   el.innerHTML = '<p class="small-note">Guardando…</p>';
+  // Cada estimación que se guarda es un LOTE aparte (tabla estimaciones, patch 62): se puede ir a verla, darle el visto bueno o borrarla por separado
+  let estId = null;
+  const loteBase = { compania: CURRENT.compania, desde: EST_PREVIA.op.desde, hasta: EST_PREVIA.op.hasta, que: EST_PREVIA.op.que };
+  let rb = await sb.from('estimaciones').insert({ ...loteBase, hecha_por: quienHaceEstimacion() }).select('id').single();
+  if(rb.error) rb = await sb.from('estimaciones').insert(loteBase).select('id').single(); // por si la columna "hecha_por" aún no existe
+  if(!rb.error && rb.data) estId = rb.data.id; // sin el patch 62 se guarda como antes (sin lote)
+  const conDeuda = EST_PREVIA.filas.some(f=>f.deuda_id);
+  const filas = EST_PREVIA.filas.map(f=>{ const o = { compania: CURRENT.compania, ...f }; if(conDeuda) o.deuda_id = f.deuda_id || null; else delete o.deuda_id; if(estId) o.estimacion_id = estId; return o; });
   for(let i=0; i<filas.length; i+=400){
     const { error } = await sb.from('servicios').upsert(filas.slice(i,i+400), { onConflict:'compania,fecha,tipo,turno', ignoreDuplicates:true });
-    if(error){ el.innerHTML = `<div class="notice closed"><span>No se pudo guardar: ${escHtml(error.message)} — ¿has ejecutado el patch 47?</span></div>`; return; }
+    if(error){ if(estId) await sb.from('estimaciones').delete().eq('id', estId); el.innerHTML = `<div class="notice closed"><span>No se pudo guardar: ${escHtml(error.message)} — ¿has ejecutado el patch 47, el 60 y el 62?</span></div>`; return; }
+  }
+  let metidos = filas.length;
+  if(estId){ // por si algún hueco ya estaba ocupado (no se pisa): se cuenta lo que ha entrado de verdad
+    const rc = await sb.from('servicios').select('id', { count:'exact', head:true }).eq('estimacion_id', estId);
+    if(!rc.error){ metidos = rc.count || 0; if(!metidos) await sb.from('estimaciones').delete().eq('id', estId); }
   }
   EST_PREVIA = null;
-  el.innerHTML = `<div class="notice" style="border-color:#2e7d32;"><span>✅ Añadidos ${filas.length} servicios estimados. Se ven con borde de puntos en el cuadrante.</span></div>`;
+  el.innerHTML = `<div class="notice" style="border-color:#2e7d32;"><span>✅ Añadidos ${metidos} servicios estimados${estId ? ' como una estimación pendiente (abajo puedes ir a verla, darle el visto bueno o borrarla)' : ''}. Se ven con borde de puntos en el cuadrante.</span></div>`;
   await renderAdminServicios();
-  document.getElementById('serv-est-panel').open = true;
+  abrirCajaSi('serv', 'estimar');
+}
+/* ---- Estimaciones pendientes (lotes): ir a verla, dar el visto bueno o borrarla ---- */
+const QUE_EST = { todos:'todos los servicios', cuartel:'cuarteleros', imag:'imaginarias', gs:'guardias de seguridad' };
+// Quién hace la estimación: el superadmin o el furry (admin) de la compañía
+function quienHaceEstimacion(){
+  const lp = CURRENT.linkedPersona ? `${CURRENT.linkedPersona.nombre} ${CURRENT.linkedPersona.apellidos}` : '';
+  const n = lp || (!CURRENT.isSuperadmin && CURRENT.companiaInfo && CURRENT.companiaInfo.nombre_admin) || '';
+  const txt = CURRENT.isSuperadmin ? 'El superadmin' + (n ? ` (${n})` : '') : `El furry de la ${CURRENT.compania}ª` + (n ? ` (${n})` : '');
+  return txt.replace(/[<>"]/g,'').slice(0, 80);
+}
+async function traerTodoServ(mkQuery){
+  const out = [];
+  for(let from=0; ; from+=1000){
+    const { data, error } = await mkQuery().range(from, from+999);
+    if(error) throw error;
+    out.push(...(data||[])); if(!data || data.length<1000) break;
+  }
+  return out;
+}
+async function pintarEstimacionesPendientes(){
+  const el = document.getElementById('est-pendientes'); if(!el) return;
+  const c = CURRENT.compania;
+  const rb = await sb.from('estimaciones').select('*').eq('compania', c).eq('estado','pendiente').order('creado_en',{ascending:false});
+  const hayLotes = !rb.error, lotes = hayLotes ? (rb.data||[]) : [];
+  window._estHayLotes = hayLotes;
+  let est = [];
+  try{ est = await traerTodoServ(()=>sb.from('servicios').select(hayLotes ? 'id,estimacion_id,fecha,tipo,codigo,deuda_id' : 'id,fecha,tipo,codigo').eq('compania', c).eq('estimado', true).order('id')); }
+  catch(e){ el.innerHTML = ''; return; }
+  const grupos = {};
+  est.forEach(s=>{
+    const k = (hayLotes && s.estimacion_id) ? s.estimacion_id : 'sin';
+    const g = grupos[k] = grupos[k] || { n:0, min:s.fecha, max:s.fecha, tipos:{}, deudas:0, ent:0, fin:0 };
+    g.n++; if(s.fecha<g.min) g.min = s.fecha; if(s.fecha>g.max) g.max = s.fecha;
+    const t = esGS(s) ? 'GS' : (({ cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria:'I', imaginaria_imaginaria:'II' })[s.tipo] || 'otros');
+    g.tipos[t] = (g.tipos[t]||0) + 1; if(s.deuda_id) g.deudas++;
+    if(t!=='GS'){ if(esFindeServ(s.fecha)) g.fin++; else g.ent++; } // para decir si la estimación es «de entre semana», «de fin de semana» o de todos los días
+  });
+  window._estLotes = grupos;
+  const chips = g => ['C','IC','I','II','GS','otros'].filter(k=>g.tipos[k]).map(k=>`${k} ${g.tipos[k]}`).join(' · ');
+  const tarjeta = (id, titulo, g, hecha) => `<div class="servicio-card"${window._servResaltaEst===id ? ' style="border-color:#f39c12;"' : ''}>
+      <div class="titulo">📋 ${titulo}</div>
+      <div class="meta">Periodo: del ${fmtFecha(g.min)} al ${fmtFecha(g.max)} · <b>${g.n}</b> servicios (${chips(g)})${g.deudas ? ` · 💸 ${g.deudas} para saldar deudas` : ''}</div>
+      <div class="meta">✍️ Hecha por: <b>${escHtml(hecha)}</b></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        <button class="small-btn" onclick="estIr('${id}')">👁 Ir a la estimación</button>
+        <button class="small-btn" onclick="estAceptar('${id}')">✅ Dar el visto bueno</button>
+        <button class="small-btn danger" onclick="estBorrar('${id}')">🗑 Borrar</button>
+      </div>
+    </div>`;
+  let html = '';
+  for(const l of lotes){
+    const g = grupos[l.id];
+    if(!g){ await sb.from('estimaciones').update({ estado:'borrada', resuelto_en:new Date().toISOString() }).eq('id', l.id); continue; } // ya no le queda ningún servicio estimado
+    const dias = (g.ent && !g.fin) ? ' de entre semana' : (g.fin && !g.ent) ? ' de fin de semana / festivo' : '';
+    const cuando = new Date(l.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    html += tarjeta(l.id, `Estimación de ${QUE_EST[l.que]||l.que}${dias}`, g, `${l.hecha_por || 'no consta'} · el ${cuando}`);
+  }
+  if(grupos.sin) html += tarjeta('sin', hayLotes ? 'Estimaciones anteriores (sin separar)' : 'Servicios estimados', grupos.sin, 'antes de separar las estimaciones: no consta quién');
+  el.innerHTML = `<div style="font-weight:700;font-size:.85rem;margin:6px 0;">📋 Estimaciones pendientes del visto bueno</div>`
+    + (html || '<p class="small-note" style="margin-top:0;">No hay ninguna estimación pendiente. Cuando guardes una aparecerá aquí.</p>')
+    + (!hayLotes ? '<p class="small-note">Para separar cada estimación y gestionarlas una a una hace falta ejecutar el patch 62.</p>' : '');
+}
+// Filtro de un lote ('sin' = servicios estimados que no pertenecen a ningún lote)
+const filtroLote = (q, id) => { q = q.eq('compania', CURRENT.compania).eq('estimado', true); return id==='sin' ? (window._estHayLotes ? q.is('estimacion_id', null) : q) : q.eq('estimacion_id', id); };
+async function estAceptar(id){
+  const g = (window._estLotes||{})[id]; if(!g) return;
+  if(!confirm(`¿Dar el visto bueno a esta estimación (${g.n} servicios, del ${fmtFecha(g.min)} al ${fmtFecha(g.max)})? Pasan a ser servicios normales: sin borde de puntos y sin el aviso de "estimado" para los alumnos.`)) return;
+  const { error } = await filtroLote(sb.from('servicios').update({ estimado:false }), id);
+  if(error){ showToast('No se pudo: '+error.message); return; }
+  if(id!=='sin') await sb.from('estimaciones').update({ estado:'aceptada', resuelto_en:new Date().toISOString() }).eq('id', id);
+  if(window._servResaltaEst===id) window._servResaltaEst = null;
+  showToast(`✅ Estimación aceptada: ${g.n} servicios ya son normales.`);
+  await renderAdminServicios(); abrirCajaSi('serv', 'estimar');
+}
+async function estBorrar(id){
+  const g = (window._estLotes||{})[id]; if(!g) return;
+  if(!confirm(`¿Borrar esta estimación (${g.n} servicios, del ${fmtFecha(g.min)} al ${fmtFecha(g.max)})? Solo se borran sus servicios estimados: lo que viene del Excel o has puesto a mano no se toca, y las deudas siguen pendientes.`)) return;
+  const { error } = await filtroLote(sb.from('servicios').delete(), id);
+  if(error){ showToast('No se pudo borrar: '+error.message); return; }
+  if(id!=='sin') await sb.from('estimaciones').update({ estado:'borrada', resuelto_en:new Date().toISOString() }).eq('id', id);
+  if(window._servResaltaEst===id) window._servResaltaEst = null;
+  showToast('Estimación borrada.');
+  await renderAdminServicios(); abrirCajaSi('serv', 'estimar');
 }
 async function confirmarEstimaciones(){
   const desde = document.getElementById('est-desde').value, hasta = document.getElementById('est-hasta').value;
@@ -6158,7 +6690,7 @@ async function confirmarEstimaciones(){
   if(error){ showToast('No se pudo: '+error.message); return; }
   showToast(`✅ ${(data||[]).length} servicios pasan a ser normales.`);
   await renderAdminServicios();
-  document.getElementById('serv-est-panel').open = true;
+  abrirCajaSi('serv', 'estimar');
 }
 async function borrarEstimaciones(){
   const desde = document.getElementById('est-desde').value || ymd(new Date());
@@ -6167,9 +6699,21 @@ async function borrarEstimaciones(){
   if(error){ showToast('No se pudo borrar: '+error.message); return; }
   showToast('Estimaciones borradas.');
   await renderAdminServicios();
-  document.getElementById('serv-est-panel').open = true;
+  abrirCajaSi('serv', 'estimar');
+}
+// Aviso (en la caja «Estimar servicios») de cuándo le toca la guardia de seguridad a esta compañía
+async function pintarGsInfoEstimacion(){
+  const el = document.getElementById('est-gs-info'); if(!el) return;
+  const { data, error } = await sb.from('gs_dias').select('*').order('fecha');
+  if(error){ el.innerHTML = ''; return; }
+  const c = CURRENT.compania, hoy = ymd(new Date());
+  const mios = (data||[]).filter(d=>(d.compania===c || d.sobrante_de===c) && d.fecha>=hoy);
+  const pend = d => d.compania===c ? (d.externos==null || (d.sobrante_de!=null && d.sobrante_n==null)) : d.sobrante_n==null;
+  el.innerHTML = mios.length ? `<div class="small-note" style="margin:0 0 10px;">🛡️ <b>Guardia de seguridad de la ${c}ª</b> (22 por día, en el orden de la lista del cuadrante de arriba abajo; calendario fijado por el superadmin): ${mios.map(d=>`${fmtFecha(d.fecha)}${d.compania!==c?' (sobrante)':''}${pend(d)?' ⚠️ falta un dato':''}`).join(' · ')}. Entra en «Todos» y en «Solo guardias de seguridad (GS)».</div>` : '';
 }
 async function prepararPanelEstimacion(){
+  pintarGsInfoEstimacion();
+  pintarEstimacionesPendientes();
   const d = document.getElementById('est-desde'), h = document.getElementById('est-hasta');
   if(!d || d.value) return;
   const { data } = await sb.from('servicios').select('fecha').eq('compania', CURRENT.compania).order('fecha', { ascending:false }).limit(1);
@@ -6178,6 +6722,8 @@ async function prepararPanelEstimacion(){
   h.value = sumarDia(ultimo, 35);
 }
 let servOrdenando = false, servOrdenAntes = null;
+let servPag = 'todos'; // qué parte de la lista se ve: 'todos', 'p1' (primeros 55) o 'p2' (los restantes)
+function setServPag(v){ servPag = v; pintarServGrid(); }
 function toggleOrdenarServ(){
   if(servOrdenando){ cancelarOrdenServ(); return; }
   servOrdenando = true; servOrdenAntes = SERV_GRID.roster.slice();
@@ -6189,6 +6735,17 @@ function cancelarOrdenServ(){
   if(servOrdenAntes) SERV_GRID.roster = servOrdenAntes;
   servOrdenAntes = null;
   const b = document.getElementById('serv-btn-ordenar'); if(b) b.textContent = '↕️ Ordenar nombres';
+  pintarServGrid();
+}
+// Promoción interna: quien de momento NO hace guardia de seguridad (la estimación se lo salta; a mano sí se le puede poner)
+async function toggleSinGsServ(id){
+  const p = SERV_GRID.roster.find(x=>x.id===id); if(!p) return;
+  const nuevo = !p.sin_gs;
+  const { error } = await sb.from('personas').update({ sin_gs: nuevo }).eq('id', id);
+  if(error){ showToast('No se pudo: '+error.message+' — ¿has ejecutado el patch 60?'); return; }
+  p.sin_gs = nuevo;
+  if(servOrdenAntes){ const q = servOrdenAntes.find(x=>x.id===id); if(q) q.sin_gs = nuevo; }
+  showToast(nuevo ? `${p.apellidos}: no hace guardia de seguridad (🪖).` : `${p.apellidos} vuelve a entrar en la guardia de seguridad.`);
   pintarServGrid();
 }
 async function toggleExentoServ(id){
@@ -6224,6 +6781,19 @@ async function guardarOrdenServ(){
   showToast('Orden guardado.');
   await renderAdminServicios();
 }
+// Días festivos para los servicios: los puentes/festivos que marca el superadmin (todos sus días) y las maniobras de esta compañía (del día de salida al de vuelta).
+// Salen marcados en el cuadrante y la estimación los cuenta como fin de semana/festivo.
+function diasFestivosServicios(compania){
+  const mapa = {};
+  const filas = PUENTES_TODOS===null ? PUENTES_POR_DEFECTO : PUENTES_TODOS;
+  filas.filter(p=>!(p.excluir_companias||[]).includes(compania)).forEach(p=>{
+    for(let i=0;i<p.num_noches;i++) mapa[ymd(fechaMasDias(p.semana_inicio,i))] = { tipo:'puente', nombre:p.nombre || 'Puente' };
+  });
+  (MANIOBRAS_LISTA||[]).forEach(m=>{
+    for(let f=m.fecha_inicio, n=0; f<=m.fecha_fin && n<400; f=sumarDia(f,1), n++) mapa[f] = { tipo:'mani', nombre:'Maniobras' + (m.nota ? ': '+m.nota : '') };
+  });
+  return mapa;
+}
 async function renderAdminServicios(){
   if(servOrdenando){ servOrdenando = false; servOrdenAntes = null; }
   document.getElementById('admin-week-select').innerHTML = '';
@@ -6233,48 +6803,98 @@ async function renderAdminServicios(){
   const { data: ci } = await sb.from('companias').select('servicios_visible_alumnos').eq('numero', c).single();
   document.getElementById('serv-visible-toggle').checked = !!(ci && ci.servicios_visible_alumnos);
 
-  let { data: roster, error: errRoster } = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios').eq('compania', c).order('apellidos');
+  let { data: roster, error: errRoster } = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios,sin_gs').eq('compania', c).order('apellidos');
+  if(errRoster) ({ data: roster, error: errRoster } = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios').eq('compania', c).order('apellidos')); // sin el patch 60 todavía
   if(errRoster){ ({ data: roster } = await sb.from('personas').select('id,nombre,apellidos,seccion').eq('compania', c).order('apellidos')); } // por si aún no está el patch 46
   document.getElementById('serv-persona').innerHTML = (roster||[]).map(p=>`<option value="${p.id}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})</option>`).join('');
   onServTipoChange();
 
   const dias = diasServGrid();
   const desde = ymd(dias[0]), hasta = ymd(dias[dias.length-1]);
-  const { data: servicios } = await sb.from('servicios').select('*').eq('compania', c).gte('fecha', desde).lte('fecha', hasta).range(0, 4999);
+  let servicios = []; // todos los de ese rango (por páginas: ahora el cuadrante cubre varios meses y pasaría de 1000 filas)
+  try{ servicios = await traerTodoServ(()=>sb.from('servicios').select('*').eq('compania', c).gte('fecha', desde).lte('fecha', hasta).order('fecha').order('id')); }catch(e){ servicios = []; }
   // Orden del Excel (o el que hayas puesto a mano); quien no tenga orden va al final por apellido
   const ordenado = (roster||[]).slice().sort((a,b)=>{
     const oa = a.orden_servicio==null ? 1e9 : a.orden_servicio, ob = b.orden_servicio==null ? 1e9 : b.orden_servicio;
     return (oa-ob) || normTxtJS(a.apellidos+' '+a.nombre).localeCompare(normTxtJS(b.apellidos+' '+b.nombre));
   });
   SERV_GRID = { roster: ordenado, dias, servicios: servicios||[] };
+  await fetchPuentesYManiobras(c); // puentes/festivos del superadmin y maniobras de la compañía (salen marcados en la tabla y cuentan como festivos)
+  window._servFest = diasFestivosServicios(c);
+  try{ // cuenta de servicios por persona y tipo (todos los de la compañía, no solo los días que se ven)
+    const todos = await selectTodo('servicios', 'persona_id,tipo,turno,codigo,fecha,estimado', q=>q.eq('compania', c), (roster||[]).map(p=>p.id), ['persona_id','fecha','tipo','turno']);
+    window._servCuentas = calcularCuentasServ(todos);
+    window._servTodos = todos;
+  }catch(e){ window._servCuentas = {}; window._servTodos = []; }
+
+  // Deudas de servicio (pendientes y saldadas) y servicios puestos para saldarlas
+  const resDeu = await sb.from('deudas_servicio')
+    .select('*, deudor:personas!deudas_servicio_deudor_id_fkey(nombre,apellidos), acreedor:personas!deudas_servicio_acreedor_id_fkey(nombre,apellidos)')
+    .eq('compania', c).order('creado_en',{ascending:false}).limit(400);
+  let todasDeudas = resDeu.data || [];
+  const resCD = await sb.from('servicios').select('id,fecha,tipo,deuda_id,persona_id').eq('compania', c).not('deuda_id','is',null);
+  window._servTieneDeudaId = !resCD.error;
+  const conDeuda = resCD.error ? [] : (resCD.data||[]);
+  // Si ya se hizo el servicio con el que se salda una deuda, la deuda pasa sola a "saldada"
+  const hoyS = ymd(new Date());
+  for(const s of conDeuda.filter(x=>x.fecha<=hoyS)){
+    const d = todasDeudas.find(x=>x.id===s.deuda_id && !x.saldada); if(!d) continue;
+    let { error: eS } = await sb.from('deudas_servicio').update({ saldada:true, saldada_en:new Date().toISOString(), saldada_fecha:s.fecha }).eq('id', d.id).eq('saldada', false);
+    if(eS) ({ error: eS } = await sb.from('deudas_servicio').update({ saldada:true }).eq('id', d.id).eq('saldada', false));
+    if(!eS){ d.saldada = true; d.saldada_fecha = s.fecha; d.saldada_en = new Date().toISOString(); }
+  }
+  const progPorDeuda = {}; conDeuda.filter(x=>x.fecha>hoyS).forEach(x=>{ progPorDeuda[x.deuda_id] = x; });
+  todasDeudas.forEach(d=>{ if(progPorDeuda[d.id]) d._programada = progPorDeuda[d.id]; });
+  window._servDeudasTodas = todasDeudas; window._servDeudasPend = todasDeudas.filter(d=>!d.saldada); window._servConDeuda = conDeuda;
 
   const fmtLargo = d => d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
   document.getElementById('serv-grid-controles').innerHTML = `
-    <div class="serv-ctrl">
-      <button class="small-btn" onclick="servMover(-1)">◀ Semana anterior</button>
-      <button class="small-btn" onclick="servIrHoy()">Hoy</button>
-      <button class="small-btn" onclick="servMover(1)">Semana siguiente ▶</button>
-      <select onchange="onServDias(this.value)">${[7,14,21,28,35].map(n=>`<option value="${n}" ${servDias===n?'selected':''}>${n} días</option>`).join('')}</select>
+    <div class="serv-ctrl serv-filtros">
+      <select onchange="onServDias(this.value)">${Array.from(new Set([...OPC_DIAS_SERV, servDias])).sort((a,b)=>a-b).map(n=>`<option value="${n}" ${servDias===n?'selected':''}>${n} días</option>`).join('')}</select>
       <select onchange="onServSeccionGrid(this.value)"><option value="todas">Todas las secciones</option>${[1,2,3,4].map(n=>`<option value="${n}" ${String(servSeccion)===String(n)?'selected':''}>Sección ${c}${n}</option>`).join('')}</select>
       <select id="serv-familia" onchange="onServFamiliaChange()">
         <option value="ambos" ${servFamilia==='ambos'?'selected':''}>Todo</option>
         <option value="dia" ${servFamilia==='dia'?'selected':''}>Solo C / IC</option>
         <option value="imaginarias" ${servFamilia==='imaginarias'?'selected':''}>Solo imaginarias</option>
+        <option value="gs" ${servFamilia==='gs'?'selected':''}>Solo GS</option>
       </select>
       <input type="search" placeholder="Buscar nombre…" value="${escHtml(servBuscar)}" oninput="onServBuscar(this.value)">
       <button class="small-btn" id="serv-btn-ordenar" onclick="toggleOrdenarServ()">↕️ Ordenar nombres</button>
     </div>
-    <div id="serv-orden-barra"></div>
-    <div class="small-note" style="margin:-4px 0 6px;">Del ${fmtLargo(dias[0])} al ${fmtLargo(dias[dias.length-1])} · ${SERV_GRID.servicios.length} servicios en estos días</div>`;
+    <div id="serv-orden-barra"></div>`;
+  // Barra de desplazamiento continua encima de la tabla: Hoy / ir a una fecha. No hay botones de semana: se desliza con el trackpad o con las flechas ← →
+  document.getElementById('serv-grid-nav').innerHTML = `
+    <div class="serv-nav">
+      <button class="small-btn" onclick="servIrHoy()">📍 Hoy</button>
+      <div class="small-note" style="margin:0;text-align:center;align-self:center;">↔️ Desliza con el trackpad o con las flechas ← → · del ${fmtLargo(dias[0])} al ${fmtLargo(dias[dias.length-1])} · ${SERV_GRID.servicios.length} servicios</div>
+      <input type="date" title="Ir a una fecha" onchange="servIrAFecha(this.value)">
+    </div>
+    <div id="serv-quitar-resalte" class="${(window._servResaltaEst || window._servResaltaFecha || window._servResaltaServ) ? '' : 'hidden'}" style="text-align:center;margin-bottom:6px;"><button class="small-btn" onclick="servQuitarResalte()">✖ Quitar el resalte</button></div>`;
+  // Botón «Infografía» (debajo de la tabla): qué es cada cosa
   document.getElementById('admin-servicios-leyenda').innerHTML = `
-    <div class="fixed-pill"><span class="serv-cod c">C</span> Cuartelero</div>
-    <div class="fixed-pill"><span class="serv-cod ic">IC</span> Imag. de Cuartelero</div>
-    <div class="fixed-pill"><span class="serv-cod i">1 I…4 I</span> Imaginaria turno 1–4</div>
-    <div class="fixed-pill"><span class="serv-cod ii">I I</span> Imag. de Imaginaria</div>
-    <div class="fixed-pill"><span class="serv-cod otro">Otros</span> Código tal cual del Excel</div>
-    <div class="fixed-pill"><span class="serv-cod c est">C</span> Estimado (no está en el Excel)</div>
-    <div class="fixed-pill">Toca un código para cambiarlo · toca una casilla vacía para añadir</div>`;
+    <div class="serv-info-tit">ℹ️ Infografía: qué es cada cosa</div>
+    <div class="serv-info">
+      <div><span class="serv-cod c">C</span><span><b>Cuartelero</b>: el servicio de cuartelero de ese día.</span></div>
+      <div><span class="serv-cod ic">IC</span><span><b>Imaginaria de Cuartelero</b>: la persona que releva al cuartelero del siguiente día de su cola.</span></div>
+      <div><span class="serv-cod i">1 I…4 I</span><span><b>Imaginaria</b> de noche, turno 1 a 4.</span></div>
+      <div><span class="serv-cod ii">I I</span><span><b>Imaginaria de Imaginaria</b>: la que hace la 1.ª imaginaria de la noche siguiente.</span></div>
+      <div><span class="serv-cod gs">GS</span><span><b>Guardia de seguridad</b>. No es diaria: son días concretos (calendario que fija el superadmin) y cada día entran 22 alumnos de una compañía, en el orden de la lista del cuadrante, de arriba abajo desde la primera fila. Quien ya la ha hecho no repite y la promoción interna (🪖) se salta.</span></div>
+      <div><span class="serv-cod otro">Otros</span><span>Cualquier otro código del Excel, tal cual viene en él.</span></div>
+      <div><span class="serv-leg">🪖</span><span><b>Promoción interna</b>: junto al nombre. De momento no hace guardia de seguridad: la estimación se lo salta, pero a mano sí se le puede poner (se marca con 🪖 en «Ordenar nombres»).</span></div>
+      <div><span class="serv-cod c deu">C</span><span><b>Servicio para saldar una deuda</b>: contorno morado. Lo ha puesto la estimación cuando le tocaba a alguien a quien se le debía exactamente ese servicio (mismo tipo y entre semana / fin de semana). Al hacerse, la deuda pasa a «saldada» (caja «Deudas de servicio»). El alumno lo ve como «Para saldar la deuda del … con …».</span></div>
+      <div><span class="serv-cod c est">C</span><span><b>Estimado</b>: borde de puntos. Lo ha calculado la app y no está en el Excel; cada estimación que guardas queda como un lote aparte, abajo en la caja «Estimar servicios»: desde ahí puedes ir a verla (sale resaltada en naranja), darle el visto bueno o borrarla, sin tocar las demás.</span></div>
+      <div><span class="serv-leg hoy">Hoy</span><span>La columna con fondo dorado es el día de hoy.</span></div>
+      <div><span class="serv-leg fin">Sáb/Dom</span><span>Las columnas con fondo azulado son sábado y domingo.</span></div>
+      <div><span class="serv-leg">12</span><span><b>Columna «Total»</b> (a la derecha del nombre): los servicios que tiene cada persona en la tabla (también los estimados). <b>Toca el número o el nombre</b> y debajo de la tabla se abre su ficha: cada servicio con su fecha, si es de entre semana o de fin de semana/festivo, cuáles son para saldar una deuda, y sus deudas (las que debe, las que le deben y las saldadas). En fin de semana o festivo los tipos se marcan con (F): C(F), IC(F), I(F), II(F).</span></div>
+      <div><span class="serv-leg fes">🎌</span><span><b>Festivo / puente</b> (columna rojiza): los que crea el superadmin en «Puentes y festivos». Se marcan solos y la estimación los cuenta como fin de semana/festivo.</span></div>
+      <div><span class="serv-leg mani">⛺</span><span><b>Maniobras</b> (columna verdosa): las que marca el superadmin o el admin de la compañía, del día de salida al de vuelta. Se marcan solas. <b>La estimación se salta esos días</b>: en maniobras los servicios los hacen los rebajados y se ponen a mano.</span></div>
+      <div><span class="serv-leg exento">Nombre</span><span>Una fila en rojo es alguien que <b>no hace servicios</b>: la estimación se lo salta (se marca con 🚫 en «Ordenar nombres»).</span></div>
+      <div><span class="serv-leg">👆</span><span><b>Toca un código</b> para cambiarlo o quitarlo, y <b>una casilla vacía</b> para añadir un servicio: se abre la caja «Añadir o cambiar».</span></div>
+      <div><span class="serv-leg">↕️</span><span><b>Ordenar nombres</b>: arrastra a cada persona a su sitio en la cola (o usa ▲ ▼) y guarda el orden.</span></div>
+    </div>`;
   pintarServGrid();
+  pintarFichaServ();
+  if(!window._servScrolled){ window._servScrolled = true; scrollToFechaServ(ymd(new Date()), 'auto'); } // la primera vez, la tabla arranca en la columna de hoy
   prepararPanelEstimacion();
 
   const { data: pendientes } = await sb.from('cambios_servicio')
@@ -6290,17 +6910,28 @@ async function renderAdminServicios(){
         <button class="small-btn danger" onclick="rechazarCambio(${p.id})">❌ Rechazar</button>
       </div>
     </div>`).join('') : '<div class="small-note">Sin solicitudes pendientes.</div>';
+  const bCam = document.getElementById('serv-badge-cambios'); bCam.textContent = (pendientes||[]).length; bCam.classList.toggle('hidden', !(pendientes&&pendientes.length));
 
-  const { data: deudas } = await sb.from('deudas_servicio')
-    .select('*, deudor:personas!deudas_servicio_deudor_id_fkey(nombre,apellidos), acreedor:personas!deudas_servicio_acreedor_id_fkey(nombre,apellidos)')
-    .eq('compania', c).eq('saldada', false).order('creado_en',{ascending:false});
-  document.getElementById('admin-deudas-lista').innerHTML = (deudas&&deudas.length) ? deudas.map(d=>`
+  const pendD = window._servDeudasPend || [], saldD = todasDeudas.filter(d=>d.saldada);
+  const nom = p => p ? escHtml(p.apellidos+', '+p.nombre) : '?';
+  const tarjetaDeuda = d => `
     <div class="servicio-card">
-      <div class="titulo">${escHtml(d.deudor.apellidos)}, ${escHtml(d.deudor.nombre)} le debe a ${escHtml(d.acreedor.apellidos)}, ${escHtml(d.acreedor.nombre)}</div>
+      <div class="titulo">${nom(d.deudor)} le debe a ${nom(d.acreedor)}</div>
       <div class="meta">${textoDeuda(d)} · apuntada el ${fmt(new Date(d.fecha_origen+'T00:00:00'))}${d.tipo==='nota'?' · ✍️ a mano':''}</div>
       ${d.motivo && d.tipo!=='nota' ? `<div class="meta">${escHtml(d.motivo)}</div>` : ''}
+      ${d._programada ? `<div class="meta" style="color:#8e44ad;font-weight:700;">💸 Se saldará el ${fmtFecha(d._programada.fecha)} (ya está puesto en el cuadrante)</div>` : ''}
       <button class="small-btn" style="margin-top:6px;" onclick="marcarDeudaSaldada(${d.id})">Marcar saldada</button>
-    </div>`).join('') : '<div class="small-note">Sin deudas pendientes.</div>';
+    </div>`;
+  const tarjetaSaldada = d => `
+    <div class="servicio-card">
+      <div class="titulo">✅ ${nom(d.deudor)} → ${nom(d.acreedor)}</div>
+      <div class="meta">${textoDeuda(d)} · apuntada el ${fmt(new Date(d.fecha_origen+'T00:00:00'))}</div>
+      <div class="meta" style="color:#2e7d32;">Saldada${d.saldada_fecha ? ' el '+fmtFecha(d.saldada_fecha)+' con ese servicio' : (d.saldada_en ? ' el '+new Date(d.saldada_en).toLocaleDateString('es-ES') : '')}</div>
+    </div>`;
+  document.getElementById('admin-deudas-lista').innerHTML = (pendD.length ? pendD.map(tarjetaDeuda).join('') : '<div class="small-note">Sin deudas pendientes.</div>')
+    + cajaSub('sv-saldadas', `✅ Deudas saldadas (${saldD.length})`, saldD.length ? saldD.slice(0,60).map(tarjetaSaldada).join('') : '<div class="small-note">Todavía no hay ninguna.</div>');
+  const bDeu = document.getElementById('serv-badge-deudas'); bDeu.textContent = pendD.length; bDeu.classList.toggle('hidden', !pendD.length);
+  actualizarDeudasPersonaServ();
 }
 </script>
 </body>
