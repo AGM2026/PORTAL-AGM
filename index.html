@@ -449,16 +449,47 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
 .confirm-box input{width:22px;height:22px;accent-color:var(--olive);cursor:pointer;flex-shrink:0;}
 .confirm-box label{font-size:.85rem;cursor:pointer;}
 .confirm-box .ts{display:block;font-size:.7rem;color:var(--ink-soft);margin-top:2px;}
+/* Panel de admin y superadmin por cajas */
+.cajas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin:18px 0 12px;}
+.caja{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;min-height:96px;padding:14px;border:1px solid var(--brass);background:var(--card);color:var(--ink);font-family:inherit;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.10);cursor:pointer;transition:transform .12s ease,background .15s ease,box-shadow .15s ease;}
+.caja:hover{background:rgba(184,134,11,.10);transform:translateY(-2px);}
+.caja.on{background:rgba(184,134,11,.18);box-shadow:0 0 0 2px var(--brass),0 4px 14px rgba(0,0,0,.18);}
+.caja-ico{font-size:1.7rem;line-height:1;}
+.caja-tit{font-weight:700;font-size:.9rem;line-height:1.2;}
+.caja-sub{font-size:.72rem;color:var(--ink-soft);line-height:1.25;}
+.caja-badge{position:absolute;top:8px;right:8px;background:var(--danger);color:#fff;font-size:.68rem;font-weight:700;border-radius:999px;padding:2px 8px;}
+.caja-panel{border:1px solid var(--brass);background:var(--card);border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.10);padding:14px 16px;margin:0 0 18px;}
+.caja-panel-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;}
+.caja-h{font-weight:700;font-size:.82rem;color:var(--olive);margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--line);}
+.caja-h:first-child{margin-top:0;padding-top:0;border-top:none;}
+@media(max-width:560px){.cajas-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.caja{min-height:88px;padding:12px;}}
+.caja-panel{font-size:.8rem;}
+.caja-panel .sub2{font-size:.72rem;color:var(--ink-soft);line-height:1.4;}
+.caja-panel .switch-label{font-size:.82rem;}
+.caja-panel .panel-row + .panel-row{margin-top:10px;padding-top:10px;}
+.caja-panel p,.caja-panel label,.caja-panel .modal-nota{font-size:.78rem;}
+.caja-panel input[type=checkbox]{width:16px;height:16px;}
+.caja-det{border:1px solid var(--line);border-radius:10px;margin:0 0 8px;background:var(--paper);}
+.caja-det>summary{cursor:pointer;padding:10px 12px;font-weight:600;font-size:.84rem;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.caja-det>summary::-webkit-details-marker{display:none;}
+.caja-det>summary::after{content:'▾';color:var(--ink-soft);}
+.caja-det[open]>summary::after{content:'▴';}
+.caja-det>summary:hover{background:rgba(184,134,11,.10);}
+.caja-sub-body{padding:4px 12px 12px;}
+.dom-badge{margin-left:4px;font-size:.7rem;cursor:help;}
 </style>
 <script>
 /* Preferencias del usuario: se guardan SOLO en este dispositivo (localStorage), no en la base de datos.
    semana: 'calendario' (por defecto) | 'selector' | 'ambos' · tema: 'auto' (como el sistema) | 'claro' | 'oscuro' */
-const PREFS = { semana:'calendario', tema:'auto', habitual:'si' };
+const PREFS = { semana:'calendario', tema:'auto', habitual:'si', totales:'tabla', avisoDomingo:'si', totalesSiempre:'no' };
 try{
   const g = JSON.parse(localStorage.getItem('portalagm_prefs')||'{}');
   if(['calendario','selector','ambos'].includes(g.semana)) PREFS.semana = g.semana;
   if(['auto','claro','oscuro'].includes(g.tema)) PREFS.tema = g.tema;
   if(['si','no'].includes(g.habitual)) PREFS.habitual = g.habitual;
+  if(['tabla','cajas','ambas'].includes(g.totales)) PREFS.totales = g.totales;
+  if(['si','no'].includes(g.avisoDomingo)) PREFS.avisoDomingo = g.avisoDomingo;
+  if(['si','no'].includes(g.totalesSiempre)) PREFS.totalesSiempre = g.totalesSiempre;
 }catch(e){}
 function aplicarTema(){
   const r = document.documentElement;
@@ -570,32 +601,41 @@ aplicarTema();
     <div id="alumno-comidas-mod">
       <div id="alumno-confirm"></div>
       <div id="alumno-maniobras"></div>
-      <h3 class="section-title">Comidas de la semana — desayuno, comida y cena</h3>
+      <h3 class="section-title">Comidas de la semana </h3>
       <div id="alumno-view-toggle"></div>
       <div class="table-scroll" id="alumno-table-scroll"><table class="roster" id="alumno-table"></table></div>
       <div id="alumno-desayuno-domingo-aviso"></div>
-      <details class="serv-est" id="alumno-proximas-panel">
-        <summary>🍽️ TUS PRÓXIMAS COMIDAS</summary>
-        <div class="cuerpo">
-          <div id="alumno-dia-selector" class="fixed-row" style="margin-bottom:12px;"></div>
-          <div id="alumno-dia-resumen" style="font-size:1.15rem;"></div>
+      <div class="cajas-grid" id="alumno-cajas">
+        <button type="button" class="caja" data-caja="alumno|proximas" onclick="abrirCaja('alumno','proximas')"><span class="caja-ico">🍽️</span><span class="caja-tit">Tus próximas comidas</span><span class="caja-sub">Lo que tienes cada día</span></button>
+        <button type="button" class="caja" data-caja="alumno|seccion" onclick="abrirCaja('alumno','seccion')"><span class="caja-ico">👥</span><span class="caja-tit">Próximas comidas de tu sección</span><span class="caja-sub">Quién tiene cada comida</span></button>
+        <button type="button" class="caja" data-caja="alumno|jefe" onclick="abrirCaja('alumno','jefe')"><span class="caja-ico">🎖️</span><span class="caja-tit">Jefe de clase</span><span class="caja-sub">Descarga el listado en PDF</span></button>
+        <button type="button" class="caja" data-caja="alumno|intol" onclick="abrirCaja('alumno','intol')"><span class="caja-ico">🥗</span><span class="caja-tit">Intolerancias</span><span class="caja-sub">Pide que te apunten una</span></button>
+      </div>
+      <div class="caja-panel hidden" data-caja="alumno|proximas">
+        <div class="caja-panel-cab"><b>🍽️ Tus próximas comidas</b><button type="button" class="small-btn" onclick="abrirCaja('alumno','proximas')">Cerrar ✕</button></div>
+        <div id="alumno-dia-selector" class="fixed-row" style="margin-bottom:12px;"></div>
+        <div id="alumno-dia-resumen" style="font-size:.95rem;"></div>
+      </div>
+      <div class="caja-panel hidden" data-caja="alumno|seccion">
+        <div class="caja-panel-cab"><b>👥 Próximas comidas de tu sección</b><button type="button" class="small-btn" onclick="abrirCaja('alumno','seccion')">Cerrar ✕</button></div>
+        <div class="summary-grid" id="alumno-summary" style="margin-top:0;"></div>
+        <p class="small-note">👆 Toca una de las tarjetas de arriba para ver quién de tu sección tiene esa comida.</p>
+        <div id="alumno-summary-quienes"></div>
+      </div>
+      <div class="caja-panel hidden" data-caja="alumno|jefe">
+        <div class="caja-panel-cab"><b>🎖️ Jefe de clase</b><button type="button" class="small-btn" onclick="abrirCaja('alumno','jefe')">Cerrar ✕</button></div>
+        <p class="small-note" style="margin-top:0;">Descarga un PDF con quién de tu sección está apuntado a cada comida de esta semana: primero el total y después los nombres. Puedes elegir una comida o todas.</p>
+        <div id="alumno-jefe-contenido"></div>
+      </div>
+      <div class="caja-panel hidden" data-caja="alumno|intol">
+        <div class="caja-panel-cab"><b>🥗 Intolerancias</b><button type="button" class="small-btn" onclick="abrirCaja('alumno','intol')">Cerrar ✕</button></div>
+        <p class="small-note" style="margin-top:0;">¿Tienes una intolerancia que no está apuntada? Escríbela y pídesela al admin de tu compañía: la revisa él y la añade a tu ficha.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 6px;">
+          <input type="text" id="intol-solicitud-texto" maxlength="200" placeholder="Ej. Alergia a los frutos secos" style="flex:1;min-width:150px;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;">
+          <button class="small-btn" onclick="enviarSolicitudIntolerancia()">Enviar solicitud</button>
         </div>
-      </details>
-      <details class="serv-est" id="alumno-seccion-panel">
-        <summary>👥 PRÓXIMAS COMIDAS DE TU SECCIÓN</summary>
-        <div class="cuerpo">
-          <div class="summary-grid" id="alumno-summary"></div>
-          <p class="small-note">👆 Toca una de las tarjetas de arriba para ver quién de tu sección tiene esa comida.</p>
-          <div id="alumno-summary-quienes"></div>
-        </div>
-      </details>
-      <details class="serv-est" id="alumno-jefe-panel">
-        <summary>🎖️ JEFE DE CLASE</summary>
-        <div class="cuerpo">
-          <p class="small-note" style="margin-top:0;">Descarga un documento Word con quién de tu sección está apuntado a cada comida de esta semana: primero el total y después los nombres. Puedes elegir una comida o todas.</p>
-          <div id="alumno-jefe-contenido"></div>
-        </div>
-      </details>
+        <div id="alumno-intol-solicitudes"></div>
+      </div>
       <p class="small-note">Puedes ver el detalle de tu sección para tener control, pero solo puedes marcar tu propia fila.</p>
       <details class="serv-est mini-manual">
         <summary>ℹ️ Normas rápidas</summary>
@@ -605,8 +645,8 @@ aplicarTema();
         </ul></div>
       </details>
       <div class="notice" style="margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-color:var(--brass);">
-        <span>🍽️ <b>Si tienes alguna intolerancia, abre el menú de ajustes</b> (⚙️, arriba a la derecha).</span>
-        <button class="small-btn cfg-btn" onclick="window.scrollTo({top:0,behavior:'smooth'}); toggleConfig()">⚙️ Abrir ajustes</button>
+        <span>🥗 <b>Si tienes alguna intolerancia, pídela en la caja «Intolerancias».</b></span>
+        <button class="small-btn" onclick="irAIntolerancias()">🥗 Abrir intolerancias</button>
       </div>
     </div>
 
@@ -660,8 +700,10 @@ aplicarTema();
 
     <div id="admin-comidas-mod">
       <div id="admin-controls"></div>
+      <div class="summary-grid" id="admin-comidas-summary"></div>
       <div id="admin-companies"></div>
       <div class="grand-total" id="admin-grand"></div>
+      <div id="admin-cajas"></div>
       <div id="admin-confirm-bottom"></div>
     </div>
 
@@ -669,7 +711,7 @@ aplicarTema();
       <div id="admin-pernocta-controls"></div>
       <div class="summary-grid" id="admin-pernocta-summary"></div>
       <div id="admin-pernocta-companies"></div>
-      <div class="grand-total" id="admin-pernocta-grand"></div>
+      <div id="admin-pernocta-cajas"></div>
       <div id="admin-pernocta-confirm-bottom"></div>
     </div>
 
@@ -787,6 +829,7 @@ aplicarTema();
     <div id="cuartel-notice"></div>
     <div id="cuartel-controles"></div>
     <div id="cuartel-vista"></div>
+    <p class="small-note" style="text-align:center;margin-top:28px;">❓ ¿Algún problema con la app? Escribe a <b>Pablo</b> (superadmin)<span id="cuartel-contacto"></span>.</p>
   </div>
 
   <div id="screen-superadmin" class="hidden">
@@ -843,7 +886,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-12T21:48";
+const APP_VERSION = "2026-10-12T22:35";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
@@ -1104,6 +1147,11 @@ function nameCellHtml(p){
   if(!isIntol(p)) return nombre;
   return `${nombre}<span class="intol-badge" title="Intolerancias: ${p.intolerancias.trim().replace(/"/g,'&quot;')}">🍽️⚠️</span>`;
 }
+// Admin: duerme en la AGM el sábado pero no tiene marcado el desayuno del domingo (por si hay algún problema)
+function avisoDomingoAdmin(p, apuntesMap){
+  return !!(ACTIVE_WEEK && ACTIVE_WEEK.key >= SEMANA_DOMINGO_LIBRE_DESDE && !PERNOCTA_SABADO_FUERA.has(p.id) && !getVal(p.id, {type:'desayuno', day:2}, apuntesMap));
+}
+const domingoMarca = (p, apuntesMap) => avisoDomingoAdmin(p, apuntesMap) ? '<span class="dom-badge" title="Duerme en la AGM el sábado pero NO tiene marcado el desayuno del domingo">🍳❓</span>' : '';
 function nameCellClass(p){ return 'name-cell' + (isIntol(p) ? ' intol' : ''); }
 // Hora a la que se da por terminada cada comida (a partir de ahí ya no cuenta como "próxima")
 const COMIDA_FIN = { desayuno:[7,30], comida:[15,30], cena:[20,30] };
@@ -1180,6 +1228,12 @@ function cambiarModo(){
   if(CURRENT.mode==='admin' && CURRENT.linkedPersona) switchToAlumno();
   else if(CURRENT.mode==='alumno' && CURRENT.adminCompania) switchToAdmin();
 }
+function irAIntolerancias(){
+  if(CAJAS_ABIERTA.alumno!=='intol') abrirCaja('alumno','intol');
+  const g = document.getElementById('alumno-cajas'); if(g) g.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+// Contacto del superadmin para el servicio de cuartel (ponlo aquí si quieres que se vea, p. ej. un correo o un teléfono)
+const CONTACTO_CUARTEL = '';
 function cerrarConfig(){ document.querySelectorAll('.config-panel').forEach(p=>p.classList.add('hidden')); }
 function toggleConfig(){
   const el = document.getElementById(prefixPantalla()+'-config');
@@ -1205,23 +1259,23 @@ function pintarConfig(){
     ${grupo('semana', [['calendario','📅 Calendario'],['selector','Desplegable'],['ambos','Los dos']])}
     <div class="cfg-label">Tema</div>
     ${grupo('tema', [['auto','Automático'],['claro','☀️ Claro'],['oscuro','🌙 Oscuro']])}
+    ${CURRENT && CURRENT.mode==='admin' ? `<div class="cfg-label">Ver los totales (comidas y pernoctas)</div>
+    ${grupo('totales', [['tabla','Tabla'],['cajas','Cajas'],['ambas','Las dos']])}` : ''}
     ${CURRENT && CURRENT.mode==='alumno' ? `<div class="cfg-label">Guardar mi dirección y teléfono habituales (botón "Habitual" en Pernoctas)</div>
     ${grupo('habitual', [['si','Sí'],['no','No']])}` : ''}
-    ${CURRENT && CURRENT.mode==='alumno' ? `<div class="cfg-label" style="margin-top:14px;"><b>🍽️ ¿Tienes una intolerancia que no está apuntada?</b><br>Escríbela y pídesela al admin de tu compañía: la revisa él y la añade a tu ficha.</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
-      <input type="text" id="intol-solicitud-texto" maxlength="200" placeholder="Ej. Alergia a los frutos secos" style="flex:1;min-width:150px;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;">
-      <button class="small-btn" onclick="enviarSolicitudIntolerancia()">Enviar solicitud</button>
-    </div>
-    <div id="alumno-intol-solicitudes" style="margin-bottom:12px;"></div>` : ''}
-    <div class="cfg-label" style="margin-bottom:10px;">Estos ajustes (tema, calendario y habitual) se guardan solo en este dispositivo.</div>`;
-  if(CURRENT && CURRENT.mode==='alumno') renderMisSolicitudesIntolerancia(CURRENT.persona.id); // lista de mis solicitudes (dentro del panel)
+    ${CURRENT && CURRENT.mode==='alumno' ? `<div class="cfg-label">Aviso del desayuno del domingo (si duermes en la AGM el sábado)</div>
+    ${grupo('avisoDomingo', [['si','Mostrarlo'],['no','Quitarlo']])}
+    <div class="cfg-label">Totales de pernoctas de la sección</div>
+    ${grupo('totalesSiempre', [['no','Solo con «Toda la sección»'],['si','Verlos siempre']])}` : ''}
+    <div class="cfg-label" style="margin-top:14px;">${CURRENT && CURRENT.mode!=='alumno' ? '' : `❓ <b>¿Tienes alguna duda?</b> Escribe a tu admin de compañía${CURRENT && CURRENT.nombreAdminCia ? `: <b>${escHtml(CURRENT.nombreAdminCia)}</b>` : ''}.`}</div>
+    <div class="cfg-label" style="margin-bottom:10px;">Estos ajustes se guardan solo en este dispositivo.</div>`;
 }
 function setPref(clave, valor){
   PREFS[clave] = valor;
   guardarPrefs();
   if(clave==='tema') aplicarTema();
   pintarConfig();
-  if(clave==='semana') rerenderActual();
+  if(['semana','totales','avisoDomingo','totalesSiempre'].includes(clave)) rerenderActual();
 }
 /* Pinta el selector de semana (desplegable y/o calendario, según la preferencia) dentro de #<prefix>-week-select */
 function pintarSelectorSemanas(tipo, prefix, handler, horaCorte, filterHidden){
@@ -1324,7 +1378,7 @@ window.addEventListener('resize', ()=>{
   clearTimeout(window._calResize);
   window._calResize = setTimeout(()=>{ if(CAL_CFG && PREFS.semana!=='selector' && document.getElementById(CAL_CFG.prefix+'-cal-wrap')) pintarCalendario(); }, 200);
 });
-let verSoloYoPernocta = false;
+let verSoloYoPernocta = true; // por defecto solo la fila propia: los totales de la sección salen al pulsar «Toda la sección»
 function setVerSoloYoPernocta(v){ verSoloYoPernocta = v; renderAlumnoPernoctas(); }
 
 function showToast(msg){
@@ -1817,6 +1871,7 @@ async function enterCuartel(compania, opts){
   await fetchComidaDesbloqueoDias(compania);
   setActiveWeek(semanaEnCursoIndex());
   document.getElementById('cuartel-subtitle').textContent = `${compania}ª Compañía`;
+  document.getElementById('cuartel-contacto').textContent = CONTACTO_CUARTEL ? ' ('+CONTACTO_CUARTEL+')' : '';
   document.getElementById('cuartel-salir-btn').textContent = vistaPrevia ? '◀ Volver' : 'Salir';
   pintarModo('cuartel', vistaPrevia ? [['cuartel','🪖 VISTA PREVIA CUARTEL']] : []);
   showScreen('screen-cuartel');
@@ -1951,7 +2006,118 @@ function onCuartelVista(v){ CUARTEL.vista = v; if(v==='buscar') CUARTEL.seccion 
 function onCuartelDia(d){ CUARTEL.dia = d; pintarCuartel(); }
 function onCuartelSeccion(v){ CUARTEL.seccion = v; if(CUARTEL.vista==='buscar') pintarBusquedaCuartel(); else pintarCuartel(); }
 function onCuartelBusqueda(v){ CUARTEL.busqueda = v; pintarBusquedaCuartel(); }
-function cuartelExportar(){ return CUARTEL.modulo==='comidas' ? exportCompanyExcel() : exportPernoctaExcel(); }
+/* ---- Exportar desde el servicio de cuartel: a Excel o a PDF, y de un día, una comida (o noche) o toda la semana ---- */
+let CUARTEL_EXP_FORMATO = 'excel';
+function cuartelExportar(formato){
+  CUARTEL_EXP_FORMATO = formato;
+  const esCom = CUARTEL.modulo==='comidas', d = Math.max(0, CUARTEL.dia||0);
+  const nDias = esCom ? 7 : CUARTEL.data.nDias;
+  const diasOpts = Array.from({length:nDias},(_,i)=>`<option value="${i}" ${i===d?'selected':''}>${esCom ? '' : 'Noche del '}${DAY_NAMES_FULL[i%7]} ${fmt(diaPern(ACTIVE_WEEK,i))}</option>`).join('');
+  abrirModalGlobal(`<h3>${formato==='pdf'?'📕 Exportar a PDF':'📄 Exportar a Excel'}</h3>
+    <p class="modal-nota" style="margin-top:0;">¿Qué quieres exportar?</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
+      <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="exp-alcance" value="dia" checked onchange="cuartelExpActualizar()"> ${esCom ? 'El día entero (desayuno, comida y cena)' : 'Una noche entera'}</label>
+      ${esCom ? `<label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="exp-alcance" value="comida" onchange="cuartelExpActualizar()"> Una comida concreta</label>` : ''}
+      <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="exp-alcance" value="semana" onchange="cuartelExpActualizar()"> La semana entera</label>
+    </div>
+    <div class="cuartel-bar" style="margin-top:0;">
+      <div class="field" id="exp-dia-wrap"><label>${esCom ? 'Día' : 'Noche'}</label><select id="exp-dia">${diasOpts}</select></div>
+      ${esCom ? `<div class="field hidden" id="exp-tipo-wrap"><label>Comida</label><select id="exp-tipo"><option value="desayuno">Desayuno</option><option value="comida">Comida</option><option value="cena">Cena</option></select></div>` : ''}
+    </div>
+    <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" onclick="cuartelExpConfirmar()">Exportar</button></div>`);
+}
+function cuartelExpAlcance(){ const r = document.querySelector('input[name="exp-alcance"]:checked'); return r ? r.value : 'dia'; }
+function cuartelExpActualizar(){
+  const a = cuartelExpAlcance();
+  const dia = document.getElementById('exp-dia-wrap'), tipo = document.getElementById('exp-tipo-wrap');
+  if(dia) dia.classList.toggle('hidden', a==='semana');
+  if(tipo) tipo.classList.toggle('hidden', a!=='comida');
+}
+function cuartelExpConfirmar(){
+  const alc = cuartelExpAlcance(), dia = parseInt((document.getElementById('exp-dia')||{}).value||'0',10), tipo = (document.getElementById('exp-tipo')||{}).value||'comida';
+  const esCom = CUARTEL.modulo==='comidas', pdf = CUARTEL_EXP_FORMATO==='pdf';
+  cerrarModalGlobal();
+  // Excel de la semana entera: el de siempre (una hoja por sección, listo para imprimir)
+  if(!pdf && alc==='semana') return esCom ? exportCompanyExcel() : exportPernoctaExcel();
+  const doc = esCom ? cuartelDocComidas(alc, dia, tipo) : cuartelDocPernoctas(alc, dia);
+  const base = `Cuartel_${CURRENT.compania}Cia_${esCom?'Comidas':'Pernoctas'}_${doc.archivo}`;
+  if(pdf){ descargarArchivo(pdfDesdeDoc(doc), base+'.pdf'); showToast('Descargando el PDF…'); }
+  else { if(typeof XLSX==='undefined'){ showToast('No se pudo cargar la librería de Excel. Recarga la página.'); return; } xlsxDesdeDoc(doc, base+'.xlsx'); }
+}
+const nombreCompleto = p => `${p.apellidos}, ${p.nombre}`;
+// Un "documento" sencillo (títulos, tablas y listas) que sirve para montar tanto el Excel como el PDF
+function cuartelDocComidas(alc, dia, tipo){
+  const { secciones, cols } = CUARTEL.data, c = CURRENT.compania, N = secciones.reduce((a,s)=>a+s.people.length,0);
+  const fdia = i => `${DAY_NAMES_FULL[i%7]} ${fmt(diaPern(ACTIVE_WEEK,i))}`;
+  const sel = cols.filter(col=> alc==='semana' || (col.day===dia && (alc==='dia' || col.type===tipo)));
+  const bl = [];
+  if(alc==='semana'){
+    bl.push({ t:'tabla', cab:['Sección', ...cols.map(x=>`${({desayuno:'Des.',comida:'Com.',cena:'Cen.'})[x.type]} ${DAY_NAMES[x.day%7]}`)],
+      filas:[...secciones.map(s=>[`${s.code} (${s.people.length})`, ...cols.map(x=>`${s.people.filter(p=>cMarca(p.id,x)).length}/${s.people.length}`)]),
+             [`TOTAL ${c}ª CÍA (${N})`, ...cols.map(x=>`${secciones.reduce((a,s)=>a+s.people.filter(p=>cMarca(p.id,x)).length,0)}/${N}`)]], pie:true });
+    secciones.forEach(s=>{
+      bl.push({ t:'h', n:2, texto:`Sección ${s.code}` });
+      bl.push({ t:'tabla', cab:['Nombre', ...cols.map(x=>`${({desayuno:'Des.',comida:'Com.',cena:'Cen.'})[x.type]} ${DAY_NAMES[x.day%7]}`)],
+        filas:[...s.people.map(p=>[nombreCompleto(p)+(isIntol(p)?` (${p.intolerancias.trim()})`:''), ...cols.map(x=>cMarca(p.id,x)?'X':'')]),
+               ['Total', ...cols.map(x=>String(s.people.filter(p=>cMarca(p.id,x)).length))]], pie:true });
+    });
+    return { apaisado:true, titulo:`${c}ª Compañía · Comidas de la semana`, subtitulo:`Del viernes ${fmt(ACTIVE_WEEK.days[0])} al jueves ${fmt(ACTIVE_WEEK.days[6])}`, archivo:`semana_${fmt(ACTIVE_WEEK.days[0]).replace('/','-')}`, bloques:bl };
+  }
+  sel.forEach(col=>{
+    const total = secciones.reduce((a,s)=>a+s.people.filter(p=>cMarca(p.id,col)).length,0);
+    bl.push({ t:'h', n:1, texto:`${(tipoNombre(col.type)+' · '+fdia(col.day)).toUpperCase()}  -  TOTAL: ${total} de ${N}` });
+    bl.push({ t:'tabla', pesos:[2,1,1], cab:['Sección','Comen','Plantilla'], filas:[...secciones.map(s=>[s.code, String(s.people.filter(p=>cMarca(p.id,col)).length), String(s.people.length)]), ['TOTAL', String(total), String(N)]], pie:true });
+    const intol = secciones.flatMap(s=>s.people).filter(p=>isIntol(p) && cMarca(p.id,col));
+    if(intol.length) bl.push({ t:'p', numerar:true, items: intol.map(p=>`${nombreCompleto(p)} (${p.intolerancias.trim()})`), cab:'Con intolerancias' });
+    secciones.forEach(s=>{
+      const si = s.people.filter(p=>cMarca(p.id,col));
+      bl.push({ t:'p', numerar:si.length>0, cab:`Sección ${s.code} (${si.length})`, items: si.length ? si.map(nombreCompleto) : ['(nadie apuntado)'] });
+    });
+  });
+  const quien = alc==='dia' ? fdia(dia) : `${tipoNombre(tipo)} · ${fdia(dia)}`;
+  return { titulo:`${c}ª Compañía · Comidas`, subtitulo:quien, archivo: alc==='dia' ? `${DAY_NAMES[dia%7]}_${fmt(diaPern(ACTIVE_WEEK,dia)).replace('/','-')}` : `${tipoNombre(tipo)}_${DAY_NAMES[dia%7]}_${fmt(diaPern(ACTIVE_WEEK,dia)).replace('/','-')}`, bloques:bl };
+}
+function cuartelDocPernoctas(alc, dia){
+  const { secciones, nDias } = CUARTEL.data, c = CURRENT.compania, N = secciones.reduce((a,s)=>a+s.people.length,0);
+  const fnoche = i => `Noche del ${DAY_NAMES_FULL[i%7]} ${fmt(diaPern(ACTIVE_WEEK,i))}`;
+  const noches = alc==='semana' ? Array.from({length:nDias},(_,i)=>i) : [Math.min(dia, nDias-1)];
+  const bl = [];
+  if(alc==='semana'){
+    bl.push({ t:'tabla', cab:['Sección', ...noches.map(i=>`${DAY_NAMES[i%7]} ${fmt(diaPern(ACTIVE_WEEK,i))}`)],
+      filas:[...secciones.map(s=>[`${s.code} (${s.people.length})`, ...noches.map(i=>`${s.people.filter(p=>cPernVal(p.id,i)).length}/${s.people.length}`)]),
+             [`TOTAL ${c}ª CÍA (${N})`, ...noches.map(i=>`${secciones.reduce((a,s)=>a+s.people.filter(p=>cPernVal(p.id,i)).length,0)}/${N}`)]], pie:true });
+    secciones.forEach(s=>{
+      bl.push({ t:'h', n:2, texto:`Sección ${s.code}` });
+      bl.push({ t:'tabla', cab:['Nombre', ...noches.map(i=>`${DAY_NAMES[i%7]} ${fmt(diaPern(ACTIVE_WEEK,i))}`), 'Teléfono','Dirección'], pesos:[4, ...noches.map(()=>1.2), 2.5, 6], izq:[0, noches.length+2],
+        filas: s.people.map(p=>{ const k = cPernContacto(p.id); return [nombreCompleto(p), ...noches.map(i=>cPernVal(p.id,i)?'AGM':'FUERA'), k.tel, k.dir]; }) });
+    });
+    return { apaisado:true, titulo:`${c}ª Compañía · Pernoctas de la semana`, subtitulo:`${fnoche(0)} al ${fnoche(nDias-1).replace('Noche del ','')}`, archivo:`semana_${fmt(ACTIVE_WEEK.days[0]).replace('/','-')}`, bloques:bl };
+  }
+  const d = noches[0], agmTot = secciones.reduce((a,s)=>a+s.people.filter(p=>cPernVal(p.id,d)).length,0);
+  bl.push({ t:'h', n:1, texto:`${fnoche(d).toUpperCase()}  -  EN LA AGM: ${agmTot} de ${N}  -  FUERA: ${N-agmTot}` });
+  bl.push({ t:'tabla', pesos:[2,1,1], cab:['Sección','AGM','Fuera'], filas:[...secciones.map(s=>{ const a=s.people.filter(p=>cPernVal(p.id,d)).length; return [s.code, String(a), String(s.people.length-a)]; }), ['TOTAL', String(agmTot), String(N-agmTot)]], pie:true });
+  bl.push({ t:'h', n:2, texto:'Duermen FUERA (con teléfono y dirección)' });
+  secciones.forEach(s=>{
+    const f = s.people.filter(p=>!cPernVal(p.id,d));
+    bl.push({ t:'p', numerar:f.length>0, cab:`Sección ${s.code} (${f.length})`, items: f.length ? f.map(p=>{ const k = cPernContacto(p.id); return `${nombreCompleto(p)} - tel. ${k.tel||'sin teléfono'} - ${k.dir||'sin dirección'}`; }) : ['(nadie)'] });
+  });
+  bl.push({ t:'h', n:2, texto:'Duermen en la AGM' });
+  secciones.forEach(s=>{ const a = s.people.filter(p=>cPernVal(p.id,d)); bl.push({ t:'p', numerar:a.length>0, cab:`Sección ${s.code} (${a.length})`, items: a.length ? a.map(nombreCompleto) : ['(nadie)'] }); });
+  return { titulo:`${c}ª Compañía · Pernoctas`, subtitulo:fnoche(d), archivo:`${DAY_NAMES[d%7]}_${fmt(diaPern(ACTIVE_WEEK,d)).replace('/','-')}`, bloques:bl };
+}
+function xlsxDesdeDoc(doc, nombre){
+  const aoa = [[doc.titulo], [doc.subtitulo], []];
+  doc.bloques.forEach(b=>{
+    if(b.t==='h'){ aoa.push([b.texto]); }
+    else if(b.t==='p'){ aoa.push([b.cab || '']); (b.items||[]).forEach(x=>aoa.push([x])); aoa.push([]); }
+    else { aoa.push(b.cab); b.filas.forEach(f=>aoa.push(f)); aoa.push([]); }
+  });
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const maxCols = Math.max(...doc.bloques.map(b=>b.t==='tabla'?b.cab.length:1));
+  ws['!cols'] = Array.from({length:maxCols},(_,i)=>({ wch: i===0 ? 42 : 14 }));
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Cuartel');
+  XLSX.writeFile(wb, nombre);
+}
 
 // Helpers de datos
 const cMarca = (id,col)=> CUARTEL.data.V[id+'|'+col.type+'|'+col.day];
@@ -1977,7 +2143,8 @@ function pintarCuartel(){
   document.getElementById('cuartel-controles').innerHTML = `
     <div class="cuartel-bar">
       <div class="field"><label>Ver</label><select onchange="onCuartelVista(this.value)">${vistas.map(([v,t])=>`<option value="${v}" ${CUARTEL.vista===v?'selected':''}>${t}</option>`).join('')}</select></div>
-      <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="cuartelExportar()">📄 Exportar a Excel</button>
+      <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="cuartelExportar('excel')">📄 Exportar a Excel</button>
+      <button class="primary-btn" style="width:auto;padding:10px 16px;" onclick="cuartelExportar('pdf')">📕 Exportar a PDF</button>
     </div>`;
   const el = document.getElementById('cuartel-vista');
   if(CUARTEL.vista==='buscar'){
@@ -2130,8 +2297,9 @@ async function renderAlumno(){
   document.getElementById('alumno-subtitle').textContent = `${persona.compania}ª Compañía · ${persona.seccion}ª Sección (${code})`;
   document.getElementById('alumno-who').textContent = persona.nombre+' '+persona.apellidos;
   document.getElementById('alumno-switch').innerHTML = ''; // los botones de cambio de modo ahora están dentro de ⚙️ (más limpio en el móvil)
-  const { data: companiaInfo } = await sb.from('companias').select('hora_corte').eq('numero', persona.compania).single();
+  const { data: companiaInfo } = await sb.from('companias').select('hora_corte,nombre_admin').eq('numero', persona.compania).single();
   const horaCorte = companiaInfo ? companiaInfo.hora_corte : '10:00:00';
+  CURRENT.nombreAdminCia = companiaInfo ? companiaInfo.nombre_admin : null;
   await fetchSemanasOcultas(persona.compania);
   if(SEMANAS_OCULTAS.has(ACTIVE_WEEK.key)) setActiveWeek(firstVisibleWeekIndex()); // las semanas pasadas ya NO se saltan: el alumno puede quedarse viéndolas
 
@@ -2152,6 +2320,8 @@ async function renderAlumno(){
   let avisoDesayunoHtml = '';
   if(ACTIVE_WEEK.key < SEMANA_DOMINGO_LIBRE_DESDE){
     // semana antigua (ya cerrada): sin avisos
+  } else if(PREFS.avisoDomingo==='no' && !tienePernoctaFuera){
+    // el alumno ha pedido (en ⚙️) no ver este aviso cuando duerme en la AGM el sábado
   } else {
   if(!tienePernoctaFuera && !desayunoDomingoMarcado){
     avisoDesayunoHtml += `<div class="aviso-desayuno-domingo">🍳 Duermes en la AGM el sábado — si vas a desayunar el domingo, márcalo tú</div>`;
@@ -2326,88 +2496,124 @@ function pintarJefeClase(){
     </div>
     <div class="field" style="max-width:440px;"><label>Comida</label>
       <select onchange="JEFE.comida=this.value"><option value="todas" ${JEFE.comida==='todas'?'selected':''}>Todas las comidas de la semana (${cols.length})</option>${opciones}</select></div>
-    <button class="primary-btn" style="width:auto;padding:10px 18px;" onclick="descargarJefeClase()">⬇️ Descargar documento (Word)</button>`;
+    <button class="primary-btn" style="width:auto;padding:10px 18px;" onclick="descargarJefeClase()">⬇️ Descargar PDF</button>`;
 }
-/* ---- Documento Word (.docx) sin librerías: se monta un ZIP sencillo (sin comprimir) con las 3 partes mínimas de un .docx ---- */
-const xmlEsc = s => String(s==null?'':s).replace(/[&<>"]/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-const _crcTabla = (()=>{ const t = new Uint32Array(256); for(let n=0;n<256;n++){ let c = n; for(let k=0;k<8;k++) c = (c&1) ? (0xEDB88320 ^ (c>>>1)) : (c>>>1); t[n] = c>>>0; } return t; })();
-function crc32(bytes){ let c = 0xFFFFFFFF; for(let i=0;i<bytes.length;i++) c = _crcTabla[(c ^ bytes[i]) & 0xFF] ^ (c>>>8); return (c ^ 0xFFFFFFFF)>>>0; }
-function zipSinComprimir(archivos, mime){
-  const enc = new TextEncoder(), trozos = [], central = []; let offset = 0;
-  archivos.forEach(f=>{
-    const nombre = enc.encode(f.nombre), datos = enc.encode(f.contenido), crc = crc32(datos), n = datos.length;
-    const l = new DataView(new ArrayBuffer(30));
-    l.setUint32(0,0x04034b50,true); l.setUint16(4,20,true); l.setUint16(6,0x0800,true); l.setUint16(8,0,true); l.setUint16(10,0,true); l.setUint16(12,0x0021,true);
-    l.setUint32(14,crc,true); l.setUint32(18,n,true); l.setUint32(22,n,true); l.setUint16(26,nombre.length,true); l.setUint16(28,0,true);
-    trozos.push(new Uint8Array(l.buffer), nombre, datos);
-    const c = new DataView(new ArrayBuffer(46));
-    c.setUint32(0,0x02014b50,true); c.setUint16(4,20,true); c.setUint16(6,20,true); c.setUint16(8,0x0800,true); c.setUint16(10,0,true); c.setUint16(12,0,true); c.setUint16(14,0x0021,true);
-    c.setUint32(16,crc,true); c.setUint32(20,n,true); c.setUint32(24,n,true); c.setUint16(28,nombre.length,true);
-    c.setUint16(30,0,true); c.setUint16(32,0,true); c.setUint16(34,0,true); c.setUint16(36,0,true); c.setUint32(38,0,true); c.setUint32(42,offset,true);
-    central.push(new Uint8Array(c.buffer), nombre);
-    offset += 30 + nombre.length + n;
-  });
-  const tamCentral = central.reduce((a,x)=>a+x.length,0);
-  const e = new DataView(new ArrayBuffer(22));
-  e.setUint32(0,0x06054b50,true); e.setUint16(4,0,true); e.setUint16(6,0,true); e.setUint16(8,archivos.length,true); e.setUint16(10,archivos.length,true);
-  e.setUint32(12,tamCentral,true); e.setUint32(16,offset,true); e.setUint16(20,0,true);
-  return new Blob([...trozos, ...central, new Uint8Array(e.buffer)], { type: mime });
-}
-const WORD_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-function docxDesdeCuerpo(cuerpoXml){
-  const ns = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
-  return zipSinComprimir([
-    { nombre:'[Content_Types].xml', contenido:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>' },
-    { nombre:'_rels/.rels', contenido:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>' },
-    { nombre:'word/document.xml', contenido:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${ns}><w:body>${cuerpoXml}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1000" w:right="1100" w:bottom="1000" w:left="1100" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>` },
-  ], WORD_MIME);
-}
-// Un párrafo: texto, negrita, tamaño (en medios puntos), color de texto, fondo, espacio antes/después y "no separar del siguiente"
-const wP = (texto, o={}) => `<w:p><w:pPr>${o.mantener?'<w:keepNext/>':''}${o.relleno?`<w:shd w:val="clear" w:color="auto" w:fill="${o.relleno}"/>`:''}<w:spacing w:before="${o.antes||0}" w:after="${o.despues==null?60:o.despues}"/></w:pPr><w:r><w:rPr>${o.neg?'<w:b/>':''}${o.color?`<w:color w:val="${o.color}"/>`:''}<w:sz w:val="${o.tam||22}"/></w:rPr><w:t xml:space="preserve">${xmlEsc(texto)}</w:t></w:r></w:p>`;
-// Tabla de dos columnas (resumen)
-function wTabla2(filas, anchos){
-  const borde = ['top','left','bottom','right','insideH','insideV'].map(b=>`<w:${b} w:val="single" w:sz="4" w:space="0" w:color="A9AE9B"/>`).join('');
-  const celda = (txt, ancho, neg, fondo) => `<w:tc><w:tcPr><w:tcW w:w="${ancho}" w:type="dxa"/>${fondo?`<w:shd w:val="clear" w:color="auto" w:fill="${fondo}"/>`:''}</w:tcPr>${wP(txt,{neg, despues:40})}</w:tc>`;
-  return `<w:tbl><w:tblPr><w:tblW w:w="${anchos[0]+anchos[1]}" w:type="dxa"/><w:tblBorders>${borde}</w:tblBorders></w:tblPr><w:tblGrid><w:gridCol w:w="${anchos[0]}"/><w:gridCol w:w="${anchos[1]}"/></w:tblGrid>`
-    + filas.map((f,i)=>`<w:tr>${celda(f[0],anchos[0],i===0,i===0?'E3E8D3':null)}${celda(f[1],anchos[1],i===0,i===0?'E3E8D3':null)}</w:tr>`).join('') + `</w:tbl>`;
-}
+/* ---- PDF hecho a mano (sin librerías), con el mismo aspecto para el cuartel y para el jefe de clase: título, subtítulo, tabla con cabecera verde,
+   barras verdes por comida con su total y listas numeradas. Un "documento" es { titulo, subtitulo, nota, apaisado, bloques:[{t:'h'|'p'|'tabla',…}] } ---- */
 function descargarArchivo(blob, nombre){
   const url = URL.createObjectURL(blob), a = document.createElement('a');
   a.href = url; a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 5000);
 }
-// Documento: título, resumen (total de cada comida) y, por cada comida, su total y la lista de gente apuntada
-function jefeClaseDocxCuerpo(){
+function pdfDesdeDoc(doc){
+  const ap = !!doc.apaisado, W = ap ? 842 : 595, H = ap ? 595 : 842, M = 44, ANCHO = W - 2*M;
+  const VERDE = [0.89,0.91,0.83], GRIS = [0.4,0.4,0.4];
+  const lat = s => String(s==null?'':s).replace(/[\u{1F000}-\u{1FFFF}☀-➿️]/gu,'').replace(/[✓✔]/g,'X').replace(/[—–]/g,'-').replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/[^\x00-\xff]/g,'?');
+  const esc = s => lat(s).replace(/([\\()])/g,'\\$1');
+  const paginas = []; let ops, y;
+  const nueva = () => { ops = []; paginas.push(ops); y = H - M; };
+  const txt = (x, yy, s, sz, neg, col) => ops.push(`BT ${(col||[0,0,0]).join(' ')} rg /${neg?'F2':'F1'} ${sz} Tf ${x.toFixed(1)} ${yy.toFixed(1)} Td (${esc(s)}) Tj ET`);
+  const rect = (x, yy, w, h, rgb) => ops.push(`${rgb.join(' ')} rg ${x.toFixed(1)} ${yy.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)} re f`);
+  const borde = (x, yy, w, h) => ops.push(`0.66 0.68 0.61 RG 0.5 w ${x.toFixed(1)} ${yy.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)} re S`);
+  const ajusta = (s, ancho, sz) => { s = lat(s); const max = Math.max(1, Math.floor(ancho / (sz*0.53))); return s.length > max ? s.slice(0, Math.max(1, max-1)) + '.' : s; };
+  const envuelve = (s, sz, ancho) => {
+    const max = Math.max(8, Math.floor(ancho / (sz*0.5))), out = []; let l = '';
+    lat(s).split(' ').forEach(w=>{
+      while(w.length > max){ if(l){ out.push(l); l = ''; } out.push(w.slice(0, max)); w = w.slice(max); }
+      if((l+' '+w).trim().length > max){ if(l) out.push(l); l = w; } else l = l ? l+' '+w : w;
+    });
+    if(l) out.push(l); return out;
+  };
+  nueva();
+  txt(M, y-18, doc.titulo, 18, true); y -= 28;
+  if(doc.subtitulo){ txt(M, y-12, doc.subtitulo, 12); y -= 20; }
+  if(doc.nota){ txt(M, y-10, doc.nota, 10, false, GRIS); y -= 22; } else y -= 8;
+  doc.bloques.forEach(b=>{
+    if(b.t==='h' && b.n===1){
+      if(y < M+70) nueva();
+      y -= 8; rect(M, y-20, ANCHO, 20, VERDE); txt(M+6, y-14.5, ajusta(b.texto, ANCHO-12, 11.5), 11.5, true); y -= 30;
+    } else if(b.t==='h'){
+      if(y < M+110) nueva();
+      y -= 8; txt(M, y-13, b.texto, 13, true); y -= 24;
+    } else if(b.t==='p'){
+      const sz = 11, lh = 15;
+      if(b.cab){ if(y < M+50) nueva(); txt(M+4, y-sz, b.cab, sz, true); y -= lh + 1; }
+      (b.items||[]).forEach((it,i)=>{
+        envuelve((b.numerar ? `${i+1}. ` : '') + it, sz, ANCHO-26).forEach((l,j)=>{ if(y < M+24) nueva(); txt(M+(j?24:10), y-sz, l, sz); y -= lh; });
+      });
+      y -= 8;
+    } else if(b.t==='tabla'){
+      const nc = b.cab.length, sz = nc > 14 ? 6.5 : nc > 8 ? 7.5 : nc > 4 ? 9 : 10.5, rh = sz + 9;
+      const pesos = b.pesos || b.cab.map((_,i)=> i===0 ? (nc>2?4:2) : 1), sp = pesos.reduce((a,x)=>a+x,0), ws = pesos.map(p=>ANCHO*p/sp);
+      const fila = (celdas, neg, fondo) => {
+        if(fondo) rect(M, y-rh, ANCHO, rh, fondo);
+        let x = M;
+        celdas.forEach((c,i)=>{
+          borde(x, y-rh, ws[i], rh);
+          const s = ajusta(c, ws[i]-8, sz), izq = i===0 || (b.izq||[]).includes(i);
+          txt(izq ? x+4 : x + (ws[i] - s.length*sz*0.5)/2, y-rh+(rh-sz)/2+1.5, s, sz, neg);
+          x += ws[i];
+        });
+        y -= rh;
+      };
+      if(y < M+rh*3) nueva();
+      fila(b.cab, true, VERDE);
+      b.filas.forEach((f,i)=>{
+        if(y-rh < M+24){ nueva(); fila(b.cab, true, VERDE); }
+        const ultima = b.pie && i===b.filas.length-1;
+        fila(f, ultima, ultima ? [0.95,0.96,0.91] : null);
+      });
+      y -= 12;
+    }
+  });
+  const ahora = new Date().toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  paginas.forEach((o,i)=>{ ops = o; txt(M, 24, `Portal AGM - ${doc.titulo} - generado el ${ahora}`, 8, false, GRIS); txt(W-M-48, 24, `Pág. ${i+1}/${paginas.length}`, 8, false, GRIS); });
+  const objs = [];
+  objs[1] = '<< /Type /Catalog /Pages 2 0 R >>';
+  objs[2] = `<< /Type /Pages /Kids [${paginas.map((_,i)=>`${5+i*2} 0 R`).join(' ')}] /Count ${paginas.length} >>`;
+  objs[3] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
+  objs[4] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
+  paginas.forEach((o,i)=>{
+    const cont = o.join('\n');
+    objs[5+i*2] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${6+i*2} 0 R >>`;
+    objs[6+i*2] = `<< /Length ${cont.length} >>\nstream\n${cont}\nendstream`;
+  });
+  let pdf = '%PDF-1.4\n'; const offs = [];
+  for(let i=1;i<objs.length;i++){ offs[i] = pdf.length; pdf += `${i} 0 obj\n${objs[i]}\nendobj\n`; }
+  const xref = pdf.length;
+  pdf += `xref\n0 ${objs.length}\n0000000000 65535 f \n` + offs.slice(1).map(o=>String(o).padStart(10,'0')+' 00000 n \n').join('') + `trailer\n<< /Size ${objs.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  const bytes = new Uint8Array(pdf.length); for(let i=0;i<pdf.length;i++) bytes[i] = pdf.charCodeAt(i) & 255;
+  return new Blob([bytes], { type:'application/pdf' });
+}
+// Jefe de clase: título, resumen (total de cada comida) y, por cada comida, su total y la lista numerada de gente apuntada
+function jefeClaseDoc(){
   const D = JEFE_DATOS;
   let cols = jefeComidas();
   if(JEFE.comida !== 'todas') cols = cols.filter(c=>c.type+'|'+c.day===JEFE.comida);
   if(!cols.length) return null;
   const total = D.people.length;
   const etiqueta = c => `${NOMBRE_COMIDA[c.type]} · ${DAY_NAMES_FULL[c.day%7]} ${fmt(diaPern(D.week,c.day))}`;
-  let x = wP(`Jefe de clase — Sección ${D.code}`, { neg:true, tam:36, despues:40 })
-        + wP(`Comidas del viernes ${fmt(D.week.days[0])} al jueves ${fmt(D.week.days[6])}`, { tam:24, despues:20 })
-        + wP(JEFE.ver==='todas' ? 'Listado de todas las comidas' : 'Listado de las comidas voluntarias', { tam:20, color:'666666', despues:200 });
+  const bl = [];
   if(cols.length > 1){
-    x += wP('Resumen', { neg:true, tam:26, antes:60, despues:80, mantener:true })
-       + wTabla2([['Comida','Apuntados'], ...cols.map(c=>[etiqueta(c), `${jefeApuntados(c).length} de ${total}`])], [6600, 2600])
-       + wP('', { despues:200 });
+    bl.push({ t:'h', n:2, texto:'Resumen' });
+    bl.push({ t:'tabla', pesos:[3,1], izq:[0], cab:['Comida','Apuntados'], filas: cols.map(c=>[etiqueta(c), `${jefeApuntados(c).length} de ${total}`]) });
   }
   cols.forEach(c=>{
     const lista = jefeApuntados(c);
-    x += wP(`${etiqueta(c).toUpperCase()}  —  TOTAL: ${lista.length} de ${total}`, { neg:true, tam:24, relleno:'E3E8D3', antes:160, despues:80, mantener:true });
-    if(lista.length) lista.forEach((p,i)=>{ x += wP(`${i+1}. ${p.apellidos}, ${p.nombre}`, { despues:20 }); });
-    else x += wP('(nadie apuntado)', { color:'666666' });
+    bl.push({ t:'h', n:1, texto:`${etiqueta(c).toUpperCase()}  -  TOTAL: ${lista.length} de ${total}` });
+    bl.push({ t:'p', numerar:lista.length>0, items: lista.length ? lista.map(p=>`${p.apellidos}, ${p.nombre}`) : ['(nadie apuntado)'] });
   });
-  return { cuerpo:x, cols };
+  return { titulo:`Jefe de clase - Sección ${D.code}`, subtitulo:`Comidas del viernes ${fmt(D.week.days[0])} al jueves ${fmt(D.week.days[6])}`,
+    nota: JEFE.ver==='todas' ? 'Listado de todas las comidas' : 'Listado de las comidas voluntarias', bloques:bl, cols };
 }
 function descargarJefeClase(){
   if(!JEFE_DATOS) return;
-  const r = jefeClaseDocxCuerpo();
-  if(!r){ showToast('No hay comidas que descargar con ese filtro.'); return; }
-  const D = JEFE_DATOS, c0 = r.cols[0];
+  const doc = jefeClaseDoc();
+  if(!doc){ showToast('No hay comidas que descargar con ese filtro.'); return; }
+  const D = JEFE_DATOS, c0 = doc.cols[0];
   const que = JEFE.comida==='todas' ? (JEFE.ver==='todas' ? 'todas' : 'voluntarias') : (c0.type+'_'+DAY_NAMES[c0.day%7]);
-  descargarArchivo(docxDesdeCuerpo(r.cuerpo), `JefeDeClase_${D.code}_semana_${fmt(D.week.days[0]).replace('/','-')}_${que}.docx`);
-  showToast('Descargando el documento…');
+  descargarArchivo(pdfDesdeDoc(doc), `JefeDeClase_${D.code}_semana_${fmt(D.week.days[0]).replace('/','-')}_${que}.pdf`);
+  showToast('Descargando el PDF…');
 }
 async function renderMisSolicitudesIntolerancia(personaId){
   const el = document.getElementById('alumno-intol-solicitudes');
@@ -2765,6 +2971,8 @@ async function renderSuperadmin(){
         <div style="margin:8px 0;"><button class="small-btn" onclick="abrirVerComoCuartel()">👁 Ver como servicio de cuartel…</button></div>
         ${cuartelHtml}
       </div>`;
+  if(PUENTE_EDIT) CAJAS_ABIERTA.super = 'puentes';
+  else if(CAJAS_ABIERTA.super===undefined && nSol>0) CAJAS_ABIERTA.super = 'solicitudes';
   document.getElementById('superadmin-body').innerHTML = `
     <div class="admin-panel">
       <div class="panel-row" style="flex-direction:column;align-items:stretch;">
@@ -2772,14 +2980,19 @@ async function renderSuperadmin(){
         ${totalesHtml}
       </div>
     </div>` +
-    adminDesplegable('super-solicitudes', `👤 Solicitudes de administrador${nSol ? ` <span style="color:var(--danger);">(${nSol} pendiente${nSol===1?'':'s'})</span>` : ' (ninguna pendiente)'}`, filaSolicitudes, nSol>0) +
     `<div class="admin-panel">${filaIrCompania}</div>` +
-    adminDesplegable('super-puentes', '🌉 Creador de puentes y festivos', puentesSuperHtml(puentes, errPuentes), !!PUENTE_EDIT) +
-    adminDesplegable('super-maniobras', '⛺ Maniobras de la academia', maniobrasPanelHtml('academia', maniAcad, errManiAcad)) +
-    adminDesplegable('super-conectados', '🟢 Personas conectadas', '<div id="super-conectados-cont"><p class="small-note">Abre este apartado para cargar quién está conectado.</p></div>', false, 'cargarConectadosSuper()') +
-    adminDesplegable('super-historial', '📜 Historial de cambios (por compañía y sección)', '<div id="super-historial-cont"><p class="small-note">Abre este apartado para ver el historial.</p></div>', false, 'cargarHistorialSuper()') +
-    adminDesplegable('super-cuartel', '🪖 Servicio de cuartel (cuentas, conexiones y accesos)', filaCuartel) +
-    adminDesplegable('super-reset', '🔑 Restablecer la contraseña de un alumno o admin', filaReset);
+    adminCajas('super', [
+      { id:'solicitudes', icono:'👤', titulo:'Solicitudes de admin', sub: nSol ? 'Pendientes de aprobar' : 'Ninguna pendiente', badge:(nSol||''), tituloPanel:'Solicitudes de administrador', cuerpo:filaSolicitudes },
+      { id:'puentes', icono:'🌉', titulo:'Puentes y festivos', sub:'Creador de puentes', cuerpo:puentesSuperHtml(puentes, errPuentes) },
+      { id:'maniobras', icono:'⛺', titulo:'Maniobras', sub:'De toda la academia', tituloPanel:'Maniobras de la academia', cuerpo:maniobrasPanelHtml('academia', maniAcad, errManiAcad) },
+      { id:'conectados', icono:'🟢', titulo:'Personas conectadas', sub:'En total y por compañía', alAbrir:'cargarConectadosSuper()', cuerpo:'<div id="super-conectados-cont"><p class="small-note">Cargando…</p></div>' },
+      { id:'historial', icono:'📜', titulo:'Historial de cambios', sub:'Por compañía y sección', alAbrir:'cargarHistorialSuper()', cuerpo:'<div id="super-historial-cont"><p class="small-note">Cargando…</p></div>' },
+      { id:'cuartel', icono:'🪖', titulo:'Servicio de cuartel', sub:'Cuentas, conexiones y accesos', tituloPanel:'Servicio de cuartel (cuentas, conexiones y accesos)', cuerpo:filaCuartel },
+      { id:'reset', icono:'🔑', titulo:'Restablecer contraseña', sub:'De un alumno o admin', tituloPanel:'Restablecer la contraseña de un alumno o admin', cuerpo:filaReset },
+    ]);
+  const abierta = CAJAS_ABIERTA.super;
+  if(abierta==='conectados') cargarConectadosSuper();
+  else if(abierta==='historial') cargarHistorialSuper();
 }
 function onSuperResetCompaniaChange(v){ superReset = { compania: v?parseInt(v,10):null, seccion:null }; renderSuperadmin(); }
 function onSuperResetSeccionChange(v){ superReset.seccion = v?parseInt(v,10):null; renderSuperadmin(); }
@@ -2952,17 +3165,8 @@ async function _renderAdminImpl(){
         </div>
         <div id="intol-solicitudes-panel">${intolSolicitudesOpen ? await intolSolicitudesHtml(c) : ''}</div>
       </div>`;
-  const avisoPendiente = intolPendientesCount ? ` <span style="color:var(--danger);">(${intolPendientesCount} pendiente${intolPendientesCount===1?'':'s'})</span>` : '';
-  document.getElementById('admin-controls').innerHTML =
-    `<div class="admin-panel">${filaExportar}</div>` +
-    adminDesplegable('avisos', '📢 Avisos a los alumnos', filaAviso) +
-    adminDesplegable('intol', `🍽️ Solicitudes de intolerancias${avisoPendiente}`, filaIntol) +
-    adminDesplegable('semana', '📅 Ajustes de esta semana', filaDesbloqueo + filaOculta + corteEspecialPanelHtml(companiaInfo.hora_corte,'comidas')) +
-    adminDesplegable('maniobras', '⛺ Añadir semana de maniobras', maniobrasPanelHtml('compania')) +
-    adminDesplegable('plazos', '📆 Abrir plazos hasta fin de curso', plazosFilaHtml()) +
-    adminDesplegable('bloque', '✏️ Marcar o desmarcar comidas en bloque', bloqueComidasHtml(c)) +
-    adminDesplegable('excel', '🔍 Comprobar un Excel contra la app', filaExcel) +
-    adminDesplegable('compania', '🏢 Compañía y alumnos', filaEfectivos + filaCodigo + faltanRegistrarseHtml(secciones) + conexionAlumnosHtml(secciones));
+  // Arriba, siempre lo primero y a la vista: exportar. El resto va en cajas, debajo de la tabla de totales
+  document.getElementById('admin-controls').innerHTML = `<div class="admin-panel">${filaExportar}</div>`;
 
   const cols = COLS();
   const nextCenaCol = cols.find(col=>col.type==='cena');
@@ -2974,6 +3178,31 @@ async function _renderAdminImpl(){
   const confirmadosTotal = allPeople.filter(p=>confirmMap[p.id]).length;
 
   document.getElementById('admin-companies').innerHTML = await companyBlockHtml(c, secciones, apuntesMap, confirmMap);
+  document.getElementById('admin-comidas-summary').innerHTML = PREFS.totales==='tabla' ? '' : cols.map(col=>{
+    const n = allPeople.filter(p=>getVal(p.id,col,apuntesMap)).length;
+    return `<div class="stat-card"><div class="num">${n}/${allPeople.length}</div><div class="lbl">${col.label} ${col.sub}</div></div>`;
+  }).join('');
+
+  // Cajas (debajo de la tabla de totales). Intolerancias, la última
+  const filaConfirmarTodos = `<div class="panel-row">
+        <div class="switch-label">Confirmar a todos<span class="sub2">Por si se cerró el plazo y hay quien no llegó a confirmar sus comidas</span></div>
+        <button class="small-btn" onclick="confirmarTodosComidas()">✅ Confirmar todos</button>
+      </div>`;
+  const historyHtml = historyOpen ? await historyPanel(secciones) : '';
+  const filaHistorial = `<div style="margin:10px 0;"><button class="small-btn" onclick="toggleHistory()">${historyOpen?'Cerrar historial':'Ver historial de cambios'}</button></div>${historyHtml}`;
+  document.getElementById('admin-cajas').innerHTML = adminCajas('admin', [
+    { id:'avisos', icono:'📢', titulo:'Avisos', sub:'A la compañía, una sección o una persona', tituloPanel:'Avisos a los alumnos', cuerpo:filaAviso },
+    { id:'semana', icono:'📅', titulo:'Ajustes de semana', sub:'Desbloqueos, ocultar, cierre y maniobras', tituloPanel:'Ajustes de esta semana',
+      cuerpo: cajaSub('cs-desbloqueo','🔓 Permitir desmarcar comidas obligatorias', filaDesbloqueo) + cajaSub('cs-oculta','🙈 Ocultar esta semana a los alumnos', filaOculta)
+        + cajaSub('cs-corte','⏰ Plazo de cierre de la semana', corteEspecialPanelHtml(companiaInfo.hora_corte,'comidas')) + cajaSub('cs-mani','⛺ Añadir semana de maniobras', maniobrasPanelHtml('compania')) },
+    { id:'generales', icono:'⚙️', titulo:'Ajustes generales', sub:'Plazos, comidas en bloque, historial', tituloPanel:'Ajustes generales',
+      cuerpo: cajaSub('cg-plazos','📆 Abrir plazos hasta fin de curso', plazosFilaHtml()) + cajaSub('cg-bloque','✏️ Marcar o desmarcar comidas en bloque', bloqueComidasHtml(c))
+        + cajaSub('cg-confirmar','✅ Confirmar a todos', filaConfirmarTodos) + cajaSub('cg-nocomen','🍽️ Quiénes no comen / no cenan', companyAbsencesSummary(secciones, apuntesMap)) + cajaSub('cg-hist','📜 Historial de cambios', filaHistorial) },
+    { id:'excel', icono:'🔍', titulo:'Comprobar Excel', sub:'Compáralo con lo que hay en la app', tituloPanel:'Comprobar un Excel contra la app', cuerpo:filaExcel },
+    { id:'compania', icono:'🏢', titulo:'Compañía y alumnos', sub:'Efectivos, código y conexiones', tituloPanel:'Compañía y alumnos',
+      cuerpo: cajaSub('cc-efectivos','👥 Efectivos y código de invitación', filaEfectivos + filaCodigo) + cajaSub('cc-faltan','📝 Quién falta por registrarse', faltanRegistrarseHtml(secciones)) + cajaSub('cc-conex','🟢 Conexión de los alumnos', conexionAlumnosHtml(secciones)) },
+    { id:'intol', icono:'🍽️', titulo:'Intolerancias', sub:'Peticiones de los alumnos', badge:(intolPendientesCount||''), tituloPanel:'Solicitudes de intolerancias', cuerpo:filaIntol },
+  ]);
 
   // Los totales de "registrados / faltan por registrarse" los ve solo el superadmin (en su panel de totales)
   document.getElementById('admin-grand').innerHTML = `
@@ -2981,11 +3210,7 @@ async function _renderAdminImpl(){
     <div><div class="num mono">${intolerantesCount}</div><div class="lbl">Con intolerancias</div></div>`;
 
   // Abajo del todo: quién ha confirmado
-  document.getElementById('admin-confirm-bottom').innerHTML = `
-    <div class="summary-grid">
-      <div class="stat-card"><div class="num">${cenaTotal}</div><div class="lbl">Cena ${DAY_NAMES[nextCenaCol.day]} marcadas</div></div>
-      <div class="stat-card"><div class="num">${confirmadosTotal}/${allPeople.length}</div><div class="lbl">Han revisado y confirmado esta semana</div></div>
-    </div>` + confirmDesplegableHtml('comidas', secciones, confirmMap);
+  document.getElementById('admin-confirm-bottom').innerHTML = confirmDesplegableHtml('comidas', secciones, confirmMap);
 }
 
 /* ---- Desplegables del panel de admin ---- */
@@ -2993,6 +3218,31 @@ const ADMIN_DET = {}; // id -> abierto/cerrado, para que no se cierren al repint
 function adminDesplegable(id, titulo, cuerpo, abiertoPorDefecto, alAbrir){
   const ab = ADMIN_DET.hasOwnProperty(id) ? ADMIN_DET[id] : !!abiertoPorDefecto;
   return `<details class="serv-est" ${ab?'open':''} ontoggle="ADMIN_DET['${id}']=this.open${alAbrir ? '; if(this.open) '+alAbrir : ''}"><summary>${titulo}</summary><div class="cuerpo"><div class="admin-panel adm-in">${cuerpo}</div></div></details>`;
+}
+/* ---- Cajas (cuadrados) del panel de admin y superadmin: tocar una abre su panel a todo el ancho debajo; tocarla otra vez lo cierra ---- */
+const CAJAS_ABIERTA = {}; // grupo -> id de la caja abierta (se recuerda al repintar)
+function adminCajas(grupo, lista){
+  const ab = CAJAS_ABIERTA[grupo];
+  const tiles = lista.map(c=>`<button type="button" class="caja${ab===c.id?' on':''}" data-caja="${grupo}|${c.id}" onclick="if(abrirCaja('${grupo}','${c.id}')){${c.alAbrir||''}}"><span class="caja-ico">${c.icono}</span><span class="caja-tit">${c.titulo}</span>${c.sub?`<span class="caja-sub">${c.sub}</span>`:''}${c.badge?`<span class="caja-badge">${c.badge}</span>`:''}</button>`).join('');
+  const paneles = lista.map(c=>`<div class="caja-panel${ab===c.id?'':' hidden'}" data-caja="${grupo}|${c.id}"><div class="caja-panel-cab"><b>${c.icono} ${c.tituloPanel||c.titulo}</b><button type="button" class="small-btn" onclick="abrirCaja('${grupo}','${c.id}')">Cerrar ✕</button></div><div class="admin-panel adm-in">${c.cuerpo}</div></div>`).join('');
+  return `<div class="cajas-grid">${tiles}</div>${paneles}`;
+}
+// Abre/cierra una caja sin repintar nada; devuelve true si ha quedado abierta
+function abrirCaja(grupo, id){
+  const abrir = CAJAS_ABIERTA[grupo]!==id; CAJAS_ABIERTA[grupo] = abrir ? id : null;
+  let panel = null;
+  document.querySelectorAll(`[data-caja^="${grupo}|"]`).forEach(el=>{
+    const es = el.dataset.caja===grupo+'|'+id;
+    if(el.classList.contains('caja')) el.classList.toggle('on', es && abrir);
+    else { el.classList.toggle('hidden', !(es && abrir)); if(es && abrir) panel = el; }
+  });
+  if(panel) panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  return abrir;
+}
+// Apartado plegable dentro de una caja (como un índice): cerrado por defecto y recuerda si lo has abierto
+function cajaSub(id, titulo, cuerpo){
+  const ab = ADMIN_DET.hasOwnProperty(id) && ADMIN_DET[id];
+  return `<details class="caja-det" ${ab?'open':''} ontoggle="ADMIN_DET['${id}']=this.open"><summary>${titulo}</summary><div class="caja-sub-body">${cuerpo}</div></details>`;
 }
 // Quién ha confirmado (comidas o pernoctas): por sección, o toda la gente en una lista ordenada por sección
 let confirmVista = 'seccion'; // 'seccion' | 'lista'
@@ -3764,7 +4014,7 @@ function adminDetailTable(sec, apuntesMap){
   thead += '</tr></thead>';
   let tbody = '<tbody>';
   sec.people.forEach(p=>{
-    tbody += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}</td>`;
+    tbody += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}${domingoMarca(p,apuntesMap)}</td>`;
     cols.forEach(c=>{
       const val = getVal(p.id,c,apuntesMap);
       tbody += `<td><input type="checkbox" class="chk editable" ${val?'checked':''} onchange="adminToggle('${p.id}','${c.type}',${c.day},${c.obligatorio},this.checked)"></td>`;
@@ -3787,7 +4037,7 @@ function comidaViewOnlyTable(sec, apuntesMap){
   thead += '</tr></thead>';
   let tbody = '<tbody>';
   sec.people.forEach(p=>{
-    tbody += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}</td>`;
+    tbody += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}${domingoMarca(p,apuntesMap)}</td>`;
     cols.forEach(c=>{
       const val = getVal(p.id,c,apuntesMap);
       tbody += `<td><span class="${val?'mark-yes':'mark-no'}">${val?'✓':'—'}</span></td>`;
@@ -3820,6 +4070,7 @@ function faltanRegistrarseHtml(secciones){
 async function companyBlockHtml(c, secciones, apuntesMap, confirmMap){
   const cols = COLS();
   const allPeopleBlock = secciones.flatMap(s=>s.people);
+  const nDomingo = allPeopleBlock.filter(p=>avisoDomingoAdmin(p, apuntesMap)).length;
   let rows = '';
   secciones.forEach(sec=>{
     rows += `<tr><td class="name-cell"><button class="small-btn" style="border:none;background:none;padding:0;font-weight:600;color:var(--ink);text-decoration:underline;cursor:pointer;" onclick="toggleSectionView('${sec.code}')">${sec.code}</button> <span style="color:var(--ink-soft)">(${sec.people.length})</span></td>`;
@@ -3846,22 +4097,14 @@ async function companyBlockHtml(c, secciones, apuntesMap, confirmMap){
     if(managedSections.has(sec.code)) details += sectionManagePanel(sec);
   });
 
-  const historyHtml = historyOpen ? await historyPanel(secciones) : '';
-
   return `<div class="company-block">
     <div class="company-head"><h4>${c}ª Compañía</h4><span class="chev">${SECTIONS_PER_COMPANY} secciones</span></div>
     <div class="company-body">
       <div class="section-btn-row">${sectionButtons}</div>
-      <p class="small-note" style="margin-top:0;">Toca el número de sección (ej. "111") para verla sin entrar en modo edición.</p>
-      <div class="table-scroll"><table class="roster">${thead}<tbody>${rows}</tbody>${tfootTotal}</table></div>
-      <div class="panel-row" style="margin:14px 0 4px;">
-        <div class="switch-label">Confirmar a todos<span class="sub2">Por si se cerró el plazo y hay quien no llegó a confirmar sus comidas</span></div>
-        <button class="small-btn" onclick="confirmarTodosComidas()">✅ Confirmar todos</button>
-      </div>
+      ${PREFS.totales==='cajas' ? '' : `<p class="small-note" style="margin-top:0;">Toca el número de sección (ej. "111") para verla sin entrar en modo edición.</p>
+      <div class="table-scroll"><table class="roster">${thead}<tbody>${rows}</tbody>${tfootTotal}</table></div>`}
+      ${nDomingo ? `<p class="small-note" style="margin-top:8px;">🍳❓ <b>${nDomingo}</b> persona${nDomingo===1?'':'s'} duerme${nDomingo===1?'':'n'} en la AGM el sábado y no ${nDomingo===1?'tiene':'tienen'} marcado el desayuno del domingo (sale la marca al lado del nombre al abrir su sección).</p>` : ''}
       ${details}
-      ${companyAbsencesSummary(secciones, apuntesMap)}
-      <div style="margin:10px 0;"><button class="small-btn" onclick="toggleHistory()">${historyOpen?'Cerrar historial':'Ver historial de cambios'}</button></div>
-      ${historyHtml}
     </div>
   </div>`;
 }
@@ -4604,7 +4847,7 @@ async function renderAlumnoPernoctas(){
   });
   list.innerHTML = html;
 
-  document.getElementById('alumno-pernocta-summary').innerHTML = Array.from({length:pernoctaDiasCount()},(_,i)=>i).map(d=>{
+  document.getElementById('alumno-pernocta-summary').innerHTML = (verSoloYoPernocta && PREFS.totalesSiempre!=='si') ? '' : Array.from({length:pernoctaDiasCount()},(_,i)=>i).map(d=>{
     const n = seccionPeople.filter(p=>valFor(p.id,d)).length;
     const fuera = seccionPeople.length - n;
     return `<div class="stat-card"><div class="num">${n}/${seccionPeople.length}</div><div class="lbl">AGM ${DAY_NAMES[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))} · ${fuera} fuera</div></div>`;
@@ -4939,12 +5182,8 @@ function pernoctaCompanyBlockHtml(c, secciones, pernMap, confirmMap){
     <div class="company-head"><h4>${c}ª Compañía</h4><span class="chev">${SECTIONS_PER_COMPANY} secciones</span></div>
     <div class="company-body">
       <div class="section-btn-row">${sectionButtons}</div>
-      <p class="small-note" style="margin-top:0;">Toca el número de sección (ej. "111") para verla sin entrar en modo edición.</p>
-      <div class="table-scroll"><table class="roster">${thead}<tbody>${rows}</tbody>${tfootTotal}</table></div>
-      <div class="panel-row" style="margin:14px 0 4px;">
-        <div class="switch-label">Confirmar a todos<span class="sub2">Por si se cerró el plazo y hay quien no llegó a confirmar dónde duerme</span></div>
-        <button class="small-btn" onclick="confirmarTodosPernocta()">✅ Confirmar todos</button>
-      </div>
+      ${PREFS.totales==='cajas' ? '' : `<p class="small-note" style="margin-top:0;">Toca el número de sección (ej. "111") para verla sin entrar en modo edición.</p>
+      <div class="table-scroll"><table class="roster">${thead}<tbody>${rows}</tbody>${tfootTotal}</table></div>`}
       ${details}
     </div>
   </div>`;
@@ -5196,13 +5435,19 @@ async function _renderAdminPernoctasImpl(){
         <label class="small-btn" style="margin-top:8px;align-self:flex-start;cursor:pointer;">🔍 Elegir Excel y comprobar<input type="file" accept=".xlsx,.xls" style="display:none;" onchange="comprobarExcelPernoctas(this)"></label>
         <div id="excel-check-pern-result" style="margin-top:8px;">${EXCEL_CHECK_PERN_HTML}</div>
       </div>`;
-  document.getElementById('admin-pernocta-controls').innerHTML =
-    `<div class="admin-panel">${filaExportarP}</div>` +
-    adminDesplegable('p-semana', '📅 Ajustes de esta semana', filaPermitirFuera + filaForzar + filaOcultaP + corteEspecialPanelHtml(companiaInfo.hora_corte,'pernoctas')) +
-    adminDesplegable('p-maniobras', '⛺ Añadir semana de maniobras', maniobrasPanelHtml('compania')) +
-    adminDesplegable('p-plazos', '📆 Abrir plazos hasta fin de curso', plazosFilaHtml()) +
-    adminDesplegable('p-pase', '🛂 Pase de horas individual', filaPase) +
-    adminDesplegable('p-excel', '🔍 Comprobar un Excel de pernoctas', filaExcelP);
+  document.getElementById('admin-pernocta-controls').innerHTML = `<div class="admin-panel">${filaExportarP}</div>`;
+  const filaConfirmarTodosP = `<div class="panel-row">
+        <div class="switch-label">Confirmar a todos<span class="sub2">Por si se cerró el plazo y hay quien no llegó a confirmar dónde duerme</span></div>
+        <button class="small-btn" onclick="confirmarTodosPernocta()">✅ Confirmar todos</button>
+      </div>`;
+  document.getElementById('admin-pernocta-cajas').innerHTML = adminCajas('admin-p', [
+    { id:'semana', icono:'📅', titulo:'Ajustes de semana', sub:'Dormir fuera, AGM forzada, pases y maniobras', tituloPanel:'Ajustes de esta semana',
+      cuerpo: cajaSub('ps-fuera','🌙 Permitir dormir fuera el viernes', filaPermitirFuera) + cajaSub('ps-forzar','🏠 Forzar AGM', filaForzar) + cajaSub('ps-oculta','🙈 Ocultar esta semana a los alumnos', filaOcultaP)
+        + cajaSub('ps-corte','⏰ Plazo de cierre de la semana', corteEspecialPanelHtml(companiaInfo.hora_corte,'pernoctas')) + cajaSub('ps-pase','🛂 Pase de horas individual', filaPase) + cajaSub('ps-mani','⛺ Añadir semana de maniobras', maniobrasPanelHtml('compania')) },
+    { id:'generales', icono:'⚙️', titulo:'Ajustes generales', sub:'Plazos hasta fin de curso y confirmar a todos', tituloPanel:'Ajustes generales',
+      cuerpo: cajaSub('pg-plazos','📆 Abrir plazos hasta fin de curso', plazosFilaHtml()) + cajaSub('pg-confirmar','✅ Confirmar a todos', filaConfirmarTodosP) },
+    { id:'excel', icono:'🔍', titulo:'Comprobar Excel', sub:'Compáralo con lo que hay en la app', tituloPanel:'Comprobar un Excel de pernoctas', cuerpo:filaExcelP },
+  ]);
 
   const pernMap = await fetchPernoctaMapAdmin(allIds, ACTIVE_WEEK.key);
   const confirmMapPern = await fetchConfirmMapPernocta(allIds, ACTIVE_WEEK.key);
@@ -5210,20 +5455,14 @@ async function _renderAdminPernoctasImpl(){
   const nAGM = (dia)=> allPeople.filter(p=>valFor(p.id,dia)).length;
   const nConfirmadosPern = allPeople.filter(p=>confirmMapPern[p.id]).length;
 
-  document.getElementById('admin-pernocta-summary').innerHTML = Array.from({length:pernoctaDiasCount()},(_,d)=>
+  document.getElementById('admin-pernocta-summary').innerHTML = PREFS.totales==='tabla' ? '' : Array.from({length:pernoctaDiasCount()},(_,d)=>
     `<div class="stat-card"><div class="num">${nAGM(d)}/${allPeople.length}</div><div class="lbl">AGM ${DAY_NAMES[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))}</div></div>`
   ).join('');
 
   document.getElementById('admin-pernocta-companies').innerHTML = pernoctaCompanyBlockHtml(c, secciones, pernMap, confirmMapPern);
 
   // Abajo del todo: quién ha confirmado
-  document.getElementById('admin-pernocta-confirm-bottom').innerHTML = `
-    <div class="summary-grid"><div class="stat-card"><div class="num">${nConfirmadosPern}/${allPeople.length}</div><div class="lbl">Han confirmado esta semana</div></div></div>`
-    + confirmDesplegableHtml('pernoctas', secciones, confirmMapPern);
-
-  let cells = '';
-  for(let d=0; d<pernoctaDiasCount(); d++) cells += `<div><div class="num mono">${nAGM(d)}</div><div class="lbl">AGM ${DAY_NAMES[(d)%7]}</div></div>`;
-  document.getElementById('admin-pernocta-grand').innerHTML = `<div><div class="num mono">${allPeople.length}</div><div class="lbl">Efectivos ${c}ª</div></div>` + cells;
+  document.getElementById('admin-pernocta-confirm-bottom').innerHTML = confirmDesplegableHtml('pernoctas', secciones, confirmMapPern);
 }
 
 /* ================= SERVICIOS ================= */
