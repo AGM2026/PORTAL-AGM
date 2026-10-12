@@ -760,7 +760,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-12T20:25";
+const APP_VERSION = "2026-10-12T20:38";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -1842,7 +1842,7 @@ function cuartelExportar(){ return CUARTEL.modulo==='comidas' ? exportCompanyExc
 
 // Helpers de datos
 const cMarca = (id,col)=> CUARTEL.data.V[id+'|'+col.type+'|'+col.day];
-const cPernVal = (id,d)=>{ const k=id+'|'+d; const m=CUARTEL.data.pernMap; return m.hasOwnProperty(k)?m[k].duerme_agm:true; };
+const cPernVal = (id,d)=>{ const k=id+'|'+d; const m=CUARTEL.data.pernMap; return nocheObligatoriaManiobra(id,ACTIVE_WEEK,d) ? true : (m.hasOwnProperty(k)?m[k].duerme_agm:true); };
 function cPernContacto(id){
   const m = CUARTEL.data.pernMap; let tel='', dir='';
   for(let d=0; d<CUARTEL.data.nDias; d++){ const k=id+'|'+d; if(m.hasOwnProperty(k) && !m[k].duerme_agm){ tel = tel || (m[k].telefono||''); dir = dir || (m[k].direccion||''); } }
@@ -3615,7 +3615,8 @@ async function fetchPuentesYManiobras(compania){
   const { data, error } = await sb.from('pernocta_puentes').select('semana_inicio,nombre,num_noches,forzar_agm,excluir_companias');
   PUENTES_TODOS = error ? null : (data||[]);
   aplicarPuentes(compania);
-  const r = await sb.from('maniobras').select('id,grupo,compania,fecha_inicio,hora_inicio,fecha_fin,hora_fin,nota').eq('compania', compania).order('fecha_inicio');
+  let r = await sb.from('maniobras').select('id,grupo,compania,fecha_inicio,hora_inicio,fecha_fin,hora_fin,nota,excluidos').eq('compania', compania).order('fecha_inicio');
+  if(r.error) r = await sb.from('maniobras').select('id,grupo,compania,fecha_inicio,hora_inicio,fecha_fin,hora_fin,nota').eq('compania', compania).order('fecha_inicio'); // sin la columna "excluidos" (parche 56 sin repetir todavía)
   MANIOBRAS_LISTA = r.error ? [] : (r.data||[]);
 }
 
@@ -3645,6 +3646,14 @@ function maniobrasBannerHtml(week, esPern){
 }
 // ¿Esa comida / esa noche cae dentro de unas maniobras? (la comida cuenta a su hora de fin: 7:30, 15:30, 20:30; la noche, a las 23:00)
 function comidaEnManiobras(week, col){ const f = comidaTermina(week, col); return MANIOBRAS_LISTA.some(m=> maniDT(m,'ini') <= f && f <= maniDT(m,'fin')); }
+// Noche OBLIGATORIA por unas maniobras: todas las noches desde el día de salida hasta la víspera del día en que acaban
+// (la noche del día que acaban NO es obligatoria). Quien esté en "Personas que no van" de esas maniobras queda libre.
+function nocheObligatoriaManiobra(personaId, week, d){
+  if(!MANIOBRAS_LISTA.length) return false;
+  const dia = diaPern(week, d), key = ymd(dia), f = new Date(dia); f.setHours(23,0,0,0);
+  return MANIOBRAS_LISTA.some(m=> key >= m.fecha_inicio && key < m.fecha_fin && maniDT(m,'ini') <= f
+    && !(Array.isArray(m.excluidos) && m.excluidos.map(String).includes(String(personaId))));
+}
 function nocheEnManiobras(week, d){ const f = new Date(diaPern(week, d)); f.setHours(23,0,0,0); return MANIOBRAS_LISTA.some(m=> maniDT(m,'ini') <= f && f <= maniDT(m,'fin')); }
 
 /* ---- Selector de fechas "tipo vuelos": primer clic = salida, segundo clic = vuelta ---- */
@@ -3857,7 +3866,7 @@ async function maniPersonasDe(c){
 }
 function maniPersonasHtml(id){
   const f = MANI_FORMS[id];
-  const cias = id==='maniAcad' ? f.companias.slice().sort((a,b)=>a-b) : [CURRENT.compania];
+  const cias = id==='maniAdmin' ? [CURRENT.compania] : f.companias.slice().sort((a,b)=>a-b);
   const opciones = cias.flatMap(c=>Array.from({length:SECTIONS_PER_COMPANY},(_,i)=>`<option value="${c}${i+1}">Sección ${c}${i+1}</option>`)).join('');
   const sty = 'padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;';
   return `<div style="margin:12px 0 0 26px;">
@@ -3882,7 +3891,7 @@ async function maniBuscarPersonas(id){
   const q = cuartelNorm(document.getElementById('mp-nombre-'+id).value);
   if(!sec && !q){ res.innerHTML = '<span class="sub2">Elige una sección o escribe un nombre para buscar.</span>'; return; }
   res.innerHTML = '<span class="sub2">Buscando…</span>';
-  const cias = id==='maniAcad' ? f.companias : [CURRENT.compania];
+  const cias = id==='maniAdmin' ? [CURRENT.compania] : f.companias;
   let lista = [];
   for(const c of cias) lista = lista.concat(await maniPersonasDe(c));
   if(sec) lista = lista.filter(p=>p.code===sec);
@@ -3894,7 +3903,7 @@ async function maniBuscarPersonas(id){
 }
 async function maniExcluirPersona(id, pid){
   const f = MANI_FORMS[id];
-  const cias = id==='maniAcad' ? f.companias : [CURRENT.compania];
+  const cias = id==='maniAdmin' ? [CURRENT.compania] : f.companias;
   let p = null;
   for(const c of cias){ p = (await maniPersonasDe(c)).find(x=>x.id===pid); if(p) break; }
   if(!p) return;
@@ -3905,7 +3914,31 @@ async function maniExcluirPersona(id, pid){
 function maniQuitarExclusion(id, pid){
   delete MANI_FORMS[id].personasExcluidas[pid];
   document.getElementById('mp-sel-'+id).innerHTML = maniExcluidasHtml(id);
-}function maniExcepcion(id, d, tipo, marcada){ const s = MANI_FORMS[id].excepciones; marcada ? s.delete(d+'|'+tipo) : s.add(d+'|'+tipo); }
+}/* ---- Editar a quién se libra de unas maniobras que YA existen (ventana con el mismo buscador) ---- */
+async function maniobrasEditarExcluidos(id, grupo, modo){
+  const filas = modo==='academia' ? MANI_ACAD_DATOS.filter(m=>m.grupo===grupo) : MANIOBRAS_LISTA.filter(m=>m.id===id);
+  if(!filas.length) return;
+  const cias = [...new Set(filas.map(m=>m.compania))];
+  const ids = new Set(); filas.forEach(m=>(m.excluidos||[]).forEach(x=>ids.add(String(x))));
+  let personas = []; for(const c of cias) personas = personas.concat(await maniPersonasDe(c));
+  const excl = {}; personas.filter(p=>ids.has(p.id)).forEach(p=>{ excl[p.id] = p; });
+  MANI_FORMS.maniEdit = { companias:cias, personasExcluidas:excl, objetivo:{ id, grupo, modo } };
+  abrirModalGlobal(`<h3>👤 Personas que no van a las maniobras</h3>
+    <p class="modal-nota" style="margin-top:0;">${maniobrasTexto(filas[0])}. Estas personas <b>no tienen las noches obligatorias</b> y no se les asignan comidas. Si ya tenían comidas asignadas, usa "Quitar comidas autoasignadas".</p>
+    ${maniPersonasHtml('maniEdit')}
+    <div class="modal-botones" style="margin-top:12px;"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" onclick="maniobrasGuardarExcluidos()">Guardar</button></div>`);
+}
+async function maniobrasGuardarExcluidos(){
+  const f = MANI_FORMS.maniEdit; if(!f) return;
+  const o = f.objetivo, q = sb.from('maniobras').update({ excluidos: Object.keys(f.personasExcluidas) });
+  const { error } = await (o.modo==='academia' ? q.eq('grupo', o.grupo) : q.eq('id', o.id));
+  if(error){ showToast('No se pudo guardar: '+error.message+' — ¿has repetido el parche SQL 56?'); return; }
+  cerrarModalGlobal();
+  await fetchPuentesYManiobras(CURRENT && CURRENT.compania ? CURRENT.compania : null);
+  showToast('Hecho: '+Object.keys(f.personasExcluidas).length+' persona(s) no van a esas maniobras.');
+  await (o.modo==='academia' ? renderSuperadmin() : rerenderActual());
+}
+function maniExcepcion(id, d, tipo, marcada){ const s = MANI_FORMS[id].excepciones; marcada ? s.delete(d+'|'+tipo) : s.add(d+'|'+tipo); }
 function maniRangoBodyHtml(id){
   const r = RANGOS[id], f = MANI_FORMS[id];
   let txt;
@@ -3917,6 +3950,7 @@ function maniRangoBodyHtml(id){
 function maniobrasListaHtml(filas, modo){
   if(!filas.length) return '<p class="small-note">No hay maniobras puestas.</p>';
   const botones = (id, grupo, m)=>`<div class="btns" style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="small-btn" onclick="maniobrasEditarExcluidos(${id===null?'null':id},'${grupo}','${modo}')" title="Gente que no va: no tiene las noches obligatorias ni se le asignan comidas">👤 Personas que no van (${(m.excluidos||[]).length})</button>
       <button class="small-btn" onclick="maniobrasAsignarDeNuevo(${id===null?'null':id},'${grupo}','${modo}')" title="Marca todas las comidas de estas maniobras (sin tocar lo que cada persona haya editado)">🍽️ Asignar comidas</button>
       <button class="small-btn" onclick="maniobrasQuitarComidas('${grupo}','${modo}')" title="Quita solo las comidas que puso la app, no las que editó cada persona">🧹 Quitar comidas autoasignadas</button>
       <button class="small-btn danger" onclick="maniobrasBorrar(${id===null?'null':id},'${grupo}','${modo}')">🗑 Borrar</button></div>`;
@@ -3972,7 +4006,8 @@ async function asignarComidasManiobra(maniobras, excepciones, personasExcluidas)
     const comidas = comidasDeManiobra(m.fecha_inicio, hhmm(m.hora_inicio), m.fecha_fin, hhmm(m.hora_fin)).filter(x=>!excepciones.has(x.fecha+'|'+x.tipo));
     if(!comidas.length) continue;
     const secciones = await fetchCompanySections(m.compania); // también deja al día EXTERNADOS, que hace falta para saber qué es obligatorio
-    const gente = secciones.flatMap(s=>s.people).filter(p=>!(personasExcluidas && personasExcluidas.has(String(p.id)))); // las personas excluidas no reciben ninguna comida
+    const exMan = new Set([...(personasExcluidas ? [...personasExcluidas] : []), ...((m.excluidos||[]).map(String))]);
+    const gente = secciones.flatMap(s=>s.people).filter(p=>!exMan.has(String(p.id))); // las personas excluidas no reciben ninguna comida
     const filas = [];
     comidas.forEach(x=>{
       const semKey = semanaKeyDeFecha(x.fecha), week = WEEKS.find(w=>w.key===semKey);
@@ -4001,9 +4036,10 @@ async function maniobrasAnadir(modo){
   const companias = modo==='academia' ? f.companias.slice() : [CURRENT.compania];
   if(!companias.length){ showToast('Elige al menos una compañía.'); return; }
   const grupo = (crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(16)+Math.random().toString(16).slice(2)));
-  const { data: nuevas, error } = await sb.from('maniobras')
-    .insert(companias.map(c=>({ grupo, compania:c, fecha_inicio:r.inicio, hora_inicio:f.horaIni, fecha_fin:r.fin, hora_fin:f.horaFin, nota: nota || null })))
-    .select('id,grupo,compania,fecha_inicio,hora_inicio,fecha_fin,hora_fin');
+  const filasIns = companias.map(c=>({ grupo, compania:c, fecha_inicio:r.inicio, hora_inicio:f.horaIni, fecha_fin:r.fin, hora_fin:f.horaFin, nota: nota || null, excluidos: Object.keys(f.personasExcluidas) }));
+  const selMani = 'id,grupo,compania,fecha_inicio,hora_inicio,fecha_fin,hora_fin';
+  let { data: nuevas, error } = await sb.from('maniobras').insert(filasIns).select(selMani);
+  if(error && /excluidos/.test(error.message||'')) ({ data: nuevas, error } = await sb.from('maniobras').insert(filasIns.map(({excluidos, ...x})=>x)).select(selMani)); // sin el parche 56 repetido
   if(error){ showToast('No se pudo guardar: '+error.message+' — ¿has ejecutado el parche SQL 56?'); return; }
   let extra = '';
   if(f.asignar){
@@ -4070,6 +4106,7 @@ async function guardarPlazosHasta(v){
   await rerenderActual();
 }
 function pernoctaObligatoria(personaId, dia){
+  if(nocheObligatoriaManiobra(personaId, ACTIVE_WEEK, dia)) return true; // noches dentro de unas maniobras: obligatorias (salvo la del día que acaban y quien no va)
   if(diaForzadoAgm(dia)) return !EXTERNADOS.has(personaId); // día marcado por el admin como obligatorio en la AGM (ej. puente)
   if(pernoctaDiasCount()>2) return false; // semana excepcional (puente) sin forzar: nada obligatorio esa semana
   if(dia!==0) return false; // solo el viernes puede ser obligatorio
@@ -4153,6 +4190,7 @@ async function renderAlumnoPernoctas(){
   const ownMap = await fetchPernoctaOwn(persona.id, ACTIVE_WEEK.key);
   HABITUAL = await fetchHabitual(persona.id);
   function valFor(id, dia){
+    if(nocheObligatoriaManiobra(id, ACTIVE_WEEK, dia)) return true; // en maniobras se duerme "en la AGM" (obligatorio)
     if(id===persona.id && ownMap.hasOwnProperty(dia)) return ownMap[dia].duerme_agm;
     const key = id+'|'+dia;
     if(seccionMap.hasOwnProperty(key)) return seccionMap[key];
@@ -4173,7 +4211,8 @@ async function renderAlumnoPernoctas(){
     for(let d=0; d<pernoctaDiasCount(); d++){
       const val = valFor(p.id, d);
       const tieneExcepcion = (p.id===persona.id) ? ownMap.hasOwnProperty(d) : seccionMap.hasOwnProperty(p.id+'|'+d);
-      const locked = pernoctaObligatoria(p.id, d) && !unlocked && !tieneExcepcion;
+      // Las noches de maniobras quedan bloqueadas aunque la compañía tenga el desbloqueo del viernes o la persona tuviera algo guardado de antes
+      const locked = nocheObligatoriaManiobra(p.id, ACTIVE_WEEK, d) || (pernoctaObligatoria(p.id, d) && !unlocked && !tieneExcepcion);
       if(locked){
         days += `<div class="pernocta-day"><span class="daylabel">${DAY_NAMES[(d)%7]}${nocheEnManiobras(ACTIVE_WEEK,d)?' ⛺':''}</span><span class="pernocta-badge agm">AGM</span></div>`;
       } else if(isMe && open){
@@ -4360,7 +4399,7 @@ async function togglePernoctaForzarAgm(dia, checked){
   await renderAdminPernoctas();
 }
 function pernoctaDetailTable(sec, pernMap, confirmMap){
-  function valFor(id,dia){ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true; }
+  function valFor(id,dia){ const k=id+'|'+dia; return nocheObligatoriaManiobra(id,ACTIVE_WEEK,dia) ? true : (pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true); }
   function addrFor(id,dia){ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?(pernMap[k].direccion||''):''; }
   function telFor(id,dia){ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?(pernMap[k].telefono||''):''; }
   let thead = '<thead><tr class="daynames"><th class="name-cell">'+sec.code+'</th>';
@@ -4375,10 +4414,10 @@ function pernoctaDetailTable(sec, pernMap, confirmMap){
       const tel = telFor(p.id,d).replace(/"/g,'&quot;');
       const faltaDireccion = !val && !addr && !tel;
       tbody += `<td>
-        <select class="pernocta-select" onchange="onAdminPernoctaSelect('${p.id}',${d},this.value)">
+        <select class="pernocta-select" onchange="onAdminPernoctaSelect('${p.id}',${d},this.value)" ${nocheObligatoriaManiobra(p.id,ACTIVE_WEEK,d) ? 'disabled title="Noche obligatoria por las maniobras. Para librar a alguien, ponlo en «Personas que no van» de esas maniobras."' : ''}>
           <option value="agm" ${val?'selected':''}>AGM</option>
           <option value="fuera" ${!val?'selected':''}>Fuera</option>
-        </select>
+        </select>${nocheObligatoriaManiobra(p.id,ACTIVE_WEEK,d) ? ' ⛺' : ''}
         <input type="tel" class="pernocta-addr ${val?'hidden':''}" id="admin-pernocta-tel-${p.id}-${d}" value="${tel}" placeholder="Teléfono" onchange="onAdminPernoctaContacto('${p.id}',${d})">
         <input type="text" class="pernocta-addr ${val?'hidden':''}" id="admin-pernocta-addr-${p.id}-${d}" value="${addr}" placeholder="Dirección" onchange="onAdminPernoctaContacto('${p.id}',${d})">
         ${faltaDireccion ? `<div style="font-size:.65rem;color:var(--danger);margin-top:3px;">⚠ sin teléfono ni dirección</div>` : ''}
@@ -4400,7 +4439,7 @@ function pernoctaDetailTable(sec, pernMap, confirmMap){
 let viewedPernoctaSections = new Set();
 function togglePernoctaView(code){ if(viewedPernoctaSections.has(code)) viewedPernoctaSections.delete(code); else viewedPernoctaSections.add(code); renderAdminPernoctas(); }
 function pernoctaViewOnlyTable(sec, pernMap, confirmMap){
-  function valFor(id,dia){ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true; }
+  function valFor(id,dia){ const k=id+'|'+dia; return nocheObligatoriaManiobra(id,ACTIVE_WEEK,dia) ? true : (pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true); }
   function addrFor(id,dia){ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?(pernMap[k].direccion||''):''; }
   function telFor(id,dia){ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?(pernMap[k].telefono||''):''; }
   const n = pernoctaDiasCount();
@@ -4433,7 +4472,7 @@ function pernoctaViewOnlyTable(sec, pernMap, confirmMap){
     <div class="table-scroll"><table class="roster">${thead}${tbody}${tfoot}</table></div>`;
 }
 function pernoctaCompanyBlockHtml(c, secciones, pernMap, confirmMap){
-  function valFor(id,dia){ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true; }
+  function valFor(id,dia){ const k=id+'|'+dia; return nocheObligatoriaManiobra(id,ACTIVE_WEEK,dia) ? true : (pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true); }
   const allPeopleBlock = secciones.flatMap(s=>s.people);
   let rows='';
   secciones.forEach(sec=>{
@@ -4505,7 +4544,7 @@ async function comprobarExcelPernoctas(input){
     const secciones = await fetchCompanySections(c);
     const allIds = secciones.flatMap(s=>s.people.map(p=>p.id));
     const pernMap = await fetchPernoctaMapAdmin(allIds, ACTIVE_WEEK.key);
-    const valFor = (id,dia)=>{ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true; };
+    const valFor = (id,dia)=>{ const k=id+'|'+dia; return nocheObligatoriaManiobra(id,ACTIVE_WEEK,dia) ? true : (pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true); };
     const nDias = pernoctaDiasCount();
     const norm = t => String(t==null?'':t).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
     const cabeceraApp = Array.from({length:nDias},(_,d)=>norm(DAY_NAMES[(d)%7]+' '+fmt(diaPern(ACTIVE_WEEK,d))));
@@ -4584,7 +4623,7 @@ async function exportPernoctaExcel(){
   const secciones = await fetchCompanySections(c);
   const allIds = secciones.flatMap(s=>s.people.map(p=>p.id));
   const pernMap = await fetchPernoctaMapAdmin(allIds, ACTIVE_WEEK.key);
-  function valFor(id,dia){ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true; }
+  function valFor(id,dia){ const k=id+'|'+dia; return nocheObligatoriaManiobra(id,ACTIVE_WEEK,dia) ? true : (pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true); }
   function addrFor(id,dia){ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?(pernMap[k].direccion||''):''; }
   function telFor(id,dia){ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?(pernMap[k].telefono||''):''; }
   function direccionCombinada(id){
@@ -4745,7 +4784,7 @@ async function _renderAdminPernoctasImpl(){
 
   const pernMap = await fetchPernoctaMapAdmin(allIds, ACTIVE_WEEK.key);
   const confirmMapPern = await fetchConfirmMapPernocta(allIds, ACTIVE_WEEK.key);
-  function valFor(id,dia){ const k=id+'|'+dia; return pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true; }
+  function valFor(id,dia){ const k=id+'|'+dia; return nocheObligatoriaManiobra(id,ACTIVE_WEEK,dia) ? true : (pernMap.hasOwnProperty(k)?pernMap[k].duerme_agm:true); }
   const nAGM = (dia)=> allPeople.filter(p=>valFor(p.id,dia)).length;
   const nConfirmadosPern = allPeople.filter(p=>confirmMapPern[p.id]).length;
 
