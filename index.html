@@ -55,7 +55,8 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .login-brand img{height:140px;width:auto;margin:0 auto 14px;display:block;}
 .login-brand h1{font-size:1.6rem;margin:0;font-weight:800;letter-spacing:.01em;}
 .login-brand .sub{color:var(--ink-soft);font-size:.85rem;margin-top:4px;}
-.who{font-size:.8rem;color:var(--ink-soft);text-align:right;}
+.who{font-size:.8rem;color:var(--ink-soft);text-align:right;margin-left:auto;} /* siempre pegado a la derecha, también cuando en el móvil baja a otra línea */
+.who .logout,.who .small-btn{vertical-align:middle;}
 .who .name{color:var(--ink);font-weight:600;}
 .logout{background:none;border:1px solid var(--line);color:var(--ink-soft);font-family:inherit;font-size:.75rem;padding:5px 10px;cursor:pointer;margin-top:4px;}
 .logout:hover{border-color:var(--ink-soft);color:var(--ink);}
@@ -171,6 +172,39 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .cal-dia.mani.mani-ini.mani-fin{border-radius:10px;}
 .cal-dia.mani.fuera{opacity:.7;}
 .admin-panel.adm-in{border:none;background:none;padding:0;margin:0;}
+/* ===== Retoque de estilo: esquinas redondeadas, relieve suave y casillas de día tipo pastilla ===== */
+.admin-panel{border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.10);}
+.admin-panel.adm-in{box-shadow:none;}
+.stat-card{border-radius:14px;box-shadow:0 1px 6px rgba(0,0,0,.10);}
+.company-head{border-radius:14px 14px 0 0;}
+.company-body{border-radius:0 0 14px 14px;}
+.grand-total{border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.10);}
+.notice,.aviso-card,.servicio-card,.cuartel-card,.confirm-box,.fixed-pill,.pernocta-row,.admin-edit-note{border-radius:12px;}
+details.serv-est{border-radius:14px;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.08);}
+details.serv-est>summary{transition:background .15s ease;}
+details.serv-est>summary:hover{background:rgba(184,134,11,.10);}
+.table-scroll,.pernocta-list{border-radius:12px;}
+.small-btn,.big-btn{border-radius:10px;transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;}
+.small-btn:hover:not(:disabled),.big-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.14);}
+.logout{border-radius:10px;}
+.view-toggle{border-radius:12px;overflow:hidden;}
+.module-btn{border-radius:12px;}
+select,input[type=text],input[type=number],input[type=date],input[type=time],input[type=tel],input[type=email],input[type=password],textarea{border-radius:10px;}
+.toast{border-radius:12px;}
+.manage-row,.history-row{border-radius:10px;}
+.dia-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.dia-chip{position:relative;display:inline-flex;align-items:center;gap:8px;padding:7px 14px 7px 8px;border:1.5px solid var(--line);border-radius:999px;background:var(--paper);cursor:pointer;user-select:none;transition:all .15s ease;}
+.dia-chip input{position:absolute;opacity:0;width:0;height:0;pointer-events:none;}
+.dia-chip .dia-ico{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;}
+.dia-chip .dia-txt{display:flex;flex-direction:column;line-height:1.15;}
+.dia-chip .dia-txt b{font-size:.82rem;}
+.dia-chip .dia-txt small{font-size:.68rem;color:var(--ink-soft);}
+.dia-chip:hover:not(.lock){border-color:var(--brass);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.14);}
+.dia-chip.on{border-color:var(--brass);background:linear-gradient(135deg,rgba(184,134,11,.30),rgba(184,134,11,.10));box-shadow:0 2px 8px rgba(184,134,11,.22);}
+.dia-chip.on .dia-ico{background:var(--brass);border-color:var(--brass);color:#1b1400;}
+.dia-chip.lock{cursor:not-allowed;border-style:dashed;opacity:.92;}
+.dia-chip.lock .dia-ico{border:none;font-size:1rem;}
+.dia-chip:focus-within{outline:2px solid var(--brass);outline-offset:2px;}
 .cal-leyenda{margin-top:8px;font-size:.72rem;color:var(--ink-soft);}
 /* Aviso de "tienes cambios sin confirmar": barra fija abajo, no se puede cerrar; solo desaparece al confirmar */
 .pend-bar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:#e08a00;color:#1b1400;font-size:.9rem;box-shadow:0 -2px 10px rgba(0,0,0,.25);}
@@ -524,17 +558,9 @@ aplicarTema();
         <div class="fixed-pill">✏️ Solo puedes marcar/desmarcar <b>tu cena</b> de cada día, tu <b>comida de viernes, sábado y domingo</b> y tu <b>desayuno del domingo</b></div>
         <div class="fixed-pill">🔒 El <b>desayuno del domingo</b> es obligatorio salvo que duermas <b>fuera</b> el sábado — si no quieres tenerlo marcado, cambia el sábado a "fuera" en Pernoctas y se desbloqueará solo</div>
       </div>
-      <div class="admin-panel" style="margin-top:18px;">
-        <div class="panel-row" style="flex-direction:column;align-items:stretch;">
-          <div class="switch-label">¿Tienes una intolerancia que no está apuntada?
-            <span class="sub2">Escríbela y pídesela al admin de tu compañía — la revisa él y la añade a tu ficha</span>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-            <input type="text" id="intol-solicitud-texto" placeholder="Ej. Alergia a los frutos secos" style="flex:1;min-width:200px;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;">
-            <button class="small-btn" onclick="enviarSolicitudIntolerancia()">Enviar solicitud</button>
-          </div>
-          <div id="alumno-intol-solicitudes" style="margin-top:8px;"></div>
-        </div>
+      <div class="notice" style="margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-color:var(--brass);">
+        <span>🍽️ <b>Si tienes alguna intolerancia, abre el menú de ajustes</b> (⚙️, arriba a la derecha).</span>
+        <button class="small-btn cfg-btn" onclick="window.scrollTo({top:0,behavior:'smooth'}); toggleConfig()">⚙️ Abrir ajustes</button>
       </div>
     </div>
 
@@ -542,10 +568,9 @@ aplicarTema();
       <div id="alumno-pernocta-confirm"></div>
       <div id="alumno-pernocta-maniobras"></div>
       <h3 class="section-title">Pernoctas del fin de semana</h3>
-      <div class="summary-grid" id="alumno-pernocta-summary"></div>
       <div id="alumno-pernocta-view-toggle"></div>
       <div class="pernocta-list" id="alumno-pernocta-table"></div>
-      <div class="pernocta-total-bar" id="alumno-pernocta-totalbar"></div>
+      <div class="summary-grid" id="alumno-pernocta-summary"></div>
       <div id="alumno-pernocta-own"></div>
       <p class="small-note">Puedes ver si tus compañeros duermen en la AGM o fuera, pero no su dirección — esa solo la ven ellos y el administrador.</p>
       <div class="fixed-row" style="margin-top:24px;">
@@ -760,7 +785,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-12T20:38";
+const APP_VERSION = "2026-10-12T21:08";
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
   try{
@@ -890,14 +915,31 @@ async function fetchCortesEspeciales(compania){
   CORTES_ESPECIALES = {};
   (data||[]).forEach(r=>{ (CORTES_ESPECIALES[r.semana_inicio] = CORTES_ESPECIALES[r.semana_inicio] || {})[r.modulo || 'ambos'] = r.corte_en; });
 }
-let PERNOCTA_FORZAR_AGM = {}; // semana_inicio (clave) -> Set de días forzados obligatorios en la AGM por el admin (aparte del viernes normal)
+let PERNOCTA_FORZAR_AGM = {}; // semana_inicio (clave) -> Set de días forzados A MANO por el admin de la compañía (obligatorio dormir en la AGM)
+let FORZAR_QUITADOS = {};     // semana_inicio -> Set de días del "por defecto" que el admin ha quitado en esa semana
+let FORZAR_DEFECTO = { dias:[], desde:null }; // días (0 = viernes…) que se fuerzan en TODAS las semanas a partir de la semana "desde"
 async function fetchPernoctaForzarAgm(compania){
   const { data } = await sb.from('pernocta_forzar_agm').select('semana_inicio,dia').eq('compania', compania);
   PERNOCTA_FORZAR_AGM = {};
   (data||[]).forEach(r=>{ (PERNOCTA_FORZAR_AGM[r.semana_inicio] = PERNOCTA_FORZAR_AGM[r.semana_inicio] || new Set()).add(r.dia); });
-  await fetchPuentesYManiobras(compania); // además de lo forzado por el admin, se cargan los puentes del superadmin y las semanas de maniobras de esta compañía
+  // "Mantener por defecto" y los días quitados (parche SQL 57: si aún no existe, simplemente no hay valor por defecto)
+  FORZAR_QUITADOS = {}; FORZAR_DEFECTO = { dias:[], desde:null };
+  try{
+    const q = await sb.from('pernocta_forzar_agm_quitados').select('semana_inicio,dia').eq('compania', compania);
+    if(!q.error) (q.data||[]).forEach(r=>{ (FORZAR_QUITADOS[r.semana_inicio] = FORZAR_QUITADOS[r.semana_inicio] || new Set()).add(r.dia); });
+    const c = await sb.from('companias').select('forzar_agm_defecto,forzar_agm_defecto_desde').eq('numero', compania).maybeSingle();
+    if(!c.error && c.data && Array.isArray(c.data.forzar_agm_defecto) && c.data.forzar_agm_defecto_desde) FORZAR_DEFECTO = { dias:c.data.forzar_agm_defecto.slice(), desde:String(c.data.forzar_agm_defecto_desde).slice(0,10) };
+  }catch(e){}
+  await fetchPuentesYManiobras(compania); // además de lo forzado por el admin, se cargan los puentes del superadmin y las maniobras de esta compañía
 }
-function diaForzadoAgm(dia, week){ week = week || ACTIVE_WEEK; const esp = PERNOCTA_SEMANAS_ESPECIALES[week.key]; if(esp && (esp.forzarAgm||[]).includes(dia)) return true; return !!(PERNOCTA_FORZAR_AGM[week.key] && PERNOCTA_FORZAR_AGM[week.key].has(dia)); }
+// Días forzados por el admin de la compañía en esa semana: los marcados a mano + los "por defecto" (desde su fecha), menos los que quitó
+function diasForzadosCompania(week){
+  const s = new Set(PERNOCTA_FORZAR_AGM[week.key] || []);
+  if(FORZAR_DEFECTO.desde && week.key >= FORZAR_DEFECTO.desde){ const n = pernoctaDiasCountFor(week); FORZAR_DEFECTO.dias.forEach(d=>{ if(d < n) s.add(d); }); }
+  (FORZAR_QUITADOS[week.key] || []).forEach(d=>s.delete(d));
+  return s;
+}
+function diaForzadoAgm(dia, week){ week = week || ACTIVE_WEEK; const esp = PERNOCTA_SEMANAS_ESPECIALES[week.key]; if(esp && (esp.forzarAgm||[]).includes(dia)) return true; return diasForzadosCompania(week).has(dia); }
 let COMIDA_DESBLOQUEO_DIAS = {}; // semana_inicio (clave) -> Set de días en que se permite desmarcar comidas obligatorias
 async function fetchComidaDesbloqueoDias(compania){
   const { data } = await sb.from('comida_desbloqueo_dias').select('semana_inicio,dia').eq('compania', compania);
@@ -1101,7 +1143,14 @@ function pintarConfig(){
     ${grupo('tema', [['auto','Automático'],['claro','☀️ Claro'],['oscuro','🌙 Oscuro']])}
     ${CURRENT && CURRENT.mode==='alumno' ? `<div class="cfg-label">Guardar mi dirección y teléfono habituales (botón "Habitual" en Pernoctas)</div>
     ${grupo('habitual', [['si','Sí'],['no','No']])}` : ''}
-    <div class="cfg-label" style="margin-bottom:10px;">Estos ajustes se guardan solo en este dispositivo.</div>`;
+    ${CURRENT && CURRENT.mode==='alumno' ? `<div class="cfg-label" style="margin-top:14px;"><b>🍽️ ¿Tienes una intolerancia que no está apuntada?</b><br>Escríbela y pídesela al admin de tu compañía: la revisa él y la añade a tu ficha.</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+      <input type="text" id="intol-solicitud-texto" maxlength="200" placeholder="Ej. Alergia a los frutos secos" style="flex:1;min-width:150px;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;">
+      <button class="small-btn" onclick="enviarSolicitudIntolerancia()">Enviar solicitud</button>
+    </div>
+    <div id="alumno-intol-solicitudes" style="margin-bottom:12px;"></div>` : ''}
+    <div class="cfg-label" style="margin-bottom:10px;">Estos ajustes (tema, calendario y habitual) se guardan solo en este dispositivo.</div>`;
+  if(CURRENT && CURRENT.mode==='alumno') renderMisSolicitudesIntolerancia(CURRENT.persona.id); // lista de mis solicitudes (dentro del panel)
 }
 function setPref(clave, valor){
   PREFS[clave] = valor;
@@ -2569,14 +2618,8 @@ async function _renderAdminImpl(){
         <div class="switch-label">Permitir a los alumnos de la ${c}ª desmarcar las comidas obligatorias
           <span class="sub2">Elige qué día(s) de esta semana se puede desmarcar desayuno/comida aunque sean obligatorios — para puentes y días sueltos, sin abrir toda la semana entera</span>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-          ${Array.from({length:7},(_,d)=>d).map(d=>{
-            const desbloqueado = diaComidaDesbloqueado(d);
-            return `<label style="display:flex;align-items:center;gap:6px;border:1px solid ${desbloqueado?'var(--brass)':'var(--line)'};padding:6px 10px;cursor:pointer;${desbloqueado?'background:rgba(184,134,11,.15);':''}">
-              <input type="checkbox" ${desbloqueado?'checked':''} onchange="toggleComidaDesbloqueo(${d}, this.checked)">
-              ${DAY_NAMES[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))}
-            </label>`;
-          }).join('')}
+        <div class="dia-chips">
+          ${Array.from({length:7},(_,d)=>d).map(d=>diaChipHtml({ etiqueta:DAY_NAMES[(d)%7], fecha:fmt(diaPern(ACTIVE_WEEK,d)), marcado:diaComidaDesbloqueado(d), onchange:`toggleComidaDesbloqueo(${d}, this.checked)` })).join('')}
         </div>
       </div>`;
   const filaOculta = `<div class="panel-row">
@@ -4210,7 +4253,8 @@ async function renderAlumnoPernoctas(){
     let days = '';
     for(let d=0; d<pernoctaDiasCount(); d++){
       const val = valFor(p.id, d);
-      const tieneExcepcion = (p.id===persona.id) ? ownMap.hasOwnProperty(d) : seccionMap.hasOwnProperty(p.id+'|'+d);
+      // "Excepción" = permiso para dormir FUERA un día obligatorio (pase). Un dato guardado "AGM" ya no desbloquea el día (así, forzar la AGM a toda la compañía no deja a nadie editando)
+      const tieneExcepcion = (p.id===persona.id) ? (ownMap.hasOwnProperty(d) && ownMap[d].duerme_agm===false) : (seccionMap.hasOwnProperty(p.id+'|'+d) && seccionMap[p.id+'|'+d]===false);
       // Las noches de maniobras quedan bloqueadas aunque la compañía tenga el desbloqueo del viernes o la persona tuviera algo guardado de antes
       const locked = nocheObligatoriaManiobra(p.id, ACTIVE_WEEK, d) || (pernoctaObligatoria(p.id, d) && !unlocked && !tieneExcepcion);
       if(locked){
@@ -4249,12 +4293,6 @@ async function renderAlumnoPernoctas(){
     </div>`;
   });
   list.innerHTML = html;
-
-  const totalsHtml = Array.from({length:pernoctaDiasCount()},(_,i)=>i).map(d=>{
-    const n = seccionPeople.filter(p=>valFor(p.id,d)).length;
-    return `<span class="${countCellClass(n, seccionPeople.length)}" style="padding:2px 6px;">${DAY_NAMES[(d)%7]}: ${n}/${seccionPeople.length} en AGM</span>`;
-  }).join('');
-  document.getElementById('alumno-pernocta-totalbar').innerHTML = `<span>Total sección ${code}</span>${totalsHtml}`;
 
   document.getElementById('alumno-pernocta-summary').innerHTML = Array.from({length:pernoctaDiasCount()},(_,i)=>i).map(d=>{
     const n = seccionPeople.filter(p=>valFor(p.id,d)).length;
@@ -4382,20 +4420,107 @@ async function togglePernoctaUnlock(checked){
   if(error) showToast('No se pudo cambiar: '+error.message);
   await renderAdminPernoctas();
 }
-async function togglePernoctaForzarAgm(dia, checked){
-  const c = CURRENT.compania;
-  if(checked){
-    const { error } = await sb.from('pernocta_forzar_agm').upsert(
-      { compania:c, semana_inicio:ACTIVE_WEEK.key, dia },
-      { onConflict:'compania,semana_inicio,dia' }
-    );
-    if(error){ showToast('No se pudo guardar: '+error.message); return; }
-  } else {
-    const { error } = await sb.from('pernocta_forzar_agm').delete().eq('compania',c).eq('semana_inicio',ACTIVE_WEEK.key).eq('dia',dia);
-    if(error){ showToast('No se pudo quitar: '+error.message); return; }
+/* ---- Casilla de día "tipo pastilla" (la usan Forzar AGM y el desbloqueo de comidas) ---- */
+function diaChipHtml({ etiqueta, fecha, marcado, bloqueado, titulo, onchange }){
+  return `<label class="dia-chip${marcado?' on':''}${bloqueado?' lock':''}"${titulo?` title="${escHtml(titulo)}"`:''}>
+    <input type="checkbox" ${marcado?'checked':''} ${bloqueado?'disabled':''} ${onchange?`onchange="${onchange}"`:''}>
+    <span class="dia-ico">${bloqueado?'🔒':(marcado?'✓':'')}</span>
+    <span class="dia-txt"><b>${etiqueta}</b>${fecha?`<small>${fecha}</small>`:''}</span></label>`;
+}
+/* ---- Forzar AGM obligatoria (admin de la compañía) ---- */
+function forzarAgmFilaHtml(){
+  const n = pernoctaDiasCount(), esp = PERNOCTA_SEMANAS_ESPECIALES[ACTIVE_WEEK.key];
+  const delPuente = d => !!(esp && (esp.forzarAgm||[]).includes(d));
+  const chips = Array.from({length:n},(_,d)=>d).map(d=>diaChipHtml({
+    etiqueta: DAY_NAMES[d%7], fecha: fmt(diaPern(ACTIVE_WEEK,d)),
+    marcado: delPuente(d) || diaForzadoAgm(d), bloqueado: delPuente(d),
+    titulo: delPuente(d) ? `Obligatorio por el puente «${esp.nombre}»: lo cambia el superadmin en el Creador de puentes` : '',
+    onchange: delPuente(d) ? '' : `togglePernoctaForzarAgm(${d}, this.checked)`
+  })).join('');
+  const hayDefecto = FORZAR_DEFECTO.dias.length > 0;
+  return `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
+      <div class="switch-label">Forzar AGM obligatoria algún día de esta semana
+        <span class="sub2">Marca los días en los que es obligatorio dormir en la AGM (salvo externados). <b>Al marcar un día, toda la ${CURRENT.compania}ª pasa a dormir en la AGM esa noche</b>, también quien tuviera marcado "fuera".</span>
+      </div>
+      <div class="dia-chips">${chips}</div>
+      ${esp ? `<div class="sub2" style="margin-top:6px;">🔒 Los días con candado los fija el puente «${escHtml(esp.nombre)}» y solo los puede cambiar el superadmin.</div>` : ''}
+      <div class="dia-chips" style="align-items:center;">
+        <button class="small-btn" onclick="forzarMismaQueSemanaAnterior()">↩️ Misma elección que la semana anterior</button>
+        <label class="dia-chip${hayDefecto?' on':''}"><input type="checkbox" ${hayDefecto?'checked':''} onchange="forzarMantenerPorDefecto(this.checked)"><span class="dia-ico">${hayDefecto?'✓':''}</span><span class="dia-txt"><b>Mantener esta elección por defecto</b></span></label>
+      </div>
+      ${hayDefecto ? `<div class="sub2" style="margin-top:4px;">Por defecto, desde la semana del ${fmt(new Date(FORZAR_DEFECTO.desde+'T00:00:00'))}, cada semana son obligatorios: <b>${FORZAR_DEFECTO.dias.map(d=>DAY_NAMES[d%7]).join(', ')}</b>. En cada semana puedes quitar o añadir días.</div>` : ''}
+    </div>`;
+}
+// Pone a TODA la compañía (salvo externados) durmiendo en la AGM las noches indicadas de la semana que se está viendo
+async function ponerTodosEnAgm(dias){
+  const secciones = await fetchCompanySections(CURRENT.compania); // también deja al día EXTERNADOS
+  const gente = secciones.flatMap(s=>s.people).filter(p=>!EXTERNADOS.has(p.id));
+  const filas = [];
+  dias.forEach(d=> gente.forEach(p=> filas.push({ persona_id:p.id, semana_inicio:ACTIVE_WEEK.key, dia:d, obligatoria:true, duerme_agm:true, direccion:null, telefono:null })));
+  for(let i = 0; i < filas.length; i += 500){
+    const { error } = await sb.from('pernoctas').upsert(filas.slice(i, i+500), { onConflict:'persona_id,semana_inicio,dia' });
+    if(error){ showToast('No se pudieron poner todos en la AGM: '+error.message); return 0; }
   }
+  return gente.length;
+}
+// Guarda en la base de datos que ese día está (o no) forzado a mano; si viene del "por defecto", lo anota como quitado en esa semana
+async function guardarDiaForzado(c, key, dia, forzado){
+  if(forzado){
+    await sb.from('pernocta_forzar_agm_quitados').delete().eq('compania',c).eq('semana_inicio',key).eq('dia',dia); // si estaba quitado del por defecto, vuelve
+    const { error } = await sb.from('pernocta_forzar_agm').upsert({ compania:c, semana_inicio:key, dia }, { onConflict:'compania,semana_inicio,dia' });
+    return error;
+  }
+  const { error } = await sb.from('pernocta_forzar_agm').delete().eq('compania',c).eq('semana_inicio',key).eq('dia',dia);
+  if(error) return error;
+  if(FORZAR_DEFECTO.desde && key >= FORZAR_DEFECTO.desde && FORZAR_DEFECTO.dias.includes(dia)){
+    const r = await sb.from('pernocta_forzar_agm_quitados').upsert({ compania:c, semana_inicio:key, dia }, { onConflict:'compania,semana_inicio,dia' });
+    return r.error;
+  }
+  return null;
+}
+async function togglePernoctaForzarAgm(dia, checked){
+  const c = CURRENT.compania, key = ACTIVE_WEEK.key;
+  const etiqueta = `${DAY_NAMES[dia%7]} ${fmt(diaPern(ACTIVE_WEEK,dia))}`;
+  if(checked && !confirm(`¿Forzar la AGM el ${etiqueta}?\n\nToda la ${c}ª (salvo externados) pasa a dormir en la AGM esa noche, también quien tuviera marcado "fuera".`)){ await renderAdminPernoctas(); return; }
+  const error = await guardarDiaForzado(c, key, dia, checked);
+  if(error){ showToast('No se pudo guardar: '+error.message); await renderAdminPernoctas(); return; }
+  let extra = '';
+  if(checked){ const n = await ponerTodosEnAgm([dia]); extra = n ? ` · ${n} personas en la AGM` : ''; }
   await fetchPernoctaForzarAgm(c);
-  showToast(checked ? `${DAY_NAMES[(dia)%7]} pasa a ser obligatorio dormir en la AGM para todos.` : `${DAY_NAMES[(dia)%7]} deja de ser obligatorio.`);
+  showToast(checked ? `${etiqueta}: obligatorio dormir en la AGM para todos${extra}.` : `${etiqueta} deja de ser obligatorio.`);
+  await renderAdminPernoctas();
+}
+// "Misma elección que la semana anterior": copia los días forzados de la semana anterior a esta
+async function forzarMismaQueSemanaAnterior(){
+  const c = CURRENT.compania, key = ACTIVE_WEEK.key;
+  let i = weekIndex - 1; while(i >= 0 && PERNOCTA_SEMANAS_INCLUIDAS[WEEKS[i].key]) i--; // salta las semanas que quedan dentro de un puente
+  if(i < 0){ showToast('No hay una semana anterior.'); return; }
+  const prev = WEEKS[i], espAct = PERNOCTA_SEMANAS_ESPECIALES[key];
+  const delPuente = d => !!(espAct && (espAct.forzarAgm||[]).includes(d));
+  const nAct = pernoctaDiasCountFor(ACTIVE_WEEK);
+  const objetivo = new Set([...diasForzadosCompania(prev)].filter(d=> d < nAct && !delPuente(d)));
+  const actual = diasForzadosCompania(ACTIVE_WEEK);
+  const nuevos = [...objetivo].filter(d=>!actual.has(d)), sobran = [...actual].filter(d=>!objetivo.has(d));
+  if(!nuevos.length && !sobran.length){ showToast(objetivo.size ? 'Esta semana ya tiene la misma elección que la anterior.' : 'La semana anterior no tenía días obligatorios (y esta tampoco).'); return; }
+  const lista = x => x.length ? x.map(d=>DAY_NAMES[d%7]+' '+fmt(diaPern(ACTIVE_WEEK,d))).join(', ') : 'ninguno';
+  if(!confirm(`Semana del ${fmt(prev.days[0])}: días obligatorios = ${[...diasForzadosCompania(prev)].map(d=>DAY_NAMES[d%7]).join(', ') || 'ninguno'}.\n\nEsta semana quedaría así:\n• Se añaden: ${lista(nuevos)}${nuevos.length ? ' (toda la '+c+'ª pasa a dormir en la AGM esas noches)' : ''}\n• Se quitan: ${lista(sobran)}\n\n¿Seguro?`)) return;
+  for(const d of sobran){ const e = await guardarDiaForzado(c, key, d, false); if(e){ showToast('No se pudo guardar: '+e.message); return; } }
+  for(const d of nuevos){ const e = await guardarDiaForzado(c, key, d, true); if(e){ showToast('No se pudo guardar: '+e.message); return; } }
+  let extra = '';
+  if(nuevos.length){ const n = await ponerTodosEnAgm(nuevos); extra = n ? ` · ${n} personas en la AGM` : ''; }
+  await fetchPernoctaForzarAgm(c);
+  showToast('Hecho: misma elección que la semana anterior'+extra+'.');
+  await renderAdminPernoctas();
+}
+// "Mantener esta elección por defecto": los días forzados de esta semana se repiten solos en todas las semanas siguientes (se pueden quitar/añadir en cada una)
+async function forzarMantenerPorDefecto(activar){
+  const c = CURRENT.compania, esp = PERNOCTA_SEMANAS_ESPECIALES[ACTIVE_WEEK.key];
+  const dias = activar ? [...diasForzadosCompania(ACTIVE_WEEK)].filter(d=>!(esp && (esp.forzarAgm||[]).includes(d))).sort((a,b)=>a-b) : [];
+  if(activar && !dias.length){ showToast('Primero marca algún día obligatorio en esta semana: eso es lo que se mantendrá por defecto.'); await renderAdminPernoctas(); return; }
+  const { error } = await sb.from('companias').update({ forzar_agm_defecto: dias, forzar_agm_defecto_desde: activar ? ACTIVE_WEEK.key : null }).eq('numero', c);
+  if(error){ showToast('No se pudo guardar: '+error.message+' — ¿has ejecutado el parche SQL 57?'); await renderAdminPernoctas(); return; }
+  await fetchPernoctaForzarAgm(c);
+  showToast(activar ? `Por defecto desde esta semana: ${dias.map(d=>DAY_NAMES[d%7]).join(', ')}.` : 'Ya no hay elección por defecto.');
   await renderAdminPernoctas();
 }
 function pernoctaDetailTable(sec, pernMap, confirmMap){
@@ -4729,20 +4854,7 @@ async function _renderAdminPernoctasImpl(){
         <div class="switch-label">Permitir dormir fuera el viernes<span class="sub2">Permiso extraordinario / pase de horas para TODA la ${c}ª esta semana — para puentes, no lo normal</span></div>
         <label class="switch"><input type="checkbox" ${companiaInfo.permitir_desbloqueo_pernocta?'checked':''} onchange="togglePernoctaUnlock(this.checked)"><span class="track"></span><span class="thumb"></span></label>
       </div>`;
-  const filaForzar = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
-        <div class="switch-label">Forzar AGM obligatoria algún día de esta semana
-          <span class="sub2">Para puentes: marca qué días (aparte del viernes normal) son obligatorios dormir en la AGM para todos, salvo externados — tú lo cambias aquí, sin que haga falta tocar el código ni subir nada</span>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-          ${Array.from({length:pernoctaDiasCount()},(_,d)=>d).map(d=>{
-            const forzado = diaForzadoAgm(d);
-            return `<label style="display:flex;align-items:center;gap:6px;border:1px solid ${forzado?'var(--brass)':'var(--line)'};padding:6px 10px;cursor:pointer;${forzado?'background:rgba(184,134,11,.15);':''}">
-              <input type="checkbox" ${forzado?'checked':''} onchange="togglePernoctaForzarAgm(${d}, this.checked)">
-              ${DAY_NAMES[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))}
-            </label>`;
-          }).join('')}
-        </div>
-      </div>`;
+  const filaForzar = forzarAgmFilaHtml();
   const filaOcultaP = `<div class="panel-row">
         <div class="switch-label">Ocultar esta semana a los alumnos (Comidas y Pernoctas)
           <span class="sub2">No borra nada — tú sigues viendo todas las semanas, pasadas incluidas. Las ya pasadas se les ocultan solas a los alumnos</span>
