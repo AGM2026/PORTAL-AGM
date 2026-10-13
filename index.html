@@ -475,6 +475,12 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
 .cu-tel{display:block;margin-top:10px;padding:12px;border:2px solid var(--olive);font-size:1.15rem;text-align:center;}
 .cu-tel a{color:var(--olive);font-weight:800;text-decoration:none;}
 .empleo-ico{height:1.35em;width:auto;vertical-align:-0.3em;margin-right:5px;}
+.caja-oculta{display:none !important;}
+.cajas-grid.editando .caja{position:relative;outline:2px dashed var(--brass);outline-offset:2px;padding-bottom:36px;}
+.caja-ctl{position:absolute;left:6px;right:6px;bottom:5px;display:flex;gap:4px;justify-content:center;}
+.caja-ctl span{background:var(--ink);color:var(--paper);font-size:.7rem;font-weight:700;padding:4px 8px;border-radius:6px;cursor:pointer;}
+#diseno-barra{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:900;display:flex;gap:10px;align-items:center;max-width:94vw;background:var(--card);color:var(--ink);border:2px solid var(--brass);border-radius:12px;padding:8px 12px;font-size:.8rem;box-shadow:0 6px 24px rgba(0,0,0,.3);}
+.mh-nombre .empleo-ico{height:1.7em;vertical-align:-0.45em;}
 .contacto-app{text-align:center;margin-top:28px;}
 .contacto-botones{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
 .contacto-botones .small-btn{text-decoration:none;display:inline-block;}
@@ -812,8 +818,8 @@ aplicarTema();
         <button type="button" class="caja" data-caja="serv|cambios" onclick="abrirCaja('serv','cambios')"><span class="caja-ico">🔁</span><span class="caja-tit">Cambios pendientes</span><span class="caja-sub">Solicitudes de los alumnos</span><span class="caja-badge hidden" id="serv-badge-cambios"></span></button>
         <button type="button" class="caja" data-caja="serv|excel" onclick="abrirCaja('serv','excel')"><span class="caja-ico">📤</span><span class="caja-tit">Subir el Excel</span><span class="caja-sub">Guardias de orden</span></button>
         <button type="button" class="caja" data-caja="serv|visible" onclick="abrirCaja('serv','visible')"><span class="caja-ico">👁️</span><span class="caja-tit">Mostrar a alumnos</span><span class="caja-sub">Pestaña Servicios</span></button>
-        <button type="button" class="caja" id="serv-info-btn" onclick="toggleInfografiaServ()"><span class="caja-ico">ℹ️</span><span class="caja-tit">Infografía</span></button>
-        <button type="button" class="caja" onclick="exportServiciosExcel()"><span class="caja-ico">📄</span><span class="caja-tit">Exportar a Excel</span></button>
+        <button type="button" class="caja" id="serv-info-btn" data-caja="serv|info" onclick="toggleInfografiaServ()"><span class="caja-ico">ℹ️</span><span class="caja-tit">Infografía</span></button>
+        <button type="button" class="caja" data-caja="serv|exportar" onclick="exportServiciosExcel()"><span class="caja-ico">📄</span><span class="caja-tit">Exportar a Excel</span></button>
       </div>
       <div class="caja-panel hidden" data-caja="serv|cambios">
         <div class="caja-panel-cab"><b>🔁 Solicitudes de cambio pendientes</b><button type="button" class="small-btn" onclick="abrirCaja('serv','cambios')">Cerrar ✕</button></div>
@@ -962,7 +968,8 @@ aplicarTema();
       <div class="mh-texto"><h1>PORTAL AGM</h1></div>
       <div class="ver-tag"></div>
       <div class="mh-nombre"><div class="mh-quien">Superadmin</div><div class="sub">👑 Panel superadmin</div></div>
-      <div class="mh-acts"><div class="modo-badge" id="super-modo"><span class="modo-chip super">👑 MODO SUPERADMIN</span></div><div class="mh-botones"><button class="logout" onclick="volverDeSuperadmin()">◀ Volver</button><button class="logout" onclick="doLogout()">Salir</button></div></div>
+      <div class="mh-acts"><div class="modo-badge" id="super-modo"><span class="modo-chip super">👑 MODO SUPERADMIN</span></div><div class="mh-botones"><button class="logout cfg-btn" onclick="toggleConfig()" title="Configuración" aria-label="Configuración">⚙️</button><button class="logout" onclick="volverDeSuperadmin()">◀ Volver</button><button class="logout" onclick="doLogout()">Salir</button></div></div>
+      <div id="super-config" class="config-panel hidden"></div>
     </div>
     <div id="superadmin-body"></div>
   </div>
@@ -992,6 +999,7 @@ aplicarTema();
 
 </div>
 
+<div id="diseno-barra" class="hidden"><span>🎨 Editando el diseño: <b>◀ ▶</b> mueven la caja y <b>🙈 Ocultar</b> la esconde (la encuentras en ⚙️ → Cajas ocultas).</span><button type="button" class="small-btn" onclick="toggleEditarDiseno()">✔ Listo</button></div>
 <div id="global-modal" class="modal-overlay hidden"></div>
 
 <script>
@@ -1010,7 +1018,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-13T14:24";
+const APP_VERSION = "2026-10-13T15:23";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
@@ -1341,7 +1349,7 @@ function semanasPermitidasFiltro(lista){
 }
 /* Configuración (⚙️ arriba a la derecha). Solo se guarda en este dispositivo. */
 function guardarPrefs(){ try{ localStorage.setItem('portalagm_prefs', JSON.stringify(PREFS)); }catch(e){} }
-function prefixPantalla(){ return CURRENT && CURRENT.mode==='admin' ? 'admin' : 'alumno'; }
+function prefixPantalla(){ const sa = document.getElementById('screen-superadmin'); if(sa && !sa.classList.contains('hidden')) return 'super'; return CURRENT && CURRENT.mode==='admin' ? 'admin' : 'alumno'; }
 // El panel de ajustes se cierra al tocar fuera de él o con Escape
 document.addEventListener('click', e=>{
   document.querySelectorAll('.config-panel:not(.hidden)').forEach(p=>{ if(!p.contains(e.target) && !e.target.closest('.cfg-btn')) p.classList.add('hidden'); });
@@ -1382,6 +1390,91 @@ function irAIntolerancias(){
 }
 // Contacto del superadmin para el servicio de cuartel (ponlo aquí si quieres que se vea, p. ej. un correo o un teléfono)
 const CONTACTO_CUARTEL = '';
+/* ---- Diseño personalizable de las cajas: cada persona ordena sus cajas y oculta las que no quiere ver (se guarda en su cuenta) ----
+   Las cajas ocultas siguen existiendo: se encuentran en ⚙️ → «Cajas ocultas» (Abrir / Mostrar). */
+let DISENO = {};            // { grupo: { orden:[ids], ocultas:[ids] } }
+let DISENO_EDITANDO = false;
+let _disenoUser = null, _disenoTimer = null, _disenoAvisado = false;
+const disenoLsKey = () => 'portalagm_diseno_' + _disenoUser;
+async function cargarDiseno(userId){
+  _disenoUser = userId; DISENO = {}; clearTimeout(_disenoTimer);
+  try{ DISENO = JSON.parse(localStorage.getItem(disenoLsKey()) || '{}') || {}; }catch(e){}
+  try{
+    const { data, error } = await sb.from('preferencias_usuario').select('diseno').eq('auth_user_id', userId).maybeSingle();
+    if(!error && data && data.diseno) DISENO = data.diseno;
+  }catch(e){}
+  disenoAplicarTodo();
+}
+function guardarDiseno(){
+  if(!_disenoUser) return;
+  try{ localStorage.setItem(disenoLsKey(), JSON.stringify(DISENO)); }catch(e){}
+  clearTimeout(_disenoTimer);
+  const usuario = _disenoUser, copia = JSON.parse(JSON.stringify(DISENO));
+  _disenoTimer = setTimeout(async ()=>{
+    const { error } = await sb.from('preferencias_usuario').upsert({ auth_user_id:usuario, diseno:copia, actualizado_en:new Date().toISOString() }, { onConflict:'auth_user_id' });
+    if(error && !_disenoAvisado){ _disenoAvisado = true; showToast('El diseño se guarda solo en este dispositivo (falta ejecutar el parche SQL 70).'); }
+  }, 700);
+}
+const disenoId = tile => tile.dataset.caja.split('|')[1];
+function disenoAplicarGrid(grid){
+  const primera = grid.querySelector(':scope > .caja[data-caja]'); if(!primera) return;
+  const grupo = primera.dataset.caja.split('|')[0];
+  const cfg = DISENO[grupo] || {}, orden = cfg.orden || [], ocultas = new Set(cfg.ocultas || []);
+  const tiles = [...grid.querySelectorAll(':scope > .caja[data-caja]')];
+  const pos = id => { const i = orden.indexOf(id); return i < 0 ? 1e6 : i; }; // las cajas nuevas (que no estaban en tu orden) van al final
+  tiles.map((tl,i)=>({ tl, i })).sort((a,b)=> (pos(disenoId(a.tl)) - pos(disenoId(b.tl))) || (a.i - b.i)).forEach(({ tl })=>grid.appendChild(tl));
+  tiles.forEach(tl=>tl.classList.toggle('caja-oculta', ocultas.has(disenoId(tl))));
+  grid.dataset.dis = '1';
+  if(DISENO_EDITANDO) disenoPonerControles(grid); else disenoQuitarControles(grid);
+}
+function disenoAplicarTodo(){ document.querySelectorAll('.cajas-grid').forEach(g=>{ delete g.dataset.dis; disenoAplicarGrid(g); }); }
+function disenoPonerControles(grid){
+  grid.classList.add('editando');
+  grid.querySelectorAll(':scope > .caja[data-caja]').forEach(tl=>{
+    if(!tl.querySelector('.caja-ctl')) tl.insertAdjacentHTML('beforeend', '<span class="caja-ctl"><span data-act="izq" title="Mover antes">◀</span><span data-act="der" title="Mover después">▶</span><span data-act="ocultar" title="Ocultar esta caja">🙈 Ocultar</span></span>');
+  });
+}
+function disenoQuitarControles(grid){ grid.classList.remove('editando'); grid.querySelectorAll('.caja-ctl').forEach(e=>e.remove()); }
+function toggleEditarDiseno(){
+  DISENO_EDITANDO = !DISENO_EDITANDO;
+  document.getElementById('diseno-barra').classList.toggle('hidden', !DISENO_EDITANDO);
+  disenoAplicarTodo();
+  if(DISENO_EDITANDO) showToast('Ordena tus cajas con ◀ ▶ y oculta las que no quieras con 🙈. Pulsa «Listo» al acabar.');
+}
+function disenoGuardarGrid(grid){
+  const tiles = [...grid.querySelectorAll(':scope > .caja[data-caja]')]; if(!tiles.length) return;
+  const grupo = tiles[0].dataset.caja.split('|')[0];
+  DISENO[grupo] = { orden: tiles.map(disenoId), ocultas: tiles.filter(tl=>tl.classList.contains('caja-oculta')).map(disenoId) };
+  guardarDiseno();
+}
+// En modo edición las cajas no se abren: sus botoncitos mueven u ocultan
+document.addEventListener('click', e=>{
+  if(!DISENO_EDITANDO) return;
+  const tile = e.target.closest && e.target.closest('.cajas-grid > .caja[data-caja]'); if(!tile) return;
+  e.preventDefault(); e.stopPropagation();
+  const act = e.target.closest('[data-act]'); if(!act) return;
+  const grid = tile.parentElement, visibles = [...grid.querySelectorAll(':scope > .caja[data-caja]')].filter(x=>!x.classList.contains('caja-oculta')), i = visibles.indexOf(tile);
+  if(act.dataset.act==='izq' && i > 0) grid.insertBefore(tile, visibles[i-1]);
+  else if(act.dataset.act==='der' && i < visibles.length-1) grid.insertBefore(visibles[i+1], tile);
+  else if(act.dataset.act==='ocultar') tile.classList.add('caja-oculta');
+  disenoGuardarGrid(grid);
+}, true);
+// Las cajas se dibujan en muchos sitios: cualquier cuadrícula nueva recibe enseguida el diseño de la persona
+new MutationObserver(()=>{ document.querySelectorAll('.cajas-grid:not([data-dis])').forEach(disenoAplicarGrid); }).observe(document.body, { childList:true, subtree:true });
+// «Cajas ocultas» de ⚙️: las de la pantalla que se está viendo
+function disenoOcultasHtml(){
+  const pantalla = [...document.querySelectorAll('[id^="screen-"]')].find(s=>!s.classList.contains('hidden'));
+  const ocultas = pantalla ? [...pantalla.querySelectorAll('.cajas-grid > .caja.caja-oculta[data-caja]')].filter(tl=>tl.parentElement.offsetParent !== null) : [];
+  if(!ocultas.length) return '<p class="small-note" style="margin:0;">No tienes cajas ocultas.</p>';
+  return '<div class="cfg-label" style="margin-bottom:2px;">Cajas ocultas</div>' + ocultas.map(tl=>`<div style="display:flex;gap:6px;align-items:center;justify-content:space-between;padding:4px 0;font-size:.82rem;"><span>${escHtml(tl.querySelector('.caja-ico').textContent)} ${escHtml(tl.querySelector('.caja-tit').textContent)}</span><span style="display:flex;gap:6px;"><button class="small-btn" onclick="disenoAbrir('${tl.dataset.caja}')">Abrir</button><button class="small-btn" onclick="disenoMostrar('${tl.dataset.caja}')">Mostrar</button></span></div>`).join('');
+}
+function disenoBuscar(clave){ return document.querySelector('.cajas-grid > .caja[data-caja="'+clave+'"]'); }
+function disenoAbrir(clave){ const tl = disenoBuscar(clave); if(!tl) return; cerrarConfig(); if(DISENO_EDITANDO) toggleEditarDiseno(); if(!tl.classList.contains('on')) tl.click(); } // abre su panel aunque la caja esté oculta
+function disenoMostrar(clave){
+  const tl = disenoBuscar(clave); if(!tl) return;
+  tl.classList.remove('caja-oculta'); disenoGuardarGrid(tl.parentElement);
+  const el = document.getElementById(prefixPantalla()+'-config'); if(el && !el.classList.contains('hidden')) pintarConfig();
+}
 function cerrarConfig(){ document.querySelectorAll('.config-panel').forEach(p=>p.classList.add('hidden')); }
 function toggleConfig(){
   const el = document.getElementById(prefixPantalla()+'-config');
@@ -1392,33 +1485,38 @@ function pintarConfig(){
   const el = document.getElementById(prefixPantalla()+'-config');
   const grupo = (clave, opciones) => `<div class="semanas-toggle">${opciones.map(([v,txt])=>`<button class="${PREFS[clave]===v?'active':''}" onclick="setPref('${clave}','${v}')">${txt}</button>`).join('')}</div>`;
   // Cambiar de modo (antes eran botones sueltos en la cabecera): solo salen los que te corresponden
+  const enSuper = prefixPantalla()==='super';
+  const modoPant = enSuper ? 'super' : (CURRENT && CURRENT.mode); // en la pantalla de superadmin no salen los ajustes de admin ni de alumno
   const modos = [];
   if(CURRENT){
 
     if(CURRENT.isSuperadmin){
-      modos.push(['enterSuperadmin()', '👑 Modo superadmin']);
+      if(!enSuper) modos.push(['enterSuperadmin()', '👑 Modo superadmin']);
       modos.push(['abrirVerComoCuartel()', '🪖 Ver como cuartel']);
     }
   }
   el.innerHTML = `<h4>⚙️ Configuración</h4>
     ${modos.length ? `<div class="cfg-label">Cambiar de modo</div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">${modos.map(([fn,txt])=>`<button class="small-btn" style="padding:10px 12px;text-align:left;font-size:.85rem;" onclick="cerrarConfig();${fn}">${txt}</button>`).join('')}</div>` : ''}
+    <div class="cfg-label">Diseño de las cajas</div>
+    <button class="small-btn" style="padding:10px 12px;text-align:left;font-size:.85rem;margin-bottom:8px;" onclick="cerrarConfig();toggleEditarDiseno()">🎨 Editar diseño</button>
+    <div style="margin-bottom:14px;">${disenoOcultasHtml()}</div>
     <div class="cfg-label">Cómo elegir la semana</div>
     ${grupo('semana', [['calendario','📅 Calendario'],['selector','Desplegable'],['ambos','Los dos']])}
     <div class="cfg-label">Tema</div>
     ${grupo('tema', [['auto','Automático'],['claro','☀️ Claro'],['oscuro','🌙 Oscuro']])}
-    ${CURRENT && CURRENT.mode==='admin' && currentModule==='servicios' ? `<div class="cfg-label">Lista de servicios: cuánta gente se ve a la vez</div>
+    ${modoPant==='admin' && currentModule==='servicios' ? `<div class="cfg-label">Lista de servicios: cuánta gente se ve a la vez</div>
     ${grupo('servPag', [['todos','Toda la gente'],['p1','Primeros 55'],['p2','Los restantes']])}` : ''}
-    ${CURRENT && CURRENT.mode==='admin' ? `<div class="cfg-label">Ver los totales (comidas y pernoctas)</div>
+    ${modoPant==='admin' ? `<div class="cfg-label">Ver los totales (comidas y pernoctas)</div>
     ${grupo('totales', [['tabla','Tabla'],['cajas','Cajas'],['ambas','Las dos']])}` : ''}
-    ${CURRENT && CURRENT.mode==='alumno' ? `<div class="cfg-label">Guardar mi dirección y teléfono habituales (botón "Habitual" en Pernoctas)</div>
+    ${modoPant==='alumno' ? `<div class="cfg-label">Guardar mi dirección y teléfono habituales (botón "Habitual" en Pernoctas)</div>
     ${grupo('habitual', [['si','Sí'],['no','No']])}` : ''}
-    ${CURRENT && CURRENT.mode==='alumno' ? `<div class="cfg-label">Aviso del desayuno del domingo</div>
+    ${modoPant==='alumno' ? `<div class="cfg-label">Aviso del desayuno del domingo</div>
     ${grupo('avisoDomingo', [['si','Mostrarlo'],['no','Quitarlo']])}
     <div class="cfg-label">Totales de pernoctas de la sección</div>
     ${grupo('totalesSiempre', [['no','Solo con «Toda la sección»'],['si','Verlos siempre']])}` : ''}
-    <div class="cfg-label" style="margin-top:14px;">${CURRENT && CURRENT.mode!=='alumno' ? '' : `❓ <b>¿Tienes alguna duda?</b> Escribe a tu admin de compañía${CURRENT && CURRENT.nombreAdminCia ? `: <b>${escHtml(CURRENT.nombreAdminCia)}</b>` : ''}.`}</div>
-    <div class="cfg-label" style="margin-bottom:10px;">Estos ajustes se guardan solo en este dispositivo.</div>`;
+    <div class="cfg-label" style="margin-top:14px;">${modoPant!=='alumno' ? '' : `❓ <b>¿Tienes alguna duda?</b> Escribe a tu admin de compañía${CURRENT && CURRENT.nombreAdminCia ? `: <b>${escHtml(CURRENT.nombreAdminCia)}</b>` : ''}.`}</div>
+    <div class="cfg-label" style="margin-bottom:10px;">Estos ajustes se guardan solo en este dispositivo (el diseño de las cajas, en tu cuenta).</div>`;
 }
 function setPref(clave, valor){
   PREFS[clave] = valor;
@@ -1629,6 +1727,7 @@ function formatRelativeTime(iso){
 }
 async function routeAfterAuth(userId){
   try{
+    cargarDiseno(userId); // sin esperar: cuando llega, las cajas se reordenan solas
     const { data: adminRow } = await sb.from('admins').select('compania, is_superadmin').eq('auth_user_id', userId).maybeSingle();
     const { data: personaRow } = await sb.from('personas').select('*').eq('auth_user_id', userId).maybeSingle();
     if(adminRow){ startPresenceHeartbeat(); await enterAdmin(adminRow.compania, personaRow || null, !!adminRow.is_superadmin); return; }
@@ -3208,7 +3307,7 @@ async function cargarHistorialSuper(){
     : '<p class="small-note">No hay personas con estos filtros.</p>');
 }
 // Cuentas de servicio de cuartel (una por compañía), sus conexiones y su historial de accesos — solo para el superadmin
-async function cuartelSuperHtml(){
+async function cuartelSuperCuerpo(){
   const [{ data, error }, { data: cuentas, error: errCuentas }] = await Promise.all([
     sb.from('cuartel_sesiones').select('*').order('inicio', { ascending:false }).limit(400),
     sb.from('cuarteles').select('*')
@@ -3223,33 +3322,33 @@ async function cuartelSuperHtml(){
   // Si la tabla de cuentas no deja leer nada (permisos), NO se puede decir que falte la cuenta: se avisa y se pide el parche SQL 59
   const sinLectura = !!errCuentas || (cuentas||[]).length === 0;
   const avisoLectura = sinLectura ? `<p class="small-note" style="color:var(--danger);">⚠️ No puedo leer la lista de cuentas de cuartel${errCuentas ? ' ('+escHtml(errCuentas.message||'')+')' : ' (sale vacía)'}. Eso NO significa que no existan: ejecuta el parche SQL 59 para que el superadmin pueda verlas.</p>` : '';
-  const bloques = COMPANIES_POR_CURSO.filter(g=>g.companias.length).map(g=>{
-    const porCia = g.companias.map(c=>{
-      const mias = filas.filter(r=>r.compania===c);
-      const act = mias.filter(activa);
-      const cu = cuentaDe(c);
-      const cuentaTxt = cu ? `✅ cuenta vinculada${cu.usuario ? ` · usuario <b class="mono">${escHtml(cu.usuario)}</b>` : ''}` : (sinLectura ? '❔ No se puede comprobar (falta el permiso de lectura: parche SQL 59)' : '⚠️ Esta compañía aún no tiene cuenta de cuartel (se crea con el parche SQL 53)');
-      const conectados = act.length ? act.map(r=>`
-        <div class="manage-row">
-          <div>🟢 <b>${escHtml(r.nombre||'(sin nombre)')}</b> — 📱 ${escHtml(r.dispositivo||'?')}<br>
-            <span class="sub2">Entró ${ts(r.inicio)} · última señal ${formatRelativeTime(r.ultima)}</span></div>
-          <div class="btns"><button class="small-btn danger" onclick="echarCuartel(${r.id})">Cerrar su sesión</button></div>
-        </div>`).join('') : '<p class="small-note">Ahora mismo no hay nadie conectado.</p>';
-      const historial = mias.length ? mias.slice(0,40).map(r=>`<div class="history-row"><span class="ts">${ts(r.inicio)} → ${ts(r.ultima)}</span> — <b>${escHtml(r.nombre||'(sin nombre)')}</b> · 📱 ${escHtml(r.dispositivo||'?')} · ${estado(r)}</div>`).join('')
-        : '<p class="small-note">Todavía nadie ha entrado con la cuenta de esta compañía.</p>';
-      return adminDesplegable('cuartel-'+c, `${c}ª Compañía — ${!cu ? (sinLectura ? '❔ sin datos' : '⚠️ sin cuenta') : act.length ? `🟢 ${act.length} conectado${act.length===1?'':'s'}` : 'sin conexiones'}`, `
-        <div class="panel-row" style="flex-direction:column;align-items:stretch;">
-          <div class="switch-label">Cuenta de cuartel de la ${c}ª<span class="sub2">${cuentaTxt}</span></div>
-          <div style="margin-top:8px;"><button class="small-btn" onclick="cambiarPasswordCuartel(${c})">🔑 Cambiar contraseña</button></div>
-          <div style="font-weight:700;margin:12px 0 4px;">Conectados ahora: ${act.length}/3</div>
-          ${conectados}
-          <details style="margin-top:10px;"><summary style="cursor:pointer;font-weight:700;">Historial de accesos (últimos ${Math.min(mias.length,40)})</summary>${historial}</details>
-        </div>`);
-    }).join('');
-    const conectadosCurso = filas.filter(r=>g.companias.includes(r.compania) && activa(r)).length;
-    return adminDesplegable('cuartel-curso-'+g.curso, `${g.curso}${conectadosCurso ? ` — 🟢 ${conectadosCurso} conectado${conectadosCurso===1?'':'s'}` : ''}`, porCia);
-  }).join('');
-  return `${avisoLectura}${bloques}<button class="small-btn" style="margin-top:8px;" onclick="renderSuperadmin()">↻ Actualizar</button>`;
+  const c = CUARTEL_SUP.compania || COMPANIES[0];   // un selector de compañía y se ve solo lo de esa compañía
+  const mias = filas.filter(r=>r.compania===c), act = mias.filter(activa), cu = cuentaDe(c);
+  const cuentaTxt = cu ? `✅ cuenta vinculada${cu.usuario ? ` · usuario <b class="mono">${escHtml(cu.usuario)}</b>` : ''}` : (sinLectura ? '❔ No se puede comprobar (falta el permiso de lectura: parche SQL 59)' : '⚠️ Esta compañía aún no tiene cuenta de cuartel (se crea con el parche SQL 53)');
+  const conectados = act.length ? act.map(r=>`
+    <div class="manage-row">
+      <div>🟢 <b>${nombreConIcono(r.nombre||'(sin nombre)')}</b> — 📱 ${escHtml(r.dispositivo||'?')}<br>
+        <span class="sub2">Entró ${ts(r.inicio)} · última señal ${formatRelativeTime(r.ultima)}</span></div>
+      <div class="btns"><button class="small-btn danger" onclick="echarCuartel(${r.id})">Cerrar su sesión</button></div>
+    </div>`).join('') : '<p class="small-note">Ahora mismo no hay nadie conectado.</p>';
+  const historial = mias.length ? mias.slice(0,40).map(r=>`<div class="history-row"><span class="ts">${ts(r.inicio)} → ${ts(r.ultima)}</span> — <b>${nombreConIcono(r.nombre||'(sin nombre)')}</b> · 📱 ${escHtml(r.dispositivo||'?')} · ${estado(r)}</div>`).join('')
+    : '<p class="small-note">Todavía nadie ha entrado con la cuenta de esta compañía.</p>';
+  const selector = `<div class="cuartel-bar" style="margin-top:0;"><div class="field"><label>Compañía</label><select onchange="onCuartelSupCompania(this.value)">${companiasOptionsHtml(c)}</select></div><button class="small-btn" onclick="onCuartelSupCompania(${c})">↻ Actualizar</button></div>`;
+  return `${avisoLectura}${selector}
+    <div class="panel-row" style="flex-direction:column;align-items:stretch;">
+      <div class="switch-label">Cuenta de cuartel de la ${c}ª<span class="sub2">${cuentaTxt}</span></div>
+      <div style="margin-top:8px;"><button class="small-btn" onclick="cambiarPasswordCuartel(${c})">🔑 Cambiar contraseña</button></div>
+      <div style="font-weight:700;margin:12px 0 4px;">Conectados ahora: ${act.length}/3</div>
+      ${conectados}
+      <div style="font-weight:700;margin:14px 0 4px;">Historial de accesos (últimos ${Math.min(mias.length,40)})</div>
+      ${historial}
+    </div>`;
+}
+const CUARTEL_SUP = { compania:null };
+async function cuartelSuperHtml(){ return `<div id="super-cuartel-cont">${await cuartelSuperCuerpo()}</div>`; }
+async function onCuartelSupCompania(v){
+  CUARTEL_SUP.compania = parseInt(v, 10);
+  const el = document.getElementById('super-cuartel-cont'); if(el) el.innerHTML = await cuartelSuperCuerpo();
 }
 // Contraseña nueva para la cuenta de cuartel de una compañía. La app NO guarda ni puede mostrar contraseñas antiguas
 // (Supabase solo guarda su versión cifrada): se genera una nueva, se aplica y se enseña UNA vez.
@@ -3492,6 +3591,34 @@ async function mensajeAppBorrar(id){
 /* Registro de lo que hace el cuartel: entradas de personas de servicio, «Contactar» y PDF. Solo el superadmin puede leerlo (la base de datos lo impide a los demás). */
 const CUARTEL_LOG = { filas:null, nombres:{}, tipo:'todos', compania:null, empleo:null, error:null }; // empleo: null = todos los empleos // compania: null = el registro de todas las compañías en total
 function onCuartelLogCompania(v){ CUARTEL_LOG.compania = v ? parseInt(v,10) : null; cargarCuartelEventosSuper(); }
+async function borrarEventoCuartel(id){
+  if(!confirm('¿Borrar este registro? No se puede deshacer.')) return;
+  const { error } = await sb.rpc('borrar_cuartel_eventos', { p_id: id });
+  if(error){ showToast('No se pudo borrar: '+cuErrorParche(error, 70)); return; }
+  showToast('Registro borrado.');
+  await cargarCuartelEventosSuper();
+}
+// Borra TODO lo que cumple los filtros de arriba (compañía, empleo y tipo), no solo lo que se ve en pantalla
+async function borrarEventosFiltrados(){
+  const f = { p_compania: CUARTEL_LOG.compania, p_empleo: CUARTEL_LOG.empleo, p_tipo: CUARTEL_LOG.tipo==='todos' ? null : CUARTEL_LOG.tipo };
+  let q = sb.from('cuartel_eventos').select('id', { count:'exact', head:true });
+  if(f.p_compania) q = q.eq('compania', f.p_compania);
+  if(f.p_empleo) q = q.like('nombre', f.p_empleo+' %');
+  if(f.p_tipo) q = q.eq('tipo', f.p_tipo);
+  const { count, error } = await q;
+  if(error){ showToast('No se pudo contar: '+cuErrorParche(error, 70)); return; }
+  if(!count){ showToast('No hay nada que borrar con esos filtros.'); return; }
+  const que = [f.p_compania ? `de la ${f.p_compania}ª Compañía` : 'de TODAS las compañías', f.p_empleo ? `solo de ${f.p_empleo}` : 'de todos los empleos', f.p_tipo ? ({ entrada:'solo entradas', contactar:'solo contactos', pdf:'solo descargas' })[f.p_tipo] : 'de todos los tipos'].join(', ');
+  const todo = !f.p_compania && !f.p_empleo && !f.p_tipo;
+  if(todo){
+    const txt = prompt(`Vas a BORRAR TODO el registro del cuartel: ${count} movimientos (todas las compañías, empleos y tipos). No se puede deshacer.\n\nEscribe BORRAR para confirmar:`);
+    if((txt||'').trim() !== 'BORRAR'){ showToast('No se ha borrado nada.'); return; }
+  } else if(!confirm(`Se van a borrar ${count} movimiento${count===1?'':'s'} (${que}). No se puede deshacer. ¿Seguro?`)) return;
+  const { data, error: e2 } = await sb.rpc('borrar_cuartel_eventos', { ...f, p_todo: todo });
+  if(e2){ showToast('No se pudo borrar: '+cuErrorParche(e2, 70)); return; }
+  showToast(`Borrados ${data} movimientos.`);
+  await cargarCuartelEventosSuper();
+}
 function onCuartelLogEmpleo(v){ CUARTEL_LOG.empleo = CUARTEL_EMPLEOS.includes(v) ? v : null; cargarCuartelEventosSuper(); }
 async function cargarCuartelEventosSuper(){
   const cont = document.getElementById('super-cuartel-log-cont'); if(cont) cont.innerHTML = '<p class="small-note">Cargando…</p>';
@@ -3509,11 +3636,12 @@ function pintarCuartelEventosSuper(){
   if(CUARTEL_LOG.error){ cont.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar: ${escHtml(CUARTEL_LOG.error)}</p><button class="small-btn" onclick="cargarCuartelEventosSuper()">↻ Reintentar</button>`; return; }
   const filas = (CUARTEL_LOG.filas||[]).filter(e=>CUARTEL_LOG.tipo==='todos' || e.tipo===CUARTEL_LOG.tipo);
   const ICONO = { entrada:'🪖 Entrada', contactar:'📞 Contactar', pdf:'📥 Descarga' }; // «Descarga»: PDF o Excel; en el detalle sale de dónde (p. ej. «PDF de Servicios · …», «Excel de Pernoctas · …»)
-  const fila = e => `<div class="history-row"><span class="ts">${escHtml(new Date(e.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}))}</span> · <b>${e.tipo==='pdf' && e.detalle ? '📥 '+escHtml(/^(PDF|Excel) /.test(e.detalle) ? e.detalle : 'PDF de Servicios · '+e.detalle) : (ICONO[e.tipo]||escHtml(e.tipo))}</b> · ${e.compania}ª Cía · ${e.nombre ? nombreConIcono(e.nombre) : '(sin nombre)'} · IP ${escHtml(e.ip||'no disponible')} · ${escHtml(e.dispositivo||'')}${e.persona_id ? ' · a quién: <b>'+escHtml(CUARTEL_LOG.nombres[e.persona_id]||'(persona borrada)')+'</b>' : ''}${e.detalle && e.tipo!=='pdf' ? ' · '+escHtml(e.detalle) : ''}</div>`;
+  const fila = e => `<div class="history-row"><span class="ts">${escHtml(new Date(e.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}))}</span> · <b>${e.tipo==='pdf' && e.detalle ? '📥 '+escHtml(/^(PDF|Excel) /.test(e.detalle) ? e.detalle : 'PDF de Servicios · '+e.detalle) : (ICONO[e.tipo]||escHtml(e.tipo))}</b> · ${e.compania}ª Cía · ${e.nombre ? nombreConIcono(e.nombre) : '(sin nombre)'} · IP ${escHtml(e.ip||'no disponible')} · ${escHtml(e.dispositivo||'')}${e.persona_id ? ' · a quién: <b>'+escHtml(CUARTEL_LOG.nombres[e.persona_id]||'(persona borrada)')+'</b>' : ''}${e.detalle && e.tipo!=='pdf' ? ' · '+escHtml(e.detalle) : ''} <button class="small-btn danger" style="padding:1px 8px;margin-left:6px;" title="Borrar este registro" onclick="borrarEventoCuartel(${e.id})">🗑</button></div>`;
   cont.innerHTML = `<div class="cuartel-bar" style="margin-top:0;">
       <div class="field"><label>Registro de</label><select onchange="onCuartelLogCompania(this.value)"><option value="">Todas las compañías (en total)</option>${companiasOptionsHtml(CUARTEL_LOG.compania)}</select></div>
       <div class="field"><label>Empleo</label><select onchange="onCuartelLogEmpleo(this.value)"><option value="">Todos los empleos</option>${CUARTEL_EMPLEOS.map(e=>`<option value="${e}" ${CUARTEL_LOG.empleo===e?'selected':''}>${e}</option>`).join('')}</select></div>
       <button class="small-btn" onclick="cargarCuartelEventosSuper()">↻ Actualizar</button>
+      <button class="small-btn danger" onclick="borrarEventosFiltrados()">🗑 Borrar lo filtrado…</button>
     </div>
     <div class="semanas-toggle" style="max-width:460px;margin-bottom:10px;">${[['todos','Todo'],['entrada','Entradas'],['contactar','Contactos'],['pdf','Descargas']].map(([v,n])=>`<button type="button" class="${CUARTEL_LOG.tipo===v?'active':''}" onclick="CUARTEL_LOG.tipo='${v}'; pintarCuartelEventosSuper()">${n}</button>`).join('')}</div>
     <p class="small-note" style="margin-top:0;">Se muestran los últimos 300 movimientos ${CUARTEL_LOG.compania ? 'de la '+CUARTEL_LOG.compania+'ª Compañía' : 'de todas las compañías'}${CUARTEL_LOG.empleo ? ', solo de '+CUARTEL_LOG.empleo : ''}.</p>
