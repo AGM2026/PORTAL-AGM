@@ -428,6 +428,12 @@ table.est-prev th{background:var(--paper-alt);}
 .manage-row input.intol{width:160px;padding:5px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.75rem;}
 .add-student-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
 .add-student-row input{flex:1;min-width:120px;padding:8px 10px;border:1px solid var(--line);background:var(--paper);font-family:inherit;font-size:.85rem;}
+.hist-persona{border-bottom:1px solid var(--line);}
+.hist-nombre{display:block;width:100%;text-align:left;background:transparent;border:none;padding:9px 6px;font-family:inherit;font-size:.85rem;font-weight:600;color:var(--ink);cursor:pointer;}
+.hist-nombre:hover{background:rgba(78,92,60,.08);}
+.hist-caja{padding:2px 0 10px;}
+table.hist-tabla{min-width:480px;}
+table.hist-tabla td,table.hist-tabla th{white-space:nowrap;}
 .history-row{font-size:.76rem;padding:6px 0;border-bottom:1px solid var(--line);}
 .history-row:last-child{border-bottom:none;}
 .history-row .ts{color:var(--ink-soft);}
@@ -455,6 +461,23 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
 #alumno-dia-resumen .servicio-card .titulo{font-size:1.15rem;line-height:1.4;}
 #alumno-dia-selector .small-btn{font-size:.95rem;padding:10px 16px;}
 .servicio-card .meta{font-size:.75rem;color:var(--ink-soft);margin-top:2px;}
+/* Servicio de cuartel: servicios de la semana por día */
+.cu-dias{display:flex;gap:6px;margin:12px 0;overflow-x:auto;}
+.cu-dia{flex:1;min-width:54px;border:2px solid var(--brass);background:var(--card);color:var(--ink);padding:8px 4px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer;text-align:center;line-height:1.3;}
+.cu-dia small{display:block;font-weight:400;color:var(--ink-soft);}
+.cu-dia .n{display:inline-block;min-width:20px;margin-top:2px;padding:0 5px;border-radius:10px;background:rgba(184,134,11,.22);font-size:.72rem;}
+.cu-dia.active{background:var(--brass);color:#1B2019;} .cu-dia.active small{color:#1B2019;}
+.cu-serv-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);border-left:5px solid var(--brass);background:var(--card);color:var(--ink);padding:12px 14px;margin-bottom:8px;font-family:inherit;cursor:pointer;}
+.cu-serv-card:hover{background:rgba(184,134,11,.08);}
+.cu-serv-card .serv-cod{font-size:1.05rem;padding:2px 8px;min-width:44px;text-align:center;cursor:pointer;}
+.cu-serv-card .info{display:flex;flex-direction:column;font-size:.88rem;}
+.cu-serv-card .info span{font-size:.78rem;color:var(--ink-soft);}
+.cu-tel{display:block;margin-top:10px;padding:12px;border:2px solid var(--olive);font-size:1.15rem;text-align:center;}
+.cu-tel a{color:var(--olive);font-weight:800;text-decoration:none;}
+.empleo-ico{height:1.35em;width:auto;vertical-align:-0.3em;margin-right:5px;}
+.contacto-app{text-align:center;margin-top:28px;}
+.contacto-botones{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.contacto-botones .small-btn{text-decoration:none;display:inline-block;}
 .servicio-card .grupo{margin-top:8px;font-size:.78rem;border-top:1px solid var(--line);padding-top:8px;}
 .badge-estado{font-size:.68rem;padding:2px 8px;font-weight:700;}
 .badge-estado.pendiente{background:rgba(184,134,11,.15);color:var(--brass);}
@@ -923,12 +946,14 @@ aplicarTema();
     <div class="module-switch">
       <button class="module-btn" id="cuartel-mod-comidas-btn" onclick="setCuartelModulo('comidas')">🍽️ Comidas</button>
       <button class="module-btn" id="cuartel-mod-pernoctas-btn" onclick="setCuartelModulo('pernoctas')">🛏️ Pernoctas</button>
+      <button class="module-btn" id="cuartel-mod-servicios-btn" onclick="setCuartelModulo('servicios')">📋 Servicios</button>
     </div>
     <div id="cuartel-week-select"></div>
     <div id="cuartel-notice"></div>
     <div id="cuartel-controles"></div>
     <div id="cuartel-vista"></div>
-    <p class="small-note" style="text-align:center;margin-top:28px;">❓ ¿Algún problema con la app? Escribe a <b>Pablo</b> (superadmin)<span id="cuartel-contacto"></span>.</p>
+    <div class="contacto-app"><p class="small-note" style="margin:0 0 8px;">❓ ¿Algún problema con la app? Escribe a <b>Pablo</b> (Creador)<span id="cuartel-contacto"></span>.</p>
+      <div class="contacto-botones"><a class="small-btn" href="mailto:pablopuig86@gmail.com?subject=Problema%20con%20Portal%20AGM">📧 Correo</a><button class="small-btn" type="button" onclick="abrirMensajeCreador()">💬 Avisarme dentro de la app</button></div></div>
   </div>
 
   <div id="screen-superadmin" class="hidden">
@@ -937,7 +962,7 @@ aplicarTema();
       <div class="mh-texto"><h1>PORTAL AGM</h1></div>
       <div class="ver-tag"></div>
       <div class="mh-nombre"><div class="mh-quien">Superadmin</div><div class="sub">👑 Panel superadmin</div></div>
-      <div class="mh-acts"><div class="modo-badge"><span class="modo-chip super">👑 MODO SUPERADMIN</span></div><div class="mh-botones"><button class="logout" onclick="volverDeSuperadmin()">◀ Volver</button><button class="logout" onclick="doLogout()">Salir</button></div></div>
+      <div class="mh-acts"><div class="modo-badge" id="super-modo"><span class="modo-chip super">👑 MODO SUPERADMIN</span></div><div class="mh-botones"><button class="logout" onclick="volverDeSuperadmin()">◀ Volver</button><button class="logout" onclick="doLogout()">Salir</button></div></div>
     </div>
     <div id="superadmin-body"></div>
   </div>
@@ -985,7 +1010,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-13T12:32";
+const APP_VERSION = "2026-10-13T14:24";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
@@ -1300,6 +1325,7 @@ function rerenderActual(){
   const admin = CURRENT && CURRENT.mode==='admin';
   if(currentModule==='pernoctas') return admin ? renderAdminPernoctas() : renderAlumnoPernoctas();
   if(currentModule==='comidas') return admin ? renderAdmin() : renderAlumno();
+  if(currentModule==='servicios') return admin ? renderAdminServicios() : renderAlumnoServicios();
 }
 // Índices de las semanas que se pueden elegir (en Pernoctas, las semanas "incluidas" en un puente no son elegibles por separado)
 function semanasSeleccionables(tipo, filterHidden){
@@ -1329,12 +1355,27 @@ function pintarModo(prefix, chips){
     : `<span class="modo-chip ${c}">${t}</span>`).join('');
   el.classList.toggle('hidden', !(chips && chips.length));
 }
-// Cambia entre modo admin y modo alumno (solo si la persona tiene los dos)
-function cambiarModo(){
-  if(!CURRENT) return;
-  if(CURRENT.mode==='admin' && CURRENT.linkedPersona) switchToAlumno();
-  else if(CURRENT.mode==='alumno' && CURRENT.adminCompania) switchToAdmin();
+// Modos entre los que puede cambiar quien está dentro, en este orden: alumno → admin → superadmin (solo los que le corresponden)
+function modosDisponibles(){
+  if(!CURRENT || CURRENT.mode==='cuartel') return [];
+  const m = [];
+  if((CURRENT.mode==='alumno' && CURRENT.persona) || (CURRENT.mode==='admin' && CURRENT.linkedPersona)) m.push('alumno');
+  if((CURRENT.mode==='admin' && CURRENT.compania) || (CURRENT.mode==='alumno' && CURRENT.adminCompania)) m.push('admin');
+  if(CURRENT.isSuperadmin) m.push('super');
+  return m;
 }
+function modoActual(){ return !document.getElementById('screen-superadmin').classList.contains('hidden') ? 'super' : (CURRENT ? CURRENT.mode : null); }
+// El botón del modo (⇄) va rotando por los modos disponibles
+async function cambiarModo(){
+  if(!CURRENT) return;
+  const lista = modosDisponibles(), i = lista.indexOf(modoActual());
+  if(lista.length < 2 || i < 0) return;
+  const siguiente = lista[(i+1) % lista.length];
+  if(siguiente==='super'){ enterSuperadmin(); return; }
+  if(CURRENT.mode===siguiente){ showScreen(siguiente==='admin' ? 'screen-admin' : 'screen-alumno'); await rerenderActual(); return; } // venía del superadmin: se vuelve a la pantalla que ya estaba
+  if(siguiente==='alumno') switchToAlumno(); else switchToAdmin();
+}
+const modoAccion = () => modosDisponibles().length > 1 ? 'cambiarModo()' : null;
 function irAIntolerancias(){
   if(CAJAS_ABIERTA.alumno!=='intol') abrirCaja('alumno','intol');
   const g = document.getElementById('alumno-cajas'); if(g) g.scrollIntoView({ behavior:'smooth', block:'start' });
@@ -1605,7 +1646,7 @@ async function routeAfterAuth(userId){
       showToast('Tu solicitud de administrador fue rechazada. Contacta con el superadmin si crees que es un error.');
       return;
     }
-    await sb.auth.signOut();
+    await sb.auth.signOut({ scope: 'local' });
     showScreen('screen-login');
     showToast('Tu cuenta no está vinculada a ningún alumno ni administrador todavía.');
   }catch(e){
@@ -1771,6 +1812,23 @@ async function doLogin(){
   let email = document.getElementById('login-email').value.trim();
   if(email && !email.includes('@')) email = email.toLowerCase() + '@portalagm.es'; // usuarios sin email, ej. "cuartel"
   const password = document.getElementById('login-password').value;
+  err.style.color = '';
+  // Usuario antiguo del cuartel («cuartel» + contraseña tipo AGM11-2026): ahora cada compañía tiene el suyo (cuartel11, cuartel12…).
+  // Se comprueba la contraseña con el usuario nuevo y se avisa SIN entrar.
+  const mViejo = /^cuartel$/i.test(document.getElementById('login-email').value.trim()) ? password.match(/^AGM(\d{1,2})-\d{4}$/i) : null;
+  if(mViejo){
+    const nuevo = 'cuartel' + mViejo[1];
+    const prueba = await sb.auth.signInWithPassword({ email: nuevo + '@portalagm.es', password });
+    if(!prueba.error){
+      await sb.auth.signOut({ scope: 'local' });
+      btn.disabled = false;
+      err.textContent = `El usuario del servicio de cuartel ha cambiado: ahora es «${nuevo}». Tu contraseña es correcta, entra con ese usuario.`;
+      err.style.color = 'var(--olive)';
+      err.classList.remove('hidden');
+      document.getElementById('login-email').value = nuevo;
+      return;
+    }
+  }
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   btn.disabled = false;
   if(error){ err.textContent = 'Usuario/email o contraseña incorrectos.'; err.classList.remove('hidden'); return; }
@@ -1782,8 +1840,9 @@ async function doLogout(){
     try{ sessionStorage.removeItem('portalagm_cuartel_sesion'); }catch(e){}
     CUARTEL.nombre = null;
   }
-  await sb.auth.signOut();
+  await sb.auth.signOut({ scope: 'local' });
   CURRENT = null;
+  document.body.classList.remove('mod-pernoctas', 'mod-servicios');
   showScreen('screen-login');
   switchAuthTab('login');
 }
@@ -1949,14 +2008,27 @@ function cerrarModalGlobal(){ const m = document.getElementById('global-modal');
 function abrirVerComoCuartel(){
   if(!(CURRENT && CURRENT.isSuperadmin)) return;
   abrirModalGlobal(`<h3>🪖 Ver como servicio de cuartel</h3>
-    <p class="modal-nota" style="margin-top:0;">Elige la compañía. Verás lo mismo que ve su cuenta de cuartel (solo consulta). No se registra como un acceso de cuartel.</p>
+    <p class="modal-nota" style="margin-top:0;">Elige la compañía y en nombre de quién lo ves. Verás lo mismo que ve su cuenta de cuartel (solo consulta). El nombre solo se ve en pantalla: lo que hagas (Contactar, PDF) queda registrado como «vista previa del superadmin».</p>
     <div class="field"><label>Compañía</label><select id="vcc-compania">${companiasOptionsHtml()}</select></div>
+    <div class="field"><label>En nombre de</label><select id="vcc-quien" onchange="document.getElementById('vcc-ejemplo-wrap').classList.toggle('hidden', this.value!=='ejemplo')">
+      <option value="super">Yo (superadmin)</option>
+      <option value="admin">El admin de esa compañía</option>
+      <option value="ejemplo">Un nombre de ejemplo que escribo yo</option></select></div>
+    <div class="hidden" id="vcc-ejemplo-wrap">${camposPersonaHtml('vcc', null)}</div>
     <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" onclick="confirmarVerComoCuartel()">Ver</button></div>`);
+  iconoEmpleoSel('vcc');
 }
 async function confirmarVerComoCuartel(){
   const c = parseInt(document.getElementById('vcc-compania').value, 10);
+  const quien = document.getElementById('vcc-quien').value;
+  let nombre = 'Vista previa (superadmin)';
+  if(quien==='ejemplo'){
+    const per = leerPersonaCampos('vcc'); if(!per) return; // empleo + nombre + primer y segundo apellido, obligatorios
+    nombre = nombreCompletoCuartel(per);
+  }
+  else if(quien==='admin' && c){ const { data } = await sb.from('companias').select('nombre_admin').eq('numero', c).single(); nombre = (data && data.nombre_admin) ? 'Admin: '+data.nombre_admin : 'Admin de la '+c+'ª'; }
   cerrarModalGlobal();
-  if(c) await enterCuartel(c, { vistaPrevia:true });
+  if(c) await enterCuartel(c, { vistaPrevia:true, nombre });
 }
 // "Salir" del cuartel: en la vista previa del superadmin vuelve a su pantalla; en la cuenta real cierra la sesión
 async function salirCuartel(){
@@ -1965,6 +2037,7 @@ async function salirCuartel(){
     CURRENT = previo;
     CUARTEL.nombre = null;
     document.body.classList.toggle('mod-pernoctas', currentModule==='pernoctas');
+    document.body.classList.toggle('mod-servicios', currentModule==='servicios');
     showScreen(pantallaPrevia);
     if(pantallaPrevia==='screen-superadmin') await renderSuperadmin(); else await rerenderActual();
     return;
@@ -1987,8 +2060,8 @@ async function enterCuartel(compania, opts){
   pintarModo('cuartel', vistaPrevia ? [['cuartel','🪖 VISTA PREVIA CUARTEL']] : []);
   showScreen('screen-cuartel');
   if(vistaPrevia){ // vista previa del superadmin: sin pedir nombre, sin registrar dispositivo y sin "latido"
-    CUARTEL.nombre = 'Vista previa (superadmin)';
-    document.getElementById('cuartel-subtitle').textContent = `${compania}ª Compañía · 👁 vista previa`;
+    CUARTEL.nombre = (opts && opts.nombre) || 'Vista previa (superadmin)';
+    document.getElementById('cuartel-subtitle').innerHTML = `${compania}ª Compañía · 👁 vista previa · de servicio: ${nombreConIcono(CUARTEL.nombre)}`;
     document.querySelector('#screen-cuartel .module-switch').classList.remove('hidden');
     await setCuartelModulo('comidas');
     return;
@@ -1999,26 +2072,55 @@ async function enterCuartel(compania, opts){
   if(yaIdentificado){ await iniciarSesionCuartel(yaIdentificado); return; }
   pedirNombreCuartel();
 }
+const CUARTEL_EMPLEOS = ['CAC', 'CC Sgto', 'CC Cabo'];
+// Imágenes de cada empleo (opcionales): PNG en la carpeta «empleos» junto al index.html. Si falta alguna, simplemente no se ve (no rompe nada).
+const EMPLEO_IMG = { 'CAC':'empleos/cac.png', 'CC Sgto':'empleos/cc-sgto.png', 'CC Cabo':'empleos/cc-cabo.png' };
+const empleoDeNombre = n => CUARTEL_EMPLEOS.find(e=>String(n||'').startsWith(e+' ')) || null;
+const empleoImgHtml = emp => EMPLEO_IMG[emp] ? `<img class="empleo-ico" src="${EMPLEO_IMG[emp]}" alt="" onerror="this.remove()">` : '';
+const nombreConIcono = n => empleoImgHtml(empleoDeNombre(n)) + escHtml(n); // «🎖 CC Sgto García López, Juan», con la imagen de su empleo si existe
+function iconoEmpleoSel(pre){ const s = document.getElementById(pre+'-empleo'), i = document.getElementById(pre+'-ico'); if(s && i) i.innerHTML = empleoImgHtml(s.value); }
+// Los datos de una persona: empleo + nombre + primer apellido + segundo apellido (los cuatro obligatorios). «pre» = prefijo de los id (cuartel, msg, vcc)
+const camposPersonaHtml = (pre, ult) => `
+    <div class="field"><label>Empleo</label><div style="display:flex;gap:8px;align-items:center;"><span id="${pre}-ico"></span><select id="${pre}-empleo" style="flex:1;" onchange="iconoEmpleoSel('${pre}')">${CUARTEL_EMPLEOS.map(e=>`<option value="${e}" ${(ult&&ult.empleo)===e?'selected':''}>${e}</option>`).join('')}</select></div></div>
+    <div class="field"><label>Nombre</label><input type="text" id="${pre}-nombre" value="${escHtml((ult&&ult.nombre)||'')}" placeholder="Ej.: Juan" autocomplete="given-name" maxlength="23"></div>
+    <div class="field"><label>Primer apellido</label><input type="text" id="${pre}-ap1" value="${escHtml((ult&&ult.ap1)||'')}" placeholder="Ej.: García" autocomplete="family-name" maxlength="23"></div>
+    <div class="field"><label>Segundo apellido</label><input type="text" id="${pre}-ap2" value="${escHtml((ult&&ult.ap2)||'')}" placeholder="Ej.: López" autocomplete="off" maxlength="23"></div>`;
+// Lee y valida esos cuatro datos; si falta alguno avisa y devuelve null
+function leerPersonaCampos(pre){
+  const v = id => ((document.getElementById(pre+'-'+id)||{}).value||'').trim().replace(/\s+/g,' ');
+  const per = { empleo:v('empleo'), nombre:v('nombre'), ap1:v('ap1'), ap2:v('ap2') };
+  if(!CUARTEL_EMPLEOS.includes(per.empleo)){ showToast('Elige tu empleo.'); return null; }
+  if(per.nombre.length < 2){ showToast('Escribe tu nombre.'); return null; }
+  if(per.ap1.length < 2){ showToast('Escribe tu primer apellido.'); return null; }
+  if(per.ap2.length < 2){ showToast('Escribe tu segundo apellido.'); return null; }
+  if(/[<>"]/.test(per.nombre+per.ap1+per.ap2)){ showToast('El nombre y los apellidos no pueden llevar los símbolos  <  >  " .'); return null; }
+  return per;
+}
+const nombreCompletoCuartel = per => `${per.empleo} ${per.ap1} ${per.ap2}, ${per.nombre}`;
+// Lo último que escribió esa persona en este dispositivo (para no tener que repetirlo)
+function personaGuardada(){
+  let u = {}; try{ u = JSON.parse(localStorage.getItem('portalagm_cuartel_persona') || '{}') || {}; }catch(e){}
+  if(u.apellidos && !u.ap1){ const [a1, ...resto] = String(u.apellidos).split(' '); u.ap1 = a1; u.ap2 = resto.join(' '); } // formato anterior (un solo campo «Apellidos»)
+  return u;
+}
 function pedirNombreCuartel(){
-  let ultimo = '';
-  try{ ultimo = localStorage.getItem('portalagm_cuartel_nombre') || ''; }catch(e){}
   document.querySelector('#screen-cuartel .module-switch').classList.add('hidden');
   ['cuartel-week-select','cuartel-notice','cuartel-controles'].forEach(id=>document.getElementById(id).innerHTML='');
   document.getElementById('cuartel-vista').innerHTML = `
     <div class="login-card" style="max-width:420px;margin:24px auto;">
       <h3 style="margin-top:0;">🪖 ¿Quién está de servicio?</h3>
-      <p class="desc">Escribe tu empleo, nombre y apellidos. Queda registrado quién usa la cuenta del servicio de cuartel y desde qué dispositivo. Máximo 3 dispositivos a la vez.</p>
+      <p class="desc">Elige tu empleo y escribe tu nombre y tus dos apellidos (todo es obligatorio). Queda registrado quién usa la cuenta del servicio de cuartel y desde qué dispositivo. Máximo 3 dispositivos a la vez.</p>
       <form onsubmit="event.preventDefault(); confirmarNombreCuartel();">
-        <div class="field"><label>Empleo, nombre y apellidos</label><input type="text" id="cuartel-nombre" value="${escHtml(ultimo)}" placeholder="Ej.: CC García López, Juan" autocomplete="name"></div>
+        ${camposPersonaHtml('cuartel', personaGuardada())}
         <button class="primary-btn" type="submit">Entrar</button>
       </form>
     </div>`;
+  iconoEmpleoSel('cuartel');
 }
 async function confirmarNombreCuartel(){
-  const v = (document.getElementById('cuartel-nombre').value||'').trim();
-  if(v.length < 5){ showToast('Escribe tu empleo, nombre y apellidos.'); return; }
-  try{ localStorage.setItem('portalagm_cuartel_nombre', v); }catch(e){}
-  await iniciarSesionCuartel(v);
+  const per = leerPersonaCampos('cuartel'); if(!per) return;
+  try{ localStorage.setItem('portalagm_cuartel_persona', JSON.stringify(per)); }catch(e){}
+  await iniciarSesionCuartel(nombreCompletoCuartel(per));
 }
 async function iniciarSesionCuartel(nombre){
   let r = null; // si no se puede comprobar el límite de dispositivos, no se entra
@@ -2036,7 +2138,7 @@ async function iniciarSesionCuartel(nombre){
   }
   try{ sessionStorage.setItem('portalagm_cuartel_sesion', nombre); }catch(e){}
   CUARTEL.nombre = nombre;
-  document.getElementById('cuartel-subtitle').textContent = `${CURRENT.compania}ª Cía · de servicio: ${nombre}`;
+  document.getElementById('cuartel-subtitle').innerHTML = `${CURRENT.compania}ª Cía · de servicio: ${nombreConIcono(nombre)}`;
   document.querySelector('#screen-cuartel .module-switch').classList.remove('hidden');
   if(!window._cuartelPing){
     window._cuartelPing = setInterval(cuartelPing, 60000);
@@ -2058,8 +2160,9 @@ async function cuartelPing(){
 async function cerrarCuartelLocal(msg){
   try{ sessionStorage.removeItem('portalagm_cuartel_sesion'); }catch(e){}
   CUARTEL.nombre = null;
-  await sb.auth.signOut();
+  await sb.auth.signOut({ scope: 'local' });
   CURRENT = null;
+  document.body.classList.remove('mod-pernoctas', 'mod-servicios');
   showScreen('screen-login');
   switchAuthTab('login');
   if(msg) showToast(msg);
@@ -2067,9 +2170,11 @@ async function cerrarCuartelLocal(msg){
 async function setCuartelModulo(m){
   CUARTEL.modulo = m; CUARTEL.vista = 'dia'; CUARTEL.dia = null;
   document.body.classList.toggle('mod-pernoctas', m==='pernoctas');
-  document.body.classList.remove('mod-servicios');
+  document.body.classList.toggle('mod-servicios', m==='servicios');
   document.getElementById('cuartel-mod-comidas-btn').classList.toggle('active', m==='comidas');
   document.getElementById('cuartel-mod-pernoctas-btn').classList.toggle('active', m==='pernoctas');
+  document.getElementById('cuartel-mod-servicios-btn').classList.toggle('active', m==='servicios');
+  if(m==='servicios'){ await cargarCuartelServicios(); return; }
   await cargarCuartel();
 }
 // El cuartel solo ve la semana EN CURSO (la que contiene el día de hoy), sin selector.
@@ -2102,7 +2207,7 @@ async function cargarCuartel(){
       data.V = {};
       secciones.forEach(sec=>sec.people.forEach(p=>data.cols.forEach(col=>{ data.V[p.id+'|'+col.type+'|'+col.day] = !!getVal(p.id,col,apuntesMap); })));
     } else {
-      data.pernMap = await fetchPernoctaMapAdmin(ids, ACTIVE_WEEK.key);
+      data.pernMap = await fetchPernoctaMapCuartel(ids, ACTIVE_WEEK.key); // solo quién duerme fuera: el teléfono y la dirección se piden con «Contactar»
       data.nDias = pernoctaDiasCount();
     }
     CUARTEL.data = data;
@@ -2116,6 +2221,121 @@ async function cargarCuartel(){
     return;
   }
   pintarCuartel();
+}
+/* ---- Servicio de cuartel: SERVICIOS de la semana en curso (lunes a domingo), por días y en recuadros.
+   Los teléfonos no se cargan al abrir: solo salen al pulsar «Contactar», y cada vez queda registrado (quién, cuándo, IP y dispositivo).
+   Descargar el PDF (sin teléfonos) también queda registrado. Lo registrado solo lo ve el superadmin. ---- */
+const CUARTEL_SERV = { filas:[], lunes:null, dia:0 };
+const CU_DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], CU_DIAS_LARGO = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const CU_ORDEN_TIPO = { cuartelero:1, imaginaria_cuartelero:2, imaginaria:3, imaginaria_imaginaria:4, guardia_seguridad:5, otro:6 };
+const cuFechaDia = i => { const l = CUARTEL_SERV.lunes; return new Date(l.getFullYear(), l.getMonth(), l.getDate()+i); };
+const cuErrorParche = (e, n) => /function|schema cache|does not exist/i.test(e && e.message || '') ? `Falta ejecutar el parche SQL ${n||67}.` : (e && e.message || 'error');
+/* ---- «Avisar a Pablo»: el mensaje llega como aviso dentro de la app (lo ve solo el superadmin, en la caja «Mensajes de usuarios») ---- */
+function abrirMensajeCreador(){
+  abrirModalGlobal(`<h3>💬 Avisar a Pablo</h3>
+    <p class="modal-nota" style="margin-top:0;">Cuéntale qué ha pasado. Tienes que decir quién eres (empleo, nombre y dos apellidos): sin eso no se envía. Le llega como un aviso dentro de la app, con tu nombre, tu compañía y desde qué conexión lo mandas. Si es urgente, escríbele también al correo.</p>
+    ${camposPersonaHtml('msg', personaGuardada())}
+    <div class="field"><label>Mensaje</label><textarea id="msg-creador" rows="5" maxlength="1000" placeholder="Qué ha pasado y en qué pantalla…" style="width:100%;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;"></textarea></div>
+    <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" id="msg-enviar" onclick="enviarMensajeCreador()">Enviar</button></div>`);
+  iconoEmpleoSel('msg');
+}
+async function enviarMensajeCreador(){
+  const per = leerPersonaCampos('msg'); if(!per) return; // sin empleo, nombre y los dos apellidos no se envía
+  const t = (document.getElementById('msg-creador').value||'').trim();
+  if(t.length < 5){ showToast('Escribe un mensaje un poco más largo.'); return; }
+  if(/[<>]/.test(t)){ showToast('El mensaje no puede llevar los símbolos  <  > .'); return; }
+  const btn = document.getElementById('msg-enviar'); if(btn) btn.disabled = true;
+  const { error } = await sb.rpc('enviar_mensaje_app', { p_mensaje: t, p_empleo: per.empleo, p_nombre: per.nombre, p_apellido1: per.ap1, p_apellido2: per.ap2, p_dispositivo: describirDispositivo(), p_device_id: idDispositivo() });
+  if(error){ if(btn) btn.disabled = false; showToast('No se pudo enviar: '+cuErrorParche(error, 68)); return; }
+  cerrarModalGlobal();
+  showToast('Mensaje enviado. Gracias.');
+}
+async function cargarCuartelServicios(){
+  const c = CURRENT.compania;
+  CUARTEL_SERV.lunes = lunesDe(new Date());
+  CUARTEL_SERV.dia = (new Date().getDay()+6)%7; // hoy
+  document.getElementById('cuartel-week-select').innerHTML = `<h3 class="section-title" style="margin-top:14px;">Servicios del lunes ${fmt(cuFechaDia(0))} al domingo ${fmt(cuFechaDia(6))}</h3>`;
+  document.getElementById('cuartel-notice').innerHTML = `<div class="notice"><span>🔒 Solo consulta · el teléfono de contacto solo aparece al pulsar «Contactar»</span></div>`;
+  document.getElementById('cuartel-controles').innerHTML = '';
+  document.getElementById('cuartel-vista').innerHTML = '<p class="small-note">Cargando…</p>';
+  try{ await fetchPuentesYManiobras(c); window._servFest = diasFestivosServicios(c); }catch(e){ window._servFest = {}; } // para saber qué días cuentan como «fin de semana» en el PDF
+  const { data, error } = await sb.rpc('cuartel_servicios_semana', { p_compania: c });
+  if(error){ document.getElementById('cuartel-vista').innerHTML = `<div class="notice closed"><span>No se pudieron cargar los servicios: ${escHtml(cuErrorParche(error))}</span></div>`; return; }
+  CUARTEL_SERV.filas = data || [];
+  pintarCuartelServicios();
+}
+const cuServiciosDelDia = i => { const f = ymd(cuFechaDia(i)); return CUARTEL_SERV.filas.filter(s=>s.fecha===f).sort((a,b)=>((CU_ORDEN_TIPO[a.tipo]||9)-(CU_ORDEN_TIPO[b.tipo]||9)) || ((a.turno||0)-(b.turno||0)) || String(a.apellidos).localeCompare(String(b.apellidos),'es')); };
+function cuartelServDia(i){ CUARTEL_SERV.dia = i; pintarCuartelServicios(); }
+function pintarCuartelServicios(){
+  const c = CURRENT.compania, hoyIdx = (new Date().getDay()+6)%7;
+  const chips = CU_DIAS.map((n,i)=>`<button type="button" class="cu-dia ${CUARTEL_SERV.dia===i?'active':''}" onclick="cuartelServDia(${i})">${n}${i===hoyIdx?' ·hoy':''}<small>${fmt(cuFechaDia(i))}</small><span class="n">${cuServiciosDelDia(i).length}</span></button>`).join('');
+  const lista = cuServiciosDelDia(CUARTEL_SERV.dia);
+  const tarjetas = lista.length ? lista.map((s,k)=>`<button type="button" class="cu-serv-card" onclick="cuartelServDetalle(${CUARTEL_SERV.dia},${k})">
+      <span class="serv-cod ${servClase(s)}${s.estimado?' est':''}">${escHtml(servCorto(s))}</span>
+      <span class="info"><b>${escHtml(servicioLabel(s))}${s.estimado?' <i>(estimado)</i>':''}</b><span>${escHtml(s.apellidos+', '+s.nombre)} · Sec. ${c}${s.seccion}</span></span>
+    </button>`).join('') : '<p class="small-note">No hay servicios este día.</p>';
+  document.getElementById('cuartel-vista').innerHTML = `
+    <div class="cu-dias">${chips}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+      <b>${CU_DIAS_LARGO[CUARTEL_SERV.dia]} ${fmt(cuFechaDia(CUARTEL_SERV.dia))}</b>
+      <button class="small-btn" onclick="cuartelServPdfModal()">📕 Descargar PDF</button>
+    </div>${tarjetas}`;
+}
+// Detalle de un servicio. El teléfono NO está aquí: solo se pide (y se registra) al pulsar «Contactar»
+function cuartelServDetalle(dia, k){
+  const s = cuServiciosDelDia(dia)[k]; if(!s) return;
+  abrirModalGlobal(`<h3><span class="serv-cod ${servClase(s)}${s.estimado?' est':''}" style="cursor:default;">${escHtml(servCorto(s))}</span> ${escHtml(servicioLabel(s))}</h3>
+    <p class="modal-nota" style="margin-top:0;">${CU_DIAS_LARGO[dia]} ${fmt(cuFechaDia(dia))}${s.estimado?' · <i>estimado</i>':''}</p>
+    <div class="servicio-card"><div class="titulo">${escHtml(s.apellidos+', '+s.nombre)}</div><div class="meta">Sección ${CURRENT.compania}${s.seccion}</div></div>
+    <div id="cu-tel-res"></div>
+    <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cerrar</button><button class="primary-btn" id="cu-contactar-btn" onclick="cuartelContactar('${s.persona_id}')">📞 Contactar</button></div>`);
+}
+async function cuartelContactar(personaId){
+  const btn = document.getElementById('cu-contactar-btn'), res = document.getElementById('cu-tel-res'); if(!res) return;
+  if(btn) btn.disabled = true;
+  const { data, error } = await sb.rpc('cuartel_contactar', { p_persona: personaId, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania });
+  if(btn) btn.disabled = false;
+  if(error){ res.innerHTML = `<div class="notice closed" style="margin-top:10px;"><span>No se pudo obtener el teléfono: ${escHtml(cuErrorParche(error))}</span></div>`; return; }
+  if(!data){ res.innerHTML = '<div class="notice" style="margin-top:10px;"><span>Esta persona no tiene teléfono registrado todavía.</span></div>'; return; }
+  const tel = String(data), limpio = tel.replace(/[^0-9+]/g,'');
+  res.innerHTML = `<span class="cu-tel">📞 <a href="tel:${escHtml(limpio)}">${escHtml(tel)}</a></span><p class="small-note" style="text-align:center;margin:6px 0 0;"></p>`;
+}
+/* PDF de los servicios (sin teléfonos): un día, entre semana, fin de semana o toda la semana */
+function cuartelServPdfModal(){
+  const d = CUARTEL_SERV.dia;
+  const diasOpts = CU_DIAS_LARGO.map((n,i)=>`<option value="${i}" ${i===d?'selected':''}>${n} ${fmt(cuFechaDia(i))}</option>`).join('');
+  abrirModalGlobal(`<h3>📕 Descargar PDF de servicios</h3>
+    <p class="modal-nota" style="margin-top:0;">El PDF no lleva teléfonos. La descarga queda registrada.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
+      <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="cu-pdf" value="dia" checked onchange="document.getElementById('cu-pdf-dia-wrap').classList.remove('hidden')"> Un día concreto</label>
+      <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="cu-pdf" value="entre" onchange="document.getElementById('cu-pdf-dia-wrap').classList.add('hidden')"> Entre semana</label>
+      <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="cu-pdf" value="finde" onchange="document.getElementById('cu-pdf-dia-wrap').classList.add('hidden')"> Fin de semana</label>
+      <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="cu-pdf" value="semana" onchange="document.getElementById('cu-pdf-dia-wrap').classList.add('hidden')"> Toda la semana</label>
+    </div>
+    <div class="field" id="cu-pdf-dia-wrap"><label>Día</label><select id="cu-pdf-dia">${diasOpts}</select></div>
+    <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" onclick="cuartelServPdf()">Descargar</button></div>`);
+}
+async function cuartelServPdf(){
+  const r = document.querySelector('input[name="cu-pdf"]:checked'), alcance = r ? r.value : 'dia';
+  const dSel = parseInt((document.getElementById('cu-pdf-dia')||{}).value||'0',10);
+  const todos = [0,1,2,3,4,5,6];
+  const dias = alcance==='dia' ? [dSel] : alcance==='entre' ? todos.filter(i=>!esFindeServ(ymd(cuFechaDia(i)))) : alcance==='finde' ? todos.filter(i=>esFindeServ(ymd(cuFechaDia(i)))) : todos;
+  if(!dias.length){ showToast('No hay días de ese tipo esta semana.'); return; }
+  cerrarModalGlobal();
+  const etiqueta = alcance==='dia' ? CU_DIAS_LARGO[dSel]+' '+fmt(cuFechaDia(dSel)) : ({ entre:'entre semana', finde:'fin de semana', semana:'toda la semana' })[alcance];
+  // Primero se registra la descarga; si no se puede registrar, no se genera el PDF
+  if(!(await cuartelLogDescarga(`PDF de Servicios · ${etiqueta}`))) return;
+  const c = CURRENT.compania, bl = [];
+  dias.forEach(i=>{
+    const lista = cuServiciosDelDia(i);
+    bl.push({ t:'h', n:1, texto:`${CU_DIAS_LARGO[i].toUpperCase()} ${fmt(cuFechaDia(i))}  -  ${lista.length} servicio${lista.length===1?'':'s'}` });
+    if(lista.length) bl.push({ t:'tabla', pesos:[3,1,4,1], izq:[0,2], cab:['Servicio','Código','Persona','Sección'],
+      filas: lista.map(s=>[servicioLabel(s)+(s.estimado?' (estimado)':''), servCorto(s), s.apellidos+', '+s.nombre, `${c}${s.seccion}`]) });
+    else bl.push({ t:'p', items:['(sin servicios)'] });
+  });
+  const doc = { titulo:`Servicios - ${c}ª Compañía`, subtitulo:`Semana del lunes ${fmt(cuFechaDia(0))} al domingo ${fmt(cuFechaDia(6))}`, nota:`${etiqueta} - sin teléfonos de contacto`, bloques:bl };
+  descargarArchivo(pdfDesdeDoc(doc), `Cuartel_${c}Cia_Servicios_${alcance}_semana_${fmt(cuFechaDia(0)).replace('/','-')}.pdf`);
+  showToast('Descargando el PDF…');
 }
 function onCuartelVista(v){ CUARTEL.vista = v; if(v==='buscar') CUARTEL.seccion = 'todas'; pintarCuartel(); }
 function onCuartelDia(d){ CUARTEL.dia = d; pintarCuartel(); }
@@ -2148,12 +2368,21 @@ function cuartelExpActualizar(){
   if(dia) dia.classList.toggle('hidden', a==='semana');
   if(tipo) tipo.classList.toggle('hidden', a!=='comida');
 }
-function cuartelExpConfirmar(){
+// Toda descarga del cuartel queda apuntada (con de dónde se ha sacado) en el «Registro del cuartel», que solo ve el superadmin. Si no se puede apuntar, no se descarga.
+async function cuartelLogDescarga(origen){
+  const { error } = await sb.rpc('cuartel_log_pdf', { p_alcance: origen, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania });
+  if(error){ showToast('No se pudo registrar la descarga, así que no se hace: '+cuErrorParche(error)); return false; }
+  return true;
+}
+async function cuartelExpConfirmar(){
   const alc = cuartelExpAlcance(), dia = parseInt((document.getElementById('exp-dia')||{}).value||'0',10), tipo = (document.getElementById('exp-tipo')||{}).value||'comida';
   const esCom = CUARTEL.modulo==='comidas', pdf = CUARTEL_EXP_FORMATO==='pdf';
   cerrarModalGlobal();
-  // Excel de la semana entera: el de siempre (una hoja por sección, listo para imprimir)
-  if(!pdf && alc==='semana') return esCom ? exportCompanyExcel() : exportPernoctaExcel();
+  if(!pdf && typeof XLSX==='undefined'){ showToast('No se pudo cargar la librería de Excel. Recarga la página.'); return; }
+  const cuando = alc==='semana' ? 'semana entera' : `${alc==='comida' ? tipoNombre(tipo).toLowerCase()+' ' : (esCom ? 'día ' : 'noche ')}${DAY_NAMES_FULL[dia%7]} ${fmt(diaPern(ACTIVE_WEEK,dia))}`;
+  if(!(await cuartelLogDescarga(`${pdf?'PDF':'Excel'} de ${esCom?'Comidas':'Pernoctas'} · ${cuando}`))) return;
+  // Excel de la semana entera de comidas: el de siempre (una hoja por sección, listo para imprimir)
+  if(!pdf && alc==='semana' && esCom) return exportCompanyExcel();
   const doc = esCom ? cuartelDocComidas(alc, dia, tipo) : cuartelDocPernoctas(alc, dia);
   const base = `Cuartel_${CURRENT.compania}Cia_${esCom?'Comidas':'Pernoctas'}_${doc.archivo}`;
   if(pdf){ descargarArchivo(pdfDesdeDoc(doc), base+'.pdf'); showToast('Descargando el PDF…'); }
@@ -2203,18 +2432,18 @@ function cuartelDocPernoctas(alc, dia){
              [`TOTAL ${c}ª CÍA (${N})`, ...noches.map(i=>`${secciones.reduce((a,s)=>a+s.people.filter(p=>cPernVal(p.id,i)).length,0)}/${N}`)]], pie:true });
     secciones.forEach(s=>{
       bl.push({ t:'h', n:2, texto:`Sección ${s.code}` });
-      bl.push({ t:'tabla', cab:['Nombre', ...noches.map(i=>`${DAY_NAMES[i%7]} ${fmt(diaPern(ACTIVE_WEEK,i))}`), 'Teléfono','Dirección'], pesos:[4, ...noches.map(()=>1.2), 2.5, 6], izq:[0, noches.length+2],
-        filas: s.people.map(p=>{ const k = cPernContacto(p.id); return [nombreCompleto(p), ...noches.map(i=>cPernVal(p.id,i)?'AGM':'FUERA'), k.tel, k.dir]; }) });
+      bl.push({ t:'tabla', cab:['Nombre', ...noches.map(i=>`${DAY_NAMES[i%7]} ${fmt(diaPern(ACTIVE_WEEK,i))}`)], pesos:[4, ...noches.map(()=>1.2)], izq:[0],
+        filas: s.people.map(p=>[nombreCompleto(p), ...noches.map(i=>cPernVal(p.id,i)?'AGM':'FUERA')]) });
     });
     return { apaisado:true, titulo:`${c}ª Compañía · Pernoctas de la semana`, subtitulo:`${fnoche(0)} al ${fnoche(nDias-1).replace('Noche del ','')}`, archivo:`semana_${fmt(ACTIVE_WEEK.days[0]).replace('/','-')}`, bloques:bl };
   }
   const d = noches[0], agmTot = secciones.reduce((a,s)=>a+s.people.filter(p=>cPernVal(p.id,d)).length,0);
   bl.push({ t:'h', n:1, texto:`${fnoche(d).toUpperCase()}  -  EN LA AGM: ${agmTot} de ${N}  -  FUERA: ${N-agmTot}` });
   bl.push({ t:'tabla', pesos:[2,1,1], cab:['Sección','AGM','Fuera'], filas:[...secciones.map(s=>{ const a=s.people.filter(p=>cPernVal(p.id,d)).length; return [s.code, String(a), String(s.people.length-a)]; }), ['TOTAL', String(agmTot), String(N-agmTot)]], pie:true });
-  bl.push({ t:'h', n:2, texto:'Duermen FUERA (con teléfono y dirección)' });
+  bl.push({ t:'h', n:2, texto:'Duermen FUERA' });
   secciones.forEach(s=>{
     const f = s.people.filter(p=>!cPernVal(p.id,d));
-    bl.push({ t:'p', numerar:f.length>0, cab:`Sección ${s.code} (${f.length})`, items: f.length ? f.map(p=>{ const k = cPernContacto(p.id); return `${nombreCompleto(p)} - tel. ${k.tel||'sin teléfono'} - ${k.dir||'sin dirección'}`; }) : ['(nadie)'] });
+    bl.push({ t:'p', numerar:f.length>0, cab:`Sección ${s.code} (${f.length})`, items: f.length ? f.map(nombreCompleto) : ['(nadie)'] });
   });
   bl.push({ t:'h', n:2, texto:'Duermen en la AGM' });
   secciones.forEach(s=>{ const a = s.people.filter(p=>cPernVal(p.id,d)); bl.push({ t:'p', numerar:a.length>0, cab:`Sección ${s.code} (${a.length})`, items: a.length ? a.map(nombreCompleto) : ['(nadie)'] }); });
@@ -2237,10 +2466,33 @@ function xlsxDesdeDoc(doc, nombre){
 // Helpers de datos
 const cMarca = (id,col)=> CUARTEL.data.V[id+'|'+col.type+'|'+col.day];
 const cPernVal = (id,d)=>{ const k=id+'|'+d; const m=CUARTEL.data.pernMap; return nocheObligatoriaManiobra(id,ACTIVE_WEEK,d) ? true : (m.hasOwnProperty(k)?m[k].duerme_agm:true); };
-function cPernContacto(id){
-  const m = CUARTEL.data.pernMap; let tel='', dir='';
-  for(let d=0; d<CUARTEL.data.nDias; d++){ const k=id+'|'+d; if(m.hasOwnProperty(k) && !m[k].duerme_agm){ tel = tel || (m[k].telefono||''); dir = dir || (m[k].direccion||''); } }
-  return { tel, dir };
+const cPernFuera = id => { for(let d=0; d<CUARTEL.data.nDias; d++){ if(!cPernVal(id,d)) return true; } return false; }; // duerme fuera alguna noche de la semana
+const cBotonContactar = id => `<button type="button" class="small-btn" onclick="cuartelContactarPernocta('${id}')">📞 Contactar</button>`;
+// El cuartel NO tiene el teléfono ni la dirección en pantalla: solo se piden al pulsar «Contactar» (queda registrado, solo lo ve el superadmin)
+async function fetchPernoctaMapCuartel(personaIds, semanaKey){
+  const map = {};
+  if(!personaIds.length) return map;
+  let { data, error } = await sb.rpc('cuartel_pernoctas_semana', { p_semana: semanaKey, p_compania: CURRENT.compania });
+  if(error){
+    if(!/function|schema cache|does not exist/i.test(error.message||'')) throw error; // un fallo de red u otro: se avisa, no se pinta «todos en la AGM»
+    data = await selectTodo('pernoctas', 'persona_id,dia,duerme_agm', q=>q.eq('semana_inicio', semanaKey), personaIds, ['persona_id','dia']); // sin el parche 69: solo esas tres columnas, nunca teléfono ni dirección
+  }
+  (data||[]).forEach(r=>{ map[r.persona_id+'|'+r.dia] = { duerme_agm:r.duerme_agm }; });
+  return map;
+}
+async function cuartelContactarPernocta(personaId){
+  const per = CUARTEL.data.secciones.flatMap(s=>s.people).find(x=>x.id===personaId);
+  abrirModalGlobal(`<h3>📞 Contactar</h3>
+    <div class="servicio-card"><div class="titulo">${per ? escHtml(per.apellidos+', '+per.nombre) : ''}</div><div class="meta">Duerme fuera de la AGM esta semana</div></div>
+    <div id="cu-pern-res"><p class="small-note">Cargando…</p></div>
+    <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cerrar</button></div>`);
+  const { data, error } = await sb.rpc('cuartel_contactar_pernocta', { p_persona: personaId, p_semana: ACTIVE_WEEK.key, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania });
+  const res = document.getElementById('cu-pern-res'); if(!res) return;
+  if(error){ res.innerHTML = `<div class="notice closed"><span>No se pudo obtener: ${escHtml(cuErrorParche(error, 69))}</span></div>`; return; }
+  const tel = data && data.telefono ? String(data.telefono) : '', noches = (data && data.noches) || [];
+  res.innerHTML = (tel ? `<span class="cu-tel">📞 <a href="tel:${escHtml(tel.replace(/[^0-9+]/g,''))}">${escHtml(tel)}</a></span>` : '<div class="notice"><span>Esta persona no tiene teléfono registrado todavía.</span></div>')
+    + noches.map(n=>`<div class="servicio-card" style="margin-top:8px;"><div class="titulo">Noche del ${DAY_NAMES_FULL[n.dia%7]} ${fmt(diaPern(ACTIVE_WEEK,n.dia))}</div><div class="meta">📍 ${escHtml(n.direccion||'sin dirección')}</div></div>`).join('')
+    + '<p class="small-note" style="text-align:center;margin:8px 0 0;">Este acceso ha quedado registrado.</p>';
 }
 const tipoNombre = t => t==='desayuno'?'Desayuno':t==='comida'?'Comida':'Cena';
 function seccionSelectHtml(conTodas){
@@ -2331,7 +2583,7 @@ function cuartelPernoctasDiaHtml(){
   const filas = secciones.map(sec=>{ const a = sec.people.filter(p=>cPernVal(p.id,d)).length; return `<tr><td class="name-cell">${sec.code}</td><td class="mono">${a}/${sec.people.length}</td><td class="mono">${sec.people.length-a}</td></tr>`; }).join('');
   const fuera = secciones.map(sec=>{
     const f = sec.people.filter(p=>!cPernVal(p.id,d));
-    return `<div style="margin:6px 0;"><b>Sección ${sec.code} (${f.length})</b><br>${f.length ? f.map(p=>{ const k=cPernContacto(p.id); return `${escHtml(p.apellidos+', '+p.nombre)} — 📞 ${escHtml(k.tel||'sin teléfono')} · 📍 ${escHtml(k.dir||'sin dirección')}`; }).join('<br>') : '<span style="color:var(--ink-soft)">Nadie</span>'}</div>`;
+    return `<div style="margin:6px 0;"><b>Sección ${sec.code} (${f.length})</b><br>${f.length ? f.map(p=>`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:3px 0;">${escHtml(p.apellidos+', '+p.nombre)} ${cBotonContactar(p.id)}</div>`).join('') : '<span style="color:var(--ink-soft)">Nadie</span>'}</div>`;
   }).join('');
   const dentro = secciones.map(sec=>{ const a = sec.people.filter(p=>cPernVal(p.id,d)); return `<div style="margin:6px 0;"><b>Sección ${sec.code} (${a.length})</b><br>${listaNombresHtml(a)}</div>`; }).join('');
   html += `<div class="cuartel-card">
@@ -2339,7 +2591,7 @@ function cuartelPernoctasDiaHtml(){
     <div class="big">${agmTot}/${N} <span style="font-size:.9rem;">en la AGM</span></div>
     <div style="font-size:.85rem;">Fuera: <b>${N-agmTot}</b></div>
     <div class="table-scroll"><table class="roster" style="margin-top:8px;min-width:0;"><thead><tr><th class="name-cell">Sección</th><th>AGM</th><th>Fuera</th></tr></thead><tbody>${filas}</tbody></table></div>
-    <details><summary>Ver quién duerme FUERA (con teléfono y dirección)</summary>${fuera}</details>
+    <details><summary>Ver quién duerme FUERA</summary>${fuera}</details>
     <details><summary>Ver quién duerme en la AGM</summary>${dentro}</details>
   </div>`;
   return html;
@@ -2352,9 +2604,9 @@ function cuartelPernoctasSeccionHtml(){
   const todos = secciones.flatMap(s=>s.people);
   const tot = `<tfoot><tr><td class="name-cell">TOTAL ${CURRENT.compania}ª CÍA (${todos.length})</td>${dias.map(d=>{ const n=todos.filter(p=>cPernVal(p.id,d)).length; return `<td class="mono">${n}/${todos.length}</td>`; }).join('')}</tr></tfoot>`;
   const sec = secciones.find(s=>s.code===CUARTEL.seccion) || secciones[0];
-  let det = '<thead><tr class="daynames"><th class="name-cell">'+sec.code+'</th>'+dias.map(d=>`<th>${DAY_NAMES[(d)%7]}<span class="colhead-sub">${fmt(diaPern(ACTIVE_WEEK,d))}</span></th>`).join('')+'<th>Teléfono</th><th>Dirección</th></tr></thead><tbody>';
-  sec.people.forEach(p=>{ const k=cPernContacto(p.id); det += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}</td>${dias.map(d=>{ const v=cPernVal(p.id,d); return `<td><span class="pernocta-badge ${v?'agm':'fuera'}">${v?'AGM':'FUERA'}</span></td>`; }).join('')}<td>${escHtml(k.tel)}</td><td>${escHtml(k.dir)}</td></tr>`; });
-  det += `</tbody><tfoot><tr><td class="name-cell">Total AGM</td>${dias.map(d=>{ const n=sec.people.filter(p=>cPernVal(p.id,d)).length; return `<td class="mono">${n}/${sec.people.length}</td>`; }).join('')}<td></td><td></td></tr></tfoot>`;
+  let det = '<thead><tr class="daynames"><th class="name-cell">'+sec.code+'</th>'+dias.map(d=>`<th>${DAY_NAMES[(d)%7]}<span class="colhead-sub">${fmt(diaPern(ACTIVE_WEEK,d))}</span></th>`).join('')+'<th>Contacto</th></tr></thead><tbody>';
+  sec.people.forEach(p=>{ det += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}</td>${dias.map(d=>{ const v=cPernVal(p.id,d); return `<td><span class="pernocta-badge ${v?'agm':'fuera'}">${v?'AGM':'FUERA'}</span></td>`; }).join('')}<td>${cPernFuera(p.id) ? cBotonContactar(p.id) : ''}</td></tr>`; });
+  det += `</tbody><tfoot><tr><td class="name-cell">Total AGM</td>${dias.map(d=>{ const n=sec.people.filter(p=>cPernVal(p.id,d)).length; return `<td class="mono">${n}/${sec.people.length}</td>`; }).join('')}<td></td></tr></tfoot>`;
   return `<h3 class="section-title">Quién duerme en la AGM, por sección</h3>
     <div class="table-scroll"><table class="roster">${thead}<tbody>${rows}</tbody>${tot}</table></div>
     <div class="cuartel-bar" style="margin-top:16px;">${seccionSelectHtml(false)}</div>
@@ -2379,9 +2631,8 @@ function pintarBusquedaCuartel(){
         ${['desayuno','comida','cena'].map(t=>`<tr><td class="name-cell">${tipoNombre(t)}</td>${DAY_NAMES.map((_,i)=>{ const col=cols.find(c=>c.type===t&&c.day===i); const v=cMarca(p.id,col); return `<td><span class="${v?'mark-yes':'mark-no'}">${v?'✓':'—'}</span></td>`; }).join('')}</tr>`).join('')}
       </tbody></table></div>`;
     } else {
-      const k = cPernContacto(p.id);
       cuerpo = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">${Array.from({length:CUARTEL.data.nDias},(_,d)=>{ const v=cPernVal(p.id,d); return `<span class="pernocta-badge ${v?'agm':'fuera'}">${DAY_NAMES[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))}: ${v?'AGM':'FUERA'}</span>`; }).join('')}</div>
-        ${(k.tel||k.dir) ? `<div style="font-size:.82rem;">📞 ${escHtml(k.tel||'sin teléfono')} · 📍 ${escHtml(k.dir||'sin dirección')}</div>` : ''}`;
+        ${cPernFuera(p.id) ? `<div style="margin:6px 0;">${cBotonContactar(p.id)}</div>` : ''}`;
     }
     return `<div class="cuartel-card"><h4>${nameCellHtml(p)} <span style="font-weight:400;color:var(--ink-soft);">· Sección ${sec.code}</span></h4>
       ${isIntol(p) ? `<div style="font-size:.8rem;">🍽️⚠️ Intolerancias: ${escHtml(p.intolerancias.trim())}</div>` : ''}${cuerpo}</div>`;
@@ -2393,7 +2644,7 @@ async function enterAlumno(persona, adminCompania, isSuperadmin){
   const wasSuperadmin = CURRENT && CURRENT.isSuperadmin;
   CURRENT = { mode:'alumno', persona, seccionPeople: seccion || [persona], adminCompania: adminCompania || null, isSuperadmin: (isSuperadmin!=null?isSuperadmin:wasSuperadmin) };
   EXTERNADOS = new Set((seccion||[persona]).filter(p=>p.externado).map(p=>p.id));
-  pintarModo('alumno', (CURRENT.adminCompania || CURRENT.isSuperadmin) ? [['alumno','🎓 MODO ALUMNO', CURRENT.adminCompania ? 'cambiarModo()' : null]] : []); // el aviso de modo solo les sale a los admins y al superadmin
+  pintarModo('alumno', (CURRENT.adminCompania || CURRENT.isSuperadmin) ? [['alumno','🎓 MODO ALUMNO', modoAccion()]] : []); // el aviso de modo solo les sale a los admins y al superadmin
   await fetchCortesEspeciales(persona.compania);
   await fetchPernoctaForzarAgm(persona.compania);
   await fetchComidaDesbloqueoDias(persona.compania);
@@ -2826,7 +3077,7 @@ async function enterAdmin(compania, linkedPersona, isSuperadmin){
   const { data: companiaInfo } = await sb.from('companias').select('*').eq('numero', compania).single();
   const wasSuperadmin = CURRENT && CURRENT.isSuperadmin;
   CURRENT = { mode:'admin', compania, companiaInfo, linkedPersona: linkedPersona || null, isSuperadmin: (isSuperadmin!=null?isSuperadmin:wasSuperadmin) };
-  pintarModo('admin', [['admin','🛠️ MODO ADMIN', CURRENT.linkedPersona ? 'cambiarModo()' : null]]);
+  pintarModo('admin', [['admin','🛠️ MODO ADMIN', modoAccion()]]);
   await fetchCortesEspeciales(compania);
   await fetchPernoctaForzarAgm(compania);
   await fetchComidaDesbloqueoDias(compania);
@@ -2837,6 +3088,7 @@ async function enterAdmin(compania, linkedPersona, isSuperadmin){
 
 /* ================= SUPERADMIN ================= */
 function enterSuperadmin(){
+  pintarModo('super', [['super','👑 MODO SUPERADMIN', modoAccion()]]); // si hay más modos, el botón ⇄ sigue la rotación: alumno → admin → superadmin
   showScreen('screen-superadmin');
   renderSuperadmin();
 }
@@ -2889,10 +3141,48 @@ function pintarConectadosSuper(){
 }
 
 /* ---- Superadmin: historial de cambios de comidas por compañía y por sección ---- */
-const HSUP = { compania:'todas', seccion:'todas', desde:'', hasta:'', limite:100 };
-function hsupSet(campo, v){ HSUP[campo] = v; HSUP.limite = 100; cargarHistorialSuper(); }
-function hsupMas(){ HSUP.limite += 100; cargarHistorialSuper(); }
-function hsupLimpiar(){ Object.assign(HSUP, { compania:'todas', seccion:'todas', desde:'', hasta:'', limite:100 }); cargarHistorialSuper(); }
+const HSUP = { compania:'todas', seccion:'todas', desde:'', hasta:'' };
+function hsupSet(campo, v){ HSUP[campo] = v; cargarHistorialSuper(); }
+function hsupLimpiar(){ Object.assign(HSUP, { compania:'todas', seccion:'todas', desde:'', hasta:'' }); cargarHistorialSuper(); }
+/* ---- Historial de cambios de comidas: por sección, cada persona por orden alfabético; al pulsar su nombre sale una mini tabla (tipo Excel) con sus cambios ---- */
+const HIST_FECHAS = { admin: () => ({ desde: historyFiltroDesde, hasta: historyFiltroHasta }), super: () => ({ desde: HSUP.desde, hasta: HSUP.hasta }) };
+function historialGruposHtml(grupos, origen){
+  // grupos: [{ code, people:[{id, nombre, apellidos}] }]
+  return grupos.map(g=>{
+    const gente = g.people.slice().sort((a,b)=>String(a.apellidos+' '+a.nombre).localeCompare(String(b.apellidos+' '+b.nombre), 'es'));
+    const lista = gente.length ? gente.map(p=>`<div class="hist-persona"><button type="button" class="hist-nombre" onclick="toggleHistPersona('${p.id}','${origen}')">▸ ${escHtml(p.apellidos+', '+p.nombre)}</button><div id="hp-${origen}-${p.id}" class="hist-caja hidden"></div></div>`).join('') : '<p class="small-note">Nadie en esta sección.</p>';
+    return adminDesplegable('hist-'+origen+'-'+g.code, `Sección ${g.code} (${gente.length})`, lista);
+  }).join('');
+}
+async function toggleHistPersona(id, origen){
+  const box = document.getElementById('hp-'+origen+'-'+id); if(!box) return;
+  const abrir = box.classList.contains('hidden');
+  box.classList.toggle('hidden', !abrir);
+  const btn = box.previousElementSibling; if(btn) btn.textContent = btn.textContent.replace(abrir ? '▸' : '▾', abrir ? '▾' : '▸');
+  if(abrir && !box.dataset.cargado) await cargarHistPersona(id, origen);
+}
+async function cargarHistPersona(id, origen){
+  const box = document.getElementById('hp-'+origen+'-'+id); if(!box) return;
+  box.innerHTML = '<p class="small-note">Cargando…</p>';
+  const { desde, hasta } = HIST_FECHAS[origen]();
+  let q = sb.from('historial').select('*').eq('persona_id', id).order('created_at', { ascending:false }).limit(200);
+  if(desde) q = q.gte('created_at', new Date(desde+'T00:00:00').toISOString()); // hora de España, no UTC
+  if(hasta){ const f = new Date(hasta+'T00:00:00'); f.setDate(f.getDate()+1); q = q.lt('created_at', f.toISOString()); }
+  const { data, error } = await q;
+  if(error){ box.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar: ${escHtml(error.message)}</p>`; return; }
+  box.dataset.cargado = '1';
+  if(!data || !data.length){ box.innerHTML = '<p class="small-note">Sin cambios registrados' + ((desde||hasta) ? ' con esas fechas' : '') + '.</p>'; return; }
+  const si = v => v===null ? '—' : (v ? 'Sí' : 'No');
+  const filas = data.map(e=>{
+    const ts = new Date(e.created_at).toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    const sem = e.semana_inicio ? new Date(e.semana_inicio+'T00:00:00') : null;
+    const dia = sem ? `${DAY_NAMES[e.dia%7]} ${fmt(diaPern({ days:[sem] }, e.dia))}` : DAY_NAMES[e.dia%7];
+    const tipo = ['desayuno','comida','cena'].includes(e.tipo) ? tipoNombre(e.tipo) : escHtml(e.tipo);
+    return `<tr><td class="mono">${escHtml(ts)}</td><td>${tipo}</td><td>${escHtml(dia)}</td><td>${si(e.valor_anterior)}</td><td><b style="color:${e.valor_nuevo?'#2e7d32':'#8a2a2a'};">${si(e.valor_nuevo)}</b></td><td style="text-align:left;">${escHtml(e.actor||'')}</td></tr>`;
+  }).join('');
+  box.innerHTML = `<div class="table-scroll"><table class="roster hist-tabla"><thead><tr><th>Fecha y hora</th><th>Comida</th><th>Día</th><th>Antes</th><th>Ahora</th><th>Quién lo cambió</th></tr></thead><tbody>${filas}</tbody></table></div>`
+    + `<div class="sub2" style="margin-top:4px;">${data.length} cambio${data.length===1?'':'s'}${data.length>=200 ? ' (los 200 más recientes)' : ''}</div>`;
+}
 async function cargarHistorialSuper(){
   const cont = document.getElementById('super-historial-cont'); if(!cont) return;
   const sty = 'padding:6px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.8rem;';
@@ -2905,23 +3195,17 @@ async function cargarHistorialSuper(){
       <button class="small-btn" onclick="hsupLimpiar()">Limpiar filtros</button>
     </div>`;
   cont.innerHTML = filtros + '<p class="small-note">Cargando…</p>';
-  let q = sb.from('historial').select('*, personas!inner(nombre,apellidos,compania,seccion)').order('created_at', { ascending:false }).limit(HSUP.limite);
-  if(cia) q = q.eq('personas.compania', cia);
-  if(HSUP.seccion!=='todas') q = q.eq('personas.seccion', parseInt(HSUP.seccion,10));
-  if(HSUP.desde) q = q.gte('created_at', HSUP.desde+'T00:00:00');
-  if(HSUP.hasta) q = q.lte('created_at', HSUP.hasta+'T23:59:59');
+  let q = sb.from('personas').select('id,nombre,apellidos,compania,seccion').order('apellidos').limit(1000);
+  if(cia) q = q.eq('compania', cia);
+  if(HSUP.seccion!=='todas') q = q.eq('seccion', parseInt(HSUP.seccion,10));
   const { data, error } = await q;
-  if(error){ cont.innerHTML = filtros + `<p class="small-note" style="color:var(--danger);">No se pudo cargar el historial: ${escHtml(error.message)}</p>`; return; }
-  if(!data || !data.length){ cont.innerHTML = filtros + '<p class="small-note">Sin cambios registrados con estos filtros. (Si esperabas ver cambios de otra compañía y no salen, puede ser un permiso: avísame.)</p>'; return; }
-  const filas = data.map(e=>{
-    const ts = new Date(e.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    const nombre = e.personas ? `${escHtml(e.personas.apellidos)}, ${escHtml(e.personas.nombre)}` : '(alumno eliminado)';
-    const code = e.personas ? ''+e.personas.compania+e.personas.seccion : '';
-    const nuevo = `<b style="color:${e.valor_nuevo?'#2e7d32':'#8a2a2a'};">${e.valor_nuevo?'Sí':'No'}</b>`;
-    return `<div class="history-row"><span class="ts">${ts}</span> — ${code} · <b>${nombre}</b> · ${escHtml(e.tipo)} ${DAY_NAMES[(e.dia)%7]}: ${e.valor_anterior===null?'—':(e.valor_anterior?'Sí':'No')} → ${nuevo} <span class="ts">(${escHtml(e.actor)})</span></div>`;
-  }).join('');
-  cont.innerHTML = filtros + `<div class="sub2" style="margin-bottom:6px;">${data.length} cambios${data.length>=HSUP.limite ? ' (los más recientes)' : ''}</div><div>${filas}</div>`
-    + (data.length>=HSUP.limite ? `<div style="margin-top:8px;"><button class="small-btn" onclick="hsupMas()">Ver más</button></div>` : '');
+  if(error){ cont.innerHTML = filtros + `<p class="small-note" style="color:var(--danger);">No se pudo cargar la lista: ${escHtml(error.message)}</p>`; return; }
+  const porCodigo = {};
+  (data||[]).forEach(p=>{ const code = ''+p.compania+p.seccion; (porCodigo[code] = porCodigo[code] || { code, people:[] }).people.push(p); });
+  const grupos = Object.values(porCodigo).sort((a,b)=>a.code.localeCompare(b.code));
+  cont.innerHTML = filtros + (grupos.length
+    ? '<p class="small-note" style="margin-top:0;">Pulsa el nombre de una persona para ver sus cambios.</p>' + historialGruposHtml(grupos, 'super')
+    : '<p class="small-note">No hay personas con estos filtros.</p>');
 }
 // Cuentas de servicio de cuartel (una por compañía), sus conexiones y su historial de accesos — solo para el superadmin
 async function cuartelSuperHtml(){
@@ -3105,6 +3389,8 @@ async function renderSuperadmin(){
     </table></div>`;
   // De más a menos importante: totales (siempre a la vista) · solicitudes pendientes · ir a una compañía · cuartel · restablecer contraseña
   const nSol = (solicitudes||[]).length;
+  let nMsg = 0; // mensajes sin leer que te envían desde la app (parche SQL 68)
+  try{ const rMsg = await sb.from('mensajes_app').select('id', { count:'exact', head:true }).eq('leido', false); if(!rMsg.error) nMsg = rMsg.count || 0; }catch(e){}
   const filaSolicitudes = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
         ${nSol ? solicitudes.map(s=>`
           <div class="manage-row">
@@ -3163,11 +3449,75 @@ async function renderSuperadmin(){
       { id:'conectados', icono:'🟢', titulo:'Personas conectadas', sub:'En total y por compañía', alAbrir:'cargarConectadosSuper()', cuerpo:'<div id="super-conectados-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'historial', icono:'📜', titulo:'Historial de cambios', sub:'Por compañía y sección', alAbrir:'cargarHistorialSuper()', cuerpo:'<div id="super-historial-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'cuartel', icono:'🪖', titulo:'Servicio de cuartel', sub:'Cuentas, conexiones y accesos', tituloPanel:'Servicio de cuartel (cuentas, conexiones y accesos)', cuerpo:filaCuartel },
+      { id:'mensajes', icono:'💬', titulo:'Mensajes de usuarios', sub: nMsg ? `${nMsg} sin leer` : 'Ninguno nuevo', badge:(nMsg||''), tituloPanel:'Mensajes que te envían desde la app', alAbrir:'cargarMensajesSuper()', cuerpo:'<div id="super-mensajes-cont"><p class="small-note">Cargando…</p></div>' },
+      { id:'cuartel-log', icono:'🔎', titulo:'Registro del cuartel', sub:'Quién entra, a quién contacta y qué PDF descarga', tituloPanel:'Registro del servicio de cuartel (solo lo ves tú)', alAbrir:'cargarCuartelEventosSuper()', cuerpo:'<div id="super-cuartel-log-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'reset', icono:'🔑', titulo:'Restablecer contraseña', sub:'De un alumno o admin', tituloPanel:'Restablecer la contraseña de un alumno o admin', cuerpo:filaReset },
     ]);
   const abierta = CAJAS_ABIERTA.super;
   if(abierta==='conectados') cargarConectadosSuper();
   else if(abierta==='historial') cargarHistorialSuper();
+  else if(abierta==='cuartel-log') cargarCuartelEventosSuper();
+  else if(abierta==='mensajes') cargarMensajesSuper();
+}
+/* Mensajes que te envían los usuarios con «Avisar a Pablo». Solo los puede leer el superadmin. */
+const MSGS_APP = { filas:null, error:null };
+async function cargarMensajesSuper(){
+  const cont = document.getElementById('super-mensajes-cont'); if(cont) cont.innerHTML = '<p class="small-note">Cargando…</p>';
+  const { data, error } = await sb.from('mensajes_app').select('*').order('creado_en', { ascending:false }).limit(100);
+  MSGS_APP.error = error ? cuErrorParche(error, 68) : null; MSGS_APP.filas = error ? null : (data||[]);
+  pintarMensajesSuper();
+}
+function pintarMensajesSuper(){
+  const cont = document.getElementById('super-mensajes-cont'); if(!cont) return;
+  if(MSGS_APP.error){ cont.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar: ${escHtml(MSGS_APP.error)}</p><button class="small-btn" onclick="cargarMensajesSuper()">↻ Reintentar</button>`; return; }
+  const filas = MSGS_APP.filas || [];
+  cont.innerHTML = (filas.length ? filas.map(m=>`<div class="servicio-card"${m.leido?'':' style="border-color:var(--brass);border-width:2px;"'}>
+      <div class="titulo">${m.leido?'':'🔴 '}${nombreConIcono(m.quien||'(sin nombre)')}</div>
+      <div class="meta">${escHtml(new Date(m.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}))} · ${escHtml(m.cuenta||m.rol||'')}${m.compania ? ' · '+m.compania+'ª Cía' : ''} · IP ${escHtml(m.ip||'no disponible')}${m.dispositivo ? ' · '+escHtml(m.dispositivo) : ''}</div>
+      <div style="white-space:pre-wrap;margin:6px 0;">${escHtml(m.mensaje)}</div>
+      <div style="display:flex;gap:8px;">${m.leido?'':`<button class="small-btn" onclick="mensajeAppLeido(${m.id})">✓ Marcar leído</button>`}<button class="small-btn danger" onclick="mensajeAppBorrar(${m.id})">🗑 Borrar</button></div>
+    </div>`).join('') : '<p class="small-note">No hay mensajes.</p>') + '<button class="small-btn" onclick="cargarMensajesSuper()">↻ Actualizar</button>';
+}
+async function mensajeAppLeido(id){
+  const { error } = await sb.from('mensajes_app').update({ leido:true }).eq('id', id);
+  if(error){ showToast('No se pudo: '+error.message); return; }
+  await renderSuperadmin();
+}
+async function mensajeAppBorrar(id){
+  if(!confirm('¿Borrar este mensaje?')) return;
+  const { error } = await sb.from('mensajes_app').delete().eq('id', id);
+  if(error){ showToast('No se pudo borrar: '+error.message); return; }
+  await renderSuperadmin();
+}
+/* Registro de lo que hace el cuartel: entradas de personas de servicio, «Contactar» y PDF. Solo el superadmin puede leerlo (la base de datos lo impide a los demás). */
+const CUARTEL_LOG = { filas:null, nombres:{}, tipo:'todos', compania:null, empleo:null, error:null }; // empleo: null = todos los empleos // compania: null = el registro de todas las compañías en total
+function onCuartelLogCompania(v){ CUARTEL_LOG.compania = v ? parseInt(v,10) : null; cargarCuartelEventosSuper(); }
+function onCuartelLogEmpleo(v){ CUARTEL_LOG.empleo = CUARTEL_EMPLEOS.includes(v) ? v : null; cargarCuartelEventosSuper(); }
+async function cargarCuartelEventosSuper(){
+  const cont = document.getElementById('super-cuartel-log-cont'); if(cont) cont.innerHTML = '<p class="small-note">Cargando…</p>';
+  let q = sb.from('cuartel_eventos').select('*');
+  if(CUARTEL_LOG.compania) q = q.eq('compania', CUARTEL_LOG.compania); // si se elige una compañía, se piden solo los suyos (así los 300 últimos son de esa)
+  if(CUARTEL_LOG.empleo) q = q.like('nombre', CUARTEL_LOG.empleo + ' %');  // y si se elige un empleo, solo los de ese empleo
+  const { data, error } = await q.order('creado_en', { ascending:false }).limit(300);
+  CUARTEL_LOG.error = error ? cuErrorParche(error) : null; CUARTEL_LOG.filas = error ? null : (data||[]); CUARTEL_LOG.nombres = {};
+  const ids = [...new Set((data||[]).map(e=>e.persona_id).filter(Boolean))];
+  if(ids.length){ const r = await sb.from('personas').select('id,nombre,apellidos,compania,seccion').in('id', ids); (r.data||[]).forEach(p=>{ CUARTEL_LOG.nombres[p.id] = `${p.apellidos}, ${p.nombre} (Sec. ${p.compania}${p.seccion})`; }); }
+  pintarCuartelEventosSuper();
+}
+function pintarCuartelEventosSuper(){
+  const cont = document.getElementById('super-cuartel-log-cont'); if(!cont) return;
+  if(CUARTEL_LOG.error){ cont.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar: ${escHtml(CUARTEL_LOG.error)}</p><button class="small-btn" onclick="cargarCuartelEventosSuper()">↻ Reintentar</button>`; return; }
+  const filas = (CUARTEL_LOG.filas||[]).filter(e=>CUARTEL_LOG.tipo==='todos' || e.tipo===CUARTEL_LOG.tipo);
+  const ICONO = { entrada:'🪖 Entrada', contactar:'📞 Contactar', pdf:'📥 Descarga' }; // «Descarga»: PDF o Excel; en el detalle sale de dónde (p. ej. «PDF de Servicios · …», «Excel de Pernoctas · …»)
+  const fila = e => `<div class="history-row"><span class="ts">${escHtml(new Date(e.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}))}</span> · <b>${e.tipo==='pdf' && e.detalle ? '📥 '+escHtml(/^(PDF|Excel) /.test(e.detalle) ? e.detalle : 'PDF de Servicios · '+e.detalle) : (ICONO[e.tipo]||escHtml(e.tipo))}</b> · ${e.compania}ª Cía · ${e.nombre ? nombreConIcono(e.nombre) : '(sin nombre)'} · IP ${escHtml(e.ip||'no disponible')} · ${escHtml(e.dispositivo||'')}${e.persona_id ? ' · a quién: <b>'+escHtml(CUARTEL_LOG.nombres[e.persona_id]||'(persona borrada)')+'</b>' : ''}${e.detalle && e.tipo!=='pdf' ? ' · '+escHtml(e.detalle) : ''}</div>`;
+  cont.innerHTML = `<div class="cuartel-bar" style="margin-top:0;">
+      <div class="field"><label>Registro de</label><select onchange="onCuartelLogCompania(this.value)"><option value="">Todas las compañías (en total)</option>${companiasOptionsHtml(CUARTEL_LOG.compania)}</select></div>
+      <div class="field"><label>Empleo</label><select onchange="onCuartelLogEmpleo(this.value)"><option value="">Todos los empleos</option>${CUARTEL_EMPLEOS.map(e=>`<option value="${e}" ${CUARTEL_LOG.empleo===e?'selected':''}>${e}</option>`).join('')}</select></div>
+      <button class="small-btn" onclick="cargarCuartelEventosSuper()">↻ Actualizar</button>
+    </div>
+    <div class="semanas-toggle" style="max-width:460px;margin-bottom:10px;">${[['todos','Todo'],['entrada','Entradas'],['contactar','Contactos'],['pdf','Descargas']].map(([v,n])=>`<button type="button" class="${CUARTEL_LOG.tipo===v?'active':''}" onclick="CUARTEL_LOG.tipo='${v}'; pintarCuartelEventosSuper()">${n}</button>`).join('')}</div>
+    <p class="small-note" style="margin-top:0;">Se muestran los últimos 300 movimientos ${CUARTEL_LOG.compania ? 'de la '+CUARTEL_LOG.compania+'ª Compañía' : 'de todas las compañías'}${CUARTEL_LOG.empleo ? ', solo de '+CUARTEL_LOG.empleo : ''}.</p>
+    ${filas.length ? filas.map(fila).join('') : '<p class="small-note">No hay movimientos de este tipo.</p>'}`;
 }
 function onSuperResetCompaniaChange(v){ superReset = { compania: v?parseInt(v,10):null, seccion:null }; renderSuperadmin(); }
 function onSuperResetSeccionChange(v){ superReset.seccion = v?parseInt(v,10):null; renderSuperadmin(); }
@@ -3217,11 +3567,8 @@ let absenceSelIndex = null;
 let expandedSections = new Set();
 let managedSections = new Set();
 let historyOpen = false;
-let historyFiltroSeccion = 'todas';
-let historyFiltroPersona = 'todas';
 let historyFiltroDesde = '';
 let historyFiltroHasta = '';
-let historyLimit = 150;
 
 async function fetchCompanySections(compania){
   const secciones = [];
@@ -3886,54 +4233,18 @@ function companyAbsencesSummary(secciones, apuntesMap){
 }
 /* ---- Historial ---- */
 async function toggleHistory(){ historyOpen = !historyOpen; await renderAdmin(); }
-function onHistorySeccionChange(v){ historyFiltroSeccion = v; historyFiltroPersona = 'todas'; renderAdmin(); }
-function onHistoryPersonaChange(v){ historyFiltroPersona = v; renderAdmin(); }
 function onHistoryDesdeChange(v){ historyFiltroDesde = v; renderAdmin(); }
 function onHistoryHastaChange(v){ historyFiltroHasta = v; renderAdmin(); }
-function limpiarFiltrosHistorial(){
-  historyFiltroSeccion = 'todas'; historyFiltroPersona = 'todas'; historyFiltroDesde = ''; historyFiltroHasta = ''; historyLimit = 150;
-  renderAdmin();
-}
-function verMasHistorial(){ historyLimit += 150; renderAdmin(); }
+function limpiarFiltrosHistorial(){ historyFiltroDesde = ''; historyFiltroHasta = ''; renderAdmin(); }
 async function historyPanel(secciones){
-  const seccionesFiltradas = historyFiltroSeccion==='todas' ? secciones : secciones.filter(s=>(''+s.seccion)===historyFiltroSeccion);
-  const personasFiltro = seccionesFiltradas.flatMap(sec=>sec.people.filter(p=>p.registrado)).sort((a,b)=>a.apellidos.localeCompare(b.apellidos));
-
-  const opcionesSeccion = `<option value="todas" ${historyFiltroSeccion==='todas'?'selected':''}>Todas las secciones</option>`
-    + secciones.map(sec=>`<option value="${sec.seccion}" ${historyFiltroSeccion===(''+sec.seccion)?'selected':''}>Sección ${sec.code}</option>`).join('');
-  const opcionesPersona = `<option value="todas" ${historyFiltroPersona==='todas'?'selected':''}>Todos</option>`
-    + personasFiltro.map(p=>`<option value="${p.id}" ${historyFiltroPersona===p.id?'selected':''}>${escHtml(p.apellidos)}, ${escHtml(p.nombre)}</option>`).join('');
-
+  const sty = 'padding:5px 7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.78rem;';
   const filtrosHtml = `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0;">
-    <select onchange="onHistorySeccionChange(this.value)" style="padding:6px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.8rem;">${opcionesSeccion}</select>
-    <select onchange="onHistoryPersonaChange(this.value)" style="padding:6px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.8rem;">${opcionesPersona}</select>
-    <label style="font-size:.78rem;color:var(--ink-soft);">Desde <input type="date" value="${historyFiltroDesde}" onchange="onHistoryDesdeChange(this.value)" style="padding:5px 7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.78rem;"></label>
-    <label style="font-size:.78rem;color:var(--ink-soft);">Hasta <input type="date" value="${historyFiltroHasta}" onchange="onHistoryHastaChange(this.value)" style="padding:5px 7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.78rem;"></label>
-    <button class="small-btn" onclick="limpiarFiltrosHistorial()">Limpiar filtros</button>
+    <label style="font-size:.78rem;color:var(--ink-soft);">Desde <input type="date" value="${historyFiltroDesde}" onchange="onHistoryDesdeChange(this.value)" style="${sty}"></label>
+    <label style="font-size:.78rem;color:var(--ink-soft);">Hasta <input type="date" value="${historyFiltroHasta}" onchange="onHistoryHastaChange(this.value)" style="${sty}"></label>
+    <button class="small-btn" onclick="limpiarFiltrosHistorial()">Limpiar fechas</button>
   </div>`;
-
-  let query = sb.from('historial').select('*, personas!inner(nombre,apellidos,compania,seccion)')
-    .order('created_at',{ascending:false}).limit(historyLimit);
-  if(historyFiltroSeccion!=='todas'){
-    query = query.eq('personas.seccion', parseInt(historyFiltroSeccion,10));
-  }
-  if(historyFiltroPersona!=='todas') query = query.eq('persona_id', historyFiltroPersona);
-  if(historyFiltroDesde) query = query.gte('created_at', historyFiltroDesde+'T00:00:00');
-  if(historyFiltroHasta) query = query.lte('created_at', historyFiltroHasta+'T23:59:59');
-
-  const { data, error } = await query;
-  if(error || !data || data.length===0) return filtrosHtml + `<div style="font-size:.8rem;color:var(--ink-soft);">Sin cambios registrados con estos filtros.</div>`;
-
-  const filas = data.map(e=>{
-    const ts = new Date(e.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    const nombre = e.personas ? `${escHtml(e.personas.apellidos)}, ${escHtml(e.personas.nombre)}` : '(alumno eliminado)';
-    const seccionCode = e.personas ? ''+e.personas.compania+e.personas.seccion : '';
-    const valorFinal = `<b style="color:${e.valor_nuevo?'#2e7d32':'#8a2a2a'};">${e.valor_nuevo?'Sí':'No'}</b>`;
-    return `<div class="history-row"><span class="ts">${ts}</span> — ${seccionCode} · <b>${nombre}</b> · ${e.tipo} ${DAY_NAMES[(e.dia)%7]}: ${e.valor_anterior===null?'—':(e.valor_anterior?'Sí':'No')} → ${valorFinal} <span class="ts">(${e.actor})</span></div>`;
-  }).join('');
-
-  const verMasBtn = data.length>=historyLimit ? `<div style="margin-top:8px;"><button class="small-btn" onclick="verMasHistorial()">Ver más</button></div>` : '';
-  return filtrosHtml + `<div>${filas}</div>${verMasBtn}`;
+  const grupos = secciones.map(sec=>({ code: sec.code, people: sec.people }));
+  return filtrosHtml + '<p class="small-note" style="margin-top:0;">Pulsa el nombre de una persona para ver sus cambios.</p>' + historialGruposHtml(grupos, 'admin');
 }
 
 /* ---- Excel ---- */
@@ -7030,64 +7341,68 @@ async function renderAdminServicios(){
   document.getElementById('admin-notice').innerHTML = '';
   document.getElementById('admin-serv-week-select').innerHTML = '';
   const c = CURRENT.compania;
-  const { data: ci } = await sb.from('companias').select('servicios_visible_alumnos').eq('numero', c).single();
-  document.getElementById('serv-visible-toggle').checked = !!(ci && ci.servicios_visible_alumnos);
-
-  let { data: roster, error: errRoster } = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios,sin_gs').eq('compania', c).order('apellidos');
-  if(errRoster) ({ data: roster, error: errRoster } = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios').eq('compania', c).order('apellidos')); // sin el patch 60 todavía
-  if(errRoster){ ({ data: roster } = await sb.from('personas').select('id,nombre,apellidos,seccion').eq('compania', c).order('apellidos')); } // por si aún no está el patch 46
+  // Todo lo que no depende de nada más se pide A LA VEZ (antes eran unas 12 consultas una detrás de otra y la pestaña tardaba en abrir).
+  // Los servicios de la compañía se piden UNA sola vez: de ahí salen la tabla, las cuentas, la ficha y el primer/último día.
+  const seguro = p => Promise.resolve(p).then(r=>r, e=>({ data:null, error:e }));
+  const pRoster = (async()=>{
+    let r = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios,sin_gs').eq('compania', c).order('apellidos');
+    if(r.error) r = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios').eq('compania', c).order('apellidos'); // sin el patch 60 todavía
+    if(r.error) r = await sb.from('personas').select('id,nombre,apellidos,seccion').eq('compania', c).order('apellidos'); // por si aún no está el patch 46
+    return r.data || [];
+  })();
+  const [rCi, roster, todosAll, , resDeu, resCD, rsl, resCamb] = await Promise.all([
+    seguro(sb.from('companias').select('servicios_visible_alumnos').eq('numero', c).single()),
+    pRoster,
+    traerTodoServ(()=>sb.from('servicios').select('*').eq('compania', c).order('fecha').order('id')).catch(()=>[]),
+    fetchPuentesYManiobras(c), // puentes/festivos del superadmin y maniobras de la compañía (salen marcados en la tabla y cuentan como festivos)
+    // Deudas de servicio (pendientes y saldadas) y servicios puestos para saldarlas
+    seguro(sb.from('deudas_servicio')
+      .select('*, deudor:personas!deudas_servicio_deudor_id_fkey(nombre,apellidos), acreedor:personas!deudas_servicio_acreedor_id_fkey(nombre,apellidos)')
+      .eq('compania', c).order('creado_en',{ascending:false}).limit(400)),
+    seguro(sb.from('servicios').select('id,fecha,tipo,deuda_id,persona_id').eq('compania', c).not('deuda_id','is',null)),
+    // Casillas vacías porque a esa persona se le saltó (ya había hecho ese servicio y nadie se lo debía): vienen de las estimaciones guardadas
+    seguro(sb.from('estimaciones').select('id,saltos').eq('compania', c).in('estado', ['pendiente','aceptada'])),
+    seguro(sb.from('cambios_servicio')
+      .select('*, servicios(fecha,tipo,turno,codigo), solicitante:personas!cambios_servicio_solicitante_id_fkey(nombre,apellidos), sustituto:personas!cambios_servicio_sustituto_id_fkey(nombre,apellidos)')
+      .eq('compania', c).eq('estado','pendiente').order('creado_en'))
+  ]);
+  document.getElementById('serv-visible-toggle').checked = !!(rCi.data && rCi.data.servicios_visible_alumnos);
   document.getElementById('serv-persona').innerHTML = (roster||[]).map(p=>`<option value="${p.id}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})</option>`).join('');
   onServTipoChange();
 
-  try{ // primer y último servicio de la compañía (para «Todo, desde que empezaron»)
-    const [r1, r2] = await Promise.all([
-      sb.from('servicios').select('fecha').eq('compania', c).order('fecha',{ascending:true}).limit(1),
-      sb.from('servicios').select('fecha').eq('compania', c).order('fecha',{ascending:false}).limit(1) ]);
-    window._servMin = (r1.data && r1.data[0]) ? r1.data[0].fecha : null; window._servMax = (r2.data && r2.data[0]) ? r2.data[0].fecha : null;
-  }catch(e){ window._servMin = window._servMax = null; }
+  // primer y último servicio de la compañía (para «Todo, desde que empezaron»): vienen ordenados por fecha
+  window._servMin = todosAll.length ? todosAll[0].fecha : null; window._servMax = todosAll.length ? todosAll[todosAll.length-1].fecha : null;
   const dias = diasServGrid();
   const desde = ymd(dias[0]), hasta = ymd(dias[dias.length-1]);
-  let servicios = []; // todos los de ese rango (por páginas: ahora el cuadrante cubre varios meses y pasaría de 1000 filas)
-  try{ servicios = await traerTodoServ(()=>sb.from('servicios').select('*').eq('compania', c).gte('fecha', desde).lte('fecha', hasta).order('fecha').order('id')); }catch(e){ servicios = []; }
+  const servicios = todosAll.filter(s=>s.fecha>=desde && s.fecha<=hasta); // los de ese rango
   // Orden del Excel (o el que hayas puesto a mano); quien no tenga orden va al final por apellido
   const ordenado = (roster||[]).slice().sort((a,b)=>{
     const oa = a.orden_servicio==null ? 1e9 : a.orden_servicio, ob = b.orden_servicio==null ? 1e9 : b.orden_servicio;
     return (oa-ob) || normTxtJS(a.apellidos+' '+a.nombre).localeCompare(normTxtJS(b.apellidos+' '+b.nombre));
   });
   SERV_GRID = { roster: ordenado, dias, servicios: servicios||[] };
-  await fetchPuentesYManiobras(c); // puentes/festivos del superadmin y maniobras de la compañía (salen marcados en la tabla y cuentan como festivos)
   window._servFest = diasFestivosServicios(c);
   try{ // cuenta de servicios por persona y tipo (todos los de la compañía, no solo los días que se ven)
-    const todos = await selectTodo('servicios', 'persona_id,tipo,turno,codigo,fecha,estimado', q=>q.eq('compania', c), (roster||[]).map(p=>p.id), ['persona_id','fecha','tipo','turno']);
-    window._servCuentas = calcularCuentasServ(todos);
-    window._servTodos = todos;
+    window._servCuentas = calcularCuentasServ(todosAll);
+    window._servTodos = todosAll;
   }catch(e){ window._servCuentas = {}; window._servTodos = []; }
 
-  // Deudas de servicio (pendientes y saldadas) y servicios puestos para saldarlas
-  const resDeu = await sb.from('deudas_servicio')
-    .select('*, deudor:personas!deudas_servicio_deudor_id_fkey(nombre,apellidos), acreedor:personas!deudas_servicio_acreedor_id_fkey(nombre,apellidos)')
-    .eq('compania', c).order('creado_en',{ascending:false}).limit(400);
   let todasDeudas = resDeu.data || [];
-  const resCD = await sb.from('servicios').select('id,fecha,tipo,deuda_id,persona_id').eq('compania', c).not('deuda_id','is',null);
   window._servTieneDeudaId = !resCD.error;
   const conDeuda = resCD.error ? [] : (resCD.data||[]);
-  // Si ya se hizo el servicio con el que se salda una deuda, la deuda pasa sola a "saldada"
+  // Si ya se hizo el servicio con el que se salda una deuda, la deuda pasa sola a "saldada" (todas a la vez)
   const hoyS = ymd(new Date());
-  for(const s of conDeuda.filter(x=>x.fecha<=hoyS)){
-    const d = todasDeudas.find(x=>x.id===s.deuda_id && !x.saldada); if(!d) continue;
+  await Promise.all(conDeuda.filter(x=>x.fecha<=hoyS).map(async s=>{
+    const d = todasDeudas.find(x=>x.id===s.deuda_id && !x.saldada); if(!d) return;
     let { error: eS } = await sb.from('deudas_servicio').update({ saldada:true, saldada_en:new Date().toISOString(), saldada_fecha:s.fecha }).eq('id', d.id).eq('saldada', false);
     if(eS) ({ error: eS } = await sb.from('deudas_servicio').update({ saldada:true }).eq('id', d.id).eq('saldada', false));
     if(!eS){ d.saldada = true; d.saldada_fecha = s.fecha; d.saldada_en = new Date().toISOString(); }
-  }
+  }));
   const progPorDeuda = {}; conDeuda.filter(x=>x.fecha>hoyS).forEach(x=>{ progPorDeuda[x.deuda_id] = x; });
   todasDeudas.forEach(d=>{ if(progPorDeuda[d.id]) d._programada = progPorDeuda[d.id]; });
   window._servDeudasTodas = todasDeudas; window._servDeudasPend = todasDeudas.filter(d=>!d.saldada); window._servConDeuda = conDeuda;
-  // Casillas vacías porque a esa persona se le saltó (ya había hecho ese servicio y nadie se lo debía): vienen de las estimaciones guardadas
   window._servSaltos = {};
-  try{
-    const rsl = await sb.from('estimaciones').select('id,saltos').eq('compania', c).in('estado', ['pendiente','aceptada']);
-    if(!rsl.error) (rsl.data||[]).forEach(l=>(l.saltos||[]).forEach(s=>{ const k = s.p+'|'+s.f; (window._servSaltos[k] = window._servSaltos[k] || []).push(s.t); }));
-  }catch(e){}
+  if(!rsl.error) (rsl.data||[]).forEach(l=>(l.saltos||[]).forEach(s=>{ const k = s.p+'|'+s.f; (window._servSaltos[k] = window._servSaltos[k] || []).push(s.t); }));
 
   const fmtLargo = d => d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
   document.getElementById('serv-grid-controles').innerHTML = `
@@ -7142,9 +7457,7 @@ async function renderAdminServicios(){
   if(!window._servScrolled){ window._servScrolled = true; scrollToFechaServ(ymd(new Date()), 'auto'); } // la primera vez, la tabla arranca en la columna de hoy
   prepararPanelEstimacion();
 
-  const { data: pendientes } = await sb.from('cambios_servicio')
-    .select('*, servicios(fecha,tipo,turno,codigo), solicitante:personas!cambios_servicio_solicitante_id_fkey(nombre,apellidos), sustituto:personas!cambios_servicio_sustituto_id_fkey(nombre,apellidos)')
-    .eq('compania', c).eq('estado','pendiente').order('creado_en');
+  const pendientes = resCamb.data; // ya pedidas arriba, junto con lo demás
   document.getElementById('admin-cambios-pendientes').innerHTML = (pendientes&&pendientes.length) ? pendientes.map(p=>`
     <div class="servicio-card">
       <div class="titulo">${p.servicios?escHtml(servicioLabel(p.servicios)):'(servicio eliminado)'} ${p.servicios?'— '+fmtFecha(p.servicios.fecha):''}</div>
