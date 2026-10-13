@@ -433,6 +433,27 @@ table.est-prev th{background:var(--paper-alt);}
 .hist-nombre:hover{background:rgba(78,92,60,.08);}
 .hist-caja{padding:2px 0 10px;}
 table.hist-tabla{min-width:480px;}
+.hist-resumen{background:var(--paper-alt);border:1px solid var(--line);padding:8px 10px;margin:4px 0 8px;font-size:.8rem;}
+details.hist-sem{margin:6px 0;} details.hist-sem > summary{cursor:pointer;font-weight:700;font-size:.8rem;padding:4px 0;}
+table.hist-grid{border-collapse:separate;border-spacing:3px;width:100%;min-width:0;font-size:.7rem;table-layout:fixed;}
+table.hist-grid th{font-weight:700;color:var(--ink-soft);font-size:.62rem;padding:2px 0;text-align:center;line-height:1.2;}
+table.hist-grid th:first-child,table.hist-grid td.rot{width:54px;}
+table.hist-grid td{text-align:center;padding:0;}
+table.hist-grid td.rot{text-align:left;font-size:.66rem;color:var(--ink-soft);}
+.hc{display:block;height:34px;line-height:34px;border-radius:6px;background:var(--paper-alt);color:var(--ink-soft);position:relative;white-space:nowrap;}
+.hc.sin{opacity:.35;}
+.hc.cambiado{background:rgba(211,84,0,.15);border:2px solid #d35400;line-height:30px;cursor:pointer;color:var(--ink);}
+.hc.anulado{border:2px dotted var(--ink-soft);line-height:30px;cursor:pointer;}
+.hc .ant{opacity:.55;font-size:.85em;}
+.hc.cierre::after{content:'⏰';position:absolute;top:-6px;right:-3px;font-size:.62rem;line-height:1;}
+.hc.incoh::before{content:'⚠';position:absolute;top:-6px;left:-3px;font-size:.62rem;line-height:1;}
+.hist-det{border:2px solid var(--brass);background:var(--card);padding:10px 12px;margin:8px 0;}
+.hist-det-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;}
+.hist-ad{display:flex;gap:14px;align-items:center;margin:6px 0 8px;font-size:.9rem;}
+.hist-flecha{font-size:1.4rem;color:var(--ink-soft);}
+.hist-tag{display:inline-block;font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--paper-alt);border:1px solid var(--line);margin-right:4px;white-space:nowrap;}
+.hist-tag.fin{background:rgba(78,92,60,.2);} .hist-tag.cierre{background:rgba(211,84,0,.18);border-color:#d35400;}
+details.hist-todo{margin-top:10px;} details.hist-todo > summary{cursor:pointer;font-weight:700;font-size:.78rem;}
 table.hist-tabla td,table.hist-tabla th{white-space:nowrap;}
 .history-row{font-size:.76rem;padding:6px 0;border-bottom:1px solid var(--line);}
 .history-row:last-child{border-bottom:none;}
@@ -476,6 +497,9 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
 .cu-tel a{color:var(--olive);font-weight:800;text-decoration:none;}
 .empleo-ico{height:1.35em;width:auto;vertical-align:-0.3em;margin-right:5px;}
 .caja-oculta{display:none !important;}
+.caja-avisos{margin:0 0 12px;}
+.caja-aviso{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;border:2px solid var(--brass);background:var(--card);padding:8px 12px;margin-bottom:6px;font-size:.82rem;}
+.caja-aviso .btns{display:flex;gap:6px;}
 .cajas-grid.editando .caja{position:relative;outline:2px dashed var(--brass);outline-offset:2px;padding-bottom:36px;}
 .caja-ctl{position:absolute;left:6px;right:6px;bottom:5px;display:flex;gap:4px;justify-content:center;}
 .caja-ctl span{background:var(--ink);color:var(--paper);font-size:.7rem;font-weight:700;padding:4px 8px;border-radius:6px;cursor:pointer;}
@@ -1018,7 +1042,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-13T15:23";
+const APP_VERSION = "2026-10-13T18:51:50";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 async function comprobarVersionNueva(){
@@ -1394,21 +1418,25 @@ const CONTACTO_CUARTEL = '';
    Las cajas ocultas siguen existiendo: se encuentran en ⚙️ → «Cajas ocultas» (Abrir / Mostrar). */
 let DISENO = {};            // { grupo: { orden:[ids], ocultas:[ids] } }
 let DISENO_EDITANDO = false;
+let _disenoCargado = false; // true solo si el servidor contestó sin error al leer tu diseño
+let DISENO_PROMESA = Promise.resolve(); // se cumple cuando el diseño de la cuenta ya está cargado
 let _disenoUser = null, _disenoTimer = null, _disenoAvisado = false;
 const disenoLsKey = () => 'portalagm_diseno_' + _disenoUser;
 async function cargarDiseno(userId){
-  _disenoUser = userId; DISENO = {}; clearTimeout(_disenoTimer);
+  _disenoUser = userId; DISENO = {}; _disenoCargado = false; clearTimeout(_disenoTimer);
   try{ DISENO = JSON.parse(localStorage.getItem(disenoLsKey()) || '{}') || {}; }catch(e){}
   try{
     const { data, error } = await sb.from('preferencias_usuario').select('diseno').eq('auth_user_id', userId).maybeSingle();
-    if(!error && data && data.diseno) DISENO = data.diseno;
+    if(!error){ _disenoCargado = true; if(data && data.diseno) DISENO = data.diseno; }
   }catch(e){}
   disenoAplicarTodo();
 }
-function guardarDiseno(){
+function guardarDiseno(){ DISENO_PROMESA.then(guardarDisenoYa); } // nunca antes de que haya cargado el que ya tenías
+function guardarDisenoYa(){
   if(!_disenoUser) return;
   try{ localStorage.setItem(disenoLsKey(), JSON.stringify(DISENO)); }catch(e){}
   clearTimeout(_disenoTimer);
+  if(!_disenoCargado) return; // no se pudo leer tu diseño del servidor: no se sobrescribe (queda guardado solo en este dispositivo)
   const usuario = _disenoUser, copia = JSON.parse(JSON.stringify(DISENO));
   _disenoTimer = setTimeout(async ()=>{
     const { error } = await sb.from('preferencias_usuario').upsert({ auth_user_id:usuario, diseno:copia, actualizado_en:new Date().toISOString() }, { onConflict:'auth_user_id' });
@@ -1427,7 +1455,7 @@ function disenoAplicarGrid(grid){
   grid.dataset.dis = '1';
   if(DISENO_EDITANDO) disenoPonerControles(grid); else disenoQuitarControles(grid);
 }
-function disenoAplicarTodo(){ document.querySelectorAll('.cajas-grid').forEach(g=>{ delete g.dataset.dis; disenoAplicarGrid(g); }); }
+function disenoAplicarTodo(){ document.querySelectorAll('.cajas-grid').forEach(g=>{ delete g.dataset.dis; disenoAplicarGrid(g); }); disenoAvisosActualizar(); }
 function disenoPonerControles(grid){
   grid.classList.add('editando');
   grid.querySelectorAll(':scope > .caja[data-caja]').forEach(tl=>{
@@ -1445,7 +1473,7 @@ function disenoGuardarGrid(grid){
   const tiles = [...grid.querySelectorAll(':scope > .caja[data-caja]')]; if(!tiles.length) return;
   const grupo = tiles[0].dataset.caja.split('|')[0];
   DISENO[grupo] = { orden: tiles.map(disenoId), ocultas: tiles.filter(tl=>tl.classList.contains('caja-oculta')).map(disenoId) };
-  guardarDiseno();
+  guardarDiseno(); disenoAvisosActualizar();
 }
 // En modo edición las cajas no se abren: sus botoncitos mueven u ocultan
 document.addEventListener('click', e=>{
@@ -1460,13 +1488,44 @@ document.addEventListener('click', e=>{
   disenoGuardarGrid(grid);
 }, true);
 // Las cajas se dibujan en muchos sitios: cualquier cuadrícula nueva recibe enseguida el diseño de la persona
-new MutationObserver(()=>{ document.querySelectorAll('.cajas-grid:not([data-dis])').forEach(disenoAplicarGrid); }).observe(document.body, { childList:true, subtree:true });
+new MutationObserver(()=>{ document.querySelectorAll('.cajas-grid:not([data-dis])').forEach(disenoAplicarGrid); disenoAvisosActualizar(); }).observe(document.body, { childList:true, subtree:true });
 // «Cajas ocultas» de ⚙️: las de la pantalla que se está viendo
 function disenoOcultasHtml(){
   const pantalla = [...document.querySelectorAll('[id^="screen-"]')].find(s=>!s.classList.contains('hidden'));
   const ocultas = pantalla ? [...pantalla.querySelectorAll('.cajas-grid > .caja.caja-oculta[data-caja]')].filter(tl=>tl.parentElement.offsetParent !== null) : [];
   if(!ocultas.length) return '<p class="small-note" style="margin:0;">No tienes cajas ocultas.</p>';
   return '<div class="cfg-label" style="margin-bottom:2px;">Cajas ocultas</div>' + ocultas.map(tl=>`<div style="display:flex;gap:6px;align-items:center;justify-content:space-between;padding:4px 0;font-size:.82rem;"><span>${escHtml(tl.querySelector('.caja-ico').textContent)} ${escHtml(tl.querySelector('.caja-tit').textContent)}</span><span style="display:flex;gap:6px;"><button class="small-btn" onclick="disenoAbrir('${tl.dataset.caja}')">Abrir</button><button class="small-btn" onclick="disenoMostrar('${tl.dataset.caja}')">Mostrar</button></span></div>`).join('');
+}
+// Si una caja OCULTA tiene novedades (su numerito rojo), debajo de las cajas sale un aviso con «Abrir» y «Ocultar aviso» (por si ya lo has visto).
+// El aviso vuelve a salir solo cuando hay más novedades que la última vez que lo ocultaste.
+function disenoNumero(tl){ const b = tl.querySelector('.caja-badge'); if(!b || b.classList.contains('hidden')) return 0; const n = parseInt(b.textContent, 10); return isNaN(n) ? 0 : n; }
+function disenoAvisosActualizar(){
+  if(!DISENO._avisos) DISENO._avisos = {};
+  document.querySelectorAll('.cajas-grid').forEach(grid=>{
+    const filas = [...grid.querySelectorAll(':scope > .caja.caja-oculta[data-caja]')].map(tl=>{
+      const clave = tl.dataset.caja, n = disenoNumero(tl);
+      if(n < (DISENO._avisos[clave]||0)) DISENO._avisos[clave] = n; // se han atendido novedades: la próxima vez avisará de nuevo
+      return { tl, clave, n };
+    }).filter(f=>f.n > (DISENO._avisos[f.clave]||0));
+    const html = filas.map(f=>`<div class="caja-aviso"><span>🔔 <b>${escHtml(f.tl.querySelector('.caja-tit').textContent)}</b> (caja oculta): ${f.n} novedad${f.n===1?'':'es'}</span><span class="btns"><button type="button" class="small-btn" onclick="disenoAbrir('${f.clave}')">Abrir</button><button type="button" class="small-btn" onclick="disenoDescartarAviso('${f.clave}')">Ocultar aviso</button></span></div>`).join('');
+    let box = grid.nextElementSibling && grid.nextElementSibling.classList.contains('caja-avisos') ? grid.nextElementSibling : null;
+    if(!box){ if(!html) return; box = document.createElement('div'); box.className = 'caja-avisos'; grid.insertAdjacentElement('afterend', box); }
+    if(box.dataset.h !== html){ box.dataset.h = html; box.innerHTML = html; }
+  });
+}
+function disenoDescartarAviso(clave){
+  const tl = disenoBuscar(clave); if(!tl) return;
+  if(!DISENO._avisos) DISENO._avisos = {};
+  DISENO._avisos[clave] = disenoNumero(tl);
+  guardarDiseno(); disenoAvisosActualizar();
+}
+// «Novedades» de una caja que no son una cuenta de pendientes (p. ej. el registro del cuartel): se cuentan desde la última vez que se abrió
+function disenoVisto(clave){ return (DISENO._vistas || {})[clave] || null; }
+function disenoMarcarVisto(clave, cuando){
+  if(!DISENO._vistas) DISENO._vistas = {};
+  DISENO._vistas[clave] = cuando || new Date().toISOString();
+  guardarDiseno();
+  const tl = disenoBuscar(clave.includes('|') ? clave : 'super|'+clave); if(tl){ const b = tl.querySelector('.caja-badge'); if(b) b.remove(); disenoAvisosActualizar(); }
 }
 function disenoBuscar(clave){ return document.querySelector('.cajas-grid > .caja[data-caja="'+clave+'"]'); }
 function disenoAbrir(clave){ const tl = disenoBuscar(clave); if(!tl) return; cerrarConfig(); if(DISENO_EDITANDO) toggleEditarDiseno(); if(!tl.classList.contains('on')) tl.click(); } // abre su panel aunque la caja esté oculta
@@ -1727,7 +1786,7 @@ function formatRelativeTime(iso){
 }
 async function routeAfterAuth(userId){
   try{
-    cargarDiseno(userId); // sin esperar: cuando llega, las cajas se reordenan solas
+    DISENO_PROMESA = cargarDiseno(userId); // sin esperar: cuando llega, las cajas se reordenan solas
     const { data: adminRow } = await sb.from('admins').select('compania, is_superadmin').eq('auth_user_id', userId).maybeSingle();
     const { data: personaRow } = await sb.from('personas').select('*').eq('auth_user_id', userId).maybeSingle();
     if(adminRow){ startPresenceHeartbeat(); await enterAdmin(adminRow.compania, personaRow || null, !!adminRow.is_superadmin); return; }
@@ -2328,6 +2387,7 @@ const CUARTEL_SERV = { filas:[], lunes:null, dia:0 };
 const CU_DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], CU_DIAS_LARGO = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 const CU_ORDEN_TIPO = { cuartelero:1, imaginaria_cuartelero:2, imaginaria:3, imaginaria_imaginaria:4, guardia_seguridad:5, otro:6 };
 const cuFechaDia = i => { const l = CUARTEL_SERV.lunes; return new Date(l.getFullYear(), l.getMonth(), l.getDate()+i); };
+const cuNombreRpc = () => (CURRENT && CURRENT.vistaPrevia && CUARTEL.nombre && CUARTEL.nombre!=='Vista previa (superadmin)') ? { p_nombre: CUARTEL.nombre } : {}; // solo la vista previa del superadmin; una cuenta de cuartel real siempre se apunta con el nombre de su sesión
 const cuErrorParche = (e, n) => /function|schema cache|does not exist/i.test(e && e.message || '') ? `Falta ejecutar el parche SQL ${n||67}.` : (e && e.message || 'error');
 /* ---- «Avisar a Pablo»: el mensaje llega como aviso dentro de la app (lo ve solo el superadmin, en la caja «Mensajes de usuarios») ---- */
 function abrirMensajeCreador(){
@@ -2392,9 +2452,9 @@ function cuartelServDetalle(dia, k){
 async function cuartelContactar(personaId){
   const btn = document.getElementById('cu-contactar-btn'), res = document.getElementById('cu-tel-res'); if(!res) return;
   if(btn) btn.disabled = true;
-  const { data, error } = await sb.rpc('cuartel_contactar', { p_persona: personaId, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania });
+  const { data, error } = await sb.rpc('cuartel_contactar', { p_persona: personaId, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania, ...cuNombreRpc() });
   if(btn) btn.disabled = false;
-  if(error){ res.innerHTML = `<div class="notice closed" style="margin-top:10px;"><span>No se pudo obtener el teléfono: ${escHtml(cuErrorParche(error))}</span></div>`; return; }
+  if(error){ res.innerHTML = `<div class="notice closed" style="margin-top:10px;"><span>No se pudo obtener el teléfono: ${escHtml(cuErrorParche(error, 71))}</span></div>`; return; }
   if(!data){ res.innerHTML = '<div class="notice" style="margin-top:10px;"><span>Esta persona no tiene teléfono registrado todavía.</span></div>'; return; }
   const tel = String(data), limpio = tel.replace(/[^0-9+]/g,'');
   res.innerHTML = `<span class="cu-tel">📞 <a href="tel:${escHtml(limpio)}">${escHtml(tel)}</a></span><p class="small-note" style="text-align:center;margin:6px 0 0;"></p>`;
@@ -2469,8 +2529,8 @@ function cuartelExpActualizar(){
 }
 // Toda descarga del cuartel queda apuntada (con de dónde se ha sacado) en el «Registro del cuartel», que solo ve el superadmin. Si no se puede apuntar, no se descarga.
 async function cuartelLogDescarga(origen){
-  const { error } = await sb.rpc('cuartel_log_pdf', { p_alcance: origen, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania });
-  if(error){ showToast('No se pudo registrar la descarga, así que no se hace: '+cuErrorParche(error)); return false; }
+  const { error } = await sb.rpc('cuartel_log_pdf', { p_alcance: origen, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania, ...cuNombreRpc() });
+  if(error){ showToast('No se pudo registrar la descarga, así que no se hace: '+cuErrorParche(error, 71)); return false; }
   return true;
 }
 async function cuartelExpConfirmar(){
@@ -2585,9 +2645,9 @@ async function cuartelContactarPernocta(personaId){
     <div class="servicio-card"><div class="titulo">${per ? escHtml(per.apellidos+', '+per.nombre) : ''}</div><div class="meta">Duerme fuera de la AGM esta semana</div></div>
     <div id="cu-pern-res"><p class="small-note">Cargando…</p></div>
     <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cerrar</button></div>`);
-  const { data, error } = await sb.rpc('cuartel_contactar_pernocta', { p_persona: personaId, p_semana: ACTIVE_WEEK.key, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania });
+  const { data, error } = await sb.rpc('cuartel_contactar_pernocta', { p_persona: personaId, p_semana: ACTIVE_WEEK.key, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania, ...cuNombreRpc() });
   const res = document.getElementById('cu-pern-res'); if(!res) return;
-  if(error){ res.innerHTML = `<div class="notice closed"><span>No se pudo obtener: ${escHtml(cuErrorParche(error, 69))}</span></div>`; return; }
+  if(error){ res.innerHTML = `<div class="notice closed"><span>No se pudo obtener: ${escHtml(cuErrorParche(error, 71))}</span></div>`; return; }
   const tel = data && data.telefono ? String(data.telefono) : '', noches = (data && data.noches) || [];
   res.innerHTML = (tel ? `<span class="cu-tel">📞 <a href="tel:${escHtml(tel.replace(/[^0-9+]/g,''))}">${escHtml(tel)}</a></span>` : '<div class="notice"><span>Esta persona no tiene teléfono registrado todavía.</span></div>')
     + noches.map(n=>`<div class="servicio-card" style="margin-top:8px;"><div class="titulo">Noche del ${DAY_NAMES_FULL[n.dia%7]} ${fmt(diaPern(ACTIVE_WEEK,n.dia))}</div><div class="meta">📍 ${escHtml(n.direccion||'sin dirección')}</div></div>`).join('')
@@ -3249,38 +3309,130 @@ function historialGruposHtml(grupos, origen){
   // grupos: [{ code, people:[{id, nombre, apellidos}] }]
   return grupos.map(g=>{
     const gente = g.people.slice().sort((a,b)=>String(a.apellidos+' '+a.nombre).localeCompare(String(b.apellidos+' '+b.nombre), 'es'));
-    const lista = gente.length ? gente.map(p=>`<div class="hist-persona"><button type="button" class="hist-nombre" onclick="toggleHistPersona('${p.id}','${origen}')">▸ ${escHtml(p.apellidos+', '+p.nombre)}</button><div id="hp-${origen}-${p.id}" class="hist-caja hidden"></div></div>`).join('') : '<p class="small-note">Nadie en esta sección.</p>';
+    const lista = gente.length ? gente.map(p=>`<div class="hist-persona"><button type="button" class="hist-nombre" onclick="toggleHistPersona('${p.id}','${origen}',${p.compania||0})">▸ ${escHtml(p.apellidos+', '+p.nombre)}</button><div id="hp-${origen}-${p.id}" class="hist-caja hidden"></div></div>`).join('') : '<p class="small-note">Nadie en esta sección.</p>';
     return adminDesplegable('hist-'+origen+'-'+g.code, `Sección ${g.code} (${gente.length})`, lista);
   }).join('');
 }
-async function toggleHistPersona(id, origen){
+async function toggleHistPersona(id, origen, compania){
   const box = document.getElementById('hp-'+origen+'-'+id); if(!box) return;
   const abrir = box.classList.contains('hidden');
   box.classList.toggle('hidden', !abrir);
   const btn = box.previousElementSibling; if(btn) btn.textContent = btn.textContent.replace(abrir ? '▸' : '▾', abrir ? '▾' : '▸');
-  if(abrir && !box.dataset.cargado) await cargarHistPersona(id, origen);
+  if(abrir && !box.dataset.cargado) await cargarHistPersona(id, origen, compania);
 }
-async function cargarHistPersona(id, origen){
+/* ---- Ficha de cambios de una persona: por semana, cada hueco (día + comida) con «antes → ahora»; al pulsar una casilla, su historia; abajo, todos los movimientos ---- */
+const HIST_DATOS = {};   // «origen-id» -> datos ya cargados (para no volver a pedirlos al pulsar una casilla)
+const HIST_COMIDAS = [['desayuno','Desayuno'], ['comida','Comida'], ['cena','Cena']];
+const histIc = v => (v===null || v===undefined) ? '—' : (v ? '✓' : '✗');
+const histNom = v => (v===null || v===undefined) ? 'sin apuntar' : (v ? 'Sí' : 'No');
+const histCol = v => (v===null || v===undefined) ? 'var(--ink-soft)' : (v ? '#2e7d32' : '#8a2a2a');
+const histFecha = iso => new Date(iso).toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+const histDiaFecha = (sem, dia) => fmt(diaPern({ days:[new Date(sem+'T00:00:00')] }, +dia));
+// Plazo de cierre de las comidas de una compañía (el corte especial de la semana manda sobre el normal): se pide una vez por compañía
+const HIST_CORTES = {};
+async function histCargarCortes(compania){
+  if(HIST_CORTES[compania]) return HIST_CORTES[compania];
+  let hora = '10:00:00'; const esp = {}; let ok = false;
+  try{
+    const [a, b] = await Promise.all([ sb.from('companias').select('hora_corte').eq('numero', compania).maybeSingle(), sb.from('cortes_especiales').select('semana_inicio,corte_en,modulo').eq('compania', compania) ]);
+    if(a.data && a.data.hora_corte) hora = a.data.hora_corte;
+    (b.data||[]).forEach(r=>{ (esp[r.semana_inicio] = esp[r.semana_inicio] || {})[r.modulo || 'ambos'] = r.corte_en; });
+    ok = !a.error && !b.error;
+  }catch(e){}
+  const info = { hora, esp };
+  if(ok) HIST_CORTES[compania] = info; // si falló no se recuerda: la próxima vez se vuelve a pedir
+  return info;
+}
+function histCorteDe(info, sem){
+  const e = info.esp[sem] || {};
+  if(e.comidas) return new Date(e.comidas);
+  if(e.ambos) return new Date(e.ambos);
+  const d = new Date(sem+'T00:00:00'); d.setDate(d.getDate()-4);   // el lunes anterior al viernes de la semana, a la hora de corte
+  const [hh, mm] = String(info.hora).split(':').map(Number); d.setHours(hh||0, mm||0, 0, 0);
+  return d;
+}
+// Estado de un hueco: cómo estaba antes del primer cambio, en qué quedó tras el último, y si hay algo raro
+function histEstadoHueco(rows, k, datos){
+  const ini = rows[0].valor_anterior, ult = rows[rows.length-1], fin = ult.valor_nuevo;
+  const corte = histCorteDe(datos.info, k.split('|')[0]);
+  return {
+    ini, fin, ult, n: rows.length,
+    estado: ini===fin ? 'anulado' : 'cambiado',                                   // «anulado»: se tocó pero quedó como estaba
+    tras: rows.some(r=>new Date(r.created_at) > corte),                           // algún cambio después del cierre del plazo
+    incoh: datos.apuntesOk && (datos.real.hasOwnProperty(k) ? datos.real[k] !== fin : true)  // lo apuntado ahora no coincide con el último cambio registrado
+  };
+}
+async function cargarHistPersona(id, origen, compania){
   const box = document.getElementById('hp-'+origen+'-'+id); if(!box) return;
   box.innerHTML = '<p class="small-note">Cargando…</p>';
   const { desde, hasta } = HIST_FECHAS[origen]();
-  let q = sb.from('historial').select('*').eq('persona_id', id).order('created_at', { ascending:false }).limit(200);
-  if(desde) q = q.gte('created_at', new Date(desde+'T00:00:00').toISOString()); // hora de España, no UTC
-  if(hasta){ const f = new Date(hasta+'T00:00:00'); f.setDate(f.getDate()+1); q = q.lt('created_at', f.toISOString()); }
-  const { data, error } = await q;
-  if(error){ box.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar: ${escHtml(error.message)}</p>`; return; }
+  // Se piden TODOS los cambios de la persona (no solo los últimos): si no, el «antes» de lo antiguo saldría falso. El filtro es por semanas completas.
+  const mk = () => {
+    let q = sb.from('historial').select('*').eq('persona_id', id).order('created_at', { ascending:true }).order('id', { ascending:true });
+    if(desde){ const d = new Date(desde+'T00:00:00'); d.setDate(d.getDate()-6); q = q.gte('semana_inicio', ymd(d)); }
+    if(hasta) q = q.lte('semana_inicio', hasta);
+    return q;
+  };
+  let filas, info;
+  try{ [filas, info] = await Promise.all([ traerTodoServ(mk), histCargarCortes(compania) ]); }
+  catch(e){ box.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar: ${escHtml((e && e.message) || 'error')}</p>`; return; }
   box.dataset.cargado = '1';
-  if(!data || !data.length){ box.innerHTML = '<p class="small-note">Sin cambios registrados' + ((desde||hasta) ? ' con esas fechas' : '') + '.</p>'; return; }
-  const si = v => v===null ? '—' : (v ? 'Sí' : 'No');
-  const filas = data.map(e=>{
-    const ts = new Date(e.created_at).toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    const sem = e.semana_inicio ? new Date(e.semana_inicio+'T00:00:00') : null;
-    const dia = sem ? `${DAY_NAMES[e.dia%7]} ${fmt(diaPern({ days:[sem] }, e.dia))}` : DAY_NAMES[e.dia%7];
-    const tipo = ['desayuno','comida','cena'].includes(e.tipo) ? tipoNombre(e.tipo) : escHtml(e.tipo);
-    return `<tr><td class="mono">${escHtml(ts)}</td><td>${tipo}</td><td>${escHtml(dia)}</td><td>${si(e.valor_anterior)}</td><td><b style="color:${e.valor_nuevo?'#2e7d32':'#8a2a2a'};">${si(e.valor_nuevo)}</b></td><td style="text-align:left;">${escHtml(e.actor||'')}</td></tr>`;
+  if(!filas.length){ box.innerHTML = '<p class="small-note">Sin cambios registrados' + ((desde||hasta) ? ' en esas semanas' : '') + '.</p>'; return; }
+  const celdas = {};
+  filas.forEach(e=>{ const k = e.semana_inicio+'|'+e.tipo+'|'+e.dia; (celdas[k] = celdas[k] || []).push(e); });
+  // Lo apuntado ahora, solo de las semanas que salen (para avisar con ⚠ si no coincide con el último cambio registrado)
+  let apuntes = null;
+  try{ apuntes = await traerTodoServ(()=>sb.from('apuntes').select('semana_inicio,tipo,dia,valor').eq('persona_id', id).in('semana_inicio', [...new Set(filas.map(e=>e.semana_inicio))]).order('semana_inicio').order('tipo').order('dia')); }catch(e){}
+  const real = {}; (apuntes||[]).forEach(a=>{ real[a.semana_inicio+'|'+a.tipo+'|'+a.dia] = a.valor; });
+  const datos = HIST_DATOS[origen+'-'+id] = { celdas, filas, real, apuntesOk: apuntes!==null, info };
+  const claves = Object.keys(celdas).filter(k=>['desayuno','comida','cena'].includes(k.split('|')[1])); // la cuadrícula y los contadores solo cuentan comidas
+  const semanas = [...new Set(claves.map(k=>k.split('|')[0]))].sort().reverse();
+  let distintos = 0; claves.forEach(k=>{ if(histEstadoHueco(celdas[k], k, datos).estado==='cambiado') distintos++; });
+  const ult = filas[filas.length-1];
+  const semHtml = (sem, abierta) => {
+    let toques = 0, cambiados = 0;
+    const cuerpo = HIST_COMIDAS.map(([tipo, nom])=>`<tr><td class="rot">${nom}</td>${[0,1,2,3,4,5,6].map(d=>{
+      const k = sem+'|'+tipo+'|'+d, rows = celdas[k];
+      if(!rows) return '<td><span class="hc sin">·</span></td>';
+      const c = histEstadoHueco(rows, k, datos); toques += rows.length; if(c.estado==='cambiado') cambiados++;
+      const tit = `${histNom(c.ini)} → ${histNom(c.fin)} · ${rows.length} toque${rows.length===1?'':'s'}`;
+      return `<td><span class="hc ${c.estado}${c.tras?' cierre':''}${c.incoh?' incoh':''}" title="${tit}" onclick="histVerCelda('${origen}','${id}','${escHtml(k)}')"><span class="ant">${histIc(c.ini)}</span>›<b style="color:${histCol(c.fin)}">${histIc(c.fin)}</b></span></td>`;
+    }).join('')}</tr>`).join('');
+    const cab = DAY_NAMES.map((dn,i)=>`<th>${dn}<br><span style="font-weight:400;">${histDiaFecha(sem,i)}</span></th>`).join('');
+    return `<details class="hist-sem" ${abierta?'open':''}><summary>Semana del viernes ${fmt(new Date(sem+'T00:00:00'))} · ${toques} toque${toques===1?'':'s'} · ${cambiados} hueco${cambiados===1?'':'s'} distinto${cambiados===1?'':'s'}</summary>
+      <table class="hist-grid"><thead><tr><th></th>${cab}</tr></thead><tbody>${cuerpo}</tbody></table></details>`;
+  };
+  const recientes = semanas.slice(0,4).map((s,i)=>semHtml(s, i===0)).join('');
+  const antiguas = semanas.length > 4 ? `<details class="hist-sem"><summary>Semanas anteriores (${semanas.length-4})</summary>${semanas.slice(4).map(s=>semHtml(s,false)).join('')}</details>` : '';
+  // Todos los movimientos, del más reciente al más antiguo, con el primero y el último de cada hueco marcados
+  const pos = {}; filas.forEach(e=>{ const k = e.semana_inicio+'|'+e.tipo+'|'+e.dia; pos[e.id] = { primero: celdas[k][0].id===e.id, ultimo: celdas[k][celdas[k].length-1].id===e.id, tras: new Date(e.created_at) > histCorteDe(info, e.semana_inicio) }; });
+  const todos = filas.slice().reverse().map(e=>{
+    const m = pos[e.id], tipo = ['desayuno','comida','cena'].includes(e.tipo) ? tipoNombre(e.tipo) : escHtml(e.tipo);
+    return `<tr><td class="mono">${escHtml(histFecha(e.created_at))}</td><td>${tipo}</td><td>${DAY_NAMES[e.dia%7]} ${histDiaFecha(e.semana_inicio, e.dia)}</td><td>${histNom(e.valor_anterior)}</td><td><b style="color:${histCol(e.valor_nuevo)};">${histNom(e.valor_nuevo)}</b></td><td style="text-align:left;">${escHtml(e.actor||'')}</td><td style="text-align:left;">${m.primero?'<span class="hist-tag">1.º del hueco</span>':''}${m.ultimo?'<span class="hist-tag fin">último</span>':''}${m.tras?'<span class="hist-tag cierre">tras el cierre</span>':''}</td></tr>`;
   }).join('');
-  box.innerHTML = `<div class="table-scroll"><table class="roster hist-tabla"><thead><tr><th>Fecha y hora</th><th>Comida</th><th>Día</th><th>Antes</th><th>Ahora</th><th>Quién lo cambió</th></tr></thead><tbody>${filas}</tbody></table></div>`
-    + `<div class="sub2" style="margin-top:4px;">${data.length} cambio${data.length===1?'':'s'}${data.length>=200 ? ' (los 200 más recientes)' : ''}</div>`;
+  box.innerHTML = `<div class="hist-resumen">Última modificación: <b>${escHtml(histFecha(ult.created_at))}</b> por <b>${escHtml(ult.actor||'?')}</b> · ${filas.length} cambio${filas.length===1?'':'s'} · ${distintos} hueco${distintos===1?'':'s'} acabaron distintos de como estaban
+      <div class="sub2" style="margin-top:3px;">Cada casilla: <b>antes › ahora</b> (— = sin apuntar). Borde naranja: cambió. Borde de puntos: se tocó pero quedó igual. ⏰ cambio tras el cierre. ⚠ no coincide con lo apuntado ahora. Pulsa una casilla para ver su historia.</div></div>
+    ${recientes}${antiguas}
+    <div id="hd-${origen}-${id}" class="hist-det hidden"></div>
+    <details class="hist-todo"><summary>Ver todos los movimientos (${filas.length})</summary><div class="table-scroll"><table class="roster hist-tabla"><thead><tr><th>Fecha y hora</th><th>Comida</th><th>Día</th><th>Antes</th><th>Ahora</th><th>Quién</th><th>Marca</th></tr></thead><tbody>${todos}</tbody></table></div></details>`;
+}
+// Historia de un hueco: cómo estaba antes de que lo tocaran, cada cambio, y en qué quedó
+function histVerCelda(origen, id, k){
+  const datos = HIST_DATOS[origen+'-'+id], rows = datos && datos.celdas[k], box = document.getElementById('hd-'+origen+'-'+id);
+  if(!rows || !box) return;
+  const [sem, tipo, dia] = k.split('|'), c = histEstadoHueco(rows, k, datos), corte = histCorteDe(datos.info, sem);
+  const lineas = rows.map((r,i)=>{
+    const tras = new Date(r.created_at) > corte;
+    return `<tr><td class="mono">${escHtml(histFecha(r.created_at))}</td><td>${histNom(r.valor_anterior)} → <b style="color:${histCol(r.valor_nuevo)};">${histNom(r.valor_nuevo)}</b></td><td style="text-align:left;">${escHtml(r.actor||'')}</td><td style="text-align:left;">${i===0?'<span class="hist-tag">1.º</span>':''}${i===rows.length-1?'<span class="hist-tag fin">último</span>':''}${tras?'<span class="hist-tag cierre">tras el cierre</span>':''}</td></tr>`;
+  }).join('');
+  const aviso = c.incoh ? `<div class="notice closed" style="margin:8px 0;"><span>⚠ Lo apuntado ahora no coincide con el último cambio registrado (${datos.real.hasOwnProperty(k) ? 'ahora está en «'+histNom(datos.real[k])+'»' : 'ahora no hay nada apuntado: se borró o no se guardó'}).</span></div>` : '';
+  box.classList.remove('hidden');
+  box.innerHTML = `<div class="hist-det-cab"><b>${tipoNombre(tipo)} · ${DAY_NAMES[dia%7]} ${histDiaFecha(sem, dia)}</b><button type="button" class="small-btn" onclick="this.closest('.hist-det').classList.add('hidden')">✕ Cerrar</button></div>
+    <div class="hist-ad"><div><span class="sub2">Antes de que lo tocaran</span><br><b>${histNom(c.ini)}</b></div><div class="hist-flecha">›</div><div><span class="sub2">Al final se quedó</span><br><b style="color:${histCol(c.fin)};">${histNom(c.fin)}</b></div></div>
+    <div class="sub2" style="margin-bottom:4px;">Último cambio: ${escHtml(histFecha(c.ult.created_at))} por ${escHtml(c.ult.actor||'?')}${c.tras ? ' · hubo cambios tras el cierre del plazo' : ''}</div>
+    ${aviso}
+    <div class="table-scroll"><table class="roster hist-tabla"><thead><tr><th>Fecha y hora</th><th>Cambio</th><th>Quién</th><th>Marca</th></tr></thead><tbody>${lineas}</tbody></table></div>`;
+  box.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 async function cargarHistorialSuper(){
   const cont = document.getElementById('super-historial-cont'); if(!cont) return;
@@ -3289,8 +3441,8 @@ async function cargarHistorialSuper(){
   const filtros = `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 10px;">
       <select onchange="hsupSet('compania', this.value)" style="${sty}"><option value="todas">Todas las compañías</option>${companiasOptionsHtml(cia)}</select>
       <select onchange="hsupSet('seccion', this.value)" style="${sty}"><option value="todas">Todas las secciones</option>${Array.from({length:SECTIONS_PER_COMPANY},(_,i)=>`<option value="${i+1}" ${HSUP.seccion===String(i+1)?'selected':''}>${cia ? 'Sección '+cia+(i+1) : 'Sección nº '+(i+1)+' (de cada compañía)'}</option>`).join('')}</select>
-      <label style="font-size:.78rem;color:var(--ink-soft);">Desde <input type="date" value="${HSUP.desde}" onchange="hsupSet('desde', this.value)" style="${sty}"></label>
-      <label style="font-size:.78rem;color:var(--ink-soft);">Hasta <input type="date" value="${HSUP.hasta}" onchange="hsupSet('hasta', this.value)" style="${sty}"></label>
+      <label style="font-size:.78rem;color:var(--ink-soft);">Semanas desde <input type="date" value="${HSUP.desde}" onchange="hsupSet('desde', this.value)" style="${sty}"></label>
+      <label style="font-size:.78rem;color:var(--ink-soft);">hasta <input type="date" value="${HSUP.hasta}" onchange="hsupSet('hasta', this.value)" style="${sty}"></label>
       <button class="small-btn" onclick="hsupLimpiar()">Limpiar filtros</button>
     </div>`;
   cont.innerHTML = filtros + '<p class="small-note">Cargando…</p>';
@@ -3488,6 +3640,13 @@ async function renderSuperadmin(){
     </table></div>`;
   // De más a menos importante: totales (siempre a la vista) · solicitudes pendientes · ir a una compañía · cuartel · restablecer contraseña
   const nSol = (solicitudes||[]).length;
+  await DISENO_PROMESA; // el diseño (y lo que ya viste) tiene que estar cargado antes de contar novedades
+  let nLog = 0; // movimientos nuevos del cuartel desde la última vez que abriste «Registro del cuartel»
+  try{
+    const visto = disenoVisto('super|cuartel-log');
+    if(!visto){ DISENO._vistas = DISENO._vistas || {}; DISENO._vistas['super|cuartel-log'] = new Date().toISOString(); guardarDiseno(); } // la primera vez no se avisa de lo antiguo
+    else { const rLog = await sb.from('cuartel_eventos').select('id', { count:'exact', head:true }).gt('creado_en', visto); if(!rLog.error) nLog = rLog.count || 0; }
+  }catch(e){}
   let nMsg = 0; // mensajes sin leer que te envían desde la app (parche SQL 68)
   try{ const rMsg = await sb.from('mensajes_app').select('id', { count:'exact', head:true }).eq('leido', false); if(!rMsg.error) nMsg = rMsg.count || 0; }catch(e){}
   const filaSolicitudes = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
@@ -3549,7 +3708,7 @@ async function renderSuperadmin(){
       { id:'historial', icono:'📜', titulo:'Historial de cambios', sub:'Por compañía y sección', alAbrir:'cargarHistorialSuper()', cuerpo:'<div id="super-historial-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'cuartel', icono:'🪖', titulo:'Servicio de cuartel', sub:'Cuentas, conexiones y accesos', tituloPanel:'Servicio de cuartel (cuentas, conexiones y accesos)', cuerpo:filaCuartel },
       { id:'mensajes', icono:'💬', titulo:'Mensajes de usuarios', sub: nMsg ? `${nMsg} sin leer` : 'Ninguno nuevo', badge:(nMsg||''), tituloPanel:'Mensajes que te envían desde la app', alAbrir:'cargarMensajesSuper()', cuerpo:'<div id="super-mensajes-cont"><p class="small-note">Cargando…</p></div>' },
-      { id:'cuartel-log', icono:'🔎', titulo:'Registro del cuartel', sub:'Quién entra, a quién contacta y qué PDF descarga', tituloPanel:'Registro del servicio de cuartel (solo lo ves tú)', alAbrir:'cargarCuartelEventosSuper()', cuerpo:'<div id="super-cuartel-log-cont"><p class="small-note">Cargando…</p></div>' },
+      { id:'cuartel-log', icono:'🔎', titulo:'Registro del cuartel', sub: nLog ? `${nLog} movimiento${nLog===1?'':'s'} nuevo${nLog===1?'':'s'}` : 'Quién entra, a quién contacta y qué descarga', badge:(nLog||''), tituloPanel:'Registro del servicio de cuartel (solo lo ves tú)', alAbrir:'cargarCuartelEventosSuper()', cuerpo:'<div id="super-cuartel-log-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'reset', icono:'🔑', titulo:'Restablecer contraseña', sub:'De un alumno o admin', tituloPanel:'Restablecer la contraseña de un alumno o admin', cuerpo:filaReset },
     ]);
   const abierta = CAJAS_ABIERTA.super;
@@ -3622,6 +3781,7 @@ async function borrarEventosFiltrados(){
 function onCuartelLogEmpleo(v){ CUARTEL_LOG.empleo = CUARTEL_EMPLEOS.includes(v) ? v : null; cargarCuartelEventosSuper(); }
 async function cargarCuartelEventosSuper(){
   const cont = document.getElementById('super-cuartel-log-cont'); if(cont) cont.innerHTML = '<p class="small-note">Cargando…</p>';
+  const desde = new Date().toISOString(); // lo que llegue a partir de ahora seguirá contando como nuevo
   let q = sb.from('cuartel_eventos').select('*');
   if(CUARTEL_LOG.compania) q = q.eq('compania', CUARTEL_LOG.compania); // si se elige una compañía, se piden solo los suyos (así los 300 últimos son de esa)
   if(CUARTEL_LOG.empleo) q = q.like('nombre', CUARTEL_LOG.empleo + ' %');  // y si se elige un empleo, solo los de ese empleo
@@ -3630,6 +3790,7 @@ async function cargarCuartelEventosSuper(){
   const ids = [...new Set((data||[]).map(e=>e.persona_id).filter(Boolean))];
   if(ids.length){ const r = await sb.from('personas').select('id,nombre,apellidos,compania,seccion').in('id', ids); (r.data||[]).forEach(p=>{ CUARTEL_LOG.nombres[p.id] = `${p.apellidos}, ${p.nombre} (Sec. ${p.compania}${p.seccion})`; }); }
   pintarCuartelEventosSuper();
+  if(!CUARTEL_LOG.error) disenoMarcarVisto('super|cuartel-log', desde);
 }
 function pintarCuartelEventosSuper(){
   const cont = document.getElementById('super-cuartel-log-cont'); if(!cont) return;
@@ -3851,9 +4012,10 @@ async function _renderAdminImpl(){
     { id:'editar', icono:'✏️', titulo:'Editar', sub:'Marcar comidas por sección', tituloPanel:'Editar comidas', cuerpo:adminEditarHtml(secciones, apuntesMap) },
     { id:'gestionar', icono:'⚙️', titulo:'Gestionar', sub:'Alumnos y datos de cada sección', tituloPanel:'Gestionar secciones', cuerpo:adminGestionarHtml(secciones) },
     { id:'avisos', icono:'📢', titulo:'Avisos', sub:'A la compañía, una sección o una persona', tituloPanel:'Avisos a los alumnos', cuerpo:filaAviso },
-    { id:'semana', icono:'📅', titulo:'Ajustes de semana', sub:'Desbloqueos, ocultar, cierre y maniobras', tituloPanel:'Ajustes de esta semana',
+    { id:'semana', icono:'📅', titulo:'Ajustes de semana', sub:'Desbloqueos, ocultar y cierre', tituloPanel:'Ajustes de esta semana',
       cuerpo: cajaSub('cs-desbloqueo','🔓 Permitir desmarcar comidas obligatorias', filaDesbloqueo) + cajaSub('cs-oculta','🙈 Ocultar esta semana a los alumnos', filaOculta)
-        + cajaSub('cs-corte','⏰ Plazo de cierre de la semana', corteEspecialPanelHtml(companiaInfo.hora_corte,'comidas')) + cajaSub('cs-mani','⛺ Añadir semana de maniobras', maniobrasPanelHtml('compania')) },
+        + cajaSub('cs-corte','⏰ Plazo de cierre de la semana', corteEspecialPanelHtml(companiaInfo.hora_corte,'comidas')) },
+    { id:'maniobras', icono:'⛺', titulo:'Semana de maniobras', sub:'Añadir o quitar', tituloPanel:'Añadir semana de maniobras', cuerpo:maniobrasPanelHtml('compania') },
     { id:'generales', icono:'⚙️', titulo:'Ajustes generales', sub:'Plazos, comidas en bloque, historial', tituloPanel:'Ajustes generales',
       cuerpo: cajaSub('cg-plazos','📆 Abrir plazos hasta fin de curso', plazosFilaHtml()) + cajaSub('cg-bloque','✏️ Marcar o desmarcar comidas en bloque', bloqueComidasHtml(c))
         + cajaSub('cg-confirmar','✅ Confirmar a todos', filaConfirmarTodos) + cajaSub('cg-nocomen','🍽️ Quiénes no comen / no cenan', companyAbsencesSummary(secciones, apuntesMap)) + cajaSub('cg-hist','📜 Historial de cambios', filaHistorial) },
@@ -4367,8 +4529,8 @@ function limpiarFiltrosHistorial(){ historyFiltroDesde = ''; historyFiltroHasta 
 async function historyPanel(secciones){
   const sty = 'padding:5px 7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.78rem;';
   const filtrosHtml = `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0;">
-    <label style="font-size:.78rem;color:var(--ink-soft);">Desde <input type="date" value="${historyFiltroDesde}" onchange="onHistoryDesdeChange(this.value)" style="${sty}"></label>
-    <label style="font-size:.78rem;color:var(--ink-soft);">Hasta <input type="date" value="${historyFiltroHasta}" onchange="onHistoryHastaChange(this.value)" style="${sty}"></label>
+    <label style="font-size:.78rem;color:var(--ink-soft);">Semanas desde <input type="date" value="${historyFiltroDesde}" onchange="onHistoryDesdeChange(this.value)" style="${sty}"></label>
+    <label style="font-size:.78rem;color:var(--ink-soft);">hasta <input type="date" value="${historyFiltroHasta}" onchange="onHistoryHastaChange(this.value)" style="${sty}"></label>
     <button class="small-btn" onclick="limpiarFiltrosHistorial()">Limpiar fechas</button>
   </div>`;
   const grupos = secciones.map(sec=>({ code: sec.code, people: sec.people }));
@@ -6072,9 +6234,11 @@ async function _renderAdminPernoctasImpl(){
         <button class="small-btn" onclick="confirmarTodosPernocta()">✅ Confirmar todos</button>
       </div>`;
   const cajasPernBase = ([
-    { id:'semana', icono:'📅', titulo:'Ajustes de semana', sub:'Dormir fuera, AGM forzada, pases y maniobras', tituloPanel:'Ajustes de esta semana',
+    { id:'semana', icono:'📅', titulo:'Ajustes de semana', sub:'Dormir fuera, AGM forzada, ocultar y cierre', tituloPanel:'Ajustes de esta semana',
       cuerpo: cajaSub('ps-fuera','🌙 Permitir dormir fuera el viernes', filaPermitirFuera) + cajaSub('ps-forzar','🏠 Forzar AGM', filaForzar) + cajaSub('ps-oculta','🙈 Ocultar esta semana a los alumnos', filaOcultaP)
-        + cajaSub('ps-corte','⏰ Plazo de cierre de la semana', corteEspecialPanelHtml(companiaInfo.hora_corte,'pernoctas')) + cajaSub('ps-pase','🛂 Pase de horas individual', filaPase) + cajaSub('ps-mani','⛺ Añadir semana de maniobras', maniobrasPanelHtml('compania')) },
+        + cajaSub('ps-corte','⏰ Plazo de cierre de la semana', corteEspecialPanelHtml(companiaInfo.hora_corte,'pernoctas')) },
+    { id:'pase', icono:'🛂', titulo:'Pase de horas', sub:'Individual: dormir fuera un día', tituloPanel:'Pase de horas / permiso extraordinario individual', cuerpo:filaPase },
+    { id:'maniobras', icono:'⛺', titulo:'Semana de maniobras', sub:'Añadir o quitar', tituloPanel:'Añadir semana de maniobras', cuerpo:maniobrasPanelHtml('compania') },
     { id:'generales', icono:'⚙️', titulo:'Ajustes generales', sub:'Plazos hasta fin de curso y confirmar a todos', tituloPanel:'Ajustes generales',
       cuerpo: cajaSub('pg-plazos','📆 Abrir plazos hasta fin de curso', plazosFilaHtml()) + cajaSub('pg-confirmar','✅ Confirmar a todos', filaConfirmarTodosP) },
     { id:'excel', icono:'🔍', titulo:'Comprobar Excel', sub:'Compáralo con lo que hay en la app', tituloPanel:'Comprobar un Excel de pernoctas', cuerpo:filaExcelP },
