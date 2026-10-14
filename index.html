@@ -6,8 +6,8 @@
 <title>PORTAL AGM</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1B2019">
-<link rel="icon" type="image/png" href="icon-192.png?v=2">
-<link rel="apple-touch-icon" href="icon-192.png?v=2">
+<link rel="icon" type="image/png" href="icon-192.png?v=3">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Portal AGM">
@@ -1145,7 +1145,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-15T00:42:56";
+const APP_VERSION = "2026-10-15T00:52:19";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
