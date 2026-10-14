@@ -1145,7 +1145,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-15T00:52:19";
+const APP_VERSION = "2026-10-15T01:00:29";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -1763,7 +1763,7 @@ let _instalarEvt = null;
 const esApp = () => (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
 const esIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); _instalarEvt = e; });
-window.addEventListener('appinstalled', ()=>{ _instalarEvt = null; showToast('App instalada ✅'); });
+window.addEventListener('appinstalled', ()=>{ _instalarEvt = null; showToast('App instalada ✅'); if(CURRENT && CURRENT.mode==='cuartel') cuartelLogApp('Ha instalado la app'); });
 try{ if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')) navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
 function instalarApp(){
   // Chrome / Edge (Android y ordenador): la instalación se lanza directamente con un clic
@@ -2716,6 +2716,7 @@ async function iniciarSesionCuartel(nombre){
   }
   try{ sessionStorage.setItem('portalagm_cuartel_sesion', nombre); }catch(e){}
   CUARTEL.nombre = nombre;
+  if(esApp() && !sessionStorage.getItem('portalagm_cuartel_app_log')){ try{ sessionStorage.setItem('portalagm_cuartel_app_log','1'); }catch(e){} cuartelLogApp('Entra desde la app instalada'); }
   document.getElementById('cuartel-subtitle').innerHTML = `${CURRENT.compania}ª Cía · de servicio: ${nombreConIcono(nombre)}`;
   document.querySelector('#screen-cuartel .module-switch').classList.remove('hidden');
   if(!window._cuartelPing){
@@ -2947,6 +2948,10 @@ function cuartelExpActualizar(){
   const dia = document.getElementById('exp-dia-wrap'), tipo = document.getElementById('exp-tipo-wrap');
   if(dia) dia.classList.toggle('hidden', a==='semana');
   if(tipo) tipo.classList.toggle('hidden', a!=='comida');
+}
+// Si alguien del servicio de cuartel instala la app o entra desde ella, también queda en el «Registro del cuartel» (parche SQL 76). Si el parche no está, no pasa nada.
+async function cuartelLogApp(detalle){
+  try{ await sb.rpc('cuartel_log_app', { p_detalle: detalle, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania, ...cuNombreRpc() }); }catch(e){}
 }
 // Toda descarga del cuartel queda apuntada (con de dónde se ha sacado) en el «Registro del cuartel», que solo ve el superadmin. Si no se puede apuntar, no se descarga.
 async function cuartelLogDescarga(origen){
@@ -4276,7 +4281,7 @@ function pintarCuartelEventosSuper(){
   const cont = document.getElementById('super-cuartel-log-cont'); if(!cont) return;
   if(CUARTEL_LOG.error){ cont.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar: ${escHtml(CUARTEL_LOG.error)}</p><button class="small-btn" onclick="cargarCuartelEventosSuper()">↻ Reintentar</button>`; return; }
   const filas = (CUARTEL_LOG.filas||[]).filter(e=>CUARTEL_LOG.tipo==='todos' || e.tipo===CUARTEL_LOG.tipo);
-  const ICONO = { entrada:'🪖 Entrada', contactar:'📞 Contactar', pdf:'📥 Descarga' }; // «Descarga»: PDF o Excel; en el detalle sale de dónde (p. ej. «PDF de Servicios · …», «Excel de Pernoctas · …»)
+  const ICONO = { entrada:'🪖 Entrada', contactar:'📞 Contactar', pdf:'📥 Descarga', app:'📲 App' }; // «Descarga»: PDF o Excel; en el detalle sale de dónde (p. ej. «PDF de Servicios · …», «Excel de Pernoctas · …»)
   const nuevo = e => !!(CUARTEL_LOG.nuevosDesde && new Date(e.creado_en) > new Date(CUARTEL_LOG.nuevosDesde));
   const fila = e => `<div class="history-row">${nuevo(e) ? '<span style="color:#d93025;font-weight:900;margin-right:4px;" title="Movimiento nuevo">●</span>' : ''}<span class="ts">${escHtml(new Date(e.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}))}</span> · <b>${e.tipo==='pdf' && e.detalle ? '📥 '+escHtml(/^(PDF|Excel) /.test(e.detalle) ? e.detalle : 'PDF de Servicios · '+e.detalle) : (ICONO[e.tipo]||escHtml(e.tipo))}</b> · ${e.compania}ª Cía · ${e.nombre ? nombreConIcono(e.nombre) : '(sin nombre)'} · IP ${escHtml(e.ip||'no disponible')} · ${escHtml(e.dispositivo||'')}${e.persona_id ? ' · a quién: <b>'+escHtml(CUARTEL_LOG.nombres[e.persona_id]||'(persona borrada)')+'</b>' : ''}${e.detalle && e.tipo!=='pdf' ? ' · '+escHtml(e.detalle) : ''} <button class="small-btn danger" style="padding:1px 8px;margin-left:6px;" title="Borrar este registro" onclick="borrarEventoCuartel(${e.id})">🗑</button></div>`;
   cont.innerHTML = `<div class="cuartel-bar" style="margin-top:0;">
@@ -4285,7 +4290,7 @@ function pintarCuartelEventosSuper(){
       <button class="small-btn" onclick="cargarCuartelEventosSuper()">↻ Actualizar</button>
       <button class="small-btn danger" onclick="borrarEventosFiltrados()">🗑 Borrar lo filtrado…</button>
     </div>
-    <div class="semanas-toggle" style="max-width:460px;margin-bottom:10px;">${[['todos','Todo'],['entrada','Entradas'],['contactar','Contactos'],['pdf','Descargas']].map(([v,n])=>`<button type="button" class="${CUARTEL_LOG.tipo===v?'active':''}" onclick="CUARTEL_LOG.tipo='${v}'; pintarCuartelEventosSuper()">${n}</button>`).join('')}</div>
+    <div class="semanas-toggle" style="max-width:460px;margin-bottom:10px;">${[['todos','Todo'],['entrada','Entradas'],['contactar','Contactos'],['pdf','Descargas'],['app','App']].map(([v,n])=>`<button type="button" class="${CUARTEL_LOG.tipo===v?'active':''}" onclick="CUARTEL_LOG.tipo='${v}'; pintarCuartelEventosSuper()">${n}</button>`).join('')}</div>
     <p class="small-note" style="margin-top:0;">Se muestran los últimos 300 movimientos ${CUARTEL_LOG.compania ? 'de la '+CUARTEL_LOG.compania+'ª Compañía' : 'de todas las compañías'}${CUARTEL_LOG.empleo ? ', solo de '+CUARTEL_LOG.empleo : ''}.</p>
     ${filas.length ? filas.map(fila).join('') : '<p class="small-note">No hay movimientos de este tipo.</p>'}`;
 }
