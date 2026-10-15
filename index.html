@@ -1179,7 +1179,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-15T12:21:44";
+const APP_VERSION = "2026-10-15T12:33:20";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -2246,6 +2246,8 @@ async function resaltarDestino(ref){
 async function aplicarIr(dest, ref){
   if(!dest) return;
   try{
+    // Los avisos son PERSONALES (tus comidas, tus servicios, tus avisos): si eres Furry o superadmin y la app está en tu modo Furry/superadmin, se pasa a tu modo alumno
+    if(CURRENT && CURRENT.mode!=='cuartel' && modoActual()!=='alumno' && modosDisponibles().includes('alumno')){ await switchToAlumno(); }
     if(['comidas','pernoctas','servicios'].includes(dest) && CURRENT && CURRENT.mode!=='cuartel' && modoActual()!=='super'){
       const btn = document.getElementById((CURRENT.mode==='admin' ? 'admin' : 'alumno')+'-mod-'+dest+'-btn');
       if(btn && btn.offsetParent!==null && currentModule!==dest) await setModule(dest);
@@ -7197,6 +7199,7 @@ function abrirServicioCuadrante(fecha){
   box.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 async function renderAlumnoServicios(){
+  try{ sb.rpc('marcar_servicios_vistos').then(()=>{}, ()=>{}); }catch(e){} // se anota cuándo mira cada persona sus servicios (para el aviso de «llevas días sin mirarlos»)
   document.getElementById('alumno-week-select').innerHTML = '';
   document.getElementById('alumno-notice').innerHTML = '';
   document.getElementById('alumno-serv-week-select').innerHTML = '';
