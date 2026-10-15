@@ -768,7 +768,8 @@ aplicarTema();
         </div>
         <button class="primary-btn" id="login-btn" type="submit">Entrar</button>
         <div id="login-error" class="error-text hidden"></div>
-        <button type="button" class="small-btn" style="margin-top:10px;width:100%;" onclick="pedirResetContrasena()">¿Olvidaste tu contraseña?</button>
+        <button type="button" class="small-btn" style="margin-top:10px;width:100%;" id="login-reset-btn" onclick="pedirResetContrasena()">¿Olvidaste tu contraseña?</button>
+        <div id="login-reset-msg" class="notice hidden" style="display:none;margin-top:10px;" role="status"></div>
       </form>
 
       <form id="auth-adminreq" class="hidden" autocomplete="on" onsubmit="event.preventDefault(); doAdminRequest();">
@@ -1145,6 +1146,7 @@ aplicarTema();
           </div>
         </div>
         <button class="primary-btn" id="reset-password-btn" type="submit">Guardar contraseña</button>
+        <button type="button" class="small-btn" style="margin-top:10px;width:100%;" onclick="cancelarRecuperacion()">Cancelar</button>
         <div id="reset-password-error" class="error-text hidden"></div>
       </form>
     </div>
@@ -1162,6 +1164,9 @@ document.querySelectorAll(".brand-logo").forEach(img=>{ img.src = AGM_LOGO_DATAU
 /* ================= Supabase ================= */
 const SUPABASE_URL = 'https://ihyrminylgtqwnwviopt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloeXJtaW55bGd0cXdud3Zpb3B0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODM3MjEsImV4cCI6MjEwNTU1OTcyMX0.RzkdVJHrH0kO9o0DEb7y-YiEBPYpWeYYuQwsJHYr_wg';
+// ¿Se ha llegado desde el enlace del correo de «restablecer contraseña»? Se mira ANTES de crear el cliente (que se come el #… de la dirección).
+// Mientras dure, la app NO entra en ninguna cuenta: solo enseña la pantalla para escribir la nueva contraseña.
+let EN_RECUPERACION = /[#&?]type=recovery(&|$)/.test(location.hash + location.search);
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ================= Auto-recarga cuando hay versión nueva ================= */
@@ -1170,7 +1175,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-15T09:13:26";
+const APP_VERSION = "2026-10-15T09:53:39";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -2164,6 +2169,7 @@ async function setModule(mod){
 async function boot(){
   try{
     const { data: { session } } = await sb.auth.getSession();
+    if(EN_RECUPERACION){ showScreen(session ? 'screen-reset-password' : 'screen-login'); if(!session) EN_RECUPERACION = false; return; } // viene del enlace del correo: primero la contraseña nueva
     if(session){ await routeAfterAuth(session.user.id); }
     else { showScreen('screen-login'); }
   }catch(e){
@@ -2230,6 +2236,7 @@ function formatRelativeTime(iso){
   return new Date(iso).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
 }
 async function routeAfterAuth(userId){
+  if(EN_RECUPERACION){ showScreen('screen-reset-password'); return; } // no se entra a ninguna cuenta hasta cambiar la contraseña
   try{
     DISENO_PROMESA = cargarDiseno(userId); // sin esperar: cuando llega, las cajas se reordenan solas
     const { data: adminRow } = await sb.from('admins').select('compania, is_superadmin').eq('auth_user_id', userId).maybeSingle();
@@ -2285,10 +2292,16 @@ function fillAdminReqSections(){
 }
 async function pedirResetContrasena(){
   const email = (document.getElementById('login-email').value || '').trim();
-  if(!email){ showToast('Escribe primero tu email en el campo de arriba.'); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
-  if(error){ showToast('No se pudo enviar: '+error.message); return; }
-  showToast('Si ese email existe, te hemos mandado un correo con un enlace para crear una contraseña nueva.');
+  const msg = document.getElementById('login-reset-msg'), btn = document.getElementById('login-reset-btn');
+  const mostrar = (txt, ok) => { msg.style.display = 'block'; msg.classList.remove('hidden'); msg.style.borderColor = ok ? 'var(--olive)' : 'var(--danger)'; msg.innerHTML = '<span>'+txt+'</span>'; };
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ mostrar('✏️ Escribe primero tu email en el campo de arriba.', false); return; }
+  btn.disabled = true; const textoBtn = btn.textContent; btn.textContent = 'Enviando…';
+  try{
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if(error){ mostrar('No se pudo enviar el correo: '+escHtml(error.message)+'. Inténtalo de nuevo en unos minutos.', false); return; }
+    // Mismo mensaje exista o no el correo (así nadie puede averiguar quién está registrado)
+    mostrar('📧 Si ese correo está registrado en Portal AGM, en unos minutos te llegará un enlace para crear una contraseña nueva. Mira también la carpeta de spam.', true);
+  } finally { btn.disabled = false; btn.textContent = textoBtn; }
 }
 async function doAdminRequest(){
   const btn = document.getElementById('adminreq-btn'); btn.disabled = true;
@@ -3763,7 +3776,6 @@ function enterSuperadmin(){
 function volverDeSuperadmin(){
   showScreen(CURRENT && CURRENT.mode==='alumno' ? 'screen-alumno' : 'screen-admin');
 }
-let superReset = { compania:null, seccion:null };
 /* ---- Superadmin: personas conectadas (en total y por compañía) ---- */
 // "Conectado ahora" = última señal hace menos de 2 minutos (la app da señal cada minuto); además se enseñan las de las últimas 24 horas
 const CONECT_SUPER = { vista:'ahora', filas:null, error:null, tope:false };
@@ -4118,7 +4130,6 @@ async function gsBorrarDia(fecha){
 }
 async function renderSuperadmin(){
   // Todo lo que no depende de nada más se pide A LA VEZ (antes eran unas 12 consultas una detrás de otra)
-  const quiereGente = !!(superReset.compania && superReset.seccion);
   const pLog = (async()=>{ // movimientos nuevos del cuartel desde la última vez que abriste «Registro del cuartel»
     await DISENO_PROMESA; // el diseño (y lo que ya viste) tiene que estar cargado antes de contar novedades
     try{
@@ -4131,12 +4142,11 @@ async function renderSuperadmin(){
   const pMsg = (async()=>{ // mensajes sin leer que te envían desde la app (parche SQL 68)
     try{ const r = await sb.from('mensajes_app').select('id', { count:'exact', head:true }).eq('leido', false); return r.error ? 0 : (r.count || 0); }catch(e){ return 0; }
   })();
-  const [rSol, rPue, rMan, cuartelHtml, rGente, totalesCia, rCias, nLog, nMsg, gsHtml] = await Promise.all([
+  const [rSol, rPue, rMan, cuartelHtml, totalesCia, rCias, nLog, nMsg, gsHtml] = await Promise.all([
     sb.from('admin_solicitudes').select('*').eq('estado','pendiente').order('creado_en'),
     sb.from('pernocta_puentes').select('*').order('semana_inicio'),
     sb.from('maniobras').select('*').order('fecha_inicio'),
     cuartelSuperHtml(),
-    quiereGente ? sb.from('personas').select('id,nombre,apellidos,email').eq('compania',superReset.compania).eq('seccion',superReset.seccion).order('apellidos') : Promise.resolve({ data:null }),
     // Totales de registrados / faltan por registrarse: solo consultas de lectura (contadores), una por compañía
     Promise.all(COMPANIES.map(async cc=>{
       const [t, r] = await Promise.all([
@@ -4149,14 +4159,6 @@ async function renderSuperadmin(){
     pLog, pMsg, gsCalendarioHtml()
   ]);
   const solicitudes = rSol.data, puentes = rPue.data, errPuentes = rPue.error, maniAcad = rMan.data, errManiAcad = rMan.error, companiasInfo = rCias.data;
-  let seccionesHtml = '';
-  let personasHtml = '<option value="">— elige antes una sección —</option>';
-  if(superReset.compania){
-    seccionesHtml = Array.from({length:SECTIONS_PER_COMPANY},(_,i)=>i+1).map(s=>`<option value="${s}" ${superReset.seccion===s?'selected':''}>${superReset.compania}${s}</option>`).join('');
-    if(quiereGente){
-      personasHtml = (rGente.data||[]).map(p=>`<option value="${p.id}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)}${p.email?'':' (sin registrar)'}</option>`).join('') || '<option value="">— nadie en esta sección —</option>';
-    }
-  }
   const efectivosReales = {}; (companiasInfo||[]).forEach(r=>{ efectivosReales[r.numero] = r.total_efectivos; });
   const sumTotal = totalesCia.reduce((a,x)=>a+x.total,0), sumReg = totalesCia.reduce((a,x)=>a+x.registrados,0);
   const totalesHtml = `<div class="table-scroll" style="margin-top:8px;"><table class="roster" style="min-width:0;">
@@ -4182,23 +4184,9 @@ async function renderSuperadmin(){
           ${COMPANIES_POR_CURSO.filter(g=>g.companias.length).map(g=>`<div style="flex-basis:100%;font-size:.75rem;color:var(--ink-soft);margin-top:4px;">${g.curso}</div>${g.companias.map(c=>`<button class="small-btn" onclick="enterAdmin(${c}, null, true)">${c}ª Compañía</button>`).join('')}`).join('')}
         </div>
       </div>`;
-  const stySel = 'padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;';
-  const filaReset = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
-        <div class="switch-label">Restablecer la contraseña de alguien<span class="sub2">Elige compañía, sección y persona — se le manda un correo con un enlace para crear una contraseña nueva</span></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-          <select id="super-reset-compania" onchange="onSuperResetCompaniaChange(this.value)" style="${stySel}">
-            <option value="">— compañía —</option>
-            ${companiasOptionsHtml(superReset.compania)}
-          </select>
-          <select id="super-reset-seccion" onchange="onSuperResetSeccionChange(this.value)" style="${stySel}">
-            <option value="">— sección —</option>
-            ${seccionesHtml}
-          </select>
-          <select id="super-reset-persona" style="${stySel}min-width:220px;">
-            ${personasHtml}
-          </select>
-          <button class="small-btn" onclick="enviarResetPersona()">✉️ Enviar enlace de reseteo</button>
-        </div>
+  const filaPassLog = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
+        <div class="switch-label">Quién ha cambiado su contraseña y cuándo<span class="sub2">Solo consulta: se apunta solo cuando alguien cambia su contraseña (con «¿Olvidaste tu contraseña?» en la pantalla de entrada). No se guarda ninguna contraseña.</span></div>
+        <div id="super-passlog" style="margin-top:8px;"><div class="loading">Cargando…</div></div>
       </div>`;
   const filaCuartel = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
         <div class="switch-label">Una cuenta de cuartel por compañía<span class="sub2">Quién ha entrado en cada una, desde qué dispositivo y cuándo. Máximo 3 dispositivos a la vez: si un dispositivo pasa 5 min sin dar señal o pulsa "Salir", deja su hueco libre. Cada cuenta de cuartel solo ve su compañía.</span></div>
@@ -4225,7 +4213,7 @@ async function renderSuperadmin(){
       { id:'cuartel', icono:'🪖', titulo:'Servicio de cuartel', sub:'Cuentas, conexiones y accesos', tituloPanel:'Servicio de cuartel (cuentas, conexiones y accesos)', cuerpo:filaCuartel },
       { id:'mensajes', icono:'💬', titulo:'Mensajes de usuarios', sub: nMsg ? `${nMsg} sin leer` : 'Ninguno nuevo', badge:(nMsg||''), tituloPanel:'Mensajes que te envían desde la app', alAbrir:'cargarMensajesSuper()', cuerpo:'<div id="super-mensajes-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'cuartel-log', icono:'🔎', titulo:'Registro del cuartel', sub: nLog ? `${nLog} movimiento${nLog===1?'':'s'} nuevo${nLog===1?'':'s'}` : 'Quién entra, a quién contacta y qué descarga', badge:(nLog||''), tituloPanel:'Registro del servicio de cuartel (solo lo ves tú)', alAbrir:'cargarCuartelEventosSuper(true)', cuerpo:'<div id="super-cuartel-log-cont"><p class="small-note">Cargando…</p></div>' },
-      { id:'reset', icono:'🔑', titulo:'Restablecer contraseña', sub:'De un alumno o Furry', tituloPanel:'Restablecer la contraseña de un alumno o Furry', cuerpo:filaReset },
+      { id:'passlog', icono:'🔑', titulo:'Cambios de contraseña', sub:'Quién y cuándo (solo ver)', tituloPanel:'Cambios de contraseña', cuerpo:filaPassLog, alAbrir:'cargarLogPassword()' },
     ]);
   const abierta = CAJAS_ABIERTA.super;
   if(abierta==='conectados') cargarConectadosSuper();
@@ -4326,16 +4314,13 @@ function pintarCuartelEventosSuper(){
     <p class="small-note" style="margin-top:0;">Se muestran los últimos 300 movimientos ${CUARTEL_LOG.compania ? 'de la '+CUARTEL_LOG.compania+'ª Compañía' : 'de todas las compañías'}${CUARTEL_LOG.empleo ? ', solo de '+CUARTEL_LOG.empleo : ''}.</p>
     ${filas.length ? filas.map(fila).join('') : '<p class="small-note">No hay movimientos de este tipo.</p>'}`;
 }
-function onSuperResetCompaniaChange(v){ superReset = { compania: v?parseInt(v,10):null, seccion:null }; renderSuperadmin(); }
-function onSuperResetSeccionChange(v){ superReset.seccion = v?parseInt(v,10):null; renderSuperadmin(); }
-async function enviarResetPersona(){
-  const pid = document.getElementById('super-reset-persona').value;
-  if(!pid){ showToast('Elige una persona primero.'); return; }
-  const { data: p } = await sb.from('personas').select('email,nombre,apellidos').eq('id', pid).single();
-  if(!p || !p.email){ showToast('Esa persona todavía no tiene email (no se ha registrado en la app).'); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(p.email, { redirectTo: location.origin + location.pathname });
-  if(error){ showToast('No se pudo enviar: '+error.message); return; }
-  showToast('Enlace de reseteo enviado a '+p.nombre+' '+p.apellidos+' ('+p.email+').');
+// Registro (solo lectura) de los cambios de contraseña — parche SQL 78
+async function cargarLogPassword(){
+  const box = document.getElementById('super-passlog'); if(!box) return;
+  box.innerHTML = '<div class="loading">Cargando…</div>';
+  const { data, error } = await sb.from('cambios_password').select('*').order('creado_en', { ascending:false }).limit(200);
+  if(error){ box.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar (¿has ejecutado el parche SQL 78?): ${escHtml(error.message)}</p>`; return; }
+  box.innerHTML = (data&&data.length) ? '<p class="small-note" style="margin-top:0;">Últimos '+data.length+' cambios.</p>' + data.map(e=>`<div class="history-row"><span class="ts">${escHtml(new Date(e.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}))}</span> · <b>${escHtml(e.nombre||'?')}</b> · ${e.compania ? escHtml(e.compania+'ª Cía') : 'sin compañía'} · ${escHtml(e.email||'')}</div>`).join('') : '<p class="small-note">Todavía nadie ha cambiado su contraseña desde que se activó el registro.</p>';
 }
 async function aprobarAdminSolicitud(id){
   const { error } = await sb.rpc('aprobar_admin_solicitud', { p_id: id });
@@ -4362,12 +4347,21 @@ async function submitNewPassword(){
   btn.disabled = false;
   if(error){ err.textContent = error.message; err.classList.remove('hidden'); return; }
   showToast('Contraseña actualizada. Ya puedes usarla para entrar.');
+  EN_RECUPERACION = false;
+  try{ history.replaceState(null, '', location.pathname); }catch(e){} // se quita el #… del enlace
   const { data: { session } } = await sb.auth.getSession();
   if(session){ await routeAfterAuth(session.user.id); } else { showScreen('screen-login'); }
 }
 sb.auth.onAuthStateChange((event)=>{
-  if(event === 'PASSWORD_RECOVERY') showScreen('screen-reset-password');
+  if(event === 'PASSWORD_RECOVERY'){ EN_RECUPERACION = true; showScreen('screen-reset-password'); }
 });
+// Si alguien abre el enlace y se arrepiente: se cierra esa sesión y se vuelve a la entrada
+async function cancelarRecuperacion(){
+  EN_RECUPERACION = false;
+  try{ history.replaceState(null, '', location.pathname); }catch(e){}
+  try{ await sb.auth.signOut(); }catch(e){}
+  showScreen('screen-login');
+}
 function switchToAlumno(){ enterAlumno(CURRENT.linkedPersona, CURRENT.compania, CURRENT.isSuperadmin); }
 async function onAdminWeekChange(v){ setActiveWeek(parseInt(v,10)); absenceSelIndex=null; await (currentModule==='pernoctas' ? renderAdminPernoctas() : renderAdmin()); }
 let absenceSelIndex = null;
