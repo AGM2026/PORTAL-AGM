@@ -1175,7 +1175,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-15T09:53:39";
+const APP_VERSION = "2026-10-15T10:05:33";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -1731,6 +1731,11 @@ function novedadesAdminItems(){
       'Ahora el cuartel ve los servicios de la semana por días y puede descargar un PDF sin teléfonos.',
       'Teléfonos y direcciones de quien duerme fuera ya no salen en pantalla ni en PDF o Excel: solo con «Contactar», que queda registrado.',
       'Quien entra de servicio indica empleo, nombre y dos apellidos.' ] },
+    { ico:'🪖', t:'Contraseña del servicio de cuartel', puntos:[
+      'Ahora puedes cambiarla tú: Compañía y alumnos → «Contraseña del servicio de cuartel».',
+      'La nueva contraseña se enseña una sola vez: apúntala y dísela al servicio de cuartel.',
+      'Al cambiarla se cierran las sesiones abiertas de esa cuenta.',
+      'Si alguien del cuartel pulsa «¿Olvidaste tu contraseña?», no se manda correo: se le dice que pregunte al servicio anterior o a su Furry.' ] },
     { ico:'📲', t:'App instalable, ayuda y mejoras', puntos:[
       'Los alumnos pueden instalar la app (⚙️ → «Instalar la app») y tienen una ayuda integrada (⚙️ → «Ayuda»).',
       'Aviso rojo cuando se cae la conexión.',
@@ -1852,7 +1857,8 @@ function ayudaItems(furry){
     ['🔓 ¿Cómo desbloqueo una semana?','Caja «Ajustes de semana»: desbloqueos, ocultar la semana y plazo de cierre.'],
     ['🌉 ¿Y los puentes y maniobras?','Los pone el superadmin o tú para tu compañía. Las noches de maniobras mandan sobre cualquier permiso.'],
     ['🌙 ¿Cómo dejo dormir fuera el viernes a alguien?','En la gestión de la sección, junto a «Externado»: selector «Viernes fuera» (ninguno, 2 o 4 findes al mes).'],
-    ['📜 ¿Dónde veo quién cambió algo?','En el historial de cambios, por semanas, con el antes y el después.']
+    ['📜 ¿Dónde veo quién cambió algo?','En el historial de cambios, por semanas, con el antes y el después.'],
+    ['🪖 ¿El cuartel ha olvidado su contraseña?','En «Compañía y alumnos» → «Contraseña del servicio de cuartel» pones una nueva. Se enseña una sola vez: apúntala y dísela.']
   ];
   if(furry) comun.splice(1, 0, ['📢 ¿Qué ha cambiado?','Ajustes ⚙️ → «Actualizaciones» te enseña lo nuevo de cada versión.'], ['📊 ¿Cuánta gente usa la app?','Ajustes ⚙️ → «Uso de la app»: personas que han entrado en los últimos 30 días desde la app instalada y desde el navegador.']);
   else alumno.push(['⭐ ¿Qué es «Habitual» en Comidas?','Copia tus comidas de la semana anterior a la actual. En ⚙️ puedes hacer que se repitan solas cada semana hasta que las cambies.'], ['📅 ¿Puedo ver mis comidas en el calendario del móvil?','Sí: en Comidas y en Servicios hay un botón «Añadir a mi calendario». Las horas de las comidas son aproximadas: las fija el servicio de cuartel y pueden cambiar.']);
@@ -2294,6 +2300,8 @@ async function pedirResetContrasena(){
   const email = (document.getElementById('login-email').value || '').trim();
   const msg = document.getElementById('login-reset-msg'), btn = document.getElementById('login-reset-btn');
   const mostrar = (txt, ok) => { msg.style.display = 'block'; msg.classList.remove('hidden'); msg.style.borderColor = ok ? 'var(--olive)' : 'var(--danger)'; msg.innerHTML = '<span>'+txt+'</span>'; };
+  // La cuenta del servicio de cuartel (cuartel11, cuartel12…) no tiene correo: no se manda nada, se dice a quién preguntar
+  if(/^cuartel\d{0,2}(@portalagm\.es)?$/i.test(email)){ mostrar('🪖 La cuenta del servicio de cuartel no tiene correo, así que no podemos enviar ningún enlace. Pregunta la contraseña al servicio de cuartel anterior; si no la tienen, pregúntale al Furry de tu compañía.', false); return; }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ mostrar('✏️ Escribe primero tu email en el campo de arriba.', false); return; }
   btn.disabled = true; const textoBtn = btn.textContent; btn.textContent = 'Enviando…';
   try{
@@ -4055,9 +4063,9 @@ async function aplicarPasswordCuartel(c){
   const nueva = (document.getElementById('pwd-cuartel')||{}).value || '';
   if(nueva.length < 10){ showToast('La contraseña tiene que tener al menos 10 caracteres.'); return; }
   if(nueva !== nueva.trim()){ showToast('La contraseña no puede empezar ni acabar con espacios.'); return; }
-  const { error } = await sb.rpc('superadmin_cuartel_set_password', { p_compania: c, p_password: nueva });
+  const { error } = await sb.rpc(modoActual()==='super' ? 'superadmin_cuartel_set_password' : 'admin_cuartel_set_password', { p_compania: c, p_password: nueva }); // el Furry cambia la de SU compañía (parche SQL 80)
   cerrarModalGlobal();
-  if(error){ showToast('No se pudo cambiar: '+error.message+' — ¿has ejecutado el parche SQL de cuartel?'); return; }
+  if(error){ showToast('No se pudo cambiar: '+error.message+' — ¿has ejecutado el parche SQL de cuartel (52 y 80)?'); return; }
   abrirModalGlobal(`<h3>✅ Contraseña cambiada — ${c}ª Compañía</h3>
     <div class="modal-resumen mono" style="font-size:1.2rem;text-align:center;user-select:all;word-break:break-all;">${escHtml(nueva)}</div>
     <p class="modal-nota">Cópiala y compártela solo con el servicio de cuartel de esa compañía. Esta ventana es la única vez que se muestra.</p>
@@ -4320,7 +4328,7 @@ async function cargarLogPassword(){
   box.innerHTML = '<div class="loading">Cargando…</div>';
   const { data, error } = await sb.from('cambios_password').select('*').order('creado_en', { ascending:false }).limit(200);
   if(error){ box.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar (¿has ejecutado el parche SQL 78?): ${escHtml(error.message)}</p>`; return; }
-  box.innerHTML = (data&&data.length) ? '<p class="small-note" style="margin-top:0;">Últimos '+data.length+' cambios.</p>' + data.map(e=>`<div class="history-row"><span class="ts">${escHtml(new Date(e.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}))}</span> · <b>${escHtml(e.nombre||'?')}</b> · ${e.compania ? escHtml(e.compania+'ª Cía') : 'sin compañía'} · ${escHtml(e.email||'')}</div>`).join('') : '<p class="small-note">Todavía nadie ha cambiado su contraseña desde que se activó el registro.</p>';
+  box.innerHTML = (data&&data.length) ? '<p class="small-note" style="margin-top:0;">Últimos '+data.length+' cambios.</p>' + data.map(e=>`<div class="history-row"><span class="ts">${escHtml(new Date(e.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}))}</span> · <b>${escHtml(e.nombre||'?')}</b> · ${e.compania ? escHtml(e.compania+'ª Cía') : 'sin compañía'} · ${escHtml(e.email||'')}${e.por_nombre ? ' · cambiada por <b>'+escHtml(e.por_nombre)+'</b>' : ''}</div>`).join('') : '<p class="small-note">Todavía nadie ha cambiado su contraseña desde que se activó el registro.</p>';
 }
 async function aprobarAdminSolicitud(id){
   const { error } = await sb.rpc('aprobar_admin_solicitud', { p_id: id });
@@ -4533,7 +4541,8 @@ async function _renderAdminImpl(){
         + cajaSub('cg-confirmar','✅ Confirmar a todos', filaConfirmarTodos) + cajaSub('cg-nocomen','🍽️ Quiénes no comen / no cenan', companyAbsencesSummary(secciones, apuntesMap)) + cajaSub('cg-hist','📜 Historial de cambios', filaHistorial) },
     { id:'excel', icono:'🔍', titulo:'Comprobar Excel', sub:'Compáralo con lo que hay en la app', tituloPanel:'Comprobar un Excel contra la app', cuerpo:filaExcel },
     { id:'compania', icono:'🏢', titulo:'Compañía y alumnos', sub:'Efectivos, código y conexiones', tituloPanel:'Compañía y alumnos',
-      cuerpo: cajaSub('cc-efectivos','👥 Efectivos y código de invitación', filaEfectivos + filaCodigo) + cajaSub('cc-domingo','🍳 Desayuno del domingo sin marcar', domingoRevisionHtml(secciones, apuntesMap)) + cajaSub('cc-faltan','📝 Quién falta por registrarse', faltanRegistrarseHtml(secciones)) + cajaSub('cc-conex','🟢 Conexión de los alumnos', conexionAlumnosHtml(secciones)) },
+      cuerpo: cajaSub('cc-efectivos','👥 Efectivos y código de invitación', filaEfectivos + filaCodigo) + cajaSub('cc-domingo','🍳 Desayuno del domingo sin marcar', domingoRevisionHtml(secciones, apuntesMap)) + cajaSub('cc-faltan','📝 Quién falta por registrarse', faltanRegistrarseHtml(secciones)) + cajaSub('cc-conex','🟢 Conexión de los alumnos', conexionAlumnosHtml(secciones))
+        + cajaSub('cc-cuartel','🪖 Contraseña del servicio de cuartel', `<div class="panel-row" style="flex-direction:column;align-items:stretch;"><div class="switch-label">Cuenta de cuartel de la ${c}ª<span class="sub2">Si el servicio de cuartel olvida la contraseña, aquí pones una nueva (se enseña una sola vez, apúntala y dísela). Se cierran las sesiones abiertas de esa cuenta.</span></div><div style="margin-top:8px;"><button class="small-btn" onclick="cambiarPasswordCuartel(${c})">🔑 Cambiar contraseña</button></div></div>`) },
     { id:'intol', icono:'🍽️', titulo:'Intolerancias', sub:'Peticiones de los alumnos', badge:(intolPendientesCount||''), tituloPanel:'Solicitudes de intolerancias', cuerpo:filaIntol },
   ]);
 
