@@ -696,6 +696,20 @@ table.roster tr.me td.name-cell{box-shadow:inset 3px 0 0 var(--olive);}
 /* Acciones de las pestañas */
 .acciones-fila{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px;}
 .acciones-fila .small-btn{flex:1;min-width:140px;}
+table.serv-grid tr.yo td{background:rgba(184,134,11,.20);}
+table.serv-grid tr.yo td.nc{background:linear-gradient(rgba(184,134,11,.22),rgba(184,134,11,.22)) var(--card);font-weight:800;color:var(--olive);box-shadow:inset 3px 0 0 var(--brass);}
+table.serv-grid td.mio{cursor:pointer;}
+table.serv-grid td.mio .serv-cod{outline:2px solid var(--brass);outline-offset:1px;}
+/* Botón «Ver cuadrante» */
+.cuad-btn{display:flex;align-items:center;gap:14px;width:100%;padding:16px 18px;border:none;border-radius:18px;cursor:pointer;text-align:left;font-family:inherit;color:#fff;background:linear-gradient(135deg,#4d6b38 0%,#2f4a22 100%);box-shadow:0 6px 18px rgba(47,74,34,.35),inset 0 1px 0 rgba(255,255,255,.18);transition:transform .15s ease,box-shadow .15s ease;}
+.cuad-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(47,74,34,.45),inset 0 1px 0 rgba(255,255,255,.18);}
+.cuad-ico{flex:none;display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.16);font-size:1.9rem;}
+.cuad-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.cuad-txt b{font-size:1.15rem;letter-spacing:.01em;}
+.cuad-txt small{font-size:.76rem;opacity:.85;line-height:1.25;}
+.cuad-flecha{flex:none;font-size:1.5rem;font-weight:700;transition:transform .2s ease;}
+.cuad-btn.abierto .cuad-flecha{transform:rotate(180deg);}
+.cuad-btn.abierto{background:linear-gradient(135deg,#b8860b 0%,#8a6508 100%);box-shadow:0 6px 18px rgba(138,101,8,.35),inset 0 1px 0 rgba(255,255,255,.2);}
 </style>
 <script>
 /* Preferencias del usuario: se guardan SOLO en este dispositivo (localStorage), no en la base de datos.
@@ -892,10 +906,16 @@ aplicarTema();
 
     <div id="alumno-servicios-mod" class="hidden">
       <div id="alumno-serv-week-select"></div>
+      <div id="alumno-cuadrante" style="margin-bottom:14px;">
+        <button type="button" class="cuad-btn" id="alumno-cuadrante-btn" onclick="toggleCuadranteAlumno()"><span class="cuad-ico">📋</span><span class="cuad-txt"><b id="alumno-cuadrante-tit">Ver cuadrante</b><small>Cuándo está nombrado cada uno de tu compañía</small></span><span class="cuad-flecha">▾</span></button>
+        <div id="alumno-cuadrante-cont" class="hidden" style="margin-top:8px;"></div>
+      </div>
       <h3 class="section-title">Tus próximos servicios</h3>
       <div id="alumno-servicios-lista"></div>
       <h3 class="section-title">Mis solicitudes de cambio</h3>
       <div id="alumno-cambios-lista"></div>
+      <h3 class="section-title">Mis dudas</h3>
+      <div id="alumno-dudas-lista"></div>
       <h3 class="section-title">Debo / me deben</h3>
       <div id="alumno-deudas-lista"></div>
     </div>
@@ -944,6 +964,7 @@ aplicarTema();
         <button type="button" class="caja" data-caja="serv|estimar" onclick="abrirCaja('serv','estimar')"><span class="caja-ico">🔮</span><span class="caja-tit">Estimar servicios</span><span class="caja-sub">Rellenar el cuadrante</span></button>
         <button type="button" class="caja" data-caja="serv|deudas" onclick="abrirCaja('serv','deudas')"><span class="caja-ico">💸</span><span class="caja-tit">Deudas de servicio</span><span class="caja-sub">Quién le debe a quién</span><span class="caja-badge hidden" id="serv-badge-deudas"></span></button>
         <button type="button" class="caja" data-caja="serv|cambios" onclick="abrirCaja('serv','cambios')"><span class="caja-ico">🔁</span><span class="caja-tit">Cambios pendientes</span><span class="caja-sub">Solicitudes de los alumnos</span><span class="caja-badge hidden" id="serv-badge-cambios"></span></button>
+        <button type="button" class="caja" data-caja="serv|dudas" onclick="abrirCaja('serv','dudas')"><span class="caja-ico">❓</span><span class="caja-tit">Dudas de alumnos</span><span class="caja-sub">Sobre sus servicios</span><span class="caja-badge hidden" id="serv-badge-dudas"></span></button>
         <button type="button" class="caja" data-caja="serv|excel" onclick="abrirCaja('serv','excel')"><span class="caja-ico">📤</span><span class="caja-tit">Subir el Excel</span><span class="caja-sub">Guardias de orden</span></button>
         <button type="button" class="caja" data-caja="serv|visible" onclick="abrirCaja('serv','visible')"><span class="caja-ico">👁️</span><span class="caja-tit">Mostrar a alumnos</span><span class="caja-sub">Pestaña Servicios</span></button>
         <button type="button" class="caja" id="serv-info-btn" data-caja="serv|info" onclick="toggleInfografiaServ()"><span class="caja-ico">ℹ️</span><span class="caja-tit">Infografía</span></button>
@@ -952,6 +973,10 @@ aplicarTema();
       <div class="caja-panel hidden" data-caja="serv|cambios">
         <div class="caja-panel-cab"><b>🔁 Solicitudes de cambio pendientes</b><button type="button" class="small-btn" onclick="abrirCaja('serv','cambios')">Cerrar ✕</button></div>
         <div id="admin-cambios-pendientes"></div>
+      </div>
+      <div class="caja-panel hidden" data-caja="serv|dudas">
+        <div class="caja-panel-cab"><b>❓ Dudas de los alumnos sobre sus servicios</b><button type="button" class="small-btn" onclick="abrirCaja('serv','dudas')">Cerrar ✕</button></div>
+        <div id="admin-dudas"></div>
       </div>
       <div class="caja-panel hidden" data-caja="serv|deudas">
         <div class="caja-panel-cab"><b>💸 Deudas de servicio</b><button type="button" class="small-btn" onclick="abrirCaja('serv','deudas')">Cerrar ✕</button></div>
@@ -1145,7 +1170,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-15T01:00:29";
+const APP_VERSION = "2026-10-15T09:13:26";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -1157,7 +1182,8 @@ async function comprobarVersionNueva(){
     const v = (await r.text()).trim();
     if(v && v !== APP_VERSION){
       showToast('Hay una versión nueva de la app — recargando…');
-      setTimeout(()=>location.reload(), 1500);
+      // antes de recargar se guarda lo último que se acabe de marcar (si lo hubiera), para no perderlo
+      setTimeout(async ()=>{ try{ await Promise.all([ encolarMarcaComida.vaciar(), encolarMarcaPernocta.vaciar() ]); }catch(e){} location.reload(); }, 1500);
       return true;
     }
   }catch(e){ /* sin conexión o version.txt no existe todavía: no hacemos nada */ }
@@ -1647,6 +1673,7 @@ function novedadesItems(opts){
   if(opts && opts.servicios) items.push({ ico:'📋', t:'Servicios, ya disponibles', nuevo:true, d:'La pestaña Servicios ya está disponible: mira cuándo te toca y con quién, y pide un cambio si hace falta. Los de borde de puntos son estimados y pueden cambiar.' });
   items.push({ ico:'📅', t:'Elige cómo ver las semanas', nuevo:true, d:'Ahora puedes usar el calendario, el desplegable o los dos, como prefieras. Se cambia en ⚙️ → Cómo elegir la semana.' });
   items.push({ ico:'🌉', t:'Puentes y maniobras', d:'Salen marcados en la app: en esas semanas verás un aviso y las comidas y noches obligatorias se ajustan a lo que corresponda.' });
+  if(opts && opts.servicios) items.unshift({ ico:'📋', t:'Ver el cuadrante', nuevo:true, d:'En Servicios, el botón «Ver cuadrante» despliega la tabla completa de tu compañía. Tu fila sale marcada y, al tocar uno de tus servicios, puedes pedir un cambio o preguntar una duda a tu Furry.' });
   items.unshift(
     { ico:'📲', t:'Descarga la app', nuevo:true, d:'Ya puedes instalar Portal AGM en tu móvil: icono en la pantalla de inicio y pantalla completa. Mira cómo en ⚙️ → «Instalar la app».' },
     { ico:'⭐', t:'Comidas habituales', nuevo:true, d:'En Comidas, el botón «Habitual» copia tus comidas de la semana anterior. En ⚙️ puedes hacer que se repitan solas hasta que las cambies.' },
@@ -1704,7 +1731,9 @@ function novedadesAdminItems(){
       'Aviso rojo cuando se cae la conexión.',
       'Nuevo «Uso de la app» en ⚙️: cuánta gente entra desde la app instalada y cuánta desde el navegador.',
       'Nuevo selector «Viernes fuera» por persona (junto a «Externado»).',
-      'Comidas «habituales» y descarga a calendario (.ics) para los alumnos.' ] },
+      'Comidas «habituales» y descarga a calendario (.ics) para los alumnos.',
+      'Los alumnos pueden ver el cuadrante de servicios completo (solo lectura) con el botón «Ver cuadrante».',
+      'Nueva caja «Dudas de alumnos» en Servicios: preguntas de los alumnos sobre sus servicios, con respuesta.' ] },
     { ico:'🚀', t:'Más rápido', puntos:[
       'Los paneles cargan antes, y los alumnos pueden marcar varias casillas seguidas sin esperas.' ] }
   ];
@@ -1741,8 +1770,9 @@ function actualizacionesHtml(idSel, furry){
 // Se abre desde ⚙️ → «Ver actualizaciones» cuando se quiera (y se puede elegir cuál)
 function abrirActualizaciones(idSel){
   if(!actPuedeVer()) return; // los alumnos no lo tienen
+  const furry = actEsFurry(); // en modo alumno (un Furry mirando como alumno) sale EXACTAMENTE lo que ve un alumno: sin selector, fecha ni estrella
   const el = document.getElementById('novedades-overlay');
-  el.innerHTML = actualizacionesHtml(idSel, true);
+  el.innerHTML = actualizacionesHtml(furry ? idSel : null, furry);
   el.classList.remove('hidden');
 }
 // Al entrar: se enseña SOLO la última, una vez por cuenta (una vez como alumno y otra como Furry)
@@ -1807,7 +1837,9 @@ function ayudaItems(furry){
   const alumno = [
     ['🍽️ ¿Cómo marco mis comidas?','Entra en Comidas, elige la semana y marca tus casillas. Las bloqueadas son obligatorias. Se guarda solo al tocar; confirma antes de que cierre el plazo.'],
     ['🌙 ¿Cómo marco que duermo fuera?','En Pernoctas elige «Fuera (X)» en la noche y escribe tu dirección y móvil. Los pases y las maniobras los pone tu Furry.'],
-    ['🔁 ¿Cómo pido un cambio de servicio?','En Servicios toca tu servicio, elige quién te lo hará y el motivo. Tu Furry lo aprueba o lo rechaza.'],
+    ['🔁 ¿Cómo pido un cambio de servicio?','En Servicios toca tu servicio (o ábrelo en «Ver cuadrante»), elige quién te lo hará y el motivo. Tu Furry lo aprueba o lo rechaza.'],
+    ['📋 ¿Puedo ver cuándo estoy nombrado?','En Servicios, botón «Ver cuadrante»: la tabla completa de la compañía, con tu fila marcada.'],
+    ['❓ ¿Cómo pregunto una duda sobre un servicio?','Toca tu servicio (en la lista o en «Ver cuadrante») y pulsa «Preguntar una duda». Tu Furry te responde y lo ves en «Mis dudas».'],
     ['⏰ ¿Qué pasa cuando cierra el plazo?','Ya no puedes cambiar nada. Si es un caso especial, escribe a tu Furry.']
   ];
   const fur = [
@@ -1822,7 +1854,7 @@ function ayudaItems(furry){
   return comun.concat(furry ? fur : alumno);
 }
 function abrirAyuda(){
-  const furry = actPuedeVer();
+  const furry = actEsFurry();
   const el = document.getElementById('novedades-overlay');
   el.innerHTML = `<div class="nov-card" role="dialog" aria-modal="true"><div class="nov-head"><div class="nov-logo">❓</div><h2>Ayuda</h2><p>${furry?'Para Furrys':'Lo más preguntado'}</p></div>
     <div style="overflow:auto;padding-bottom:6px;"><div class="ayuda-lista">${ayudaItems(furry).map(([q,a])=>`<details><summary>${escHtml(q)}</summary><p>${escHtml(a)}</p></details>`).join('')}</div></div>
@@ -6792,6 +6824,83 @@ function fmtFecha(fechaStr){
 }
 
 /* ---- Alumno: solo SUS servicios (lo que pone el cuadrante) y con quién le toca ---- */
+/* ---- Cuadrante de servicios para los alumnos: SOLO se ve (como el Excel). Tu fila sale marcada; al tocar uno de tus servicios se abre su ficha ---- */
+let CUADRANTE_AL = null; // { roster, servicios, dias, compania }
+async function cargarCuadranteAlumno(){
+  const c = CURRENT.persona.compania, hoy = new Date(), ini = ymd(lunesDe(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-14)));
+  const rosterP = (async ()=>{
+    let r = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios').eq('compania', c).order('apellidos');
+    if(r.error) r = await sb.from('personas').select('id,nombre,apellidos,seccion').eq('compania', c).order('apellidos');
+    return r.data || [];
+  })();
+  const [roster, servicios] = await Promise.all([ rosterP, traerTodoServ(()=>sb.from('servicios').select('*').eq('compania', c).gte('fecha', ini).order('fecha').order('id')) ]);
+  const ordenado = roster.slice().sort((a,b)=>{
+    const oa = a.orden_servicio==null ? 1e9 : a.orden_servicio, ob = b.orden_servicio==null ? 1e9 : b.orden_servicio;
+    return oa!==ob ? oa-ob : (a.apellidos+a.nombre).localeCompare(b.apellidos+b.nombre, 'es');
+  });
+  let fin = sumarDia(ini, 89);
+  servicios.forEach(s=>{ if(s.fecha>fin) fin = s.fecha; });
+  if(diasEntre(ini, fin) > 300) fin = sumarDia(ini, 300);
+  const d0 = new Date(ini+'T00:00:00');
+  const dias = Array.from({length: diasEntre(ini, fin)+1}, (_,i)=>{ const d = new Date(d0); d.setDate(d0.getDate()+i); return d; });
+  try{ await fetchPuentesYManiobras(c); }catch(e){}
+  CUADRANTE_AL = { roster: ordenado, servicios, dias, compania: c, fest: diasFestivosServicios(c) }; // puentes y maniobras, con los mismos colores que ve el Furry
+}
+function pintarCuadranteAlumno(){
+  const cont = document.getElementById('alumno-cuadrante-cont'), u = CUADRANTE_AL, yo = CURRENT.persona.id, hoyF = ymd(new Date());
+  const LETRA = ['D','L','M','X','J','V','S'];
+  const porPD = {}; u.servicios.forEach(s=>{ const k = s.persona_id+'|'+s.fecha; (porPD[k] = porPD[k] || []).push(s); });
+  const fest = u.fest || {}, claseFest = f => fest[f] ? (fest[f].tipo==='mani' ? ' mani' : ' fes') : '', tituloFest = f => fest[f] ? ` title="${escHtml(fest[f].nombre)}"` : '';
+  let thead = `<thead><tr><th class="nc">${u.roster.length} personas</th>`;
+  u.dias.forEach(d=>{ const f = ymd(d), fin = d.getDay()===0 || d.getDay()===6; thead += `<th class="${fin?'fin':''}${claseFest(f)} ${f===hoyF?'hoy':''}"${tituloFest(f)}>${LETRA[d.getDay()]}<br>${d.getDate()}/${d.getMonth()+1}</th>`; });
+  thead += '</tr></thead>';
+  let tbody = '<tbody>';
+  u.roster.forEach(p=>{
+    const mio = p.id===yo;
+    tbody += `<tr class="${mio?'yo':''}"><td class="nc">${escHtml(p.apellidos)}, ${escHtml(p.nombre)}${mio?' (tú)':''}</td>`;
+    u.dias.forEach(d=>{
+      const f = ymd(d), fin = d.getDay()===0 || d.getDay()===6, lista = porPD[p.id+'|'+f] || [];
+      const cod = lista.map(s=>`<span class="serv-cod ${servClase(s)}${s.estimado?' est':''}" title="${escHtml(servicioLabel(s)+(s.estimado?' (estimado)':''))}">${escHtml(servCorto(s))}</span>`).join('');
+      tbody += (mio && lista.length)
+        ? `<td class="mio ${fin?'fin':''}${claseFest(f)} ${f===hoyF?'hoy':''}" onclick="abrirServicioCuadrante('${f}')">${cod}</td>`
+        : `<td class="${fin?'fin':''}${claseFest(f)} ${f===hoyF?'hoy':''}"${tituloFest(f)}>${cod}</td>`;
+    });
+    tbody += '</tr>';
+  });
+  tbody += '</tbody>';
+  cont.innerHTML = `<div class="serv-grid-wrap"><table class="serv-grid" id="alumno-cuadrante-tabla" style="min-width:${210+u.dias.length*36}px;">${thead+tbody}</table></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:6px 0;font-size:.72rem;color:var(--ink-soft);"><span><span class="serv-leg fes">&nbsp;&nbsp;&nbsp;</span> Puente / fin de semana largo</span><span><span class="serv-leg mani">&nbsp;&nbsp;&nbsp;</span> Maniobras</span><span><span class="serv-leg fin">&nbsp;&nbsp;&nbsp;</span> Fin de semana</span><span><span class="serv-leg hoy">&nbsp;&nbsp;&nbsp;</span> Hoy</span></div>
+    <div class="small-note" style="margin:6px 0;">Es solo para consultar. Tu fila está marcada: toca uno de tus servicios para ver más. Los que llevan borde discontinuo son estimados y pueden cambiar.</div>
+    <div id="alumno-cuadrante-detalle"></div>`;
+  const wrap = cont.querySelector('.serv-grid-wrap'), th = cont.querySelector('th.hoy');
+  if(wrap && th) wrap.scrollLeft = Math.max(0, th.offsetLeft - 230);
+}
+async function toggleCuadranteAlumno(){
+  const cont = document.getElementById('alumno-cuadrante-cont'), btn = document.getElementById('alumno-cuadrante-btn');
+  const tit = document.getElementById('alumno-cuadrante-tit');
+  if(!cont.classList.contains('hidden')){ cont.classList.add('hidden'); btn.classList.remove('abierto'); tit.textContent = 'Ver cuadrante'; return; }
+  cont.classList.remove('hidden'); btn.classList.add('abierto'); tit.textContent = 'Ocultar cuadrante';
+  cont.innerHTML = '<div class="loading">Cargando el cuadrante…</div>';
+  try{ await cargarCuadranteAlumno(); pintarCuadranteAlumno(); }
+  catch(e){ cont.innerHTML = `<div class="small-note">No se pudo cargar el cuadrante: ${escHtml(e.message||String(e))}</div>`; }
+}
+// Ficha de uno de MIS servicios al tocarlo en el cuadrante
+function abrirServicioCuadrante(fecha){
+  const u = CUADRANTE_AL, yo = CURRENT.persona.id, box = document.getElementById('alumno-cuadrante-detalle');
+  const mios = u.servicios.filter(s=>s.persona_id===yo && s.fecha===fecha);
+  if(!mios.length){ box.innerHTML = ''; return; }
+  const hoyF = ymd(new Date());
+  box.innerHTML = mios.map(s=>`<div class="servicio-card" style="margin-top:6px;">
+      <div class="titulo"><span class="serv-cod ${servClase(s)}${s.estimado?' est':''}" style="cursor:default;">${escHtml(servCorto(s))}</span> ${escHtml(servicioLabel(s))}</div>
+      <div class="meta">${fmtFecha(s.fecha)}${s.fecha===hoyF?' · <b>HOY</b>':''}</div>
+      ${s.estimado ? '<div class="meta" style="color:var(--danger);">⚠️ Estimado: todavía no está confirmado en el cuadrante oficial</div>' : ''}
+      ${s.fecha>=hoyF && s.tipo!=='otro' ? `<button class="small-btn" style="margin-top:8px;" onclick="abrirSolicitudCambio(${s.id})">🔁 Solicitar cambio</button>` : ''}
+      <button class="small-btn" style="margin-top:8px;${s.fecha>=hoyF && s.tipo!=='otro' ? 'margin-left:6px;' : ''}" onclick="abrirDuda(${s.id})">❓ Preguntar una duda</button>
+      <div id="duda-form-${s.id}" class="hidden" style="margin-top:8px;"></div>
+      ${s.fecha>=hoyF && s.tipo!=='otro' ? `<div id="cambio-form-${s.id}" class="hidden" style="margin-top:8px;"></div>` : ''}
+    </div>`).join('');
+  box.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
 async function renderAlumnoServicios(){
   document.getElementById('alumno-week-select').innerHTML = '';
   document.getElementById('alumno-notice').innerHTML = '';
@@ -6831,7 +6940,7 @@ async function renderAlumnoServicios(){
       ${textoSaldar(s)}
       ${s.estimado ? '<div class="meta" style="color:var(--danger);">⚠️ Estimado: todavía no está confirmado en el cuadrante oficial</div>' : ''}
       ${conQuien}
-      ${futuro && s.tipo!=='otro' ? `<button class="small-btn" style="margin-top:8px;" onclick="abrirSolicitudCambio(${s.id})">Solicitar cambio</button><div id="cambio-form-${s.id}" class="hidden" style="margin-top:8px;"></div>` : ''}
+      ${futuro && s.tipo!=='otro' ? `<button class="small-btn" style="margin-top:8px;" onclick="abrirSolicitudCambio(${s.id})">Solicitar cambio</button><button class="small-btn" style="margin-top:8px;margin-left:6px;" onclick="abrirDuda(${s.id})">❓ Preguntar una duda</button><div id="duda-form-${s.id}" class="hidden" style="margin-top:8px;"></div><div id="cambio-form-${s.id}" class="hidden" style="margin-top:8px;"></div>` : ''}
     </div>`;
   };
   let html = (proximos.length ? '<div class="acciones-fila"><button class="small-btn" onclick="descargarIcsServicios()">📅 Añadir a mi calendario</button></div>' : '') + (proximos.length ? proximos.map(s=>tarjeta(s,true)).join('') : '<div class="small-note">No tienes ningún servicio en el cuadrante a partir de hoy.</div>');
@@ -6847,6 +6956,7 @@ async function renderAlumnoServicios(){
       <div class="meta">Sustituto: ${c.sustituto?escHtml(c.sustituto.apellidos+', '+c.sustituto.nombre):''} · <span class="badge-estado ${c.estado}">${c.estado}</span></div>
       ${c.motivo_resolucion ? `<div class="meta">Motivo del Furry: ${escHtml(c.motivo_resolucion)}</div>` : ''}
     </div>`).join('') : '<div class="small-note">Sin solicitudes.</div>';
+  cargarDudasAlumno();
 
   const { data: deudas } = await sb.from('deudas_servicio')
     .select('*, deudor:personas!deudas_servicio_deudor_id_fkey(nombre,apellidos), acreedor:personas!deudas_servicio_acreedor_id_fkey(nombre,apellidos)')
@@ -6856,6 +6966,35 @@ async function renderAlumnoServicios(){
     const otro = esDeudor ? d.acreedor : d.deudor;
     return `<div class="servicio-card"><div class="titulo">${esDeudor?'Le debes a':'Te debe'} ${escHtml(otro.apellidos)}, ${escHtml(otro.nombre)}</div><div class="meta">${textoDeuda(d)}</div></div>`;
   }).join('') : '<div class="small-note">Sin deudas pendientes.</div>';
+}
+/* ---- Dudas sobre un servicio: el alumno pregunta a su Furry (parche SQL 77) ---- */
+function abrirDuda(servicioId){
+  const div = document.getElementById('duda-form-'+servicioId);
+  if(!div) return;
+  if(!div.classList.contains('hidden')){ div.classList.add('hidden'); return; }
+  div.innerHTML = `<div style="font-size:.82rem;font-weight:700;margin-bottom:4px;">¿Qué duda tienes sobre este servicio?</div>
+    <textarea id="duda-texto-${servicioId}" maxlength="500" placeholder="Escribe tu duda (máx. 500 caracteres)" style="width:100%;min-height:60px;padding:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;margin-bottom:6px;"></textarea>
+    <button class="small-btn" onclick="enviarDuda(${servicioId})">Enviar a mi Furry</button>`;
+  div.classList.remove('hidden');
+}
+async function enviarDuda(servicioId){
+  const texto = (document.getElementById('duda-texto-'+servicioId).value||'').trim();
+  if(!texto){ showToast('Escribe tu duda.'); return; }
+  const { error } = await sb.rpc('enviar_duda_servicio', { p_servicio_id: servicioId, p_texto: texto });
+  if(error){ showToast('No se pudo enviar: '+(/dudas_servicio|enviar_duda_servicio/.test(error.message) ? 'falta el parche SQL 77' : error.message)); return; }
+  showToast('Duda enviada. Tu Furry la verá y te responderá aquí.');
+  const div = document.getElementById('duda-form-'+servicioId); if(div){ div.classList.add('hidden'); div.innerHTML = ''; }
+  cargarDudasAlumno();
+}
+async function cargarDudasAlumno(){
+  const box = document.getElementById('alumno-dudas-lista'); if(!box) return;
+  const { data, error } = await sb.from('dudas_servicio').select('*').eq('persona_id', CURRENT.persona.id).order('creado_en', { ascending:false }).limit(20);
+  if(error){ box.innerHTML = '<div class="small-note">Aquí verás tus dudas y las respuestas de tu Furry.</div>'; return; }
+  box.innerHTML = (data&&data.length) ? data.map(d=>`<div class="servicio-card">
+      <div class="titulo">${escHtml(servicioLabel({ tipo:d.servicio_tipo||'otro', turno:d.servicio_turno, codigo:d.servicio_codigo }))}${d.fecha?' — '+fmtFecha(d.fecha):''}</div>
+      <div class="meta">Tú: ${escHtml(d.texto)}</div>
+      ${d.respuesta ? `<div class="meta" style="color:var(--olive);font-weight:700;">💬 Tu Furry: ${escHtml(d.respuesta)}</div>` : '<div class="meta">Sin respuesta todavía.</div>'}
+    </div>`).join('') : '<div class="small-note">No has hecho ninguna pregunta.</div>';
 }
 async function abrirSolicitudCambio(servicioId){
   const div = document.getElementById('cambio-form-'+servicioId);
@@ -6969,6 +7108,35 @@ async function desplazarTurno(){
   if(error){ showToast('No se pudo desplazar: '+error.message); return; }
   showToast(`Desplazado — ${data} días actualizados desde esa fecha.`);
   await renderAdminServicios();
+}
+async function cargarDudasAdmin(){
+  const box = document.getElementById('admin-dudas'), badge = document.getElementById('serv-badge-dudas'); if(!box) return;
+  const { data, error } = await sb.from('dudas_servicio').select('*, persona:personas!dudas_servicio_persona_id_fkey(nombre,apellidos,seccion)').eq('compania', CURRENT.compania).order('creado_en', { ascending:false }).limit(60);
+  if(error){ box.innerHTML = `<div class="small-note">No se pudo cargar (¿has ejecutado el parche SQL 77?): ${escHtml(error.message)}</div>`; if(badge) badge.classList.add('hidden'); return; }
+  const pend = (data||[]).filter(d=>!d.resuelta);
+  if(badge){ badge.textContent = pend.length; badge.classList.toggle('hidden', !pend.length); }
+  const tarjeta = d => `<div class="servicio-card">
+      <div class="titulo">${escHtml(servicioLabel({ tipo:d.servicio_tipo||'otro', turno:d.servicio_turno, codigo:d.servicio_codigo }))}${d.fecha?' — '+fmtFecha(d.fecha):''}</div>
+      <div class="meta">${d.persona ? escHtml(d.persona.apellidos+', '+d.persona.nombre)+' ('+CURRENT.compania+d.persona.seccion+')' : '(persona borrada)'} · ${escHtml(new Date(d.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))}</div>
+      <div class="meta">❓ ${escHtml(d.texto)}</div>
+      ${d.respuesta ? `<div class="meta" style="color:var(--olive);font-weight:700;">💬 ${escHtml(d.respuesta)}</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:8px;"><button class="small-btn" onclick="responderDuda(${d.id})">💬 ${d.respuesta?'Cambiar respuesta':'Responder'}</button><button class="small-btn danger" onclick="borrarDuda(${d.id})">🗑 Borrar</button></div>
+    </div>`;
+  box.innerHTML = (data&&data.length) ? ((pend.length ? '<div class="small-note" style="margin:0 0 6px;"><b>Sin responder</b></div>'+pend.map(tarjeta).join('') : '<div class="small-note">No hay dudas sin responder.</div>') + ((data||[]).filter(d=>d.resuelta).length ? '<details style="margin-top:8px;"><summary style="cursor:pointer;font-weight:700;font-size:.85rem;">Respondidas</summary>'+(data||[]).filter(d=>d.resuelta).map(tarjeta).join('')+'</details>' : '')) : '<div class="small-note">Todavía no hay dudas.</div>';
+}
+async function responderDuda(id){
+  const r = prompt('Tu respuesta (máx. 500 caracteres, sin < > "):');
+  if(r===null || r.trim()==='') return;
+  const { error } = await sb.from('dudas_servicio').update({ respuesta:r.trim(), respuesta_en:new Date().toISOString(), resuelta:true }).eq('id', id);
+  if(error){ showToast('No se pudo guardar: '+error.message); return; }
+  showToast('Respuesta enviada. El alumno la verá en Servicios.');
+  await cargarDudasAdmin();
+}
+async function borrarDuda(id){
+  if(!confirm('¿Borrar esta duda?')) return;
+  const { error } = await sb.from('dudas_servicio').delete().eq('id', id);
+  if(error){ showToast('No se pudo borrar: '+error.message); return; }
+  await cargarDudasAdmin();
 }
 async function aprobarCambio(id){
   const { error } = await sb.rpc('aprobar_cambio_servicio', { p_cambio_id: id });
@@ -8272,6 +8440,7 @@ async function renderAdminServicios(){
       </div>
     </div>`).join('') : '<div class="small-note">Sin solicitudes pendientes.</div>';
   const bCam = document.getElementById('serv-badge-cambios'); bCam.textContent = (pendientes||[]).length; bCam.classList.toggle('hidden', !(pendientes&&pendientes.length));
+  cargarDudasAdmin();
 
   const pendD = window._servDeudasPend || [], saldD = todasDeudas.filter(d=>d.saldada);
   const nom = p => p ? escHtml(p.apellidos+', '+p.nombre) : '?';
