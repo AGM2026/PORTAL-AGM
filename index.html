@@ -710,6 +710,8 @@ table.serv-grid td.mio .serv-cod{outline:2px solid var(--brass);outline-offset:1
 .cuad-flecha{flex:none;font-size:1.5rem;font-weight:700;transition:transform .2s ease;}
 .cuad-btn.abierto .cuad-flecha{transform:rotate(180deg);}
 .cuad-btn.abierto{background:linear-gradient(135deg,#b8860b 0%,#8a6508 100%);box-shadow:0 6px 18px rgba(138,101,8,.35),inset 0 1px 0 rgba(255,255,255,.2);}
+details.cfg-mas{margin:6px 0 4px;}
+details.cfg-mas>summary{cursor:pointer;font-size:.72rem;font-weight:700;color:var(--olive);padding:4px 0;}
 </style>
 <script>
 /* Preferencias del usuario: se guardan SOLO en este dispositivo (localStorage), no en la base de datos.
@@ -746,7 +748,7 @@ aplicarTema();
       <img class="brand-logo" alt="AGM">
       <h1>PORTAL AGM</h1>
       <div class="sub">Comidas, pernoctas y servicios</div>
-      <div class="version-tag">v2.0</div>
+      <div class="version-tag">v2.0 · <a href="#" onclick="abrirPrivacidad();return false;" style="color:inherit;">Privacidad</a></div>
     </div>
 
     <div class="login-card" id="login-card">
@@ -807,6 +809,7 @@ aplicarTema();
           </div>
         </div>
         <div class="field"><label>Código de invitación</label><input type="text" id="reg-code"></div>
+        <label style="display:flex;gap:8px;align-items:flex-start;font-size:.8rem;margin:4px 0 12px;"><input type="checkbox" id="reg-priv" style="margin-top:3px;"><span>He leído el <a href="#" onclick="abrirPrivacidad();return false;">aviso de privacidad</a> y lo acepto.</span></label>
         <button class="primary-btn" id="reg-btn" type="submit">Registrarme y entrar</button>
         <div id="reg-error" class="error-text hidden"></div>
       </form>
@@ -963,24 +966,21 @@ aplicarTema();
       <div class="cajas-grid mini" id="serv-cajas">
         <button type="button" class="caja" data-caja="serv|manual" onclick="abrirCaja('serv','manual')"><span class="caja-ico">✍️</span><span class="caja-tit">Añadir o cambiar</span><span class="caja-sub">Un servicio a mano</span></button>
         <button type="button" class="caja" data-caja="serv|estimar" onclick="abrirCaja('serv','estimar')"><span class="caja-ico">🔮</span><span class="caja-tit">Estimar servicios</span><span class="caja-sub">Rellenar el cuadrante</span></button>
-        <button type="button" class="caja" data-caja="serv|deudas" onclick="abrirCaja('serv','deudas')"><span class="caja-ico">💸</span><span class="caja-tit">Deudas de servicio</span><span class="caja-sub">Quién le debe a quién</span><span class="caja-badge hidden" id="serv-badge-deudas"></span></button>
-        <button type="button" class="caja" data-caja="serv|cambios" onclick="abrirCaja('serv','cambios')"><span class="caja-ico">🔁</span><span class="caja-tit">Cambios pendientes</span><span class="caja-sub">Solicitudes de los alumnos</span><span class="caja-badge hidden" id="serv-badge-cambios"></span></button>
-        <button type="button" class="caja" data-caja="serv|dudas" onclick="abrirCaja('serv','dudas')"><span class="caja-ico">❓</span><span class="caja-tit">Dudas de alumnos</span><span class="caja-sub">Sobre sus servicios</span><span class="caja-badge hidden" id="serv-badge-dudas"></span></button>
+        <button type="button" class="caja" data-caja="serv|bandeja" onclick="abrirCaja('serv','bandeja')"><span class="caja-ico">📥</span><span class="caja-tit">Bandeja</span><span class="caja-sub">Cambios, dudas y deudas</span><span class="caja-badge hidden" id="serv-badge-bandeja"></span><span id="serv-badge-cambios" style="display:none"></span><span id="serv-badge-dudas" style="display:none"></span><span id="serv-badge-deudas" style="display:none"></span></button>
         <button type="button" class="caja" data-caja="serv|excel" onclick="abrirCaja('serv','excel')"><span class="caja-ico">📤</span><span class="caja-tit">Subir el Excel</span><span class="caja-sub">Guardias de orden</span></button>
         <button type="button" class="caja" data-caja="serv|visible" onclick="abrirCaja('serv','visible')"><span class="caja-ico">👁️</span><span class="caja-tit">Mostrar a alumnos</span><span class="caja-sub">Pestaña Servicios</span></button>
         <button type="button" class="caja" id="serv-info-btn" data-caja="serv|info" onclick="toggleInfografiaServ()"><span class="caja-ico">ℹ️</span><span class="caja-tit">Infografía</span></button>
         <button type="button" class="caja" data-caja="serv|exportar" onclick="exportServiciosExcel()"><span class="caja-ico">📄</span><span class="caja-tit">Exportar a Excel</span></button>
       </div>
-      <div class="caja-panel hidden" data-caja="serv|cambios">
-        <div class="caja-panel-cab"><b>🔁 Solicitudes de cambio pendientes</b><button type="button" class="small-btn" onclick="abrirCaja('serv','cambios')">Cerrar ✕</button></div>
+      <div class="caja-panel hidden" data-caja="serv|bandeja">
+        <div class="caja-panel-cab"><b>📥 Bandeja de servicios</b><button type="button" class="small-btn" onclick="abrirCaja('serv','bandeja')">Cerrar ✕</button></div>
+        <details class="caja-det" open><summary>🔁 Cambios pendientes</summary><div class="caja-sub-body">
         <div id="admin-cambios-pendientes"></div>
-      </div>
-      <div class="caja-panel hidden" data-caja="serv|dudas">
-        <div class="caja-panel-cab"><b>❓ Dudas de los alumnos sobre sus servicios</b><button type="button" class="small-btn" onclick="abrirCaja('serv','dudas')">Cerrar ✕</button></div>
+        </div></details>
+        <details class="caja-det"><summary>❓ Dudas de los alumnos</summary><div class="caja-sub-body">
         <div id="admin-dudas"></div>
-      </div>
-      <div class="caja-panel hidden" data-caja="serv|deudas">
-        <div class="caja-panel-cab"><b>💸 Deudas de servicio</b><button type="button" class="small-btn" onclick="abrirCaja('serv','deudas')">Cerrar ✕</button></div>
+        </div></details>
+        <details class="caja-det"><summary>💸 Deudas de servicio</summary><div class="caja-sub-body">
         <button class="small-btn" onclick="toggleNuevaDeuda()">＋ Añadir deuda</button>
         <div id="nueva-deuda-form" class="admin-panel hidden" style="flex-direction:column;align-items:stretch;margin-top:10px;">
         <div class="switch-label">Apuntar una deuda a mano<span class="sub2">Como lo apuntarías en la columna OBS. del Excel. Las deudas apuntadas aquí NO se borran al volver a subir el Excel.</span></div>
@@ -993,6 +993,7 @@ aplicarTema();
         <button class="small-btn" style="margin-top:8px;align-self:flex-start;" onclick="guardarNuevaDeuda()">💾 Guardar deuda</button>
       </div>
         <div id="admin-deudas-lista" style="margin-top:10px;"></div>
+        </div></details>
       </div>
       <div class="caja-panel hidden" data-caja="serv|manual">
         <div class="caja-panel-cab"><b>✍️ Añadir o cambiar un servicio</b><button type="button" class="small-btn" onclick="abrirCaja('serv','manual')">Cerrar ✕</button></div>
@@ -1175,7 +1176,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-15T10:05:33";
+const APP_VERSION = "2026-10-15T11:26:09";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -1301,7 +1302,7 @@ async function toggleServiciosVisible(checked){
 }
 let weekIndex = 0;
 let ACTIVE_WEEK = WEEKS[0];
-function setActiveWeek(idx){ weekIndex = idx; ACTIVE_WEEK = WEEKS[idx]; }
+function setActiveWeek(idx){ weekIndex = idx; ACTIVE_WEEK = WEEKS[idx]; guardarEstado(); }
 let CORTES_ESPECIALES = {}; // semana_inicio -> { ambos, comidas, pernoctas } (timestamp ISO de cada corte especial)
 async function fetchCortesEspeciales(compania){
   let { data, error } = await sb.from('cortes_especiales').select('semana_inicio,corte_en,modulo').eq('compania', compania);
@@ -1753,7 +1754,21 @@ function novedadesAdminItems(){
    especial:true la marca con una estrella. Al entrar, se enseña SOLO la última, una vez por cuenta. ---- */
 const ACTUALIZACIONES = [
   { id:'2026-10-14-especial', fecha:'2026-10-14T19:00', titulo:'Actualización especial', especial:true,
-    alumno: o=>novedadesItems(o), furry: ()=>novedadesAdminItems() }
+    alumno: o=>novedadesItems(o), furry: ()=>novedadesAdminItems() },
+  { id:'2026-10-15-orden', fecha:'2026-10-15T11:22', titulo:'Orden, privacidad y seguridad', especial:false,
+    alumno: ()=>[
+      { ico:'🧠', t:'La app recuerda cómo la dejaste', nuevo:true, d:'Si la cierras y la vuelves a abrir, vuelves al mismo modo, pestaña y semana en la que estabas.' },
+      { ico:'ℹ️', t:'Todo en «Información»', d:'En ⚙️ → Información tienes la ayuda, cómo instalar la app y la privacidad en un solo sitio. Los ajustes son ahora más cortos.' },
+      { ico:'🔒', t:'Privacidad', d:'Ya puedes leer qué datos se guardan y quién los ve, y borrar tu cuenta y tus datos de contacto cuando quieras.' },
+      { ico:'🔑', t:'Contraseñas más seguras', d:'Al crear una contraseña nueva se piden al menos 10 caracteres.' }
+    ],
+    furry: ()=>[
+      { ico:'📥', t:'Bandeja de servicios', abierto:true, puntos:['Cambios pendientes, dudas de alumnos y deudas están juntos en una sola caja, con un único numerito.'] },
+      { ico:'👥', t:'Quién usa la app', puntos:['En ⚙️ → Información → Uso de la app, «Ver quién»: qué personas de tu compañía entran desde la app instalada y cuáles desde el navegador.'] },
+      { ico:'🧠', t:'La app recuerda cómo la dejaste', puntos:['Al volver a abrirla estás en el mismo modo (alumno / Furry), pestaña y semana.'] },
+      { ico:'✂️', t:'Menos botones', puntos:['Ajustes más cortos, un solo botón «Información» y fuera el filtro de semanas del desplegable (el calendario ya permite elegir cualquiera).'] },
+      { ico:'🔒', t:'Privacidad y seguridad', puntos:['Aviso de privacidad para los alumnos, borrado de su cuenta a petición y contraseñas de al menos 10 caracteres.'] }
+    ] }
 ];
 const actOrdenadas = () => ACTUALIZACIONES.slice().sort((a,b)=>b.fecha.localeCompare(a.fecha)); // la más nueva primero
 const actFechaTxt = a => new Date(a.fecha).toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
@@ -1975,9 +1990,145 @@ async function abrirUsoApp(){
     cuerpo = `<p><b>📲 App instalada:</b> ${app} (${pct(app)}) · <b>🌐 Navegador:</b> ${web} (${pct(web)})</p>
       <p>${Object.entries(plat).map(([k,v])=>`${escHtml(k)}: ${v}`).join(' · ')}</p>
       ${comps.length>1 ? '<p>'+comps.map(c=>`<b>${c ?? '?'}ª Cía:</b> ${data.filter(r=>r.compania===c&&r.modo==='app').reduce((a,r)=>a+Number(r.personas),0)} app / ${data.filter(r=>r.compania===c&&r.modo==='navegador').reduce((a,r)=>a+Number(r.personas),0)} navegador`).join('<br>')+'</p>' : ''}
-      <p>Si alguien entra de las dos formas, cuenta en las dos.</p>`;
+      <p>Si alguien entra de las dos formas, cuenta en las dos.</p>
+      <details ontoggle="if(this.open) cargarUsoPersonas(this)"><summary>👥 Ver quién</summary><div class="uso-lista" style="margin-top:6px;">Cargando…</div></details>`;
   }
   el.querySelector('.ayuda-lista').innerHTML = cuerpo;
+}
+/* ---- Red de seguridad: si algo falla, se avisa con calma y (si hay sesión) queda apuntado para el superadmin (parche SQL 82) ---- */
+let _errAvisado = false, _errUlt = '';
+function reportarError(donde, e){
+  const msg = String((e && (e.message || (e.reason && e.reason.message))) || e || 'error').slice(0, 400);
+  if(/ResizeObserver|^Script error|Load failed|Failed to fetch|NetworkError|AbortError|cancel|Lock .*(released|stole)|another request|extension:|webkit-masked-url/i.test(msg) || navigator.onLine===false) return; // ruido que no es un fallo de la app
+  if(msg === _errUlt) return; _errUlt = msg;
+  try{ if(typeof CURRENT!=='undefined' && CURRENT) sb.rpc('registrar_error_cliente', { p_mensaje:msg, p_donde:donde, p_version:APP_VERSION, p_rol:(modoActual()||'') }).then(()=>{}, ()=>{}); }catch(x){}
+  if(donde==='js' && !_errAvisado){ _errAvisado = true; showToast('⚠️ Algo no ha ido bien. Si ves algo raro, recarga la página.'); setTimeout(()=>{ _errAvisado = false; }, 15000); }
+}
+window.addEventListener('error', ev=>{ if(ev.target && ev.target!==window) return; reportarError('js', ev.error || ev.message); });
+window.addEventListener('unhandledrejection', ev=>reportarError('promesa', ev.reason));
+
+/* ---- Privacidad ---- */
+function abrirPrivacidad(){
+  const el = document.getElementById('novedades-overlay');
+  const puedeBorrar = CURRENT && CURRENT.mode==='alumno' && CURRENT.persona && !CURRENT.adminCompania && !CURRENT.isSuperadmin;
+  el.innerHTML = `<div class="nov-card" role="dialog" aria-modal="true"><div class="nov-head"><div class="nov-logo">🔒</div><h2>Privacidad</h2><p>Qué datos usa Portal AGM</p></div>
+    <div style="overflow:auto;padding-bottom:6px;"><div class="ayuda-lista">
+      <details open><summary>¿Qué datos se guardan?</summary><p>Tu nombre y apellidos, compañía y sección, tu email, y lo que marcas en la app: comidas, pernoctas y servicios. Si los escribes, también tu dirección y tu teléfono (el teléfono se guarda cifrado).</p></details>
+      <details><summary>¿Para qué se usan?</summary><p>Solo para organizar las comidas, las pernoctas y los servicios de tu compañía. No se venden ni se ceden a nadie.</p></details>
+      <details><summary>¿Quién los ve?</summary><p>Tu Furry y el superadmin ven los datos de tu compañía. El servicio de cuartel solo ve lo necesario de la semana, y tu teléfono solo cuando pulsa «Contactar»; cada vez que lo hace queda apuntado.</p></details>
+      <details><summary>¿Cuánto tiempo se guardan?</summary><p>Tus marcas y servicios, mientras formes parte de la compañía. Los registros técnicos se borran solos: los del servicio de cuartel (IP y dispositivo) a los 12 meses, los errores a los 30 días y el uso de la app a los 12 meses.</p></details>
+      <details><summary>¿Qué derechos tengo?</summary><p>Puedes pedir a tu Furry que corrija o borre tus datos. Además, puedes borrar tu cuenta de acceso y tus datos de contacto tú mismo con el botón de abajo. Tu nombre seguirá en la lista de tu compañía (la gestiona tu Furry), pero sin tu email ni tu cuenta.</p></details>
+    </div></div>
+    <div class="nov-pie">${puedeBorrar ? '<button type="button" class="small-btn danger" style="margin-bottom:8px;" onclick="borrarMiCuenta()">🗑 Borrar mi cuenta y mis datos de contacto</button><br>' : ''}<button type="button" onclick="cerrarNovedades()">Cerrar</button></div></div>`;
+  el.classList.remove('hidden');
+}
+async function borrarMiCuenta(){
+  if(!confirm('¿Borrar tu cuenta de acceso y tus datos de contacto (email, dirección, teléfono)? Esto no se puede deshacer. Para volver a usar la app tendrás que registrarte otra vez.')) return;
+  const txt = prompt('Para confirmar, escribe BORRAR:'); if(txt!=='BORRAR') return;
+  const { error } = await sb.rpc('borrar_mi_cuenta');
+  if(error){ showToast('No se pudo borrar: '+(/borrar_mi_cuenta/.test(error.message) ? 'falta el parche SQL 83' : error.message)); return; }
+  try{ ['portalagm_estado_'+ESTADO_UID, 'portalagm_diseno_'+ESTADO_UID, 'portalagm_novedades_'+ESTADO_UID, 'portalagm_prefs'].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  try{ await sb.auth.signOut({ scope:'local' }); }catch(e){}
+  CURRENT = null; ESTADO_UID = null; limpiarEstadoSesion();
+  document.body.classList.remove('mod-pernoctas', 'mod-servicios');
+  cerrarNovedades(); showScreen('screen-login'); switchAuthTab('login'); showToast('Tu cuenta se ha borrado.');
+}
+
+/* ---- Superadmin: parches SQL que faltan, errores y cuentas sin ficha ---- */
+let _esquemaTs = 0, _esquemaMsg = '';
+async function avisoEsquemaSuper(){
+  const box = document.getElementById('super-esquema'); if(!box) return;
+  const pintar = () => { box.innerHTML = _esquemaMsg ? `<div class="notice" style="display:block;border-color:var(--brass);margin-bottom:10px;">🧩 ${_esquemaMsg}</div>` : ''; };
+  if(Date.now() - _esquemaTs < 300000){ pintar(); return; } // se comprueba como mucho cada 5 minutos
+  _esquemaTs = Date.now();
+  const { data, error } = await sb.rpc('comprobar_esquema');
+  if(error) _esquemaMsg = 'No se pudo comprobar qué parches SQL faltan (¿has ejecutado el parche 81?).';
+  else if(data && data.length) _esquemaMsg = 'Faltan por ejecutar los parches SQL: <b>'+data.join(', ')+'</b>.';
+  else _esquemaMsg = '';
+  pintar();
+}
+async function cargarSaludSuper(){
+  const box = document.getElementById('super-salud-cont'); if(!box) return;
+  box.innerHTML = '<p class="small-note">Cargando…</p>';
+  const [rE, rC, rP] = await Promise.all([
+    sb.from('errores_cliente').select('*').order('creado_en', { ascending:false }).limit(100),
+    sb.rpc('cuentas_sin_ficha'),
+    sb.rpc('comprobar_esquema')
+  ]);
+  const ts = d => escHtml(new Date(d).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}));
+  const parches = rP.error ? '<p class="small-note">No se pudo comprobar (¿parche 81?).</p>' : (rP.data && rP.data.length ? `<p>Faltan los parches SQL: <b>${rP.data.join(', ')}</b>.</p>` : '<p class="small-note">✅ Todos los parches SQL están ejecutados.</p>');
+  const errores = rE.error ? `<p class="small-note">No se pudo leer (¿parche 82?): ${escHtml(rE.error.message)}</p>`
+    : ((rE.data||[]).length ? (rE.data||[]).map(e=>`<div class="history-row"><span class="ts">${ts(e.creado_en)}</span> · <b>${escHtml(e.rol||'?')}</b> · v${escHtml((e.version||'').slice(5,16))} · ${escHtml(e.donde||'')} · ${escHtml(e.mensaje)}</div>`).join('') + '<div style="margin-top:8px;"><button class="small-btn danger" onclick="vaciarErroresSuper()">🗑 Vaciar errores</button></div>' : '<p class="small-note">✅ Ningún error registrado (se borran solos a los 30 días).</p>');
+  const cuentas = rC.error ? `<p class="small-note">No se pudo leer (¿parche 83?): ${escHtml(rC.error.message)}</p>`
+    : ((rC.data||[]).length ? `<p class="small-note">Cuentas de acceso sin alumno, Furry ni cuartel: <b>${rC.data.length}</b>. No ven ningún dato.</p>` + rC.data.map(c=>`<div class="history-row">${escHtml(c.email||'?')} · creada ${ts(c.creada)}${c.ultimo_acceso?' · último acceso '+ts(c.ultimo_acceso):''}</div>`).join('') + '<div style="margin-top:8px;"><button class="small-btn danger" onclick="borrarCuentasSinFichaSuper()">🗑 Borrar las de más de 7 días</button></div>' : '<p class="small-note">✅ No hay cuentas sin ficha.</p>');
+  box.innerHTML = `<div class="switch-label">🧩 Parches SQL</div>${parches}<div class="switch-label" style="margin-top:14px;">🐞 Errores de la app (últimos 100)</div>${errores}<div class="switch-label" style="margin-top:14px;">👤 Cuentas sin ficha</div>${cuentas}`;
+}
+async function vaciarErroresSuper(){
+  if(!confirm('¿Borrar todos los errores registrados?')) return;
+  const { error } = await sb.from('errores_cliente').delete().gte('id', 0);
+  if(error){ showToast('No se pudo: '+error.message); return; }
+  cargarSaludSuper();
+}
+async function borrarCuentasSinFichaSuper(){
+  if(!confirm('¿Borrar las cuentas de acceso sin ficha creadas hace más de 7 días? No tienen ningún dato, pero no se puede deshacer.')) return;
+  const { data, error } = await sb.rpc('borrar_cuentas_sin_ficha', { p_dias_min: 7 });
+  if(error){ showToast('No se pudo: '+error.message); return; }
+  showToast((data||0)+' cuenta(s) borrada(s).');
+  cargarSaludSuper();
+}
+async function cargarUsoPersonas(det){
+  const box = det.querySelector('.uso-lista'); if(!box || box.dataset.listo) return; box.dataset.listo = '1';
+  const { data, error } = await sb.rpc('uso_app_personas', { p_dias: 30 });
+  if(error){ box.innerHTML = `<span class="small-note">No se pudo cargar (¿parche 83?): ${escHtml(error.message)}</span>`; return; }
+  box.innerHTML = (data&&data.length) ? data.slice(0,300).map(r=>`<div class="history-row"><b>${escHtml(r.persona)}</b> · ${r.compania ? escHtml(r.compania+''+(r.seccion||'')) : '?'} · ${(r.modos||[]).map(m=>m==='app'?'📲 App':'🌐 Navegador').join(' + ')} · ${escHtml((r.plataformas||[]).join(', '))} · último ${escHtml(new Date(r.ultimo+'T12:00:00').toLocaleDateString('es-ES'))}</div>`).join('') : '<span class="small-note">Nadie todavía.</span>';
+}
+
+/* ---- Recordar cómo se dejó la app: modo (alumno / Furry / superadmin), pestaña y semana ---- */
+let ESTADO_UID = null;
+const estadoKey = () => 'portalagm_estado_' + ESTADO_UID;
+function guardarEstado(){
+  try{
+    if(!ESTADO_UID || !CURRENT || CURRENT.mode==='cuartel') return;
+    localStorage.setItem(estadoKey(), JSON.stringify({ modo: modoActual(), modulo: currentModule, semana: ACTIVE_WEEK ? ACTIVE_WEEK.key : null, ts: Date.now() }));
+  }catch(e){}
+}
+function leerEstadoGuardado(uid){
+  try{ const e = JSON.parse(localStorage.getItem('portalagm_estado_'+uid) || 'null'); return (e && Date.now() - e.ts < 30*24*3600*1000) ? e : null; }catch(e){ return null; }
+}
+async function restaurarEstado(e){
+  if(!e || !CURRENT) return;
+  try{
+    const lista = modosDisponibles();
+    if(e.modo && e.modo!==modoActual() && lista.includes(e.modo)){
+      if(e.modo==='super') enterSuperadmin(); else if(e.modo==='alumno') await switchToAlumno(); else await switchToAdmin();
+    }
+    if(modoActual()==='super') return;
+    const prefix = CURRENT.mode==='admin' ? 'admin' : 'alumno';
+    if(['comidas','pernoctas','servicios'].includes(e.modulo) && e.modulo!==currentModule){
+      const btn = document.getElementById(prefix+'-mod-'+e.modulo+'-btn');
+      if(btn && !btn.classList.contains('hidden') && btn.offsetParent!==null) await setModule(e.modulo);
+    }
+    // la semana solo se recuerda si fue hace poco (al día siguiente se abre en la semana de hoy)
+    if(e.semana && Date.now() - e.ts < 6*3600*1000){
+      const i = WEEKS.findIndex(w=>w.key===e.semana);
+      if(i>=0 && i!==weekIndex && !(CURRENT.mode==='alumno' && SEMANAS_OCULTAS.has(e.semana))){ setActiveWeek(i); await rerenderActual(); }
+    }
+  }catch(x){ console.error('No se pudo restaurar el estado', x); }
+}
+// «Información»: un solo botón en ajustes que agrupa ayuda, actualizaciones, uso de la app, instalación y privacidad
+function abrirInformacion(){
+  const el = document.getElementById('novedades-overlay');
+  const b = (ico, txt, fn) => `<button type="button" class="small-btn" style="width:100%;text-align:left;padding:12px 14px;font-size:.9rem;margin-bottom:8px;" onclick="${fn}">${ico} ${txt}</button>`;
+  el.innerHTML = `<div class="nov-card" role="dialog" aria-modal="true"><div class="nov-head"><div class="nov-logo">ℹ️</div><h2>Información</h2><p>Ayuda y detalles de la app</p></div>
+    <div style="padding:14px 18px 0;">
+      ${b('❓','Ayuda','abrirAyuda()')}
+      ${actPuedeVer() ? b('📢','Actualizaciones','abrirActualizaciones()') : ''}
+      ${actPuedeVer() ? b('📊','Uso de la app','abrirUsoApp()') : ''}
+      ${esApp() ? '' : b('📲','Instalar la app','instalarApp()')}
+      ${b('🔒','Privacidad','abrirPrivacidad()')}
+    </div>
+    <div class="nov-pie"><button type="button" onclick="cerrarNovedades()">Cerrar</button></div></div>`;
+  el.classList.remove('hidden');
 }
 function cerrarConfig(){ document.querySelectorAll('.config-panel').forEach(p=>p.classList.add('hidden')); }
 function toggleConfig(){
@@ -2002,9 +2153,7 @@ function pintarConfig(){
   el.innerHTML = `<h4>⚙️ Ajustes</h4>
     ${modos.length ? `<div class="cfg-label">Modo</div>
     <div class="cfg-fila">${modos.map(([fn,txt])=>`<button class="small-btn" onclick="cerrarConfig();${fn}">${txt}</button>`).join('')}</div>` : ''}
-    <div class="cfg-fila"><button class="small-btn" onclick="cerrarConfig();toggleEditarDiseno()">🎨 Editar diseño</button>${actPuedeVer() ? '<button class="small-btn" onclick="cerrarConfig();abrirActualizaciones()">📢 Actualizaciones</button>' : ''}</div>
-    <div class="cfg-fila"><button class="small-btn" onclick="cerrarConfig();abrirAyuda()">❓ Ayuda</button>${esApp() ? '' : '<button class="small-btn" onclick="cerrarConfig();instalarApp()">📲 Instalar la app</button>'}</div>
-    ${actPuedeVer() ? '<div class="cfg-fila"><button class="small-btn" onclick="cerrarConfig();abrirUsoApp()">📊 Uso de la app</button></div>' : ''}
+    <div class="cfg-fila"><button class="small-btn" onclick="cerrarConfig();toggleEditarDiseno()">🎨 Editar diseño</button><button class="small-btn" onclick="cerrarConfig();abrirInformacion()">ℹ️ Información</button></div>
     ${disenoOcultasHtml()}
     <div class="cfg-label">Semana</div>
     ${grupo('semana', [['calendario','📅 Calendario'],['selector','Desplegable'],['ambos','Los dos']])}
@@ -2014,14 +2163,15 @@ function pintarConfig(){
     ${grupo('servPag', [['todos','Todos'],['p1','Primeros 55'],['p2','Resto']])}` : ''}
     ${modoPant==='admin' ? `<div class="cfg-label">Totales</div>
     ${grupo('totales', [['tabla','Tabla'],['cajas','Cajas'],['ambas','Las dos']])}` : ''}
-    ${modoPant==='alumno' ? `<div class="cfg-label">Dirección y móvil habituales</div>
-    ${grupo('habitual', [['si','Sí'],['no','No']])}
-    <div class="cfg-label">Comidas: repetir las de la semana anterior</div>
+    ${modoPant==='alumno' ? `<div class="cfg-label">Comidas: repetir las de la semana anterior</div>
     ${grupo('comidasHabitual', [['no','No'],['si','Sí, hasta que las cambie']])}
+    <details class="cfg-mas"><summary>Más preferencias</summary>
+    <div class="cfg-label">Dirección y móvil habituales</div>
+    ${grupo('habitual', [['si','Sí'],['no','No']])}
     <div class="cfg-label">Aviso del desayuno del domingo</div>
     ${grupo('avisoDomingo', [['si','Mostrarlo'],['no','Quitarlo']])}
     <div class="cfg-label">Totales de pernoctas</div>
-    ${grupo('totalesSiempre', [['no','Con «Toda la sección»'],['si','Siempre']])}` : ''}
+    ${grupo('totalesSiempre', [['no','Con «Toda la sección»'],['si','Siempre']])}</details>` : ''}
     <div class="cfg-nota">${modoPant!=='alumno' ? '' : `❓ ¿Dudas? Escribe a tu Furry${CURRENT && CURRENT.nombreAdminCia ? `: <b>${escHtml(CURRENT.nombreAdminCia)}</b>` : ''}. `}Los ajustes se guardan en este dispositivo (las cajas, en tu cuenta).</div>`;
 }
 function setPref(clave, valor){
@@ -2039,9 +2189,7 @@ function pintarSelectorSemanas(tipo, prefix, handler, horaCorte, filterHidden){
   if(PREFS.semana!=='calendario'){
     const permitidas = semanasPermitidasFiltro(semanasSeleccionables(tipo, filterHidden));
     const select = tipo==='pernoctas' ? weekSelectHtmlWeekend(handler, horaCorte, filterHidden, permitidas) : weekSelectHtml(handler, horaCorte, filterHidden, permitidas);
-    const opciones = [['sig','Actual y siguiente'],['tres','Ver 3 semanas'],['todas','Ver todas']];
-    html += `<div class="semanas-barra">${select}
-      <div class="semanas-toggle" title="Qué semanas aparecen en el desplegable: actual y siguiente · actual y las dos siguientes · todas">${opciones.map(([m,txt])=>`<button class="${filtroSemanas===m?'active':''}" onclick="setFiltroSemanas('${m}')">${txt}</button>`).join('')}</div></div>`;
+    html += `<div class="semanas-barra">${select}</div>`;
   }
   document.getElementById(prefix+'-week-select').innerHTML = html + `<div id="${prefix}-cal-wrap"></div>`;
   pintarCalendario();
@@ -2146,12 +2294,14 @@ function showScreen(id){
   ['screen-loading','screen-login','screen-alumno','screen-admin','screen-superadmin','screen-reset-password','screen-cuartel'].forEach(s=>{
     document.getElementById(s).classList.toggle('hidden', s!==id);
   });
+  guardarEstado();
 }
 
 /* ================= Módulos: Comidas / Pernoctas ================= */
 let currentModule = 'comidas';
 async function setModule(mod){
   currentModule = mod;
+  guardarEstado();
   if(mod==='servicios') pintarBarraPendiente('comidas', false); // la barra de "sin confirmar" solo vale en Comidas y Pernoctas
   document.body.classList.toggle('mod-pernoctas', mod==='pernoctas');
   document.body.classList.toggle('mod-servicios', mod==='servicios');
@@ -2243,12 +2393,14 @@ function formatRelativeTime(iso){
 }
 async function routeAfterAuth(userId){
   if(EN_RECUPERACION){ showScreen('screen-reset-password'); return; } // no se entra a ninguna cuenta hasta cambiar la contraseña
+  ESTADO_UID = userId;
+  const estadoPrevio = leerEstadoGuardado(userId); // lo que había al cerrar: se aplica cuando ya ha entrado
   try{
     DISENO_PROMESA = cargarDiseno(userId); // sin esperar: cuando llega, las cajas se reordenan solas
     const { data: adminRow } = await sb.from('admins').select('compania, is_superadmin').eq('auth_user_id', userId).maybeSingle();
     const { data: personaRow } = await sb.from('personas').select('*').eq('auth_user_id', userId).maybeSingle();
-    if(adminRow){ startPresenceHeartbeat(); await enterAdmin(adminRow.compania, personaRow || null, !!adminRow.is_superadmin); return; }
-    if(personaRow){ startPresenceHeartbeat(); await enterAlumno(personaRow, null); return; }
+    if(adminRow){ startPresenceHeartbeat(); await enterAdmin(adminRow.compania, personaRow || null, !!adminRow.is_superadmin); await restaurarEstado(estadoPrevio); return; }
+    if(personaRow){ startPresenceHeartbeat(); await enterAlumno(personaRow, null); await restaurarEstado(estadoPrevio); return; }
     const { data: cuartelRow } = await sb.from('cuarteles').select('compania').eq('auth_user_id', userId).maybeSingle();
     if(cuartelRow){ await enterCuartel(cuartelRow.compania); return; }
     const { data: solRow } = await sb.from('admin_solicitudes').select('estado').eq('auth_user_id', userId).order('creado_en',{ascending:false}).limit(1).maybeSingle();
@@ -2385,6 +2537,9 @@ async function doRegister(){
   }
   if(/[<>"]/.test(nombre+apellido1+apellido2)){
     err.textContent = 'El nombre y los apellidos no pueden llevar los caracteres  <  >  " .'; err.classList.remove('hidden'); btn.disabled=false; return;
+  }
+  if(!document.getElementById('reg-priv').checked){
+    err.textContent = 'Para registrarte tienes que leer y aceptar el aviso de privacidad.'; err.classList.remove('hidden'); btn.disabled=false; return;
   }
   let session = null;
   const { data: signData, error: signErr } = await sb.auth.signUp({ email, password });
@@ -3294,7 +3449,7 @@ async function enterAlumno(persona, adminCompania, isSuperadmin){
   setActiveWeek(defaultWeekIndex());
   await setModule('comidas');
 }
-function switchToAdmin(){ enterAdmin(CURRENT.adminCompania, CURRENT.persona, CURRENT.isSuperadmin); }
+function switchToAdmin(){ return enterAdmin(CURRENT.adminCompania, CURRENT.persona, CURRENT.isSuperadmin); }
 async function onAlumnoWeekChange(v){ setActiveWeek(parseInt(v,10)); selectedDiaComida = null; await (currentModule==='pernoctas' ? renderAlumnoPernoctas() : renderAlumno()); }
 
 async function renderAlumno(){
@@ -3981,6 +4136,7 @@ async function cargarHistorialSuper(){
   if(HSUP.seccion!=='todas') q = q.eq('seccion', parseInt(HSUP.seccion,10));
   const { data, error } = await q;
   if(error){ cont.innerHTML = filtros + `<p class="small-note" style="color:var(--danger);">No se pudo cargar la lista: ${escHtml(error.message)}</p>`; return; }
+  if(data && data.length>=1000) showToast('Hay 1000 personas o más: se muestran solo las primeras. Filtra por compañía para ver el resto.');
   const porCodigo = {};
   (data||[]).forEach(p=>{ const code = ''+p.compania+p.seccion; (porCodigo[code] = porCodigo[code] || { code, people:[] }).people.push(p); });
   const grupos = Object.values(porCodigo).sort((a,b)=>a.code.localeCompare(b.code));
@@ -4204,6 +4360,7 @@ async function renderSuperadmin(){
   if(PUENTE_EDIT) CAJAS_ABIERTA.super = 'puentes';
   else if(CAJAS_ABIERTA.super===undefined && nSol>0) CAJAS_ABIERTA.super = 'solicitudes';
   document.getElementById('superadmin-body').innerHTML = `
+    <div id="super-esquema"></div>
     <div class="admin-panel">
       <div class="panel-row" style="flex-direction:column;align-items:stretch;">
         <div class="switch-label">📊 Registrados en la app<span class="sub2">Por compañía y en total. Esto solo lo ve el superadmin</span></div>
@@ -4216,17 +4373,18 @@ async function renderSuperadmin(){
       { id:'puentes', icono:'🌉', titulo:'Puentes y festivos', sub:'Creador de puentes', cuerpo:puentesSuperHtml(puentes, errPuentes) },
       { id:'maniobras', icono:'⛺', titulo:'Maniobras', sub:'De toda la academia', tituloPanel:'Maniobras de la academia', cuerpo:maniobrasPanelHtml('academia', maniAcad, errManiAcad) },
       { id:'gs', icono:'🛡️', titulo:'Guardias de seguridad', sub:'Calendario de GS', tituloPanel:'Guardias de seguridad (calendario)', cuerpo:gsHtml },
-      { id:'conectados', icono:'🟢', titulo:'Personas conectadas', sub:'En total y por compañía', alAbrir:'cargarConectadosSuper()', cuerpo:'<div id="super-conectados-cont"><p class="small-note">Cargando…</p></div>' },
-      { id:'historial', icono:'📜', titulo:'Historial de cambios', sub:'Por compañía y sección', alAbrir:'cargarHistorialSuper()', cuerpo:'<div id="super-historial-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'cuartel', icono:'🪖', titulo:'Servicio de cuartel', sub:'Cuentas, conexiones y accesos', tituloPanel:'Servicio de cuartel (cuentas, conexiones y accesos)', cuerpo:filaCuartel },
       { id:'mensajes', icono:'💬', titulo:'Mensajes de usuarios', sub: nMsg ? `${nMsg} sin leer` : 'Ninguno nuevo', badge:(nMsg||''), tituloPanel:'Mensajes que te envían desde la app', alAbrir:'cargarMensajesSuper()', cuerpo:'<div id="super-mensajes-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'cuartel-log', icono:'🔎', titulo:'Registro del cuartel', sub: nLog ? `${nLog} movimiento${nLog===1?'':'s'} nuevo${nLog===1?'':'s'}` : 'Quién entra, a quién contacta y qué descarga', badge:(nLog||''), tituloPanel:'Registro del servicio de cuartel (solo lo ves tú)', alAbrir:'cargarCuartelEventosSuper(true)', cuerpo:'<div id="super-cuartel-log-cont"><p class="small-note">Cargando…</p></div>' },
-      { id:'passlog', icono:'🔑', titulo:'Cambios de contraseña', sub:'Quién y cuándo (solo ver)', tituloPanel:'Cambios de contraseña', cuerpo:filaPassLog, alAbrir:'cargarLogPassword()' },
+      { id:'registros', icono:'🗂️', titulo:'Registros', sub:'Conectados, historial, contraseñas y salud', tituloPanel:'Registros y salud de la app',
+        cuerpo: `<details class="caja-det" ontoggle="if(this.open) cargarConectadosSuper()"><summary>🟢 Personas conectadas</summary><div class="caja-sub-body"><div id="super-conectados-cont"><p class="small-note">Cargando…</p></div></div></details>`
+          + `<details class="caja-det" ontoggle="if(this.open) cargarHistorialSuper()"><summary>📜 Historial de cambios</summary><div class="caja-sub-body"><div id="super-historial-cont"><p class="small-note">Cargando…</p></div></div></details>`
+          + `<details class="caja-det" ontoggle="if(this.open) cargarLogPassword()"><summary>🔑 Cambios de contraseña</summary><div class="caja-sub-body">${filaPassLog}</div></details>`
+          + `<details class="caja-det" ontoggle="if(this.open) cargarSaludSuper()"><summary>🩺 Salud de la app</summary><div class="caja-sub-body"><div id="super-salud-cont"><p class="small-note">Cargando…</p></div></div></details>` },
     ]);
+  avisoEsquemaSuper();
   const abierta = CAJAS_ABIERTA.super;
-  if(abierta==='conectados') cargarConectadosSuper();
-  else if(abierta==='historial') cargarHistorialSuper();
-  else if(abierta==='cuartel-log') cargarCuartelEventosSuper();
+  if(abierta==='cuartel-log') cargarCuartelEventosSuper();
   else if(abierta==='mensajes') cargarMensajesSuper();
 }
 /* Mensajes que te envían los usuarios con «Avisar a Pablo». Solo los puede leer el superadmin. */
@@ -4348,8 +4506,8 @@ async function submitNewPassword(){
   const btn = document.getElementById('reset-password-btn'); btn.disabled = true;
   const err = document.getElementById('reset-password-error'); err.classList.add('hidden');
   const pw = document.getElementById('reset-password-input').value;
-  if(!pw || pw.length < 6){
-    err.textContent = 'La contraseña tiene que tener al menos 6 caracteres.'; err.classList.remove('hidden'); btn.disabled=false; return;
+  if(!pw || pw.length < 10){
+    err.textContent = 'La contraseña tiene que tener al menos 10 caracteres.'; err.classList.remove('hidden'); btn.disabled=false; return;
   }
   const { error } = await sb.auth.updateUser({ password: pw });
   btn.disabled = false;
@@ -4370,7 +4528,7 @@ async function cancelarRecuperacion(){
   try{ await sb.auth.signOut(); }catch(e){}
   showScreen('screen-login');
 }
-function switchToAlumno(){ enterAlumno(CURRENT.linkedPersona, CURRENT.compania, CURRENT.isSuperadmin); }
+function switchToAlumno(){ return enterAlumno(CURRENT.linkedPersona, CURRENT.compania, CURRENT.isSuperadmin); }
 async function onAdminWeekChange(v){ setActiveWeek(parseInt(v,10)); absenceSelIndex=null; await (currentModule==='pernoctas' ? renderAdminPernoctas() : renderAdmin()); }
 let absenceSelIndex = null;
 let expandedSections = new Set();
@@ -7112,12 +7270,18 @@ async function desplazarTurno(){
   showToast(`Desplazado — ${data} días actualizados desde esa fecha.`);
   await renderAdminServicios();
 }
+// El numerito de la «Bandeja» es la suma de cambios pendientes + dudas sin responder + deudas pendientes
+function actualizarBadgeBandeja(){
+  const n = ['cambios','dudas','deudas'].reduce((a,k)=>{ const e = document.getElementById('serv-badge-'+k); return a + (e ? (parseInt(e.textContent,10)||0) : 0); }, 0);
+  const b = document.getElementById('serv-badge-bandeja'); if(b){ b.textContent = n; b.classList.toggle('hidden', !n); }
+}
 async function cargarDudasAdmin(){
   const box = document.getElementById('admin-dudas'), badge = document.getElementById('serv-badge-dudas'); if(!box) return;
   const { data, error } = await sb.from('dudas_servicio').select('*, persona:personas!dudas_servicio_persona_id_fkey(nombre,apellidos,seccion)').eq('compania', CURRENT.compania).order('creado_en', { ascending:false }).limit(60);
   if(error){ box.innerHTML = `<div class="small-note">No se pudo cargar (¿has ejecutado el parche SQL 77?): ${escHtml(error.message)}</div>`; if(badge) badge.classList.add('hidden'); return; }
   const pend = (data||[]).filter(d=>!d.resuelta);
   if(badge){ badge.textContent = pend.length; badge.classList.toggle('hidden', !pend.length); }
+  actualizarBadgeBandeja();
   const tarjeta = d => `<div class="servicio-card">
       <div class="titulo">${escHtml(servicioLabel({ tipo:d.servicio_tipo||'otro', turno:d.servicio_turno, codigo:d.servicio_codigo }))}${d.fecha?' — '+fmtFecha(d.fecha):''}</div>
       <div class="meta">${d.persona ? escHtml(d.persona.apellidos+', '+d.persona.nombre)+' ('+CURRENT.compania+d.persona.seccion+')' : '(persona borrada)'} · ${escHtml(new Date(d.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))}</div>
@@ -8464,6 +8628,7 @@ async function renderAdminServicios(){
   document.getElementById('admin-deudas-lista').innerHTML = (pendD.length ? pendD.map(tarjetaDeuda).join('') : '<div class="small-note">Sin deudas pendientes.</div>')
     + cajaSub('sv-saldadas', `✅ Deudas saldadas (${saldD.length})`, saldD.length ? saldD.slice(0,60).map(tarjetaSaldada).join('') : '<div class="small-note">Todavía no hay ninguna.</div>');
   const bDeu = document.getElementById('serv-badge-deudas'); bDeu.textContent = pendD.length; bDeu.classList.toggle('hidden', !pendD.length);
+  actualizarBadgeBandeja();
   actualizarDeudasPersonaServ();
 }
 </script>
