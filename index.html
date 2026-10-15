@@ -1177,7 +1177,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-15T11:45:26";
+const APP_VERSION = "2026-10-15T12:03:13";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -1754,10 +1754,11 @@ function novedadesAdminItems(){
    En ⚙️ → «Ver actualizaciones» se puede elegir cuál ver. Los alumnos ven lo suyo; los Furrys y el superadmin, lo suyo y (plegado) lo de los alumnos.
    especial:true la marca con una estrella. Al entrar, se enseña SOLO la última, una vez por cuenta. ---- */
 const ACTUALIZACIONES = [
-  { id:'2026-10-14-especial', fecha:'2026-10-14T19:00', titulo:'Actualización especial', especial:true,
+  { id:'2026-10-14-especial', fecha:'2026-10-14T19:00', titulo:'Actualización especial', especial:true, alumnos:true, // alumnos:true = es la que ven los alumnos (solo esta)
     alumno: o=>novedadesItems(o), furry: ()=>novedadesAdminItems() },
   { id:'2026-10-15-orden', fecha:'2026-10-15T11:22', titulo:'Orden, privacidad y seguridad', especial:false,
-    alumno: ()=>[
+    alumno: null, // esta actualización es solo para Furrys y superadmin: los alumnos no la ven
+    _antiguoAlumno: ()=>[
       { ico:'🧠', t:'La app recuerda cómo la dejaste', nuevo:true, d:'Si la cierras y la vuelves a abrir, vuelves al mismo modo, pestaña y semana en la que estabas.' },
       { ico:'ℹ️', t:'Todo en «Información»', d:'En ⚙️ → Información tienes la ayuda, cómo instalar la app y la privacidad en un solo sitio. Los ajustes son ahora más cortos.' },
       { ico:'🔒', t:'Privacidad', d:'Ya puedes leer qué datos se guardan y quién los ve, y borrar tu cuenta y tus datos de contacto cuando quieras.' },
@@ -1771,6 +1772,7 @@ const ACTUALIZACIONES = [
       { ico:'🔒', t:'Privacidad y seguridad', puntos:['Aviso de privacidad para los alumnos, borrado de su cuenta a petición y contraseñas de al menos 10 caracteres.'] }
     ] }
 ];
+const actParaAlumnos = () => ACTUALIZACIONES.find(a=>a.alumnos) || actOrdenadas()[0]; // lo que ven los alumnos: solo la actualización marcada
 const actOrdenadas = () => ACTUALIZACIONES.slice().sort((a,b)=>b.fecha.localeCompare(a.fecha)); // la más nueva primero
 const actFechaTxt = a => new Date(a.fecha).toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
 const actEsFurry = () => modoActual()==='super' || !!(CURRENT && CURRENT.mode==='admin');
@@ -1783,8 +1785,8 @@ function actualizacionesHtml(idSel, furry){
   const tarjetas = items => `<div class="nov-lista">${items.map(i=>`<div class="nov-item${i.nuevo?' dest':''}"><div class="nov-ico">${i.ico}</div><div><b>${escHtml(i.t)}${i.nuevo?'<span class="nov-etq">NUEVO</span>':''}</b><span class="d">${escHtml(i.d)}</span></div></div>`).join('')}</div>`;
   const desplegables = items => `<div class="nov-lista">${items.map(i=>`<details class="nov-det"${i.abierto?' open':''}><summary><span class="nov-ico">${i.ico}</span><b>${escHtml(i.t)}</b></summary><ul>${i.puntos.map(x=>`<li>${escHtml(x)}</li>`).join('')}</ul></details>`).join('')}</div>`;
   const cuerpo = furry
-    ? `<div class="act-sub">Para Furrys · de más a menos importante</div>${desplegables(act.furry())}<details class="nov-det" style="margin:8px 18px 0;"><summary><span class="nov-ico">🎓</span><b>Lo que ven los alumnos</b></summary>${tarjetas(act.alumno({ servicios:true }))}</details>`
-    : tarjetas(act.alumno(opts));
+    ? `<div class="act-sub">Para Furrys · de más a menos importante</div>${desplegables(act.furry())}${act.alumno ? `<details class="nov-det" style="margin:8px 18px 0;"><summary><span class="nov-ico">🎓</span><b>Lo que ven los alumnos</b></summary>${tarjetas(act.alumno({ servicios:true }))}</details>` : ''}`
+    : tarjetas(act.alumno ? act.alumno(opts) : []);
   return `<div class="nov-card" role="dialog" aria-modal="true" aria-labelledby="nov-titulo">
     <div class="nov-head"><div class="nov-logo">${furry&&act.especial?'⭐':'✨'}</div><h2 id="nov-titulo">${furry?escHtml(act.titulo):'Novedades de Portal AGM'}</h2><p>${furry?'Novedades para Furrys':'Lo que ha cambiado para ti'}</p></div>
     ${furry ? `<div class="act-barra"><label for="act-sel">Ver:</label><select id="act-sel" onchange="abrirActualizaciones(this.value)">${opciones}</select></div>
@@ -1798,13 +1800,13 @@ function abrirActualizaciones(idSel){
   if(!actPuedeVer()) return; // los alumnos no lo tienen
   const furry = actEsFurry(); // en modo alumno (un Furry mirando como alumno) sale EXACTAMENTE lo que ve un alumno: sin selector, fecha ni estrella
   const el = document.getElementById('novedades-overlay');
-  el.innerHTML = actualizacionesHtml(furry ? idSel : null, furry);
+  el.innerHTML = actualizacionesHtml(furry ? idSel : actParaAlumnos().id, furry);
   el.classList.remove('hidden');
 }
 // Al entrar: se enseña SOLO la última, una vez por cuenta (una vez como alumno y otra como Furry)
 function mostrarNovedadesAlumno(){
   if(!CURRENT || CURRENT.mode!=='alumno') return;
-  const ult = actOrdenadas()[0];
+  const ult = actParaAlumnos();
   return mostrarAvisoNovedades(ult.id+'-alumno', ()=>actualizacionesHtml(ult.id, false));
 }
 function mostrarNovedadesAdmin(){
@@ -2265,6 +2267,7 @@ function pintarConfig(){
     ${modos.length ? `<div class="cfg-label">Modo</div>
     <div class="cfg-fila">${modos.map(([fn,txt])=>`<button class="small-btn" onclick="cerrarConfig();${fn}">${txt}</button>`).join('')}</div>` : ''}
     <div class="cfg-fila"><button class="small-btn" onclick="cerrarConfig();toggleEditarDiseno()">🎨 Editar diseño</button><button class="small-btn" onclick="cerrarConfig();abrirInformacion()">ℹ️ Información</button></div>
+    <div class="cfg-fila"><button class="small-btn" onclick="cerrarConfig();abrirNotificaciones()">🔔 Notificaciones</button></div>
     ${disenoOcultasHtml()}
     <div class="cfg-label">Semana</div>
     ${grupo('semana', [['calendario','📅 Calendario'],['selector','Desplegable'],['ambos','Los dos']])}
