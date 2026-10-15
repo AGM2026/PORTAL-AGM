@@ -712,6 +712,8 @@ table.serv-grid td.mio .serv-cod{outline:2px solid var(--brass);outline-offset:1
 .cuad-btn.abierto{background:linear-gradient(135deg,#b8860b 0%,#8a6508 100%);box-shadow:0 6px 18px rgba(138,101,8,.35),inset 0 1px 0 rgba(255,255,255,.2);}
 details.cfg-mas{margin:6px 0 4px;}
 details.cfg-mas>summary{cursor:pointer;font-size:.72rem;font-weight:700;color:var(--olive);padding:4px 0;}
+@keyframes resaltePulso{0%,100%{box-shadow:0 0 0 0 rgba(184,134,11,.0);}50%{box-shadow:0 0 0 6px rgba(184,134,11,.45);}}
+.resaltado{outline:3px solid var(--brass);outline-offset:2px;border-radius:12px;animation:resaltePulso 1.2s ease-in-out 4;}
 </style>
 <script>
 /* Preferencias del usuario: se guardan SOLO en este dispositivo (localStorage), no en la base de datos.
@@ -1167,7 +1169,7 @@ const SUPABASE_URL = 'https://ihyrminylgtqwnwviopt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloeXJtaW55bGd0cXdud3Zpb3B0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODM3MjEsImV4cCI6MjEwNTU1OTcyMX0.RzkdVJHrH0kO9o0DEb7y-YiEBPYpWeYYuQwsJHYr_wg';
 // ¿Se ha llegado desde el enlace del correo de «restablecer contraseña»? Se mira ANTES de crear el cliente (que se come el #… de la dirección).
 // Mientras dure, la app NO entra en ninguna cuenta: solo enseña la pantalla para escribir la nueva contraseña.
-let IR_PENDIENTE = (()=>{ try{ return new URLSearchParams(location.search).get('ir'); }catch(e){ return null; } })(); // viene de tocar una notificación: ?ir=comidas|pernoctas|servicios
+let IR_PENDIENTE = (()=>{ try{ const q = new URLSearchParams(location.search); return q.get('ir') ? { ir:q.get('ir'), ref:q.get('ref') } : null; }catch(e){ return null; } })(); // viene de tocar una notificación: ?ir=comidas|pernoctas|servicios&ref=aviso-12|cambio-3|duda-5|fecha-2026-10-16
 let EN_RECUPERACION = /[#&?]type=recovery(&|$)/.test(location.hash + location.search);
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -1177,7 +1179,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-15T12:03:13";
+const APP_VERSION = "2026-10-15T12:21:44";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -2220,12 +2222,28 @@ async function abrirNotificaciones(){
   el.innerHTML = marco(`<p>✅ Activadas en este dispositivo.</p>
     ${fila('pp-cierre','⏰ Recordatorio de cierre del plazo (si no he confirmado)', p.cierre)}
     ${fila('pp-manana','🪖 «Mañana tienes servicio»', p.manana)}
-    ${fila('pp-resp','💬 Respuesta a mis cambios y dudas de servicio', p.respuestas)}
+    ${fila('pp-resp','💬 Novedades de mis servicios (cambios, dudas, servicios y estimaciones nuevas)', p.respuestas)}
     ${fila('pp-aviso','📢 Avisos de mi Furry', p.avisos)}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px;"><button type="button" class="small-btn" onclick="pushPrueba()">✉️ Enviarme una de prueba</button><button type="button" class="small-btn danger" onclick="desactivarPush()">Desactivar aquí</button></div>`);
 }
 // Al tocar un aviso: ir a la pestaña que toca
-async function aplicarIr(dest){
+// Señala (con un marco dorado que late) lo que avisaba la notificación. Espera a que cargue la lista (hasta ~4 s)
+async function resaltarDestino(ref){
+  if(!ref) return;
+  const busca = () => {
+    if(ref.startsWith('aviso-')) return document.getElementById('aviso-'+ref.slice(6));
+    if(ref.startsWith('cambio-')) return document.getElementById('cambio-card-'+ref.slice(7));
+    if(ref.startsWith('duda-')) return document.getElementById('duda-card-'+ref.slice(5));
+    if(ref.startsWith('fecha-')) return document.querySelector('#alumno-servicios-lista [data-fecha="'+ref.slice(6).replace(/[^0-9-]/g,'')+'"]');
+    return null;
+  };
+  for(let i=0; i<14; i++){
+    const el = busca();
+    if(el){ el.scrollIntoView({ behavior:'smooth', block:'center' }); el.classList.add('resaltado'); setTimeout(()=>el.classList.remove('resaltado'), 6000); return; }
+    await new Promise(r=>setTimeout(r, 300));
+  }
+}
+async function aplicarIr(dest, ref){
   if(!dest) return;
   try{
     if(['comidas','pernoctas','servicios'].includes(dest) && CURRENT && CURRENT.mode!=='cuartel' && modoActual()!=='super'){
@@ -2234,14 +2252,15 @@ async function aplicarIr(dest){
     }
     history.replaceState(null, '', location.pathname);
   }catch(e){}
+  resaltarDestino(ref);
 }
 async function terminarEntrada(estadoPrevio){
   await restaurarEstado(estadoPrevio);
-  const ir = IR_PENDIENTE; IR_PENDIENTE = null; await aplicarIr(ir); // si vienes de una notificación, manda ella
+  const ir = IR_PENDIENTE; IR_PENDIENTE = null; if(ir) await aplicarIr(ir.ir, ir.ref); // si vienes de una notificación, manda ella
   refrescarPush();
 }
 if('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', ev=>{ // la app ya estaba abierta y se toca un aviso
-  if(ev.data && ev.data.tipo==='ir'){ try{ aplicarIr(new URL(ev.data.url).searchParams.get('ir')); }catch(e){} }
+  if(ev.data && ev.data.tipo==='ir'){ try{ const q = new URL(ev.data.url).searchParams; aplicarIr(q.get('ir'), q.get('ref')); }catch(e){} }
 });
 function cerrarConfig(){ document.querySelectorAll('.config-panel').forEach(p=>p.classList.add('hidden')); }
 function toggleConfig(){
@@ -3755,7 +3774,7 @@ async function renderAlumno(){
         </div>`;
       }
     }
-    return `<div class="aviso-card">
+    return `<div class="aviso-card" id="aviso-${a.id}">
       <div style="display:inline-block;font-size:.7rem;font-weight:bold;color:${tipoColor};border:1px solid ${tipoColor};border-radius:10px;padding:2px 8px;margin-bottom:6px;">${tipoLabel}</div>
       <div class="aviso-msg">📢 ${escHtml(a.mensaje)}</div>
       ${urlImagenSegura(a.imagen_url) ? `<img src="${urlImagenSegura(a.imagen_url)}" style="max-width:100%;margin-top:8px;border-radius:4px;">` : ''}
@@ -7210,7 +7229,7 @@ async function renderAlumnoServicios(){
     const conQuien = mismoDia.length
       ? '<div class="grupo"><b>Ese día también están de servicio:</b><br>' + mismoDia.map(o=>`<span class="serv-cod ${servClase(o)}${o.estimado?' est':''}" style="cursor:default;">${escHtml(servCorto(o))}</span> ${escHtml(servicioLabel(o))} — ${escHtml(o.personas.apellidos)}, ${escHtml(o.personas.nombre)} (Sec. ${o.personas.compania}${o.personas.seccion})${o.estimado?' <i>(estimado)</i>':''}`).join('<br>') + '</div>'
       : '<div class="grupo">No hay nadie más de servicio ese día en el cuadrante.</div>';
-    return `<div class="servicio-card">
+    return `<div class="servicio-card" data-fecha="${s.fecha}">
       <div class="titulo"><span class="serv-cod ${servClase(s)}${s.estimado?' est':''}${s.deuda_id?' deu':''}" style="cursor:default;">${escHtml(servCorto(s))}</span> ${escHtml(servicioLabel(s))}</div>
       <div class="meta">${fmtFecha(s.fecha)}${s.fecha===hoy?' · <b>HOY</b>':''}</div>
       ${textoSaldar(s)}
@@ -7227,7 +7246,7 @@ async function renderAlumnoServicios(){
     .select('*, servicios(fecha,tipo,turno,codigo), sustituto:personas!cambios_servicio_sustituto_id_fkey(nombre,apellidos)')
     .eq('solicitante_id', persona.id).order('creado_en',{ascending:false});
   document.getElementById('alumno-cambios-lista').innerHTML = (cambios&&cambios.length) ? cambios.map(c=>`
-    <div class="servicio-card">
+    <div class="servicio-card" id="cambio-card-${c.id}">
       <div class="titulo">${c.servicios?escHtml(servicioLabel(c.servicios)):'(servicio ya no está en el cuadrante)'} ${c.servicios?'— '+fmtFecha(c.servicios.fecha):''}</div>
       <div class="meta">Sustituto: ${c.sustituto?escHtml(c.sustituto.apellidos+', '+c.sustituto.nombre):''} · <span class="badge-estado ${c.estado}">${c.estado}</span></div>
       ${c.motivo_resolucion ? `<div class="meta">Motivo del Furry: ${escHtml(c.motivo_resolucion)}</div>` : ''}
@@ -7266,7 +7285,7 @@ async function cargarDudasAlumno(){
   const box = document.getElementById('alumno-dudas-lista'); if(!box) return;
   const { data, error } = await sb.from('dudas_servicio').select('*').eq('persona_id', CURRENT.persona.id).order('creado_en', { ascending:false }).limit(20);
   if(error){ box.innerHTML = '<div class="small-note">Aquí verás tus dudas y las respuestas de tu Furry.</div>'; return; }
-  box.innerHTML = (data&&data.length) ? data.map(d=>`<div class="servicio-card">
+  box.innerHTML = (data&&data.length) ? data.map(d=>`<div class="servicio-card" id="duda-card-${d.id}">
       <div class="titulo">${escHtml(servicioLabel({ tipo:d.servicio_tipo||'otro', turno:d.servicio_turno, codigo:d.servicio_codigo }))}${d.fecha?' — '+fmtFecha(d.fecha):''}</div>
       <div class="meta">Tú: ${escHtml(d.texto)}</div>
       ${d.respuesta ? `<div class="meta" style="color:var(--olive);font-weight:700;">💬 Tu Furry: ${escHtml(d.respuesta)}</div>` : '<div class="meta">Sin respuesta todavía.</div>'}
