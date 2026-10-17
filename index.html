@@ -737,6 +737,11 @@ body.sin-scroll{overflow:hidden;}
 .btn-pedir-ayuda{display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;width:100%;max-width:100%;padding:11px 14px;border:1.5px solid var(--olive);border-radius:12px;background:rgba(61,107,40,.10);color:var(--olive);font-family:inherit;font-size:.92rem;font-weight:700;line-height:1.25;text-align:center;white-space:normal;overflow-wrap:anywhere;cursor:pointer;}
 .btn-pedir-ayuda:hover{background:var(--olive);color:#fff;}
 .pernocta-addr{box-sizing:border-box;max-width:100%;}
+#desc-barra{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);z-index:990;max-width:92vw;display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:14px;font-size:.84rem;font-weight:600;box-shadow:0 6px 22px rgba(0,0,0,.35);animation:novPop .25s ease;}
+#desc-barra.hidden{display:none;}
+#desc-barra .desc-gira{flex:none;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:girar .8s linear infinite;}
+#desc-barra.ok{background:#2f5d23;color:#fff;}
+#desc-barra.mal{background:#8a2a1f;color:#fff;}
 </style>
 <script>
 /* Preferencias del usuario: se guardan SOLO en este dispositivo (localStorage), no en la base de datos.
@@ -858,12 +863,13 @@ aplicarTema();
       <button class="module-btn" id="alumno-mod-pernoctas-btn" onclick="setModule('pernoctas')">🛏️ Pernoctas</button>
       <button class="module-btn" id="alumno-mod-servicios-btn" onclick="setModule('servicios')">📋 Servicios</button>
     </div>
-    <div id="alumno-notice"></div>
     <div id="alumno-week-select"></div>
-    <div id="alumno-avisos"></div>
+    <div id="alumno-desbloqueo"></div>
+    <div id="alumno-notice"></div>
 
     <div id="alumno-comidas-mod">
       <div id="alumno-confirm"></div>
+      <div id="alumno-avisos"></div>
       <div id="alumno-maniobras"></div>
       <h3 class="section-title">Comidas de la semana </h3>
       <div id="alumno-view-toggle"></div>
@@ -901,13 +907,6 @@ aplicarTema();
         <div id="alumno-intol-solicitudes"></div>
       </div>
       <p class="small-note">Puedes ver el detalle de tu sección para tener control, pero solo puedes marcar tu propia fila.</p>
-      <details class="serv-est mini-manual">
-        <summary>ℹ️ Normas rápidas</summary>
-        <div class="cuerpo"><ul class="mini-lista">
-          <li>🔒 Las casillas marcadas y bloqueadas son <b>obligatorias</b>: no hace falta tocarlas.</li>
-          <li>✏️ Solo puedes marcar o desmarcar <b>tu cena</b> de cada día, tu <b>comida de viernes, sábado y domingo</b> y tu <b>desayuno del domingo</b>.</li>
-        </ul></div>
-      </details>
     </div>
 
     <div id="alumno-pernoctas-mod" class="hidden">
@@ -919,14 +918,6 @@ aplicarTema();
       <div class="summary-grid" id="alumno-pernocta-summary"></div>
       <div id="alumno-pernocta-own"></div>
       <p class="small-note">Puedes ver si tus compañeros duermen en la AGM o fuera, pero no su dirección — esa solo la ven ellos y el Furry.</p>
-      <details class="serv-est mini-manual">
-        <summary>ℹ️ Normas rápidas</summary>
-        <div class="cuerpo"><ul class="mini-lista">
-          <li>🔒 <b>Viernes:</b> AGM obligatorio, salvo externados, permiso de tu Furry o permiso extraordinario.</li>
-          <li>✏️ <b>Sábado:</b> libre, elige AGM o fuera.</li>
-          <li>🔒 <b>Domingo:</b> todos en la AGM (no aparece en la tabla).</li>
-        </ul></div>
-      </details>
     </div>
 
     <div id="alumno-servicios-mod" class="hidden">
@@ -1199,7 +1190,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-17T13:55:44";
+const APP_VERSION = "2026-10-17T14:18:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -1776,6 +1767,27 @@ function novedadesAdminItems(){
    En ⚙️ → «Ver actualizaciones» se puede elegir cuál ver. Los alumnos ven lo suyo; los Furrys y el superadmin, lo suyo y (plegado) lo de los alumnos.
    especial:true la marca con una estrella. Al entrar, se enseña SOLO la última, una vez por cuenta. ---- */
 const ACTUALIZACIONES = [
+  { id:'2026-10-17-cambios', fecha:'2026-10-17T14:14', titulo:'Cambios del 17 de octubre', especial:false,
+    alumno: null, // solo para Furrys y superadmin
+    furry: ()=>[
+      { ico:'🔔', t:'Notificaciones push', abierto:true, puntos:[
+        'Avisos en el móvil con la app cerrada: cierre de plazo, servicio de mañana, respuesta a cambios y dudas, avisos del Furry.',
+        'Al tocar el aviso, la app abre justo lo que avisa (el aviso, tu servicio…) y, si eres Furry, pasa a tu modo alumno.',
+        'Avisos de servicios personalizados («Cuartelero · sáb 17/10»): servicio nuevo, confirmado, quitado y «llevas X días sin mirar tus servicios». Una subida de Excel = un solo aviso por persona.',
+        'Superadmin: modo prueba y estado en Registros → Salud de la app.' ] },
+      { ico:'🏙️', t:'Ciudad obligatoria al dormir fuera', puntos:[
+        'Campo «Ciudad» junto a la dirección (se rellena sola si la dirección acaba en «, Ciudad»). Sin ciudad no se puede confirmar.',
+        'Caja «Sin ciudad» para completarla tú, columna Ciudad en el Excel y el cuartel la ve al contactar.',
+        'Las direcciones antiguas que acaban en «, Ciudad» pasan solas a la casilla Ciudad (y salen en el Excel); el resto lo completa cada persona o tú en «Sin ciudad».',
+        'Un pase ya no borra el teléfono ni la dirección que ya tenía la persona; el botón Habitual aplica los datos habituales.' ] },
+      { ico:'🆘', t:'Ayuda y sugerencias', puntos:[
+        '«Pedir ayuda» escribe al Furry (también al superadmin) y responde desde la caja «Peticiones de ayuda».',
+        'Botones discretos «Normas rápidas», «Sugerencias» y «Ayuda» al pie de cada pantalla; las sugerencias las lee el superadmin.' ] },
+      { ico:'📊', t:'Uso de la app con campanita', puntos:['Filtros Todos / Solo app / Solo navegador / Los dos / Con notificaciones y una 🔔 por persona. Los avisos ahora tienen scroll propio y una ✕ para cerrar.'] },
+      { ico:'🍽️', t:'Comidas del alumno', puntos:['Nuevo orden: selector de semana, desbloqueo, plazo, confirmación, avisos, comidas, cajas y normas rápidas. Se quita el aviso de intolerancias (la caja basta).'] },
+      { ico:'⬇️', t:'Avisos de descarga', puntos:['Al exportar un Excel o PDF sale «Preparando…» y luego «Descargado» (o el error), y si no estás mirando la app y tienes notificaciones, también una del sistema.'] },
+      { ico:'📋', t:'Servicios', puntos:['Un servicio estimado ya no salda deudas hasta ser oficial, y un doble clic no crea lotes duplicados.'] }
+    ] },
   { id:'2026-10-14-especial', fecha:'2026-10-14T19:00', titulo:'Actualización especial', especial:true, alumnos:true, // alumnos:true = es la que ven los alumnos (solo esta)
     alumno: o=>novedadesItems(o), furry: ()=>novedadesAdminItems() },
   { id:'2026-10-15-orden', fecha:'2026-10-15T11:22', titulo:'Orden, privacidad y seguridad', especial:false,
@@ -2037,6 +2049,7 @@ function descargarIcs(archivo, texto){
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = archivo;
   document.body.appendChild(a); a.click();
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  descargaListo(archivo);
 }
 function descargarIcsComidas(){
   const persona = CURRENT.persona, u = ULT_COMIDAS;
@@ -2264,8 +2277,22 @@ if('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('messa
   if(ev.data && ev.data.tipo==='ir'){ try{ const q = new URL(ev.data.url).searchParams; aplicarIr(q.get('ir'), q.get('ref')); }catch(e){} }
 });
 /* ---- Pie de cada pantalla: «💡 Sugerencias» y, debajo, «❓ Ayuda» ---- */
-const pieAyudaHtml = () => `<div class="pie-ayuda"><button type="button" onclick="abrirSugerencias()">💡 Sugerencias</button><button type="button" onclick="abrirAyuda()">❓ Ayuda</button></div>`;
-['screen-alumno','screen-admin','screen-superadmin','screen-cuartel'].forEach(id=>{ const d = document.getElementById(id); if(d) d.insertAdjacentHTML('beforeend', pieAyudaHtml()); });
+const pieAyudaHtml = (extra) => `<div class="pie-ayuda">${extra||''}<button type="button" onclick="abrirSugerencias()">💡 Sugerencias</button><button type="button" onclick="abrirAyuda()">❓ Ayuda</button></div>`;
+['screen-alumno','screen-admin','screen-superadmin','screen-cuartel'].forEach(id=>{ const d = document.getElementById(id); if(d) d.insertAdjacentHTML('beforeend', id==='screen-alumno' ? pieAyudaHtml('<button type="button" onclick="abrirNormas()">ℹ️ Normas rápidas</button>') : pieAyudaHtml()); });
+// Normas rápidas de la pestaña en la que estás (alumno)
+function abrirNormas(){
+  const mod = typeof currentModule!=='undefined' ? currentModule : 'comidas';
+  const L = {
+    comidas: ['🔒 Las casillas marcadas y bloqueadas son <b>obligatorias</b>: no hace falta tocarlas.', '✏️ Solo puedes marcar o desmarcar <b>tu cena</b> de cada día, tu <b>comida de viernes, sábado y domingo</b> y tu <b>desayuno del domingo</b>.', '⚠️ <b>Hay excepciones:</b> los <b>puentes</b>, las <b>maniobras</b> y los <b>permisos extraordinarios</b> pueden cambiar qué comidas son obligatorias esa semana. Si tu Furry abre el desbloqueo, saldrá un aviso arriba.', '✅ Acuérdate de <b>confirmar</b> la semana antes de que cierre el plazo.'],
+    pernoctas: ['🔒 <b>Viernes:</b> AGM obligatorio, salvo externados, permiso de tu Furry o permiso extraordinario.', '✏️ <b>Sábado:</b> libre, elige AGM o fuera.', '🔒 <b>Domingo:</b> todos en la AGM (no aparece en la tabla).', '⚠️ <b>Hay excepciones:</b> los <b>puentes</b>, las <b>maniobras</b> y los <b>permisos extraordinarios</b> cambian qué noches son obligatorias.', '📍 Si duermes fuera, escribe tu <b>ciudad</b>, tu dirección y tu teléfono: sin la ciudad no puedes confirmar.'],
+    servicios: ['📋 El cuadrante oficial es el que sube tu Furry; los servicios <b>estimados</b> (borde discontinuo) pueden cambiar.', '🔁 Puedes pedir un cambio o preguntar una duda tocando tu servicio.', '⚠️ <b>Hay excepciones:</b> puentes y maniobras cambian los turnos esos días.']
+  }[mod] || [];
+  const el = document.getElementById('novedades-overlay');
+  el.innerHTML = `<div class="nov-card" role="dialog" aria-modal="true"><div class="nov-head"><div class="nov-logo">ℹ️</div><h2>Normas rápidas</h2><p>${mod==='pernoctas'?'Pernoctas':mod==='servicios'?'Servicios':'Comidas'}</p></div>
+    <div style="overflow:auto;padding:12px 18px 0;"><ul class="mini-lista" style="margin:0;padding-left:18px;line-height:1.55;font-size:.88rem;">${L.map(x=>`<li style="margin-bottom:8px;">${x}</li>`).join('')}</ul></div>
+    <div class="nov-pie"><button type="button" onclick="cerrarNovedades()">Entendido</button></div></div>`;
+  el.classList.remove('hidden');
+}
 function abrirSugerencias(){
   const el = document.getElementById('novedades-overlay');
   el.innerHTML = `<div class="nov-card" role="dialog" aria-modal="true"><div class="nov-head"><div class="nov-logo">💡</div><h2>Sugerencias</h2><p>Dinos qué mejorarías de la app</p></div>
@@ -2309,6 +2336,35 @@ async function sugerenciaBorrar(id){
   if(error){ showToast('No se pudo: '+error.message); return; }
   await renderSuperadmin();
 }
+/* ---- Avisos de descarga: «preparando…», «descargado» o «no se pudo» ---- */
+let _descEstado = 'nada', _descTimer = null;
+function descBarra(txt, clase, ms){
+  let b = document.getElementById('desc-barra');
+  if(!b){ b = document.createElement('div'); b.id = 'desc-barra'; b.setAttribute('role','status'); document.body.appendChild(b); }
+  clearTimeout(_descTimer);
+  b.className = clase || ''; b.innerHTML = (clase==='prep' ? '<span class="desc-gira"></span>' : '') + '<span>'+escHtml(txt)+'</span>';
+  if(ms) _descTimer = setTimeout(()=>{ b.classList.add('hidden'); }, ms);
+}
+// Si no estás mirando la app (otra pestaña o el móvil bloqueado) y tienes permitidas las notificaciones, también te llega una del sistema
+function descSistema(titulo, cuerpo){
+  try{
+    if(!document.hidden || !('Notification' in window) || Notification.permission!=='granted' || !('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.getRegistration().then(r=>{ if(r) r.showNotification(titulo, { body:cuerpo, icon:'icon-maskable-192.png', badge:'badge-72.png', tag:'descarga', data:{ url:'./' } }); });
+  }catch(e){}
+}
+function descargaEmpieza(etiqueta){ _descEstado = 'prep'; descBarra('Preparando '+etiqueta+'…', 'prep'); }
+function descargaListo(nombre){ _descEstado = 'listo'; descBarra('✅ Descargado: '+nombre, 'ok', 6000); descSistema('✅ Descarga lista', nombre); }
+function descargaFallo(etiqueta, msg){ _descEstado = 'fallo'; descBarra('❌ No se pudo descargar '+etiqueta+(msg ? ': '+String(msg).slice(0,80) : ''), 'mal', 8000); descSistema('❌ Descarga fallida', etiqueta); }
+function conAvisoDescarga(nombreFn, etiqueta){
+  const orig = window[nombreFn]; if(typeof orig!=='function') return;
+  window[nombreFn] = async function(...args){
+    descargaEmpieza(etiqueta);
+    try{ return await orig.apply(this, args); }
+    catch(e){ descargaFallo(etiqueta, e && e.message); throw e; }
+    finally{ if(_descEstado==='prep'){ const b = document.getElementById('desc-barra'); if(b) b.classList.add('hidden'); _descEstado = 'nada'; } } // no llegó a descargarse nada (p. ej. faltaba algo): se quita el «preparando»
+  };
+}
+function xlsxGuardar(wb, nombre){ XLSX.writeFile(wb, nombre); descargaListo(nombre); }
 function cerrarConfig(){ document.querySelectorAll('.config-panel').forEach(p=>p.classList.add('hidden')); }
 function toggleConfig(){
   const el = document.getElementById(prefixPantalla()+'-config');
@@ -2483,6 +2539,7 @@ let currentModule = 'comidas';
 async function setModule(mod){
   currentModule = mod;
   guardarEstado();
+  if(mod!=='comidas'){ const db = document.getElementById('alumno-desbloqueo'); if(db) db.innerHTML = ''; } // el aviso del desbloqueo solo vale en Comidas
   if(mod==='servicios') pintarBarraPendiente('comidas', false); // la barra de "sin confirmar" solo vale en Comidas y Pernoctas
   document.body.classList.toggle('mod-pernoctas', mod==='pernoctas');
   document.body.classList.toggle('mod-servicios', mod==='servicios');
@@ -2604,6 +2661,8 @@ async function routeAfterAuth(userId){
     showToast('Algo falló al cargar tu cuenta. Prueba a recargar, o entra de nuevo.');
   }
 }
+// Las descargas largas avisan de cómo van (preparando → descargado / error)
+[['cuartelServPdf','el PDF de servicios'],['cuartelExpConfirmar','el archivo del cuartel'],['descargarJefeClase','el PDF de jefe de clase'],['exportCompanyExcel','el Excel de la compañía'],['exportPernoctaExcel','el Excel de pernoctas'],['exportServiciosExcel','el Excel de servicios']].forEach(([f,e])=>conAvisoDescarga(f,e));
 boot();
 
 /* ================= Auth UI ================= */
@@ -3435,7 +3494,7 @@ function xlsxDesdeDoc(doc, nombre){
   const maxCols = Math.max(...doc.bloques.map(b=>b.t==='tabla'?b.cab.length:1));
   ws['!cols'] = Array.from({length:maxCols},(_,i)=>({ wch: i===0 ? 42 : 14 }));
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Cuartel');
-  XLSX.writeFile(wb, nombre);
+  xlsxGuardar(wb, nombre);
 }
 
 // Helpers de datos
@@ -3651,7 +3710,8 @@ async function renderAlumno(){
   const diasDesbloqueadosTxt = diasDesbloqueados.map(d=>DAY_NAMES[(d)%7]+' '+fmt(diaPern(ACTIVE_WEEK,d))).join(', ');
   pintarSelectorSemanas('comidas', 'alumno', 'onAlumnoWeekChange', horaCorte, true);
   document.getElementById('alumno-maniobras').innerHTML = maniobrasBannerHtml(ACTIVE_WEEK, false); // el aviso de maniobras va debajo del mensaje de confirmación
-  document.getElementById('alumno-notice').innerHTML = noticeHtmlBase(ACTIVE_WEEK, horaCorte) + (diasDesbloqueados.length ? `<div class="notice" style="border-color:var(--brass);"><span>🌉 Tu compañía ha abierto el desbloqueo de obligatorias esta semana (puente)</span><strong>Puedes desmarcar desayuno y comida el ${diasDesbloqueadosTxt}</strong></div>` : '');
+  document.getElementById('alumno-notice').innerHTML = noticeHtmlBase(ACTIVE_WEEK, horaCorte);
+  document.getElementById('alumno-desbloqueo').innerHTML = diasDesbloqueados.length ? `<div class="notice" style="border-color:var(--brass);margin-top:8px;"><span>🌉 Tu compañía ha abierto el desbloqueo de obligatorias esta semana (puente)</span><strong>Puedes desmarcar desayuno y comida el ${diasDesbloqueadosTxt}</strong></div>` : '';
 
   const cols = COLS();
   const personaIds = seccionPeople.map(p=>p.id);
@@ -3864,6 +3924,7 @@ function descargarArchivo(blob, nombre){
   const url = URL.createObjectURL(blob), a = document.createElement('a');
   a.href = url; a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  descargaListo(nombre);
 }
 function pdfDesdeDoc(doc){
   const ap = !!doc.apaisado, W = ap ? 842 : 595, H = ap ? 595 : 842, M = 44, ANCHO = W - 2*M;
@@ -5665,7 +5726,7 @@ async function exportCompanyExcel(){
   });
   const sello = String(exportadoEn.getDate()).padStart(2,'0')+'-'+String(exportadoEn.getMonth()+1).padStart(2,'0')+'_'+String(exportadoEn.getHours()).padStart(2,'0')+'h'+String(exportadoEn.getMinutes()).padStart(2,'0');
   const filename = `PortalAGM_Comidas_${c}Cia_${fmt(ACTIVE_WEEK.days[0]).replace('/','-')}_a_${fmt(ACTIVE_WEEK.days[6]).replace('/','-')}_exportado_${sello}.xlsx`;
-  XLSX.writeFile(wb, filename);
+  xlsxGuardar(wb, filename);
 }
 
 /* ---- Bloque de compañía ---- */
@@ -6411,7 +6472,7 @@ async function fetchPernoctaOwn(personaId, semanaKey){
   let r = await sb.from('pernoctas').select('dia,'+PERN_COLS()).eq('persona_id',personaId).eq('semana_inicio',semanaKey);
   if(r.error && CIUDAD_OK && /ciudad/i.test(r.error.message||'')){ CIUDAD_OK = false; r = await sb.from('pernoctas').select('dia,'+PERN_COLS()).eq('persona_id',personaId).eq('semana_inicio',semanaKey); }
   const map = {};
-  (r.data||[]).forEach(x=>{ map[x.dia] = { duerme_agm:x.duerme_agm, direccion:x.direccion, telefono:x.telefono, ciudad:x.ciudad }; });
+  (r.data||[]).forEach(x=>{ map[x.dia] = { duerme_agm:x.duerme_agm, direccion:x.direccion, telefono:x.telefono, ciudad:x.ciudad || (x.duerme_agm ? '' : ciudadDeDireccion(x.direccion)) }; });
   return map;
 }
 async function fetchPernoctaSeccion(compania, seccion, semanaKey){
@@ -6426,7 +6487,7 @@ async function fetchPernoctaMapAdmin(personaIds, semanaKey){
   let data;
   try{ data = await selectTodo('pernoctas', 'persona_id,dia,'+PERN_COLS(), q=>q.eq('semana_inicio',semanaKey), personaIds, ['persona_id','dia']); }
   catch(e){ if(!CIUDAD_OK || !/ciudad/i.test((e&&e.message)||'')) throw e; CIUDAD_OK = false; data = await selectTodo('pernoctas', 'persona_id,dia,'+PERN_COLS(), q=>q.eq('semana_inicio',semanaKey), personaIds, ['persona_id','dia']); }
-  data.forEach(r=>{ map[r.persona_id+'|'+r.dia] = { duerme_agm:r.duerme_agm, direccion:r.direccion, telefono:r.telefono, ciudad:r.ciudad }; });
+  data.forEach(r=>{ map[r.persona_id+'|'+r.dia] = { duerme_agm:r.duerme_agm, direccion:r.direccion, telefono:r.telefono, ciudad:r.ciudad || (r.duerme_agm ? '' : ciudadDeDireccion(r.direccion)) }; });
   return map;
 }
 async function fetchConfirmMapPernocta(personaIds, semanaKey){
@@ -6610,7 +6671,10 @@ function onPernoctaSelect(dia, value){
 // Si la dirección acaba en «, Ciudad» y la casilla de ciudad está vacía, se rellena sola (la persona puede corregirla)
 function ciudadDeDireccion(dir){
   const m = String(dir||'').match(/,\s*([A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .-]{1,38})\s*$/);
-  return m && !/\d/.test(m[1]) ? m[1].trim().replace(/\s+/g,' ').replace(/(^|\s)([a-zñáéíóú])/g, (x,s,c)=>s+c.toUpperCase()) : '';
+  if(!m) return '';
+  const v = m[1].replace(/[ .]+$/,'').trim();
+  if(!v || /\d/.test(v) || /^(españa|espana|bajo|izq|izquierda|derecha|dcha|izda|piso|puerta|escalera|portal|planta|bloque|local|chalet)$/i.test(v)) return '';
+  return v.toLowerCase().split(/\s+/).map((w,i)=> i>0 && /^(de|del|la|las|los|el|y|en)$/.test(w) ? w : w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
 }
 function sugerirCiudadDeDireccion(){
   const dir = document.getElementById('pernocta-addr-shared'), ciu = document.getElementById('pernocta-ciudad-shared');
@@ -6652,6 +6716,7 @@ async function fetchHabitual(personaId){
     let r = await sb.from('datos_habituales').select('direccion,telefono'+(CIUDAD_OK?',ciudad':'')).eq('persona_id', personaId).maybeSingle();
     if(r.error && CIUDAD_OK && /ciudad/i.test(r.error.message||'')){ CIUDAD_OK = false; r = await sb.from('datos_habituales').select('direccion,telefono').eq('persona_id', personaId).maybeSingle(); }
     if(r.error){ HABITUAL_ERROR = r.error.message || 'error'; return null; }
+    if(r.data && !r.data.ciudad) r.data.ciudad = ciudadDeDireccion(r.data.direccion) || r.data.ciudad;
     return r.data;
   }catch(e){ HABITUAL_ERROR = e.message || 'error'; return null; }
 }
@@ -7096,7 +7161,7 @@ async function exportPernoctaExcel(){
   for(let d=0; d<pernoctaDiasCount(); d++){ const n = allIds.filter(id=>valFor(id,d)).length; grandRow.push(n+'/'+allIds.length); }
   totRows.push(grandRow);
   totRows.push([]);
-  totRows.push([`Exportado el ${exportadoEn.toLocaleString('es-ES')} · versión ${APP_VERSION} · los totales cuentan quién duerme en la AGM`]);
+  totRows.push([`Exportado el ${exportadoEn.toLocaleString('es-ES')} · versión ${APP_VERSION} `]);
   const wsTot = XLSX.utils.aoa_to_sheet(totRows);
   // Totales como FÓRMULAS: cuentan las "AGM" de cada hoja de sección, así siempre cuadran aunque se edite a mano.
   for(let d=0; d<pernoctaDiasCount(); d++){
@@ -7141,7 +7206,7 @@ async function exportPernoctaExcel(){
 
   const sello = String(exportadoEn.getDate()).padStart(2,'0')+'-'+String(exportadoEn.getMonth()+1).padStart(2,'0')+'_'+String(exportadoEn.getHours()).padStart(2,'0')+'h'+String(exportadoEn.getMinutes()).padStart(2,'0');
   const filename = `PortalAGM_Pernoctas_${PERNOCTA_SEMANAS_ESPECIALES[ACTIVE_WEEK.key]?'SemanaEspecial_':''}${c}Cia_${fmt(ACTIVE_WEEK.days[0]).replace('/','-')}_a_${fmt(diaPern(ACTIVE_WEEK,pernoctaDiasCount()-1)).replace('/','-')}_exportado_${sello}.xlsx`;
-  XLSX.writeFile(wb, filename);
+  xlsxGuardar(wb, filename);
 }
 async function _renderAdminPernoctasImpl(){
   irASemanaPernoctaReal();
@@ -7904,7 +7969,7 @@ async function exportServiciosExcel(){
   xlsxHeaderOnly(ws, header.length);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Servicios');
-  XLSX.writeFile(wb, `PortalAGM_Servicios_${c}Cia_${desde}_a_${hasta}.xlsx`);
+  xlsxGuardar(wb, `PortalAGM_Servicios_${c}Cia_${desde}_a_${hasta}.xlsx`);
 }
 let servFamilia = 'ambos', servDias = (window.innerWidth>1100 ? 'todo' : 60), servDesde = null, servSeccion = 'todas', servBuscar = '';
 let SERV_GRID = null;
