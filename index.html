@@ -1318,7 +1318,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-18T02:00:00";
+const APP_VERSION = "2026-10-18T16:30:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -3693,16 +3693,21 @@ async function enterCuartel(compania, opts){
   if(yaIdentificado){ await iniciarSesionCuartel(yaIdentificado); return; }
   pedirNombreCuartel();
 }
-const CUARTEL_EMPLEOS = ['CAC', 'CC Sgto', 'CC Cabo'];
-// Imágenes de cada empleo (opcionales): PNG en la carpeta «empleos» junto al index.html. Si falta alguna, simplemente no se ve (no rompe nada).
-const EMPLEO_IMG = { 'CAC':'empleos/cac.png', 'CC Sgto':'empleos/cc-sgto.png', 'CC Cabo':'empleos/cc-cabo.png' };
+// Caballero (CC / CAC) o Dama (DC / DAC). El código va delante del nombre: «DC Sgto Sepúlveda Vicario, Sherezade»
+const CUARTEL_EMPLEOS = ['CAC', 'DAC', 'CC Sgto', 'DC Sgto', 'CC Cabo', 'DC Cabo'];
+const EMPLEO_NOMBRE = { 'CAC':'Caballero Alférez Cadete', 'DAC':'Dama Alférez Cadete', 'CC Sgto':'Caballero Cadete Sargento', 'DC Sgto':'Dama Cadete Sargento', 'CC Cabo':'Caballero Cadete Cabo', 'DC Cabo':'Dama Cadete Cabo' };
+// Para filtrar el registro por empleo: cada empleo junta a caballeros y damas
+const EMPLEO_GRUPOS = { 'CAC':{ nombre:'Alférez cadete (CAC / DAC)', codigos:['CAC','DAC'] }, 'CC Sgto':{ nombre:'Sargento (CC / DC Sgto)', codigos:['CC Sgto','DC Sgto'] }, 'CC Cabo':{ nombre:'Cabo (CC / DC Cabo)', codigos:['CC Cabo','DC Cabo'] } };
+const filtroEmpleoRegex = g => '^(' + EMPLEO_GRUPOS[g].codigos.join('|') + ') ';
+// Imágenes de cada empleo (opcionales): PNG en la carpeta «empleos» junto al index.html. Si falta alguna, simplemente no se ve (no rompe nada). Damas y caballeros llevan la misma divisa.
+const EMPLEO_IMG = { 'CAC':'empleos/cac.png', 'DAC':'empleos/cac.png', 'CC Sgto':'empleos/cc-sgto.png', 'DC Sgto':'empleos/cc-sgto.png', 'CC Cabo':'empleos/cc-cabo.png', 'DC Cabo':'empleos/cc-cabo.png' };
 const empleoDeNombre = n => CUARTEL_EMPLEOS.find(e=>String(n||'').startsWith(e+' ')) || null;
 const empleoImgHtml = emp => EMPLEO_IMG[emp] ? `<img class="empleo-ico" src="${EMPLEO_IMG[emp]}" alt="" onerror="this.remove()">` : '';
 const nombreConIcono = n => empleoImgHtml(empleoDeNombre(n)) + escHtml(n); // «🎖 CC Sgto García López, Juan», con la imagen de su empleo si existe
 function iconoEmpleoSel(pre){ const s = document.getElementById(pre+'-empleo'), i = document.getElementById(pre+'-ico'); if(s && i) i.innerHTML = empleoImgHtml(s.value); }
 // Los datos de una persona: empleo + nombre + primer apellido + segundo apellido (los cuatro obligatorios). «pre» = prefijo de los id (cuartel, msg, vcc)
 const camposPersonaHtml = (pre, ult) => `
-    <div class="field"><label>Empleo</label><div style="display:flex;gap:8px;align-items:center;"><span id="${pre}-ico"></span><select id="${pre}-empleo" style="flex:1;" onchange="iconoEmpleoSel('${pre}')">${CUARTEL_EMPLEOS.map(e=>`<option value="${e}" ${(ult&&ult.empleo)===e?'selected':''}>${e}</option>`).join('')}</select></div></div>
+    <div class="field"><label>Empleo</label><div style="display:flex;gap:8px;align-items:center;"><span id="${pre}-ico"></span><select id="${pre}-empleo" style="flex:1;" onchange="iconoEmpleoSel('${pre}')">${(ult&&CUARTEL_EMPLEOS.includes(ult.empleo)) ? '' : '<option value="" selected disabled>— Elige tu empleo —</option>'}${CUARTEL_EMPLEOS.map(e=>`<option value="${e}" ${(ult&&ult.empleo)===e?'selected':''}>${e} · ${EMPLEO_NOMBRE[e]}</option>`).join('')}</select></div></div>
     <div class="field"><label>Nombre</label><input type="text" id="${pre}-nombre" value="${escHtml((ult&&ult.nombre)||'')}" placeholder="Ej.: Juan" autocomplete="given-name" maxlength="23"></div>
     <div class="field"><label>Primer apellido</label><input type="text" id="${pre}-ap1" value="${escHtml((ult&&ult.ap1)||'')}" placeholder="Ej.: García" autocomplete="family-name" maxlength="23"></div>
     <div class="field"><label>Segundo apellido</label><input type="text" id="${pre}-ap2" value="${escHtml((ult&&ult.ap2)||'')}" placeholder="Ej.: López" autocomplete="off" maxlength="23"></div>`;
@@ -5495,12 +5500,12 @@ async function borrarEventosFiltrados(){
   const f = { p_compania: CUARTEL_LOG.compania, p_empleo: CUARTEL_LOG.empleo, p_tipo: CUARTEL_LOG.tipo==='todos' ? null : CUARTEL_LOG.tipo };
   let q = sb.from('cuartel_eventos').select('id', { count:'exact', head:true });
   if(f.p_compania) q = q.eq('compania', f.p_compania);
-  if(f.p_empleo) q = q.like('nombre', f.p_empleo+' %');
+  if(f.p_empleo) q = q.filter('nombre', 'match', filtroEmpleoRegex(f.p_empleo));
   if(f.p_tipo) q = q.eq('tipo', f.p_tipo);
   const { count, error } = await q;
   if(error){ showToast('No se pudo contar: '+cuErrorParche(error, 70)); return; }
   if(!count){ showToast('No hay nada que borrar con esos filtros.'); return; }
-  const que = [f.p_compania ? `de la ${f.p_compania}ª Compañía` : 'de TODAS las compañías', f.p_empleo ? `solo de ${f.p_empleo}` : 'de todos los empleos', f.p_tipo ? ({ entrada:'solo entradas', contactar:'solo contactos', pdf:'solo descargas' })[f.p_tipo] : 'de todos los tipos'].join(', ');
+  const que = [f.p_compania ? `de la ${f.p_compania}ª Compañía` : 'de TODAS las compañías', f.p_empleo ? `solo de ${EMPLEO_GRUPOS[f.p_empleo].nombre}` : 'de todos los empleos', f.p_tipo ? ({ entrada:'solo entradas', contactar:'solo contactos', pdf:'solo descargas' })[f.p_tipo] : 'de todos los tipos'].join(', ');
   const todo = !f.p_compania && !f.p_empleo && !f.p_tipo;
   if(todo){
     const txt = await preguntarApp(`Vas a BORRAR TODO el registro del cuartel: ${count} movimientos (todas las compañías, empleos y tipos). No se puede deshacer.\n\nEscribe BORRAR para confirmar:`, '', { si:'Borrar todo', peligro:true });
@@ -5511,7 +5516,7 @@ async function borrarEventosFiltrados(){
   showToast(`Borrados ${data} movimientos.`);
   await cargarCuartelEventosSuper();
 }
-function onCuartelLogEmpleo(v){ CUARTEL_LOG.empleo = CUARTEL_EMPLEOS.includes(v) ? v : null; cargarCuartelEventosSuper(); }
+function onCuartelLogEmpleo(v){ CUARTEL_LOG.empleo = EMPLEO_GRUPOS[v] ? v : null; cargarCuartelEventosSuper(); }
 async function cargarCuartelEventosSuper(abriendo){
   // Al ABRIR la caja: lo que llegó desde la última vez que la abriste lleva un puntito rojo (solo esta vez) y el numerito de la caja se quita en el acto.
   // Si cierras la caja y la vuelves a abrir, esos movimientos ya no llevan el puntito.
@@ -5519,7 +5524,7 @@ async function cargarCuartelEventosSuper(abriendo){
   const cont = document.getElementById('super-cuartel-log-cont'); if(cont) cont.innerHTML = '<p class="small-note">Cargando…</p>';
   let q = sb.from('cuartel_eventos').select('*');
   if(CUARTEL_LOG.compania) q = q.eq('compania', CUARTEL_LOG.compania); // si se elige una compañía, se piden solo los suyos (así los 300 últimos son de esa)
-  if(CUARTEL_LOG.empleo) q = q.like('nombre', CUARTEL_LOG.empleo + ' %');  // y si se elige un empleo, solo los de ese empleo
+  if(CUARTEL_LOG.empleo) q = q.filter('nombre', 'match', filtroEmpleoRegex(CUARTEL_LOG.empleo));  // y si se elige un empleo, solo los de ese empleo (caballeros y damas)
   const { data, error } = await q.order('creado_en', { ascending:false }).limit(300);
   CUARTEL_LOG.error = error ? cuErrorParche(error) : null; CUARTEL_LOG.filas = error ? null : (data||[]); CUARTEL_LOG.nombres = {};
   const ids = [...new Set((data||[]).map(e=>e.persona_id).filter(Boolean))];
@@ -5535,12 +5540,12 @@ function pintarCuartelEventosSuper(){
   const fila = e => `<div class="history-row">${nuevo(e) ? '<span style="color:#d93025;font-weight:900;margin-right:4px;" title="Movimiento nuevo">●</span>' : ''}<span class="ts">${escHtml(new Date(e.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}))}</span> · <b>${e.tipo==='pdf' && e.detalle ? '📥 '+escHtml(/^(PDF|Excel) /.test(e.detalle) ? e.detalle : 'PDF de Servicios · '+e.detalle) : (ICONO[e.tipo]||escHtml(e.tipo))}</b> · ${e.compania}ª Cía · ${e.nombre ? nombreConIcono(e.nombre) : '(sin nombre)'} · IP ${escHtml(e.ip||'no disponible')} · ${escHtml(e.dispositivo||'')}${e.persona_id ? ' · a quién: <b>'+escHtml(CUARTEL_LOG.nombres[e.persona_id]||'(persona borrada)')+'</b>' : ''}${e.detalle && e.tipo!=='pdf' ? ' · '+escHtml(e.detalle) : ''} <button class="small-btn danger" style="padding:1px 8px;margin-left:6px;" title="Borrar este registro" onclick="borrarEventoCuartel(${e.id})">🗑</button></div>`;
   cont.innerHTML = `<div class="cuartel-bar" style="margin-top:0;">
       <div class="field"><label>Registro de</label><select onchange="onCuartelLogCompania(this.value)"><option value="">Todas las compañías (en total)</option>${companiasOptionsHtml(CUARTEL_LOG.compania)}</select></div>
-      <div class="field"><label>Empleo</label><select onchange="onCuartelLogEmpleo(this.value)"><option value="">Todos los empleos</option>${CUARTEL_EMPLEOS.map(e=>`<option value="${e}" ${CUARTEL_LOG.empleo===e?'selected':''}>${e}</option>`).join('')}</select></div>
+      <div class="field"><label>Empleo</label><select onchange="onCuartelLogEmpleo(this.value)"><option value="">Todos los empleos</option>${Object.keys(EMPLEO_GRUPOS).map(e=>`<option value="${e}" ${CUARTEL_LOG.empleo===e?'selected':''}>${EMPLEO_GRUPOS[e].nombre}</option>`).join('')}</select></div>
       <button class="small-btn" onclick="cargarCuartelEventosSuper()">↻ Actualizar</button>
       <button class="small-btn danger" onclick="borrarEventosFiltrados()">🗑 Borrar lo filtrado…</button>
     </div>
     <div class="semanas-toggle" style="max-width:460px;margin-bottom:10px;">${[['todos','Todo'],['entrada','Entradas'],['contactar','Contactos'],['pdf','Descargas'],['app','App']].map(([v,n])=>`<button type="button" class="${CUARTEL_LOG.tipo===v?'active':''}" onclick="CUARTEL_LOG.tipo='${v}'; pintarCuartelEventosSuper()">${n}</button>`).join('')}</div>
-    <p class="small-note" style="margin-top:0;">Se muestran los últimos 300 movimientos ${CUARTEL_LOG.compania ? 'de la '+CUARTEL_LOG.compania+'ª Compañía' : 'de todas las compañías'}${CUARTEL_LOG.empleo ? ', solo de '+CUARTEL_LOG.empleo : ''}.</p>
+    <p class="small-note" style="margin-top:0;">Se muestran los últimos 300 movimientos ${CUARTEL_LOG.compania ? 'de la '+CUARTEL_LOG.compania+'ª Compañía' : 'de todas las compañías'}${CUARTEL_LOG.empleo ? ', solo de '+EMPLEO_GRUPOS[CUARTEL_LOG.empleo].nombre : ''}.</p>
     ${filas.length ? filas.map(fila).join('') : '<p class="small-note">No hay movimientos de este tipo.</p>'}`;
 }
 // Registro (solo lectura) de los cambios de contraseña — parche SQL 78
