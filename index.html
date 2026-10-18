@@ -251,6 +251,13 @@ details.mini-manual .cuerpo{padding:0 14px 10px;}
 .pend-bar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:#e08a00;color:#1b1400;font-size:.9rem;box-shadow:0 -2px 10px rgba(0,0,0,.25);}
 .pend-bar button{background:#1b1400;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-family:inherit;cursor:pointer;}
 .modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;}
+.lectura-bloque{border-left:3px solid var(--brass);background:rgba(0,0,0,.03);border-radius:6px;padding:6px 10px;margin-bottom:6px;}
+.lectura-bloque.noche{border-left-color:#3b5b8c;}
+.lectura-tit{font-weight:800;font-size:.92rem;margin-bottom:2px;}
+.lectura-linea{display:grid;grid-template-columns:86px 1fr;gap:6px;font-size:.93rem;line-height:1.3;margin:1px 0;}
+.lectura-linea .p{color:var(--ink-soft);font-size:.78rem;padding-top:1px;}
+.lectura-est{color:var(--ink-soft);font-weight:400;}
+.lectura-falta{color:var(--danger);}
 .modal-box{background:var(--card);color:var(--ink);border-radius:16px;padding:20px;width:100%;max-width:520px;max-height:85vh;overflow:auto;}
 .modal-box h3{margin:0 0 12px;font-size:1.15rem;}
 .modal-resumen{border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.9rem;}
@@ -1047,6 +1054,7 @@ aplicarTema();
         <button type="button" class="cuad-btn" id="alumno-cuadrante-btn" onclick="toggleCuadranteAlumno()"><span class="cuad-ico">📋</span><span class="cuad-txt"><b id="alumno-cuadrante-tit">Ver cuadrante</b><small>Cuándo está nombrado cada uno de tu compañía</small></span><span class="cuad-flecha">▾</span></button>
         <div id="alumno-cuadrante-cont" class="hidden" style="margin-top:8px;"></div>
       </div></div>
+      <div id="alumno-lectura"></div>
       <div class="blq" data-blq="s-proximos"><h3 class="section-title">Tus próximos servicios</h3>
       <div id="alumno-servicios-lista"></div></div>
       <div class="blq" data-blq="s-cambios"><h3 class="section-title">Mis solicitudes de cambio</h3>
@@ -1097,6 +1105,7 @@ aplicarTema();
       <div class="blq" data-blq="a-s-semana"><div id="admin-serv-week-select"></div></div>
       <div class="blq" data-blq="a-s-cuadrante"><h3 class="section-title">Cuadrante de servicios</h3>
       <div class="cajas-grid mini" id="serv-cajas">
+        <button type="button" class="caja" onclick="abrirLecturaServicios()"><span class="caja-ico">📣</span><span class="caja-tit">Leer servicios</span><span class="caja-sub">Lo que se lee esta noche</span></button>
         <button type="button" class="caja" data-caja="serv|manual" onclick="abrirCaja('serv','manual')"><span class="caja-ico">✍️</span><span class="caja-tit">Añadir o cambiar</span><span class="caja-sub">Un servicio a mano</span></button>
         <button type="button" class="caja" data-caja="serv|quedan" onclick="abrirCaja('serv','quedan')"><span class="caja-ico">⛺</span><span class="caja-tit">Se quedan</span><span class="caja-sub">Gente que no va a maniobras</span></button>
         <button type="button" class="caja" data-caja="serv|estimar" onclick="abrirCaja('serv','estimar')"><span class="caja-ico">🔮</span><span class="caja-tit">Estimar servicios</span><span class="caja-sub">Rellenar el cuadrante</span></button>
@@ -1318,7 +1327,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-18T16:30:00";
+const APP_VERSION = "2026-10-18T18:50:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -3907,7 +3916,7 @@ function pintarCuartelServicios(){
     <div class="cu-dias">${chips}</div>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
       <b>${CU_DIAS_LARGO[CUARTEL_SERV.dia]} ${fmt(cuFechaDia(CUARTEL_SERV.dia))}</b>
-      <button class="small-btn" onclick="cuartelServPdfModal()">📕 Descargar PDF</button>
+      <span style="display:flex;gap:6px;flex-wrap:wrap;"><button class="small-btn" onclick="abrirLecturaServicios()">📣 Leer servicios</button><button class="small-btn" onclick="cuartelServPdfModal()">📕 Descargar PDF</button></span>
     </div>${tarjetas}`;
 }
 // Detalle de un servicio. El teléfono NO está aquí: solo se pide (y se registra) al pulsar «Contactar»
@@ -8312,6 +8321,13 @@ async function renderAlumnoServicios(){
   const persona = CURRENT.persona;
   const hoy = ymd(new Date());
   const lista = document.getElementById('alumno-servicios-lista');
+  // El furriel (no hace servicios) tiene el botón de leer los servicios de cada noche
+  const lect = document.getElementById('alumno-lectura');
+  if(lect){
+    let furriel = persona.sin_servicios;
+    if(furriel===undefined){ try{ const r = await sb.from('personas').select('sin_servicios').eq('id', persona.id).single(); furriel = !!(r.data && r.data.sin_servicios); }catch(e){ furriel = false; } }
+    lect.innerHTML = furriel ? `<button class="primary-btn" style="margin:0 0 14px;" onclick="abrirLecturaServicios()">📣 Leer servicios de esta noche</button>` : '';
+  }
   const { data: mios, error } = await sb.from('servicios').select('*').eq('persona_id', persona.id).order('fecha').order('tipo').order('turno');
   if(error){ lista.innerHTML = `<div class="small-note">No se pudo cargar: ${escHtml(error.message)}</div>`; return; }
   const proximos = (mios||[]).filter(s=>s.fecha>=hoy);
@@ -9124,7 +9140,7 @@ function pintarServGrid(){
       <button class="${servPag==='p1'?'active':''}" onclick="setServPag('p1')">Primeros ${TAM_PAG} (1–${TAM_PAG})</button>
       <button class="${servPag==='p2'?'active':''}" onclick="setServPag('p2')">Los restantes (${TAM_PAG+1}–${genteTodos.length})</button></div>`;
   const barra = document.getElementById('serv-orden-barra');
-  if(barra) barra.innerHTML = servOrdenando ? `<div class="notice" style="display:block;margin-bottom:8px;">↕️ <b>Ordenando:</b> arrastra un nombre a su sitio (o usa ▲ ▼). Con 🚫 marcas o desmarcas a quien no hace servicios (la estimación se lo salta). Con 🪖 marcas a quien es de promoción interna y de momento no hace guardia de seguridad (la estimación se lo salta, pero a mano sí se le puede poner). Se ve la compañía entera, sin filtros.
+  if(barra) barra.innerHTML = servOrdenando ? `<div class="notice" style="display:block;margin-bottom:8px;">↕️ <b>Ordenando:</b> arrastra un nombre a su sitio (o usa ▲ ▼). Con 🚫 marcas o desmarcas a quien no hace servicios (la estimación se lo salta). Con ♀ marcas a las damas cadetes (en «Leer servicios» se lee «Dama cadete»; apagado = «Caballero cadete»). Con 🪖 marcas a quien es de promoción interna y de momento no hace guardia de seguridad (la estimación se lo salta, pero a mano sí se le puede poner). Se ve la compañía entera, sin filtros.
       <div style="margin-top:6px;display:flex;gap:6px;"><button class="small-btn" onclick="guardarOrdenServ()">💾 Guardar orden</button><button class="small-btn" onclick="cancelarOrdenServ()">Cancelar</button></div></div>` : '';
   const hoy = ymd(new Date());
   const LETRA = ['D','L','M','X','J','V','S'];
@@ -9139,7 +9155,7 @@ function pintarServGrid(){
   gente.forEach(p=>{
     const nombreCelda = `${escHtml(p.apellidos)}, ${escHtml(p.nombre)} <span style="color:var(--ink-soft);">${c}${p.seccion}</span>${p.sin_gs?' <span class="serv-casco" title="Promoción interna: de momento no hace guardia de seguridad (la estimación se lo salta; a mano sí se le puede poner)">🪖</span>':''}${p.sin_servicios?' <span style="font-size:.6rem;">· no hace servicios</span>':''}`;
     tbody += servOrdenando
-      ? `<tr data-id="${p.id}" class="${p.sin_servicios?'exento':''}" ondragover="event.preventDefault()" ondrop="soltarFilaServ(event,'${p.id}')"><td class="nc" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" style="cursor:grab;"><span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',-1)">▲</span> <span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',1)">▼</span> <span style="cursor:pointer;" title="Marcar / desmarcar que no hace servicios" onclick="toggleExentoServ('${p.id}')">🚫</span> <span style="cursor:pointer;" title="Marcar / desmarcar promoción interna: no hace guardia de seguridad" onclick="toggleSinGsServ('${p.id}')">🪖</span> ⠿ ${nombreCelda}</td>`
+      ? `<tr data-id="${p.id}" class="${p.sin_servicios?'exento':''}" ondragover="event.preventDefault()" ondrop="soltarFilaServ(event,'${p.id}')"><td class="nc" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" style="cursor:grab;"><span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',-1)">▲</span> <span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',1)">▼</span> <span style="cursor:pointer;" title="Marcar / desmarcar que no hace servicios" onclick="toggleExentoServ('${p.id}')">🚫</span> <span style="cursor:pointer;" title="Marcar / desmarcar promoción interna: no hace guardia de seguridad" onclick="toggleSinGsServ('${p.id}')">🪖</span> <span style="cursor:pointer;${p.dama?'':'opacity:.35;'}" title="${p.dama?'Dama cadete — toca para cambiar a Caballero':'Caballero cadete — toca para cambiar a Dama'}" onclick="toggleDamaServ('${p.id}')">♀</span> ⠿ ${nombreCelda}</td>`
       : `<tr class="${p.sin_servicios?'exento':''}${p.id===servFichaId?' sel':''}"><td class="nc" style="cursor:pointer;" onclick="abrirFichaServ('${p.id}')" title="Toca para ver sus servicios y deudas — ${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})${p.sin_servicios?' — no hace servicios':''}">${nombreCelda}</td>`;
     tbody += `<td class="cnt"><span class="cnt-n" onclick="abrirFichaServ('${p.id}')" title="Ver sus servicios, fechas y deudas">${((window._servCuentas||{})[p.id]||{}).total||0}</span></td>`;
     dias.forEach(d=>{
@@ -9761,6 +9777,105 @@ function pintarQuedanManiobras(roster){
       + '</div></details>';
   }).join('');
 }
+/* ================= LEER SERVICIOS (lectura de cada noche) =================
+   Cada noche se lee: las imaginarias de esa noche + cuartelero e imaginaria de cuartelero del día siguiente.
+   Si el día siguiente es libre (sábado, domingo o día de puente), se sigue leyendo hasta el último día libre:
+   ej. el viernes → imaginarias del viernes, C/IC + imaginarias del sábado, C/IC del domingo.
+   Las imaginarias de la última noche (domingo o último día del puente) se leen esa misma noche.
+   No se lee el nombre de pila: «Caballero cadete García López» / «Dama cadete García López».
+   Lo pueden abrir el admin, el furriel (alumno que no hace servicios) y el servicio de cuartel. */
+const LECTURA = { fecha:null, filas:[], fest:{}, error:null };
+const LECTURA_DIAS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const LECTURA_MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const lecturaFechaTxt = f => { const d = new Date(f+'T00:00:00'); return `${LECTURA_DIAS[d.getDay()]} ${d.getDate()} de ${LECTURA_MESES[d.getMonth()]}`; };
+// Día sin clase: sábado, domingo, o un día de puente (menos su primera noche, que es día normal: ej. el viernes en que empieza)
+function lecturaDiaLibre(f){
+  const dow = new Date(f+'T00:00:00').getDay();
+  if(dow===0 || dow===6) return true;
+  const x = LECTURA.fest[f];
+  return !!(x && x.tipo==='puente' && x.borde!=='primero');
+}
+// Qué se lee la noche del día «f»: [{fecha, parte:'noche'|'dia'}]
+function lecturaPartes(f){
+  const partes = [{ fecha:f, parte:'noche' }];
+  let k = sumarDia(f, 1);
+  for(let n=0; n<20; n++){
+    partes.push({ fecha:k, parte:'dia' });
+    const sig = sumarDia(k, 1);
+    if(lecturaDiaLibre(k) && lecturaDiaLibre(sig)){ partes.push({ fecha:k, parte:'noche' }); k = sig; }
+    else break;
+  }
+  return partes;
+}
+const lecturaApellidos = a => { a = String(a||'').trim().replace(/\s+/g,' '); return a && a===a.toUpperCase() ? a.toLowerCase().replace(/(^|[\s-])(\p{L})/gu, (m,s,l)=>s+l.toUpperCase()) : a; };
+// Si hay dos con los mismos apellidos en la compañía (ej. los dos Rodríguez Rodríguez), se añade el nombre para saber cuál es
+const lecturaPersona = s => (s.dama ? 'Dama cadete ' : 'Caballero cadete ') + lecturaApellidos(s.apellidos) + (s.homonimo && s.nombre ? ' ('+String(s.nombre).trim()+')' : '');
+const lecturaPuesto = s => s.tipo==='cuartelero' ? 'Cuartelero' : s.tipo==='imaginaria_cuartelero' ? 'Imag. cuartelero'
+  : s.tipo==='imaginaria_imaginaria' ? 'Imag. de imag.' : s.tipo==='imaginaria' ? s.turno+'ª imaginaria' : (s.codigo||s.tipo);
+// Bloques ya montados: [{titulo, lineas:[{puesto, quien, estimado}]}]
+function lecturaBloques(){
+  const ORD = { cuartelero:1, imaginaria_cuartelero:2, imaginaria:3, imaginaria_imaginaria:4 };
+  return lecturaPartes(LECTURA.fecha).map(p=>{
+    const tipos = p.parte==='dia' ? ['cuartelero','imaginaria_cuartelero'] : ['imaginaria','imaginaria_imaginaria'];
+    const del = LECTURA.filas.filter(s=>s.fecha===p.fecha && tipos.includes(s.tipo))
+      .sort((a,b)=>(ORD[a.tipo]-ORD[b.tipo]) || ((a.turno||0)-(b.turno||0)));
+    const lineas = del.map(s=>({ puesto:lecturaPuesto(s), quien:lecturaPersona(s), estimado:!!s.estimado }));
+    if(p.parte==='dia'){ // si falta el cuartelero o su imaginaria, se dice
+      if(!del.some(s=>s.tipo==='cuartelero')) lineas.unshift({ puesto:'Cuartelero', quien:null });
+      if(!del.some(s=>s.tipo==='imaginaria_cuartelero')) lineas.push({ puesto:'Imag. cuartelero', quien:null });
+    }
+    const fTxt = lecturaFechaTxt(p.fecha);
+    return { titulo: p.parte==='noche' ? `Noche del ${fTxt}` : `${fTxt.charAt(0).toUpperCase()+fTxt.slice(1)}`, lineas, noche: p.parte==='noche' };
+  });
+}
+async function abrirLecturaServicios(fecha){
+  LECTURA.fecha = fecha || ymd(new Date());
+  abrirModalGlobal(`<div id="lectura-cont"><p class="small-note">Cargando…</p></div>`);
+  const c = CURRENT.compania || (CURRENT.persona && CURRENT.persona.compania);
+  try{ await fetchPuentesYManiobras(c); LECTURA.fest = diasFestivosServicios(c) || {}; }catch(e){ LECTURA.fest = {}; }
+  const partes = lecturaPartes(LECTURA.fecha);
+  const { data, error } = await sb.rpc('servicios_lectura', { p_compania: c, p_desde: LECTURA.fecha, p_hasta: partes[partes.length-1].fecha });
+  LECTURA.error = error ? (typeof cuErrorParche==='function' ? cuErrorParche(error) : error.message) : null;
+  LECTURA.filas = data || [];
+  pintarLecturaServicios();
+}
+function pintarLecturaServicios(){
+  const el = document.getElementById('lectura-cont'); if(!el) return;
+  const cab = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+      <h3 style="margin:0;">📣 Leer servicios</h3>
+      <input type="date" value="${LECTURA.fecha}" onchange="if(this.value) abrirLecturaServicios(this.value)" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;">
+    </div>`;
+  if(LECTURA.error){
+    el.innerHTML = cab + `<div class="notice closed"><span>No se pudieron cargar los servicios: ${escHtml(LECTURA.error)}</span></div>
+      <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cerrar</button></div>`;
+    return;
+  }
+  const bloques = lecturaBloques();
+  const cuerpo = bloques.map(b=>`<div class="lectura-bloque${b.noche?' noche':''}">
+      <div class="lectura-tit">${b.noche?'🌙':'☀️'} ${escHtml(b.titulo)}</div>
+      ${b.lineas.length ? b.lineas.map(l=>`<div class="lectura-linea"><span class="p">${escHtml(l.puesto)}</span><span>${l.quien ? `<b>${escHtml(l.quien)}</b>${l.estimado?' <small class="lectura-est">(estimado)</small>':''}` : '<i class="lectura-falta">sin nombrar</i>'}</span></div>`).join('')
+        : '<div class="lectura-linea"><i class="lectura-falta">No hay imaginarias nombradas esta noche.</i></div>'}
+    </div>`).join('');
+  el.innerHTML = cab + `<p class="small-note" style="margin-top:0;">Lectura de la noche del <b>${escHtml(lecturaFechaTxt(LECTURA.fecha))}</b>${bloques.length>2 ? ' · hasta el último día libre' : ''}</p>
+    <div class="lectura">${cuerpo}</div>
+    <div class="modal-botones"><button class="small-btn" onclick="copiarLecturaServicios()">📋 Copiar texto</button><button class="primary-btn" onclick="cerrarModalGlobal()">Cerrar</button></div>`;
+}
+function copiarLecturaServicios(){
+  const txt = `Lectura de servicios — noche del ${lecturaFechaTxt(LECTURA.fecha)}\n\n` + lecturaBloques().map(b=>
+    b.titulo.toUpperCase() + '\n' + (b.lineas.length ? b.lineas.map(l=>`- ${l.puesto}: ${l.quien || 'sin nombrar'}${l.estimado?' (estimado)':''}`).join('\n') : '- No hay imaginarias nombradas')).join('\n\n');
+  const ok = () => showToast('Texto copiado.'), mal = () => showToast('No se pudo copiar.');
+  try{ navigator.clipboard.writeText(txt).then(ok, mal); }catch(e){ mal(); }
+}
+async function toggleDamaServ(id){
+  const p = SERV_GRID.roster.find(x=>x.id===id); if(!p) return;
+  const nuevo = !p.dama;
+  const { error } = await sb.from('personas').update({ dama: nuevo }).eq('id', id);
+  if(error){ showToast('No se pudo: '+error.message+' — ¿has ejecutado el patch 65?'); return; }
+  p.dama = nuevo;
+  if(servOrdenAntes){ const q = servOrdenAntes.find(x=>x.id===id); if(q) q.dama = nuevo; }
+  showToast(`${p.apellidos}: se leerá como ${nuevo ? 'Dama cadete' : 'Caballero cadete'}.`);
+  pintarServGrid();
+}
 async function renderAdminServicios(){
   try{ await DISENO_PROMESA; }catch(e){} // lo que ya has visto de la bandeja se guarda en tu cuenta
   if(servOrdenando){ servOrdenando = false; servOrdenAntes = null; }
@@ -9772,7 +9887,8 @@ async function renderAdminServicios(){
   // Los servicios de la compañía se piden UNA sola vez: de ahí salen la tabla, las cuentas, la ficha y el primer/último día.
   const seguro = p => Promise.resolve(p).then(r=>r, e=>({ data:null, error:e }));
   const pRoster = (async()=>{
-    let r = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios,sin_gs').eq('compania', c).order('apellidos');
+    let r = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios,sin_gs,dama').eq('compania', c).order('apellidos');
+    if(r.error) r = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios,sin_gs').eq('compania', c).order('apellidos'); // sin el patch 65 todavía
     if(r.error) r = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios').eq('compania', c).order('apellidos'); // sin el patch 60 todavía
     if(r.error) r = await sb.from('personas').select('id,nombre,apellidos,seccion').eq('compania', c).order('apellidos'); // por si aún no está el patch 46
     return r.data || [];
