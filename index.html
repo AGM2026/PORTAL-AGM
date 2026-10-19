@@ -1327,7 +1327,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-19T13:30:00";
+const APP_VERSION = "2026-10-19T23:10:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -8449,7 +8449,18 @@ async function siguienteTurnoGS(fecha){
   const { data } = await sb.from('servicios').select('turno').eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo','guardia_seguridad').order('turno',{ascending:false}).limit(1);
   return ((data && data[0]) ? data[0].turno : 0) + 1;
 }
+// Con aviso mientras se guarda (antes no salía nada hasta que terminaba) y sin poder pulsar dos veces
 async function asignarServicio(){
+  if(window._servGuardando) return;
+  const btn = document.getElementById('serv-btn-guardar'), q = document.getElementById('serv-btn-quitar'), txt = btn ? btn.textContent : '';
+  window._servGuardando = true;
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Guardando…'; }
+  if(q) q.disabled = true;
+  showToast('⏳ Guardando el servicio…');
+  try{ await _asignarServicioImpl(); }
+  finally{ window._servGuardando = false; if(btn){ btn.disabled = false; btn.textContent = txt; } if(q) q.disabled = false; }
+}
+async function _asignarServicioImpl(){
   const fecha = document.getElementById('serv-fecha').value;
   const tipo = document.getElementById('serv-tipo').value;
   let turno = tipo==='imaginaria' ? parseInt(document.getElementById('serv-turno').value,10) : 0;
@@ -8467,7 +8478,8 @@ async function asignarServicio(){
   const { error } = await sb.from('servicios').upsert(fila, { onConflict: 'compania,fecha,tipo,turno' });
   if(error){ showToast('No se pudo asignar: '+error.message+(/tipo|check|constraint/i.test(error.message) ? ' — ¿has ejecutado el patch 60?' : '')); return; }
   window._servGsTurno = null;
-  showToast('Servicio asignado.'); // solo este servicio: no se toca ninguna imaginaria de otro día
+  const selP = document.getElementById('serv-persona'), nomP = selP && selP.selectedOptions[0] ? selP.selectedOptions[0].textContent.replace(/\s*\(\d+\)\s*$/, '') : '';
+  showToast(`✅ Servicio guardado: ${servicioLabel({tipo,turno})} · ${nomP} · ${fmtFecha(fecha)}`); // solo este servicio: no se toca ninguna imaginaria de otro día
   await renderAdminServicios();
 }
 async function quitarServicioManual(){
@@ -8477,9 +8489,10 @@ async function quitarServicioManual(){
   if(tipo==='guardia_seguridad'){ if(window._servGsTurno==null){ showToast('Para quitar una guardia de seguridad, toca su «GS» en la tabla.'); return; } turno = window._servGsTurno; }
   if(!fecha){ showToast('Elige la fecha.'); return; }
   if(!await confirmarApp(`¿Quitar ${servicioLabel({tipo,turno})} del ${fmtFecha(fecha)} del cuadrante?`, { si:'Quitar', peligro:true })) return;
+  showToast('⏳ Quitando el servicio…');
   const { error } = await sb.from('servicios').delete().eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo', tipo).eq('turno', turno);
   if(error){ showToast('No se pudo quitar: '+error.message); return; }
-  showToast('Quitado.');
+  showToast('✅ Servicio quitado.');
   await renderAdminServicios();
 }
 async function eliminarServicio(id){
@@ -9244,7 +9257,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   const implicitas = [];
   const deudasAplicadas = [];
   const saltos = []; // a quién se ha saltado por ya haber hecho el servicio en la ronda sin que nadie se lo deba (para explicarlo en la casilla vacía)
-  const deudaPara =(acreedorId, tipo, entre, f) => pend.find(x=>!x._u && x.acreedor_id===acreedorId && x.tipo===tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+f));
+  const deudaPara =(acreedorId, tipo, entre, f) => pend.find(x=>!x._u && x.acreedor_id===acreedorId && x.tipo===tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+f) && (!x.implicita || x.fecha_origen<f));
   // A quién le toca el siguiente servicio de una cola. Si por el camino se salta a alguien que YA lo hizo en la ronda (A) y alguien le DEBE ese servicio a A,
   // lo hace el que se lo debe (y la cola sigue por la persona de después de A, que no pierde su turno).
   const elegir = (k, q, idx, f, tipo, finde, consumir) => {
@@ -9282,6 +9295,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
       if(pC[q]===null || pC[q]<0){ pC[q] = idx-1; ult[q] = null; }                 // la cola empieza aquí (o se ha vuelto a rellenar el principio a mano)
       else if(esp!==null && idx===esp){ pC[q] = idx-1; ult[q] = null; }            // era quien tocaba: la cola avanza
       else if(ult[q]!==null && idx===ult[q]-1){ pC[q] = idx-1; ult[q] = null; }    // (ya no se usa: ver la línea de abajo)
+      else if(esp!==null && c.estimado){ ult[q] = null; } // una fila ESTIMADA que no sigue el ritmo no es un cambio a mano: no cuenta (ni mueve la cola ni crea deuda); solo cuentan las puestas a mano o del Excel
       else if(esp!==null){ // esp = -1 si ya no queda nadie por hacerlo en la lista (se puede estar pagando una deuda justo al final)
         // Puesto a mano, distinto del que tocaba (E): lo hizo otra persona (Y) en su lugar. El turno de E se da por cumplido y la cola sigue su ritmo;
         // E le debe uno a Y y lo paga cuando le toque a Y. Si Y es quien estaba PAGANDO una deuda de ese tipo, se salda y no se crea otra.
@@ -9315,7 +9329,9 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   //    (regla 2: la IC del último día dice quién es el siguiente Cuartelero; regla 3: la I I, la siguiente 1ª Imaginaria)
   // En los días de maniobras (sin servicio) solo se leen las imaginarias: la vuelta puede llevarlas y así no se repite a quien ya las hizo.
   Object.keys(porFecha).filter(f=>f<op.desde).sort().forEach(f=>{
-    if(!op.sinServicio.has(f)) { sincronizar(f, porFecha[f]); return; }
+    // El último día de un puente «repite»: el cuartelero de ese día es el del primer día, repetido. NO cuenta para la cola (si no, la cola de fin de semana saltaba a la posición de la de entre semana)
+    const puF = puenteDia[f], repetido = !!puF && puF.modo==='repite' && !puF.esPrimero;
+    if(!op.sinServicio.has(f)) { sincronizar(f, repetido ? porFecha[f].filter(s=>s.tipo!=='cuartelero') : porFecha[f]); return; }
     if(!(window._servManiobras||[]).some(m=>m.fin===f)) return; // solo la vuelta (último día): los días de en medio los hacen los rebajados a mano
     const imag = porFecha[f].filter(s=>s.tipo==='imaginaria' || s.tipo==='imaginaria_imaginaria');
     if(imag.length) sincronizar(f, imag);
@@ -9426,7 +9442,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   filas.forEach(r=>{
     if(r.deuda_id) return; // las que ya salieron de saltar a alguien por una deuda no se tocan
     const entre = !esFinde(r.fecha);
-    const d = pend.find(x=>!x._u && x.acreedor_id===r.persona_id && x.tipo===r.tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+r.fecha)
+    const d = pend.find(x=>!x._u && x.acreedor_id===r.persona_id && x.tipo===r.tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+r.fecha) && (!x.implicita || x.fecha_origen<r.fecha)
                          && !(r.tipo==='guardia_seguridad' && roster[pos[x.deudor_id]].sin_gs));
     if(!d) return;
     d._u = true;
