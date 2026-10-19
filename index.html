@@ -1329,7 +1329,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-20T02:10:00";
+const APP_VERSION = "2026-10-20T03:00:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -9496,8 +9496,8 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
 }
 async function cargarDatosEstimacion(){
   const c = CURRENT.compania;
-  try{ return await traerTodoServ(()=>sb.from('servicios').select('fecha,tipo,turno,codigo,persona_id,estimado,deuda_id').eq('compania', c).order('fecha').order('id')); }
-  catch(e){ return await traerTodoServ(()=>sb.from('servicios').select('fecha,tipo,turno,codigo,persona_id,estimado').eq('compania', c).order('fecha').order('id')); } // sin el patch 60 todavía
+  try{ return await traerTodoServ(()=>sb.from('servicios').select('id,fecha,tipo,turno,codigo,persona_id,estimado,deuda_id').eq('compania', c).order('fecha').order('id')); }
+  catch(e){ return await traerTodoServ(()=>sb.from('servicios').select('id,fecha,tipo,turno,codigo,persona_id,estimado').eq('compania', c).order('fecha').order('id')); } // sin el patch 60 todavía
 }function opcionesEstimacion(){
   const desde = document.getElementById('est-desde').value, hasta = document.getElementById('est-hasta').value;
   if(!desde || !hasta || hasta < desde){ showToast('Elige bien las fechas "desde" y "hasta".'); return null; }
@@ -9586,12 +9586,19 @@ async function previsualizarEstimacion(paso){
   try{
     const roster = SERV_GRID.roster;
     if(!roster.filter(p=>!p.sin_servicios).length){ el.innerHTML = '<div class="notice closed"><span>No hay nadie en la lista que haga servicios: no se puede estimar.</span></div>'; return; }
-    const existentes = await cargarDatosEstimacion();
+    const todasExistentes = await cargarDatosEstimacion();
+    // Una estimación nueva SUSTITUYE a las estimadas (con borde de puntos) que haya de antes en esas fechas: no cuentan para calcular y se borran al guardar
+    const tiposQue = { todos:['cuartelero','imaginaria_cuartelero','imaginaria','imaginaria_imaginaria','guardia_seguridad'], cuartel:['cuartelero','imaginaria_cuartelero'], imag:['imaginaria','imaginaria_imaginaria'], gs:['guardia_seguridad'] }[op.que] || [];
+    const diaFinde = f => op.festivos.has(f) || [0,6].includes(new Date(f+'T00:00:00').getDay());
+    const viejas = todasExistentes.filter(x=>x.estimado && x.id!=null && x.fecha>=op.desde && x.fecha<=op.hasta && tiposQue.includes(x.tipo)
+      && !(op.dias==='semana' && diaFinde(x.fecha)) && !(op.dias==='finde' && !diaFinde(x.fecha)));
+    const idsViejas = new Set(viejas.map(x=>x.id));
+    const existentes = todasExistentes.filter(x=>!idsViejas.has(x.id));
     const rd = await sb.from('deudas_servicio').select('id,deudor_id,acreedor_id,tipo,turno,entre_semana,fecha_origen').eq('compania', CURRENT.compania).eq('saldada', false);
     const rg = await sb.from('gs_dias').select('*').order('fecha'); // calendario de guardias de seguridad (patch 61)
     const r = generarEstimacion({ ...op, compania: CURRENT.compania, gsDias: rg.error ? [] : (rg.data||[]) }, roster, existentes, rd.error ? [] : (rd.data||[]));
     if(rg.error && (op.que==='todos' || op.que==='gs')) r.gsInfo.avisos.push('No se pudo leer el calendario de guardias de seguridad (¿has ejecutado el patch 61?)');
-    EST_PREVIA = { op, filas: r.filas, saltos: r.saltos };
+    EST_PREVIA = { op, filas: r.filas, saltos: r.saltos, reemplazar: [...idsViejas] };
     const sinImagPrev = [...(op.sinImag || [])].filter(f=>f>=op.desde && f<=op.hasta).sort();
     const saltadas = Object.keys(window._servFest||{}).filter(f=>window._servFest[f].tipo==='mani' && f>=op.desde && f<=op.hasta && !(op.maniImag && op.maniImag.has(f))).sort();
     const vueltaImag = [...(op.maniImag || [])].sort();
@@ -9600,6 +9607,7 @@ async function previsualizarEstimacion(paso){
     const celda = (d,tipo,turno) => { const x = d.nuevos.find(n=>n.tipo===tipo && n.turno===turno); return x ? `${nm(x.persona_id)} <span style="color:var(--ink-soft);">#${puesto(x.persona_id)}</span>${x.deuda_id ? ' <span style="color:#8e44ad;" title="Para saldar una deuda">💸</span>' : ''}` : '<span style="color:var(--ink-soft);">—</span>'; };
     const L = ['D','L','M','X','J','V','S'];
     el.innerHTML = `
+      ${idsViejas.size ? `<div class="notice" style="display:block;border-color:#8e44ad;margin-bottom:8px;">♻️ Esta estimación <b>sustituye a ${idsViejas.size} servicio${idsViejas.size===1?'':'s'} estimado${idsViejas.size===1?'':'s'} de antes</b> en esas fechas (los de borde de puntos). Lo que está puesto a mano o del Excel no se toca.</div>` : ''}
       ${r.faltan.length ? `<div class="notice closed"><span>⚠️ No hay datos en la tabla para saber por dónde van: ${r.faltan.join(', ')}. Esas colas no se estiman.</span></div>` : ''}
       <div class="servicio-card">
         <div class="titulo">Saldrían ${r.filas.length} servicios estimados en ${r.porDia.length} días (del ${fmtFecha(op.desde)} al ${fmtFecha(op.hasta)})</div>
@@ -9635,6 +9643,8 @@ async function guardarEstimacion(){
   if(rb.error) rb = await sb.from('estimaciones').insert({ ...loteBase, hecha_por: quienHaceEstimacion() }).select('id').single(); // por si la columna "saltos" aún no existe
   if(rb.error) rb = await sb.from('estimaciones').insert(loteBase).select('id').single(); // por si tampoco existe "hecha_por"
   if(!rb.error && rb.data) estId = rb.data.id; // sin el patch 62 se guarda como antes (sin lote)
+  const viejasIds = (EST_PREVIA.reemplazar || []);
+  for(let i=0; i<viejasIds.length; i+=200){ await sb.from('servicios').delete().in('id', viejasIds.slice(i,i+200)).eq('estimado', true); } // solo estimadas, nunca lo puesto a mano
   const conDeuda = EST_PREVIA.filas.some(f=>f.deuda_id);
   const filas = EST_PREVIA.filas.map(f=>{ const o = { compania: CURRENT.compania, ...f }; if(conDeuda) o.deuda_id = f.deuda_id || null; else delete o.deuda_id; if(estId) o.estimacion_id = estId; return o; });
   for(let i=0; i<filas.length; i+=400){
