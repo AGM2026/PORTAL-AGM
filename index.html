@@ -1109,7 +1109,8 @@ aplicarTema();
         <button type="button" class="caja" data-caja="serv|manual" onclick="abrirCaja('serv','manual')"><span class="caja-ico">✍️</span><span class="caja-tit">Añadir o cambiar</span><span class="caja-sub">Un servicio a mano</span></button>
         <button type="button" class="caja" data-caja="serv|quedan" onclick="abrirCaja('serv','quedan')"><span class="caja-ico">⛺</span><span class="caja-tit">Se quedan</span><span class="caja-sub">Gente que no va a maniobras</span></button>
         <button type="button" class="caja" data-caja="serv|estimar" onclick="abrirCaja('serv','estimar')"><span class="caja-ico">🔮</span><span class="caja-tit">Estimar servicios</span><span class="caja-sub">Rellenar el cuadrante</span></button>
-        <button type="button" class="caja" data-caja="serv|bandeja" onclick="abrirCaja('serv','bandeja')"><span class="caja-ico">📥</span><span class="caja-tit">Bandeja</span><span class="caja-sub">Cambios, dudas y deudas</span><span class="caja-badge hidden" id="serv-badge-bandeja"></span><span id="serv-badge-cambios" style="display:none"></span><span id="serv-badge-dudas" style="display:none"></span><span id="serv-badge-deudas" style="display:none"></span></button>
+        <button type="button" class="caja" data-caja="serv|bandeja" onclick="abrirCaja('serv','bandeja')"><span class="caja-ico">📥</span><span class="caja-tit">Bandeja</span><span class="caja-sub">Cambios y dudas</span><span class="caja-badge hidden" id="serv-badge-bandeja"></span><span id="serv-badge-cambios" style="display:none"></span><span id="serv-badge-dudas" style="display:none"></span><span id="serv-badge-deudas" style="display:none"></span></button>
+        <button type="button" class="caja" data-caja="serv|deudas" onclick="if(abrirCaja('serv','deudas')) bandejaVisto('deudas')"><span class="caja-ico">💸</span><span class="caja-tit">Deudas</span><span class="caja-sub">Quién le debe a quién</span><span class="caja-badge hidden" id="serv-badge-deudas-caja"></span></button>
         <button type="button" class="caja" data-caja="serv|excel" onclick="abrirCaja('serv','excel')"><span class="caja-ico">📤</span><span class="caja-tit">Subir el Excel</span><span class="caja-sub">Guardias de orden</span></button>
         <button type="button" class="caja" data-caja="serv|visible" onclick="abrirCaja('serv','visible')"><span class="caja-ico">👁️</span><span class="caja-tit">Mostrar a alumnos</span><span class="caja-sub">Pestaña Servicios</span></button>
         <button type="button" class="caja" id="serv-info-btn" data-caja="serv|info" onclick="toggleInfografiaServ()"><span class="caja-ico">ℹ️</span><span class="caja-tit">Infografía</span></button>
@@ -1123,7 +1124,9 @@ aplicarTema();
         <details class="caja-det" id="serv-det-dudas" ontoggle="if(this.open) bandejaVisto('dudas')"><summary>❓ <span id="serv-sum-dudas">Dudas de los alumnos</span><span class="det-nuevo hidden" id="serv-nue-dudas"></span></summary><div class="caja-sub-body">
         <div id="admin-dudas"></div>
         </div></details>
-        <details class="caja-det" id="serv-det-deudas" ontoggle="if(this.open) bandejaVisto('deudas')"><summary>💸 <span id="serv-sum-deudas">Deudas de servicio</span><span class="det-nuevo hidden" id="serv-nue-deudas"></span></summary><div class="caja-sub-body">
+      </div>
+      <div class="caja-panel hidden" data-caja="serv|deudas" id="serv-det-deudas">
+        <div class="caja-panel-cab"><b>💸 <span id="serv-sum-deudas">Deudas de servicio</span><span class="det-nuevo hidden" id="serv-nue-deudas"></span></b><button type="button" class="small-btn" onclick="abrirCaja('serv','deudas')">Cerrar ✕</button></div>
         <button class="small-btn" onclick="toggleNuevaDeuda()">＋ Añadir deuda</button>
         <div id="nueva-deuda-form" class="admin-panel hidden" style="flex-direction:column;align-items:stretch;margin-top:10px;">
         <div class="switch-label">Apuntar una deuda a mano<span class="sub2">Como lo apuntarías en la columna OBS. del Excel. Las deudas apuntadas aquí NO se borran al volver a subir el Excel.</span></div>
@@ -1136,7 +1139,6 @@ aplicarTema();
         <button class="small-btn" style="margin-top:8px;align-self:flex-start;" onclick="guardarNuevaDeuda()">💾 Guardar deuda</button>
       </div>
         <div id="admin-deudas-lista" style="margin-top:10px;"></div>
-        </div></details>
       </div>
       <div class="caja-panel hidden" data-caja="serv|manual">
         <div class="caja-panel-cab"><b>✍️ Añadir o cambiar un servicio</b><button type="button" class="small-btn" onclick="abrirCaja('serv','manual')">Cerrar ✕</button></div>
@@ -1327,7 +1329,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-20T01:20:00";
+const APP_VERSION = "2026-10-20T02:10:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -2162,6 +2164,15 @@ function novedadesAdminItems(){
    En ⚙️ → «Ver actualizaciones» se puede elegir cuál ver. Los alumnos ven lo suyo; los Furrys y el superadmin, lo suyo y (plegado) lo de los alumnos.
    especial:true la marca con una estrella. Al entrar, se enseña SOLO la última, una vez por cuenta. ---- */
 const ACTUALIZACIONES = [
+  { id:'2026-10-20-servicios', fecha:'2026-10-20T02:00', titulo:'Servicios: estimación y deudas', especial:false,
+    alumno: null, // solo para Furrys y superadmin
+    furry: ()=>[
+      { ico:'🔮', t:'La estimación respeta lo que pones a mano', abierto:true, puntos:[
+        'Si alguien hace el cuartelero en el turno de otro, el turno se da por cumplido y quien no lo hizo se lo debe a quien lo hizo; lo paga cuando le toque a esa persona.',
+        'Si un cambio a mano es una excepción y más adelante vuelve a aparecer quien tocaba, la cola no se mueve.',
+        'En los puentes, el último día repite el cuartelero y la imaginaria de cuartelero del primer día, y los sábados y domingos cuentan como fin de semana.' ] },
+      { ico:'💸', t:'Deudas en su propia caja', puntos:['Las deudas ya no están dentro de la Bandeja: tienen su caja «Deudas» en Servicios, con su numerito de nuevas.'] }
+    ] },
   { id:'2026-10-18-personal', fecha:'2026-10-18T00:30', titulo:'Externados y viernes libres', especial:false,
     alumno: null, // solo para Furrys y superadmin
     furry: ()=>[
@@ -8564,6 +8575,7 @@ function bandejaPintar(k){
   const max = window._bandejaMax[k] || 0, nuevos = window._bandejaNuevos ? (window._bandejaNuevos[k] || 0) : 0;
   const chip = document.getElementById('serv-nue-'+k); if(chip){ chip.textContent = nuevos + (nuevos===1 ? ' nueva' : ' nuevas'); chip.classList.toggle('hidden', !nuevos); }
   const bd = document.getElementById('serv-badge-'+k); if(bd){ bd.textContent = nuevos; bd.classList.toggle('hidden', !nuevos); }
+  const bc = document.getElementById('serv-badge-'+k+'-caja'); if(bc){ bc.textContent = nuevos; bc.classList.toggle('hidden', !nuevos); } // «Deudas» tiene su propia caja
   actualizarBadgeBandeja();
 }
 function bandejaActualizar(k, pend){
@@ -8571,7 +8583,8 @@ function bandejaActualizar(k, pend){
   const max = pend.reduce((m, x)=>Math.max(m, Number(x.id) || 0), 0);
   window._bandejaMax[k] = max;
   const det = document.getElementById('serv-det-'+k), panel = det && det.closest('.caja-panel');
-  if(det && det.open && panel && !panel.classList.contains('hidden') && max > bandejaVistoMax(k)){ // si lo tienes abierto delante, ya lo estás viendo
+  const abierto = det && (det.tagName==='DETAILS' ? det.open : true), pan = det && (det.classList.contains('caja-panel') ? det : panel);
+  if(det && abierto && pan && !pan.classList.contains('hidden') && max > bandejaVistoMax(k)){ // si lo tienes abierto delante, ya lo estás viendo
     if(!DISENO._bandeja) DISENO._bandeja = {}; DISENO._bandeja[k] = max; guardarDiseno();
   }
   window._bandejaNuevos[k] = pend.filter(x=>(Number(x.id) || 0) > bandejaVistoMax(k)).length;
@@ -8585,9 +8598,9 @@ function bandejaVisto(k){
   (window._bandejaNuevos = window._bandejaNuevos || {})[k] = 0;
   bandejaPintar(k);
 }
-// El numerito de la «Bandeja» es la suma de lo NUEVO que aún no has visto (cambios + dudas + deudas)
+// El numerito de la «Bandeja» es la suma de lo NUEVO que aún no has visto (cambios + dudas); las deudas tienen su propia caja
 function actualizarBadgeBandeja(){
-  const n = ['cambios','dudas','deudas'].reduce((a,k)=>{ const e = document.getElementById('serv-badge-'+k); return a + (e ? (parseInt(e.textContent,10)||0) : 0); }, 0);
+  const n = ['cambios','dudas'].reduce((a,k)=>{ const e = document.getElementById('serv-badge-'+k); return a + (e ? (parseInt(e.textContent,10)||0) : 0); }, 0);
   const b = document.getElementById('serv-badge-bandeja'); if(b){ b.textContent = n; b.classList.toggle('hidden', !n); }
 }
 async function cargarDudasAdmin(){
