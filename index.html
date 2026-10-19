@@ -1327,7 +1327,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-19T23:10:00";
+const APP_VERSION = "2026-10-20T01:20:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -9229,7 +9229,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   const puenteDia = {};
   Object.values(op.puentes || {}).forEach(p=>(p.dias||[]).forEach(d=>{
     const primero = d===p.ini, ultimo = d===p.fin;
-    puenteDia[d] = { modo:p.modo, ini:p.ini, esPrimero:primero, esUltimo:ultimo, finde: primero ? (p.primero==='finde') : ultimo ? (p.ultimo==='finde') : (p.medio==='finde') };
+    puenteDia[d] = { modo:p.modo, ini:p.ini, esPrimero:primero, esUltimo:ultimo, finde: primero ? (p.primero==='finde') : ultimo ? (p.ultimo==='finde') : (p.medio==='finde' || [0,6].includes(new Date(d+'T00:00:00').getDay())) }; // los sábados y domingos de en medio de un puente cuentan siempre como fin de semana
   }));
   const esFinde = f => { const pu = puenteDia[f]; if(pu && pu.finde!==undefined) return pu.finde; return op.festivos.has(f) || [0,6].includes(new Date(f+'T00:00:00').getDay()); };
   const porFecha = {};
@@ -9282,6 +9282,23 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   // Un cambio aprobado en la app se reconoce por su deuda (el que lo pidió es a quien tocaba). Si varios días seguidos siguen otro orden (el Excel se salta a alguien), la cola sí se mueve.
   const swapPor = {}; (deudas||[]).forEach(d=>{ if(d.tipo==='cuartelero' && d.fecha_origen) swapPor[d.fecha_origen+'|'+d.acreedor_id] = d.deudor_id; });
   const ult = { semana:null, finde:null }; // índice del último cuartelero «suelto» leído en cada cola
+  // Cuando un cuartelero puesto a mano no es el que tocaba (E), se mira qué hacen los siguientes días YA PUESTOS a mano o del Excel en esa misma cola:
+  //  · si más adelante aparece E → ese cambio fue una excepción «a posta» y NO gastó el turno de E (la cola sigue donde estaba);
+  //  · si aparece quien va DESPUÉS de E → el turno de E se dio por cumplido (E le debe uno a quien lo hizo);
+  //  · si no hay nada más puesto → se da por cumplido (como si lo hubiera hecho el otro en su lugar).
+  const fechasOrd = Object.keys(porFecha).sort();
+  const evidenciaCambio = (f, q, esp, hechoHoy) => {
+    let nextIdx = esp-1; while(nextIdx>=0 && hechoHoy.has(roster[nextIdx].id)) nextIdx--;
+    for(const g of fechasOrd){
+      if(g<=f || (esFinde(g) ? 'finde' : 'semana')!==q) continue;
+      const pg = puenteDia[g]; if(pg && pg.modo==='repite' && !pg.esPrimero) continue; // el cuartelero repetido de un puente no es evidencia
+      const cg = (porFecha[g]||[]).find(s=>s.tipo==='cuartelero' && !s.estimado); if(!cg || !enLista(cg)) continue;
+      const ip = pos[cg.persona_id];
+      if(ip===esp) return 'no';
+      if(ip===nextIdx) return 'si';
+    }
+    return null;
+  };
   const sincronizar = (f, lista) => {
     const q = esFinde(f) ? 'finde' : 'semana';
     const c = lista.find(s=>s.tipo==='cuartelero'), ic = lista.find(s=>s.tipo==='imaginaria_cuartelero');
@@ -9302,9 +9319,12 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
         const E = esp>=0 ? roster[esp].id : null, Y = c.persona_id, hechoC = hechoAntes;
         const paga = implicitas.filter(x=>x.deudor_id===Y && x.entre_semana===(q==='semana')).map(x=>({ x, pa:pos[x.acreedor_id] }))
           .filter(o=>o.pa===esp || (o.pa<=pC[q] && o.pa>esp && hechoC.has(roster[o.pa].id))).sort((a,b)=>b.pa-a.pa)[0]; // la primera que se encuentra yendo hacia arriba
+        const hechoHoy = new Set(hechoAntes); hechoHoy.add(Y);
         if(paga){
           implicitas.splice(implicitas.indexOf(paga.x), 1); const k = pend.indexOf(paga.x); if(k>=0) pend.splice(k, 1);
           pC[q] = paga.pa===esp ? esp-1 : paga.pa-1;
+        } else if(esp>=0 && evidenciaCambio(f, q, esp, hechoHoy)==='no'){
+          // excepción «a posta»: E sigue siendo el siguiente de la cola, sin deuda
         } else {
           if(E!==null && Y!==E){
             const d = { id:'impl|'+f+'|'+E, implicita:true, tipo:'cuartelero', entre_semana:(q==='semana'), deudor_id:E, acreedor_id:Y, fecha_origen:f };
@@ -9364,10 +9384,17 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
     const sinCuartelero = !!pu && (pu.modo==='ninguno' || (pu.modo==='repite' && !pu.esPrimero));
     const hacerC = quiereC && !soloImag;
     if(hacerC && pC[q]!==null && sinCuartelero){
+      // Lo que se haya puesto a mano en un día de en medio de un puente sí cuenta para la cola (el repetido del último día no)
+      if(!(pu.modo==='repite' && pu.esUltimo)){ const yc = ya.filter(s=>s.tipo==='cuartelero'||s.tipo==='imaginaria_cuartelero'); if(yc.some(s=>s.tipo==='cuartelero')) sincronizar(f, yc); }
       if(pu.modo==='repite' && pu.esUltimo){
         const origen = filas.find(r=>r.tipo==='cuartelero' && r.fecha===pu.ini) || (porFecha[pu.ini]||[]).find(s=>s.tipo==='cuartelero');
         if(origen && !ya.find(s=>s.tipo==='cuartelero')) addP('cuartelero',0,origen.persona_id,'C');
-        if(!ya.find(s=>s.tipo==='imaginaria_cuartelero')){ const p = elegirConVuelta('C',q,pC[q],f,'cuartelero',finde,false); if(p.quien) addP('imaginaria_cuartelero',0,p.quien,'IC'); }
+        if(!ya.find(s=>s.tipo==='imaginaria_cuartelero')){
+          // se repite también la IC del primer día (si el primer día no la tuvo, la que toque por la cola)
+          const icOrigen = filas.find(r=>r.tipo==='imaginaria_cuartelero' && r.fecha===pu.ini) || (porFecha[pu.ini]||[]).find(s=>s.tipo==='imaginaria_cuartelero');
+          if(icOrigen) addP('imaginaria_cuartelero',0,icOrigen.persona_id,'IC');
+          else { const p = elegirConVuelta('C',q,pC[q],f,'cuartelero',finde,false); if(p.quien) addP('imaginaria_cuartelero',0,p.quien,'IC'); }
+        }
       }
     } else if(hacerC && pC[q]!==null){
       const c = ya.find(s=>s.tipo==='cuartelero'), hayIC = ya.find(s=>s.tipo==='imaginaria_cuartelero');
