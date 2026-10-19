@@ -1329,7 +1329,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-20T03:00:00";
+const APP_VERSION = "2026-10-19T22:39:56";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -8937,12 +8937,12 @@ async function exportServiciosExcel(){
     .select('*, personas(nombre,apellidos,seccion)')
     .eq('compania', c).gte('fecha', desde).lte('fecha', hasta)
     .order('fecha').order('tipo').order('turno');
-  const header = ['Día', 'Código', 'Servicio', 'Sección', 'Nombre y apellidos'];
+  const header = ['Día', 'Código', 'Servicio', 'Sección', 'Nombre y apellidos', 'Estimado'];
   const rows = [header];
-  (servicios||[]).forEach(s=>{ rows.push([fmtFecha(s.fecha), servCorto(s), servicioLabel(s), `${c}${s.personas.seccion}`, `${s.personas.apellidos}, ${s.personas.nombre}`]); });
+  (servicios||[]).forEach(s=>{ rows.push([fmtFecha(s.fecha), servCorto(s), servicioLabel(s), `${c}${s.personas.seccion}`, `${s.personas.apellidos}, ${s.personas.nombre}`, s.estimado ? 'Sí (estimado)' : '']); }); // la última columna dice cuáles son estimados (borde de puntos) y cuáles están puestos a mano o vienen del Excel
   if(rows.length===1) rows.push(['—','','Sin servicios en estos días','','']);
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{wch:14},{wch:8},{wch:26},{wch:9},{wch:30}];
+  ws['!cols'] = [{wch:14},{wch:8},{wch:26},{wch:9},{wch:30},{wch:14}];
   xlsxHeaderOnly(ws, header.length);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Servicios');
@@ -9304,7 +9304,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
     let nextIdx = esp-1; while(nextIdx>=0 && hechoHoy.has(roster[nextIdx].id)) nextIdx--;
     for(const g of fechasOrd){
       if(g<=f || (esFinde(g) ? 'finde' : 'semana')!==q) continue;
-      const pg = puenteDia[g]; if(pg && pg.modo==='repite' && !pg.esPrimero) continue; // el cuartelero repetido de un puente no es evidencia
+      const pg = puenteDia[g]; if(pg && pg.modo==='repite' && pg.esUltimo) continue; // el cuartelero repetido de un puente no es evidencia
       const cg = (porFecha[g]||[]).find(s=>s.tipo==='cuartelero' && !s.estimado); if(!cg || !enLista(cg)) continue;
       const ip = pos[cg.persona_id];
       if(ip===esp) return 'no';
@@ -9363,7 +9363,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   // En los días de maniobras (sin servicio) solo se leen las imaginarias: la vuelta puede llevarlas y así no se repite a quien ya las hizo.
   Object.keys(porFecha).filter(f=>f<op.desde).sort().forEach(f=>{
     // El último día de un puente «repite»: el cuartelero de ese día es el del primer día, repetido. NO cuenta para la cola (si no, la cola de fin de semana saltaba a la posición de la de entre semana)
-    const puF = puenteDia[f], repetido = !!puF && puF.modo==='repite' && !puF.esPrimero;
+    const puF = puenteDia[f], repetido = !!puF && puF.modo==='repite' && puF.esUltimo;
     if(!op.sinServicio.has(f)) { sincronizar(f, repetido ? porFecha[f].filter(s=>s.tipo!=='cuartelero') : porFecha[f]); return; }
     if(!(window._servManiobras||[]).some(m=>m.fin===f)) return; // solo la vuelta (último día): los días de en medio los hacen los rebajados a mano
     const imag = porFecha[f].filter(s=>s.tipo==='imaginaria' || s.tipo==='imaginaria_imaginaria');
