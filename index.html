@@ -1320,7 +1320,14 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // ¿Se ha llegado desde el enlace del correo de «restablecer contraseña»? Se mira ANTES de crear el cliente (que se come el #… de la dirección).
 // Mientras dure, la app NO entra en ninguna cuenta: solo enseña la pantalla para escribir la nueva contraseña.
 let IR_PENDIENTE = (()=>{ try{ const q = new URLSearchParams(location.search); return q.get('ir') ? { ir:q.get('ir'), ref:q.get('ref') } : null; }catch(e){ return null; } })(); // viene de tocar una notificación: ?ir=comidas|pernoctas|servicios&ref=aviso-12|cambio-3|duda-5|fecha-2026-10-16
-let EN_RECUPERACION = /[#&?]type=recovery(&|$)/.test(location.hash + location.search);
+// Se guarda también en el navegador: el cliente de Supabase se come el #… del enlace y, si la página se recarga (p. ej. por el aviso de «versión nueva»), antes se perdía el aviso
+// y, como la sesión ya estaba abierta, la app entraba directamente en la cuenta sin pedir la contraseña nueva.
+const RECUP_KEY = 'portalagm_recuperacion';
+const marcarRecuperacion = on => { try{ if(on) localStorage.setItem(RECUP_KEY, String(Date.now())); else localStorage.removeItem(RECUP_KEY); }catch(e){} };
+const recuperacionGuardada = () => { try{ const t = parseInt(localStorage.getItem(RECUP_KEY)||'0', 10); return !!t && Date.now() - t < 2*3600*1000; }catch(e){ return false; } };
+const _recDesdeUrl = /[#&?]type=recovery(&|$)/.test(location.hash + location.search);
+if(_recDesdeUrl) marcarRecuperacion(true);
+let EN_RECUPERACION = _recDesdeUrl || recuperacionGuardada();
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ================= Auto-recarga cuando hay versión nueva ================= */
@@ -1329,11 +1336,12 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-19T22:39:56";
+const APP_VERSION = "2026-10-19T22:52:09";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
 async function comprobarVersionNueva(){
+  if(typeof EN_RECUPERACION!=='undefined' && EN_RECUPERACION) return false; // escribiendo la contraseña nueva: no se recarga la página
   const ahoraV = Date.now(); if(ahoraV - _verTs < 10000) return false; _verTs = ahoraV;
   try{
     const r = await fetch('version.txt?t=' + Date.now(), { cache: 'no-store' });
@@ -3107,7 +3115,7 @@ async function setModule(mod){
 async function boot(){
   try{
     const { data: { session } } = await sb.auth.getSession();
-    if(EN_RECUPERACION){ showScreen(session ? 'screen-reset-password' : 'screen-login'); if(!session) EN_RECUPERACION = false; return; } // viene del enlace del correo: primero la contraseña nueva
+    if(EN_RECUPERACION){ showScreen(session ? 'screen-reset-password' : 'screen-login'); if(!session){ EN_RECUPERACION = false; marcarRecuperacion(false); } return; } // viene del enlace del correo: primero la contraseña nueva
     if(session){ await routeAfterAuth(session.user.id); }
     else { showScreen('screen-login'); }
   }catch(e){
@@ -3399,6 +3407,7 @@ async function doLogin(){
 }
 async function doLogout(){
   try{ blqSalirEdicion(); }catch(e){}
+  EN_RECUPERACION = false; marcarRecuperacion(false);
   if(CURRENT && CURRENT.mode==='cuartel'){
     try{ await sb.rpc('cuartel_salir', { p_device_id: idDispositivo() }); }catch(e){}
     try{ sessionStorage.removeItem('portalagm_cuartel_sesion'); }catch(e){}
@@ -5601,17 +5610,17 @@ async function submitNewPassword(){
   btn.disabled = false;
   if(error){ err.textContent = error.message; err.classList.remove('hidden'); return; }
   showToast('Contraseña actualizada. Ya puedes usarla para entrar.');
-  EN_RECUPERACION = false;
+  EN_RECUPERACION = false; marcarRecuperacion(false);
   try{ history.replaceState(null, '', location.pathname); }catch(e){} // se quita el #… del enlace
   const { data: { session } } = await sb.auth.getSession();
   if(session){ await routeAfterAuth(session.user.id); } else { showScreen('screen-login'); }
 }
 sb.auth.onAuthStateChange((event)=>{
-  if(event === 'PASSWORD_RECOVERY'){ EN_RECUPERACION = true; showScreen('screen-reset-password'); }
+  if(event === 'PASSWORD_RECOVERY'){ EN_RECUPERACION = true; marcarRecuperacion(true); showScreen('screen-reset-password'); }
 });
 // Si alguien abre el enlace y se arrepiente: se cierra esa sesión y se vuelve a la entrada
 async function cancelarRecuperacion(){
-  EN_RECUPERACION = false;
+  EN_RECUPERACION = false; marcarRecuperacion(false);
   try{ history.replaceState(null, '', location.pathname); }catch(e){}
   try{ await sb.auth.signOut(); }catch(e){}
   showScreen('screen-login');
@@ -7640,8 +7649,20 @@ async function guardarHabitualManual(){
   if(!tel || !dir) return;
   const ciu = document.getElementById('pernocta-ciudad-shared');
   if(!tel.value.trim() || !dir.value.trim() || (CIUDAD_OK && ciu && !ciu.value.trim())){ showToast('Escribe primero la dirección, la ciudad y el teléfono.'); return; }
-  const ok = await guardarHabitual(dir.value, tel.value, true, ciu ? ciu.value : '');
-  if(ok){ showToast('Guardado como habitual ⭐'); await renderAlumnoPernoctas(); }
+  const direccion = dir.value, telefono = tel.value, ciudad = ciu ? ciu.value : '';
+  await encolarMarcaPernocta.vaciar(); // lo pendiente de escribir se guarda ANTES: si no, al repintar se leía todavía la dirección de antes
+  const ok = await guardarHabitual(direccion, telefono, true, ciudad);
+  if(ok){
+    await aplicarContactoAFuera(direccion, telefono, ciudad); // y se pone también en las noches «Fuera» de esta semana, para que al repintar salga la nueva
+    showToast('Guardado como habitual ⭐'); await renderAlumnoPernoctas();
+  }
+}
+async function aplicarContactoAFuera(direccion, telefono, ciudad){
+  const personaId = CURRENT.persona.id, sem = ACTIVE_WEEK.key, nDias = pernoctaDiasCount();
+  const ownMap = await fetchPernoctaOwn(personaId, sem);
+  for(let d=0; d<nDias; d++){
+    if(ownMap.hasOwnProperty(d) && !ownMap[d].duerme_agm) await setPernocta(personaId, d, false, direccion, telefono, sem, pernoctaObligatoria(personaId, d), (ciudad||'').trim() || undefined);
+  }
 }
 // Botón "⭐ Habitual": rellena los cuadros de teléfono y dirección con los datos habituales y los aplica a las noches "Fuera"
 async function usarHabitual(){
