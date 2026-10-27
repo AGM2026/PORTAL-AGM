@@ -1415,7 +1415,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-27T22:43:57";
+const APP_VERSION = "2026-10-27T22:55:55";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -4047,7 +4047,12 @@ async function cargarCuartel(){
   const hora = CURRENT.companiaInfo ? CURRENT.companiaInfo.hora_corte : '10:00:00';
   const esCom = CUARTEL.modulo==='comidas';
   setActiveWeek(semanaEnCursoIndex());
-  if(!esCom) irASemanaPernoctaReal();
+  if(!esCom){
+    irASemanaPernoctaReal();
+    // Pernoctas: si las noches de ese fin de semana (o puente) ya han pasado, se ve el PRÓXIMO fin de semana (no el anterior)
+    const hoy0 = new Date(); hoy0.setHours(0,0,0,0);
+    if(hoy0 > diaPern(ACTIVE_WEEK, pernoctaDiasCount()-1)){ setActiveWeek(defaultWeekIndex()); irASemanaPernoctaReal(); }
+  }
   const nP = pernoctaDiasCount();
   document.getElementById('cuartel-week-select').innerHTML = `<h3 class="section-title" style="margin-top:14px;">${esCom
     ? `Comidas del viernes ${fmt(ACTIVE_WEEK.days[0])} al jueves ${fmt(ACTIVE_WEEK.days[6])}`
