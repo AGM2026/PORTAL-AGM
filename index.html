@@ -1353,7 +1353,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-22T13:50:00";
+const APP_VERSION = "2026-10-27T12:45:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -8689,7 +8689,7 @@ async function guardarNuevaDeuda(){
 }
 function textoDeuda(d){
   if(d.tipo==='nota') return escHtml(d.motivo||'');
-  return `${TIPO_LABEL[d.tipo]||d.tipo}${(d.tipo==='imaginaria' && d.turno)?' (turno '+d.turno+')':''} · ${d.entre_semana?'entre semana':'fin de semana / festivo'}`;
+  return `${(d.tipo==='imaginaria' && d.turno) ? d.turno+'ª Imaginaria' : (TIPO_LABEL[d.tipo]||d.tipo)} · ${d.entre_semana?'entre semana':'fin de semana / festivo'}`;
 }
 async function marcarDeudaSaldada(id){
   let { error } = await sb.from('deudas_servicio').update({ saldada: true, saldada_en: new Date().toISOString() }).eq('id', id);
@@ -8745,7 +8745,11 @@ function tipoDeudaDe(pieza){
   return null;
 }
 function piezasDeuda(txt){
-  return String(txt).split(/\s+Y\s+|,/).map(p=>{ const m = p.trim().match(/^(\d+)?\s*(.*)$/); return { n: m[1]?parseInt(m[1],10):1, t: tipoDeudaDe(m[2]||'') }; });
+  // En las IMAGINARIAS el número es el TURNO («2 IMG F» = 2ª imaginaria de fin de semana), no cuántas: siempre es UNA deuda. Solo se apunta como dato (2ª, 3ª, 4ª);
+  // para saldarla da igual el turno: cuenta solo si es imaginaria y si es entre semana o fin de semana. En el resto, el número es cuántas («1 C F»)
+  return String(txt).split(/\s+Y\s+|,/).map(p=>{ const m = p.trim().match(/^(\d+)?\s*(.*)$/); const n = m[1]?parseInt(m[1],10):null, t = tipoDeudaDe(m[2]||'');
+    if(t && t.tipo==='imaginaria') return { n:1, turno:(n>=2 && n<=4) ? n : null, t };
+    return { n: n||1, turno:null, t }; });
 }
 function buscarPersonaObs(nombre, excluirId, app){
   const toks = normTxtJS(nombre).split(' ').filter(w=>w.length>1);
@@ -8772,8 +8776,8 @@ function leerObservaciones(gente, app){
       }
       piezas.forEach(x=>{
         const deudor_id = propio==='deudor' ? g.pid : otro.id, acreedor_id = propio==='deudor' ? otro.id : g.pid;
-        const k = deudor_id+'|'+acreedor_id+'|'+x.t.tipo+'|'+x.t.finde, prev = deudas[k];
-        deudas[k] = { deudor_id, acreedor_id, tipo:x.t.tipo, entre_semana:!x.t.finde, cantidad: Math.max(prev?prev.cantidad:0, x.n),
+        const k = deudor_id+'|'+acreedor_id+'|'+x.t.tipo+'|'+x.t.finde+'|'+(x.turno||''), prev = deudas[k];
+        deudas[k] = { deudor_id, acreedor_id, tipo:x.t.tipo, turno:x.turno, entre_semana:!x.t.finde, cantidad: Math.max(prev?prev.cantidad:0, x.n),
                       textos: Array.from(new Set((prev?prev.textos:[]).concat(g.obs.trim()))) };
       });
     });
@@ -8859,7 +8863,7 @@ async function leerExcelServicios(){
     SERV_IMPORT = { gente, servicios, app, dias, choques, hoja };
     const obs = leerObservaciones(gente, app);
     const nombreApp = id => { const p = app.find(x=>x.id===id); return p ? p.apellidos+', '+p.nombre : '?'; };
-    const etiquetaDeuda = d => `${d.cantidad} ${({imaginaria:'Imaginaria', cuartelero:'Cuartelero', imaginaria_cuartelero:'Imag. de Cuartelero', guardia_seguridad:'Guardia de seguridad'})[d.tipo]}${d.cantidad>1?'s':''} ${d.entre_semana?'entre semana':'de fin de semana/festivo'}`;
+    const etiquetaDeuda = d => d.turno ? `${d.turno}ª Imaginaria ${d.entre_semana?'entre semana':'de fin de semana/festivo'}` : `${d.cantidad} ${({imaginaria:'Imaginaria', cuartelero:'Cuartelero', imaginaria_cuartelero:'Imag. de Cuartelero', guardia_seguridad:'Guardia de seguridad'})[d.tipo]}${d.cantidad>1?'s':''} ${d.entre_semana?'entre semana':'de fin de semana/festivo'}`;
     const deudasHtml = `
       <div class="servicio-card">
         <div class="titulo">Deudas de la columna "OBS.": ${obs.deudas.reduce((a,d)=>a+d.cantidad,0)} deudas entre ${new Set(obs.deudas.map(d=>d.deudor_id+'|'+d.acreedor_id)).size} parejas</div>
@@ -8926,7 +8930,7 @@ async function cargarExcelServicios(){
   if(diaDemasiados){ showToast('Demasiados códigos sueltos el '+diaDemasiados+'; revisa el Excel. No se ha cambiado nada.'); return; }
   const obs = leerObservaciones(gente, SERV_IMPORT.app);
   const deudas = [];
-  obs.deudas.forEach(d=>{ for(let i=0;i<d.cantidad;i++) deudas.push({ deudor_id:d.deudor_id, acreedor_id:d.acreedor_id, tipo:d.tipo, entre_semana:d.entre_semana, motivo:'Del Excel (OBS.): '+d.textos.join(' / ') }); });
+  obs.deudas.forEach(d=>{ for(let i=0;i<d.cantidad;i++) deudas.push({ deudor_id:d.deudor_id, acreedor_id:d.acreedor_id, tipo:d.tipo, turno:d.turno||null, entre_semana:d.entre_semana, motivo:'Del Excel (OBS.): '+d.textos.join(' / ') }); });
   resEl.innerHTML = '<div class="small-note">Cargando…</div>';
   const { data, error } = await sb.rpc('cargar_servicios_excel', { p_compania: CURRENT.compania, p_filas: filas, p_deudas: deudas });
   if(error){ resEl.innerHTML = `<div class="notice closed"><span>No se pudo cargar (no se ha cambiado nada): ${escHtml(error.message)} — ¿has ejecutado los patches 44 y 45?</span></div>`; return; }
@@ -9277,7 +9281,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   const ocupado = new Set(existentes.map(s=>s.persona_id+'|'+s.fecha));
   const deudasAplicadas = [];
   const saltos = []; // a quién se ha saltado por ya haber hecho el servicio en la ronda sin que nadie se lo deba (para explicarlo en la casilla vacía)
-  const deudaPara =(acreedorId, tipo, entre, f) => pend.find(x=>!x._u && x.acreedor_id===acreedorId && x.tipo===tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+f));
+  const deudaPara =(acreedorId, tipo, entre, f) => pend.find(x=>!x._u && x.acreedor_id===acreedorId && x.tipo===tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+f)); // el turno de imaginaria da igual
   // A quién le toca el siguiente servicio de una cola. Si por el camino se salta a alguien que YA lo hizo en la ronda (A) y alguien le DEBE ese servicio a A,
   // lo hace el que se lo debe (y la cola sigue por la persona de después de A, que no pierde su turno).
   const elegir = (k, q, idx, f, tipo, finde, consumir) => {
@@ -9306,6 +9310,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
     const q = esFinde(f) ? 'finde' : 'semana';
     const c = lista.find(s=>s.tipo==='cuartelero'), ic = lista.find(s=>s.tipo==='imaginaria_cuartelero');
     const esp = (pC[q]!==null && pC[q]>=0) ? sig('C', q, pC[q]) : null; // a quién tocaba hoy por turno (antes de apuntar lo de hoy)
+    const tras = (esp!==null && esp>0) ? sig('C', q, esp-1) : null;      // y el siguiente a ese
     lista.forEach(s=>{ if(s.tipo==='cuartelero') marca('C', q, s.persona_id); else if(s.tipo==='imaginaria' && s.turno>=1 && s.turno<=4) marca('I', q, s.persona_id); });
     const vic = enLista(ic) ? pos[ic.persona_id] : null; // sin dar la vuelta: -1 = se acabó la lista
     if(enLista(c)){
@@ -9314,6 +9319,9 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
       if(pC[q]===null || pC[q]<0){ pC[q] = idx-1; ult[q] = null; }                 // la cola empieza aquí (o se ha vuelto a rellenar el principio a mano)
       else if(esp!==null && idx===esp){ pC[q] = idx-1; ult[q] = null; }            // era quien tocaba: la cola avanza
       else if(ult[q]!==null && idx===ult[q]-1){ pC[q] = idx-1; ult[q] = null; }    // varios días seguidos siguiendo otro orden: la cola se ha movido de verdad
+      else if(tras!==null && tras>=0 && idx===tras){                  // hoy lo hace el SIGUIENTE al que tocaba: a quien tocaba ya se lo cubrieron otro día (cambio o deuda, p. ej. Peinador por Vara)
+        marca('C', q, roster[esp].id); pC[q] = idx-1; ult[q] = null;             // su turno de esta vuelta cuenta como pasado (si lo debe, lo saldará la deuda) y la cola sigue
+      }
       else { ult[q] = idx; }                                                       // puesto a mano: la cola no se mueve (quien tocaba pasa al día siguiente)
     } else if(vic!==null){ pC[q] = vic; }
     // Dónde empieza la siguiente noche de imaginarias: la I I de hoy (regla 3), salvo que los 4 turnos de hoy digan otra cosa (p. ej. una I I que hace alguien por una deuda)
@@ -10095,7 +10103,11 @@ async function renderAdminServicios(){
 
   const pendD = window._servDeudasPend || [], saldD = todasDeudas.filter(d=>d.saldada);
   const nom = p => p ? escHtml(p.apellidos+', '+p.nombre) : '?';
-  const tarjetaDeuda = d => `<div class="deuda-fila"><div class="deuda-tx"><b>${nom(d.deudor)} → ${nom(d.acreedor)}</b><span>${textoDeuda(d)} · ${fmt(new Date(d.fecha_origen+'T00:00:00'))}${d.tipo==='nota'?' · ✍️ a mano':''}${d.motivo && d.tipo!=='nota' ? ' · '+escHtml(d.motivo) : ''}</span>${d._programada ? `<span class="deuda-prog">💸 Se saldará el ${fmtFecha(d._programada.fecha)} (ya está en el cuadrante)</span>` : ''}</div><button class="small-btn" onclick="marcarDeudaSaldada(${d.id})">✓ Saldada</button></div>`;
+  // Si alguien debe VARIOS servicios iguales a la misma persona (ej. «Sautua le debe 2 IMG F»), cada uno es una deuda aparte: se numeran (1 de 2, 2 de 2) para que no parezcan repetidas
+  const grupoD = d => [d.deudor_id, d.acreedor_id, d.tipo, d.entre_semana, d.fecha_origen, d.motivo||''].join('|'), totD = {}, numD = {};
+  pendD.forEach(d=>{ const k = grupoD(d); totD[k] = (totD[k]||0) + 1; numD[d.id] = totD[k]; });
+  const nDe = d => totD[grupoD(d)] > 1 ? ` <span class="deuda-prog" style="display:inline;">${numD[d.id]} de ${totD[grupoD(d)]}</span>` : '';
+  const tarjetaDeuda = d => `<div class="deuda-fila"><div class="deuda-tx"><b>${nom(d.deudor)} → ${nom(d.acreedor)}${nDe(d)}</b><span>${textoDeuda(d)} · ${fmt(new Date(d.fecha_origen+'T00:00:00'))}${d.tipo==='nota'?' · ✍️ a mano':''}${d.motivo && d.tipo!=='nota' ? ' · '+escHtml(d.motivo) : ''}</span>${d._programada ? `<span class="deuda-prog">💸 Se saldará el ${fmtFecha(d._programada.fecha)} (ya está en el cuadrante)</span>` : ''}</div><button class="small-btn" onclick="marcarDeudaSaldada(${d.id})">✓ Saldada</button></div>`;
   const tarjetaSaldada = d => `<div class="deuda-fila"><div class="deuda-tx"><b>✅ ${nom(d.deudor)} → ${nom(d.acreedor)}</b><span>${textoDeuda(d)} · ${fmt(new Date(d.fecha_origen+'T00:00:00'))} · saldada${d.saldada_fecha ? ' el '+fmtFecha(d.saldada_fecha)+' con ese servicio' : (d.saldada_en ? ' el '+new Date(d.saldada_en).toLocaleDateString('es-ES') : '')}</span></div></div>`;
   document.getElementById('admin-deudas-lista').innerHTML = (pendD.length ? pendD.map(tarjetaDeuda).join('') : '<div class="small-note">Sin deudas pendientes.</div>')
     + cajaSub('sv-saldadas', `✅ Deudas saldadas (${saldD.length})`, saldD.length ? saldD.slice(0,60).map(tarjetaSaldada).join('') : '<div class="small-note">Todavía no hay ninguna.</div>');
