@@ -552,6 +552,14 @@ body.mod-servicios h3.section-title{border-bottom-color:var(--brass);}
 .mani-enlace{background:none;border:none;color:var(--brass);text-decoration:underline;font:inherit;cursor:pointer;padding:0 4px;}
 .quedan-fila{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:.85rem;}
 .quedan-fila > span{min-width:0;overflow-wrap:anywhere;}
+.jf-no-tit{margin:6px 14px 2px;font-size:.74rem;font-weight:700;color:var(--ink-soft);}
+.jf-no div{color:var(--ink-soft);}
+table.cuenta-serv{border-collapse:collapse;font-size:.76rem;margin:4px 0 2px;max-width:100%;}
+table.cuenta-serv th,table.cuenta-serv td{border:1px solid var(--line);padding:2px 9px;text-align:center;}
+table.cuenta-serv thead th{background:var(--paper-alt);font-weight:700;font-size:.7rem;}
+table.cuenta-serv tbody th{text-align:left;font-weight:600;white-space:nowrap;}
+.cs-0{color:var(--ink-soft);opacity:.55;}
+.cs-nota{font-size:.72rem;color:var(--ink-soft);}
 .jf-sep{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin:8px 2px 0;}
 .jf-pdf-tit{font-size:.72rem;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin:4px 0 8px;}
 .servicio-card .meta{font-size:.75rem;color:var(--ink-soft);margin-top:2px;}
@@ -757,6 +765,41 @@ body.blq-editando .toast{bottom:auto;top:12px;pointer-events:none;} /* que el av
 .gp-obl input{width:18px;height:18px;margin:0;}
 .gp-mes{font-size:.75rem;font-weight:700;color:var(--ink-soft);margin:12px 0 0;}
 .gp-mes + .dia-chips{margin-top:6px;}
+/* ---- Pestaña «Personal» del Furry ---- */
+#screen-admin .module-switch{gap:4px;}
+#screen-admin .module-btn{min-width:0;padding:10px 4px;font-size:.8rem;position:relative;overflow-wrap:anywhere;}
+.mod-badge{display:inline-block;margin-left:4px;background:var(--danger);color:#fff;font-size:.62rem;font-weight:700;border-radius:999px;padding:1px 6px;vertical-align:1px;}
+.pe-chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px;}
+.pe-chips .small-btn{white-space:normal;}
+.pe-cuenta{font-size:.75rem;color:var(--ink-soft);margin:2px 0 8px;}
+.pe-fila{border-bottom:1px solid var(--line);}
+.pe-fila:last-child{border-bottom:none;}
+.pe-cab{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;width:100%;min-width:0;padding:8px 2px;background:none;border:none;color:var(--ink);font-family:inherit;font-size:.8rem;text-align:left;cursor:pointer;}
+.pe-fila.open .pe-cab{background:var(--paper-alt);}
+.pe-fila-top{display:flex;align-items:center;gap:6px;min-width:0;}
+.pe-fila-top .pe-cab{flex:1 1 auto;}
+.pe-chk{width:20px;height:20px;flex:0 0 auto;margin:0;}
+.pe-secdet > summary{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;}
+.pe-sech{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 6px;min-width:0;}
+.pe-barra{position:sticky;bottom:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding:10px 12px;border:2px solid var(--olive);border-radius:12px;background:var(--card);box-shadow:0 -4px 14px rgba(0,0,0,.18);font-size:.85rem;}
+.pe-barra .primary-btn{width:auto;padding:9px 16px;}
+.pe-acc{padding:8px 0;border-bottom:1px solid var(--line);}
+.pe-acc-t{font-size:.78rem;font-weight:800;margin-bottom:6px;}
+.pe-acc select{min-width:0;max-width:100%;padding:6px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.8rem;}
+.pe-nom{flex:1 1 150px;min-width:0;overflow-wrap:anywhere;}
+.pe-sec{color:var(--ink-soft);font-size:.72rem;}
+.pe-t{display:inline-block;font-size:.66rem;padding:1px 6px;border:1px solid var(--line);border-radius:999px;white-space:nowrap;color:var(--ink-soft);}
+.pe-t.rojo{border-color:var(--danger);color:var(--danger);font-weight:700;}
+.pe-det{padding:4px 2px 12px;font-size:.8rem;min-width:0;}
+.pe-det h4{margin:10px 0 4px;font-size:.74rem;font-weight:800;color:var(--olive);text-transform:uppercase;letter-spacing:.04em;}
+.pe-it{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 8px;padding:4px 0;min-width:0;}
+.pe-it > span{min-width:0;overflow-wrap:anywhere;}
+.pe-it.pasado{opacity:.6;}
+.pe-btns{display:flex;flex-wrap:wrap;gap:6px;}
+.pe-det select,.pe-det input[type=text]{min-width:0;max-width:100%;padding:6px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.78rem;}
+.pe-det input[type=text]{flex:1 1 160px;}
+.pe-sol{border:1px solid var(--brass);background:var(--card);padding:8px 10px;margin-bottom:6px;font-size:.8rem;}
+.pe-sol p{margin:2px 0 6px;overflow-wrap:anywhere;}
 .dom-badge{margin-left:4px;font-size:.7rem;cursor:help;}
 /* ---- Pulido visual (tanda 1): solo estilos ---- */
 :root{--r:10px;}
@@ -1081,6 +1124,7 @@ aplicarTema();
       <button class="module-btn" id="admin-mod-comidas-btn" onclick="setModule('comidas')">🍽️ Comidas</button>
       <button class="module-btn" id="admin-mod-pernoctas-btn" onclick="setModule('pernoctas')">🛏️ Pernoctas</button>
       <button class="module-btn" id="admin-mod-servicios-btn" onclick="setModule('servicios')">📋 Servicios</button>
+      <button class="module-btn" id="admin-mod-personal-btn" onclick="setModule('personal')">👥 Personal<span class="mod-badge hidden" id="admin-pe-badge"></span></button>
     </div>
     <div class="blq" data-blq="a-semana"><div id="admin-week-select"></div></div>
     <div class="blq" data-blq="a-plazo"><div id="admin-notice"></div></div>
@@ -1102,6 +1146,15 @@ aplicarTema();
       <div class="blq" data-blq="a-p-confirm"><div id="admin-pernocta-confirm-bottom"></div></div>
     </div>
 
+    <div id="admin-personal-mod" class="hidden blq-mod">
+      <div class="blq" data-blq="a-pe-solicitudes"><div id="admin-pe-solicitudes"></div></div>
+      <div class="blq" data-blq="a-pe-buscar"><div id="admin-pe-buscar"></div></div>
+      <div class="blq" data-blq="a-pe-lista"><div id="admin-pe-lista"></div></div>
+      <div class="blq" data-blq="a-pe-alta"><div id="admin-pe-alta"></div></div>
+      <div class="blq" data-blq="a-pe-conexion"><div id="admin-pe-conexion"></div></div>
+      <div class="blq" data-blq="a-pe-cuartel"><div id="admin-pe-cuartel"></div></div>
+    </div>
+
     <div id="admin-servicios-mod" class="hidden blq-mod">
       <div class="blq" data-blq="a-s-semana"><div id="admin-serv-week-select"></div></div>
       <div class="blq" data-blq="a-s-cuadrante"><h3 class="section-title">Cuadrante de servicios</h3>
@@ -1110,7 +1163,8 @@ aplicarTema();
         <button type="button" class="caja" data-caja="serv|manual" onclick="abrirCaja('serv','manual')"><span class="caja-ico">✍️</span><span class="caja-tit">Añadir o cambiar</span><span class="caja-sub">Un servicio a mano</span></button>
         <button type="button" class="caja" data-caja="serv|quedan" onclick="abrirCaja('serv','quedan')"><span class="caja-ico">⛺</span><span class="caja-tit">Se quedan</span><span class="caja-sub">Gente que no va a maniobras</span></button>
         <button type="button" class="caja" data-caja="serv|estimar" onclick="abrirCaja('serv','estimar')"><span class="caja-ico">🔮</span><span class="caja-tit">Estimar servicios</span><span class="caja-sub">Rellenar el cuadrante</span></button>
-        <button type="button" class="caja" data-caja="serv|bandeja" onclick="abrirCaja('serv','bandeja')"><span class="caja-ico">📥</span><span class="caja-tit">Bandeja</span><span class="caja-sub">Cambios, dudas y deudas</span><span class="caja-badge hidden" id="serv-badge-bandeja"></span><span id="serv-badge-cambios" style="display:none"></span><span id="serv-badge-dudas" style="display:none"></span><span id="serv-badge-deudas" style="display:none"></span></button>
+        <button type="button" class="caja" data-caja="serv|bandeja" onclick="abrirCaja('serv','bandeja')"><span class="caja-ico">📥</span><span class="caja-tit">Bandeja</span><span class="caja-sub">Cambios y dudas</span><span class="caja-badge hidden" id="serv-badge-bandeja"></span><span id="serv-badge-cambios" style="display:none"></span><span id="serv-badge-dudas" style="display:none"></span><span id="serv-badge-deudas" style="display:none"></span></button>
+        <button type="button" class="caja" data-caja="serv|deudas" onclick="if(abrirCaja('serv','deudas')) bandejaVisto('deudas')"><span class="caja-ico">💸</span><span class="caja-tit">Deudas</span><span class="caja-sub">Quién le debe a quién</span><span class="caja-badge hidden" id="serv-badge-deudas-caja"></span></button>
         <button type="button" class="caja" data-caja="serv|excel" onclick="abrirCaja('serv','excel')"><span class="caja-ico">📤</span><span class="caja-tit">Subir el Excel</span><span class="caja-sub">Guardias de orden</span></button>
         <button type="button" class="caja" data-caja="serv|visible" onclick="abrirCaja('serv','visible')"><span class="caja-ico">👁️</span><span class="caja-tit">Mostrar a alumnos</span><span class="caja-sub">Pestaña Servicios</span></button>
         <button type="button" class="caja" id="serv-info-btn" data-caja="serv|info" onclick="toggleInfografiaServ()"><span class="caja-ico">ℹ️</span><span class="caja-tit">Infografía</span></button>
@@ -1124,7 +1178,9 @@ aplicarTema();
         <details class="caja-det" id="serv-det-dudas" ontoggle="if(this.open) bandejaVisto('dudas')"><summary>❓ <span id="serv-sum-dudas">Dudas de los alumnos</span><span class="det-nuevo hidden" id="serv-nue-dudas"></span></summary><div class="caja-sub-body">
         <div id="admin-dudas"></div>
         </div></details>
-        <details class="caja-det" id="serv-det-deudas" ontoggle="if(this.open) bandejaVisto('deudas')"><summary>💸 <span id="serv-sum-deudas">Deudas de servicio</span><span class="det-nuevo hidden" id="serv-nue-deudas"></span></summary><div class="caja-sub-body">
+      </div>
+      <div class="caja-panel hidden" data-caja="serv|deudas" id="serv-det-deudas">
+        <div class="caja-panel-cab"><b>💸 <span id="serv-sum-deudas">Deudas de servicio</span><span class="det-nuevo hidden" id="serv-nue-deudas"></span></b><button type="button" class="small-btn" onclick="abrirCaja('serv','deudas')">Cerrar ✕</button></div>
         <button class="small-btn" onclick="toggleNuevaDeuda()">＋ Añadir deuda</button>
         <div id="nueva-deuda-form" class="admin-panel hidden" style="flex-direction:column;align-items:stretch;margin-top:10px;">
         <div class="switch-label">Apuntar una deuda a mano<span class="sub2">Como lo apuntarías en la columna OBS. del Excel. Las deudas apuntadas aquí NO se borran al volver a subir el Excel.</span></div>
@@ -1137,7 +1193,6 @@ aplicarTema();
         <button class="small-btn" style="margin-top:8px;align-self:flex-start;" onclick="guardarNuevaDeuda()">💾 Guardar deuda</button>
       </div>
         <div id="admin-deudas-lista" style="margin-top:10px;"></div>
-        </div></details>
       </div>
       <div class="caja-panel hidden" data-caja="serv|manual">
         <div class="caja-panel-cab"><b>✍️ Añadir o cambiar un servicio</b><button type="button" class="small-btn" onclick="abrirCaja('serv','manual')">Cerrar ✕</button></div>
@@ -1344,7 +1399,14 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // ¿Se ha llegado desde el enlace del correo de «restablecer contraseña»? Se mira ANTES de crear el cliente (que se come el #… de la dirección).
 // Mientras dure, la app NO entra en ninguna cuenta: solo enseña la pantalla para escribir la nueva contraseña.
 let IR_PENDIENTE = (()=>{ try{ const q = new URLSearchParams(location.search); return q.get('ir') ? { ir:q.get('ir'), ref:q.get('ref') } : null; }catch(e){ return null; } })(); // viene de tocar una notificación: ?ir=comidas|pernoctas|servicios&ref=aviso-12|cambio-3|duda-5|fecha-2026-10-16
-let EN_RECUPERACION = /[#&?]type=recovery(&|$)/.test(location.hash + location.search);
+// Se guarda también en el navegador: el cliente de Supabase se come el #… del enlace y, si la página se recarga (p. ej. por el aviso de «versión nueva»), antes se perdía el aviso
+// y, como la sesión ya estaba abierta, la app entraba directamente en la cuenta sin pedir la contraseña nueva.
+const RECUP_KEY = 'portalagm_recuperacion';
+const marcarRecuperacion = on => { try{ if(on) localStorage.setItem(RECUP_KEY, String(Date.now())); else localStorage.removeItem(RECUP_KEY); }catch(e){} };
+const recuperacionGuardada = () => { try{ const t = parseInt(localStorage.getItem(RECUP_KEY)||'0', 10); return !!t && Date.now() - t < 2*3600*1000; }catch(e){ return false; } };
+const _recDesdeUrl = /[#&?]type=recovery(&|$)/.test(location.hash + location.search);
+if(_recDesdeUrl) marcarRecuperacion(true);
+let EN_RECUPERACION = _recDesdeUrl || recuperacionGuardada();
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ================= Auto-recarga cuando hay versión nueva ================= */
@@ -1353,11 +1415,12 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-27T12:45:00";
+const APP_VERSION = "2026-10-27T22:43:57";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
 async function comprobarVersionNueva(){
+  if(typeof EN_RECUPERACION!=='undefined' && EN_RECUPERACION) return false; // escribiendo la contraseña nueva: no se recarga la página
   const ahoraV = Date.now(); if(ahoraV - _verTs < 10000) return false; _verTs = ahoraV;
   try{
     const r = await fetch('version.txt?t=' + Date.now(), { cache: 'no-store' });
@@ -1672,6 +1735,7 @@ function rerenderActual(){
   if(currentModule==='pernoctas') return admin ? renderAdminPernoctas() : renderAlumnoPernoctas();
   if(currentModule==='comidas') return admin ? renderAdmin() : renderAlumno();
   if(currentModule==='servicios') return admin ? renderAdminServicios() : renderAlumnoServicios();
+  if(currentModule==='personal') return admin ? renderAdminPersonal() : setModule('comidas');
 }
 // Índices de las semanas que se pueden elegir (en Pernoctas, las semanas "incluidas" en un puente no son elegibles por separado)
 function semanasSeleccionables(tipo, filterHidden){
@@ -1903,6 +1967,14 @@ const BLQ_DEF = {
     { id:'a-s-filtros', nom:'🎛️ Filtros y navegación',           fijoOcultar:true },
     { id:'a-s-tabla',   nom:'🗓️ Tabla de servicios',             fijoOcultar:true },
     { id:'a-s-ficha',   nom:'👤 Ficha de la persona (cuando la abres)', fijoOcultar:true }
+  ],
+  'admin-personal':[
+    { id:'a-pe-solicitudes', nom:'📅 Solicitudes de viernes libres', fijoOcultar:true },
+    { id:'a-pe-buscar', nom:'🔎 Buscador y filtros',              fijoOcultar:true },
+    { id:'a-pe-lista',  nom:'👥 Lista del personal',             fijoOcultar:true },
+    { id:'a-pe-alta',   nom:'➕ Añadir alumno' },
+    { id:'a-pe-conexion', nom:'🟢 Conexión de los alumnos' },
+    { id:'a-pe-cuartel', nom:'🪖 Contraseña del servicio de cuartel' }
   ]
 };
 // Pantalla con bloques que toca (la del Furry en modo admin; si no, la del alumno) y su clave en BLQ_DEF / DISENO.layout
@@ -2116,6 +2188,7 @@ function novedadesItems(opts){
   items.push({ ico:'🌉', t:'Puentes y maniobras', d:'Salen marcados en la app: en esas semanas verás un aviso y las comidas y noches obligatorias se ajustan a lo que corresponda.' });
   if(opts && opts.servicios) items.unshift({ ico:'📋', t:'Ver el cuadrante', nuevo:true, d:'En Servicios, el botón «Ver cuadrante» despliega la tabla completa de tu compañía. Tu fila sale marcada y, al tocar uno de tus servicios, puedes pedir un cambio o preguntar una duda a tu Furry.' });
   items.unshift(
+    { ico:'🚨', t:'Arrestos y viernes libres', nuevo:true, d:'En ⚙️ ya puedes apuntarte un arresto (desde qué día y cuántos días): durante el arresto la pernocta y todas las comidas son obligatorias y solo tu Furry puede cambiarlo o quitarlo. También puedes pedir viernes libres (2 o 4) y ver si tu Furry la ha aceptado.' },
     { ico:'📲', t:'Descarga la app', nuevo:true, d:'Ya puedes instalar Portal AGM en tu móvil: icono en la pantalla de inicio y pantalla completa. Mira cómo en ⚙️ → «Instalar la app».' },
     { ico:'⭐', t:'Comidas habituales', nuevo:true, d:'En Comidas, el botón «Habitual» copia tus comidas de la semana anterior. En ⚙️ puedes hacer que se repitan solas hasta que las cambies.' },
     { ico:'📅', t:'Llévalo a tu calendario', nuevo:true, d:'En Comidas y Servicios tienes un botón para añadirlo al calendario del móvil. Las horas de las comidas son aproximadas: las fija el servicio de cuartel.' }
@@ -2188,6 +2261,29 @@ function novedadesAdminItems(){
    En ⚙️ → «Ver actualizaciones» se puede elegir cuál ver. Los alumnos ven lo suyo; los Furrys y el superadmin, lo suyo y (plegado) lo de los alumnos.
    especial:true la marca con una estrella. Al entrar, se enseña SOLO la última, una vez por cuenta. ---- */
 const ACTUALIZACIONES = [
+  { id:'2026-10-27-personal', fecha:'2026-10-27T16:30', titulo:'Personal, arrestos y viernes libres', especial:false,
+    alumno: null, // solo para Furrys y superadmin
+    furry: ()=>[
+      { ico:'👥', t:'Pestaña «Personal»', abierto:true, puntos:[
+        'Nueva pestaña Personal en el modo Furry: arrestos y solicitudes de viernes libres de tu compañía en un solo sitio.' ] },
+      { ico:'🚨', t:'Arrestos', puntos:[
+        'Los alumnos pueden apuntarse un arresto en ⚙️ (desde qué día y cuántos días); tú también puedes apuntárselo a cualquiera de tu compañía.',
+        'Durante el arresto la pernocta y TODAS las comidas son obligatorias en la AGM: mandan sobre externado, viernes libres y desbloqueos de puente.',
+        'El alumno no puede quitarlo ni cambiarlo: solo tú (o el superadmin).' ] },
+      { ico:'📅', t:'Solicitudes de viernes libres', puntos:[
+        'Los alumnos piden «2 viernes» o «4 viernes» en ⚙️, con un motivo opcional. Tú la aceptas o la rechazas; al aceptarla se le cambian los viernes libres.',
+        'Los «2 viernes» son una cuota: 2 viernes cualesquiera de cada mes, seguidos o separados, sin acumular los que no se usen. Los «4 viernes» son todos.' ] },
+      { ico:'🧾', t:'Registro del Furry', puntos:['Registro del Furry: el superadmin ve los Excel y PDF que exporta cada Furry y los cambios importantes.'] }
+    ] },
+  { id:'2026-10-20-servicios', fecha:'2026-10-20T02:00', titulo:'Servicios: estimación y deudas', especial:false,
+    alumno: null, // solo para Furrys y superadmin
+    furry: ()=>[
+      { ico:'🔮', t:'La estimación respeta lo que pones a mano', abierto:true, puntos:[
+        'Si alguien hace el cuartelero en el turno de otro, el turno se da por cumplido y quien no lo hizo se lo debe a quien lo hizo; lo paga cuando le toque a esa persona.',
+        'Si un cambio a mano es una excepción y más adelante vuelve a aparecer quien tocaba, la cola no se mueve.',
+        'En los puentes, el último día repite el cuartelero y la imaginaria de cuartelero del primer día, y los sábados y domingos cuentan como fin de semana.' ] },
+      { ico:'💸', t:'Deudas en su propia caja', puntos:['Las deudas ya no están dentro de la Bandeja: tienen su caja «Deudas» en Servicios, con su numerito de nuevas.'] }
+    ] },
   { id:'2026-10-18-personal', fecha:'2026-10-18T00:30', titulo:'Externados y viernes libres', especial:false,
     alumno: null, // solo para Furrys y superadmin
     furry: ()=>[
@@ -2196,7 +2292,7 @@ const ACTUALIZACIONES = [
         'El externado total no tiene desayunos, comidas ni cenas obligatorios (las maniobras se asignan aparte). El superadmin puede marcar qué comidas sí son obligatorias para ellos.' ] },
       { ico:'🗓️', t:'Viernes libres', puntos:[
         'Quien tiene viernes libres y duerme fuera ese viernes no tiene obligatorio el desayuno del sábado.',
-        'Los «2 viernes» ya no son fijos (1.º y 3.º): el superadmin elige cuáles son.' ] },
+        'Los «2 viernes» son una cuota mensual: 2 viernes cualesquiera de cada mes (seguidos o separados, sin acumular); al gastarlos, el siguiente viernes del mes es obligatorio.' ] },
       { ico:'👥', t:'Gestión del personal (superadmin)', puntos:[
         'Caja nueva en el panel de superadmin: lista por compañías con buscador para poner el externado y los viernes de cada persona, la configuración de comidas de los externados totales y los viernes de los «2 viernes».' ] }
     ] },
@@ -2672,7 +2768,7 @@ async function restaurarEstado(e){
     }
     if(modoActual()==='super') return;
     const prefix = CURRENT.mode==='admin' ? 'admin' : 'alumno';
-    if(['comidas','pernoctas','servicios'].includes(e.modulo) && e.modulo!==currentModule){
+    if((['comidas','pernoctas','servicios'].includes(e.modulo) || (e.modulo==='personal' && prefix==='admin')) && e.modulo!==currentModule){
       const btn = document.getElementById(prefix+'-mod-'+e.modulo+'-btn');
       if(btn && !btn.classList.contains('hidden') && btn.offsetParent!==null) await setModule(e.modulo);
     }
@@ -2816,7 +2912,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('messa
 });
 /* ---- Pie de cada pantalla: «💡 Sugerencias» y, debajo, «❓ Ayuda» ---- */
 const pieAyudaHtml = (extra) => `<div class="pie-ayuda">${extra||''}<button type="button" onclick="abrirSugerencias()">💡 Sugerencias</button><button type="button" onclick="abrirAyuda()">❓ Ayuda</button></div>`;
-['screen-alumno','screen-admin','screen-superadmin','screen-cuartel'].forEach(id=>{ const d = document.getElementById(id); if(d) d.insertAdjacentHTML('beforeend', id==='screen-alumno' ? pieAyudaHtml('<button type="button" onclick="abrirNormas()">ℹ️ Normas rápidas</button>') : pieAyudaHtml()); });
+['screen-alumno','screen-admin','screen-superadmin','screen-cuartel'].forEach(id=>{ const d = document.getElementById(id); if(d) d.insertAdjacentHTML('beforeend', id==='screen-alumno' ? pieAyudaHtml('<button type="button" onclick="abrirNormas()">ℹ️ Normas rápidas</button><button type="button" onclick="abrirArrestoAlumno()">🚨 Arresto</button>') : pieAyudaHtml()); });
 // Normas rápidas de la pestaña en la que estás (alumno)
 function abrirNormas(){
   const mod = typeof currentModule!=='undefined' ? currentModule : 'comidas';
@@ -2947,6 +3043,7 @@ function pintarConfig(){
     ${modos.length ? `<div class="cfg-label">Modo</div>
     <div class="cfg-fila">${modos.map(([fn,txt])=>`<button class="small-btn" onclick="cerrarConfig();${fn}">${txt}</button>`).join('')}</div>` : ''}
     <div class="cfg-fila">${['alumno','admin'].includes(modoActual()) ? '<button class="small-btn" onclick="cerrarConfig();toggleEditarPantalla()">🧩 Editar pantalla</button>' : ''}<button class="small-btn" onclick="cerrarConfig();abrirInformacion()">ℹ️ Información</button></div>
+    ${modoPant==='alumno' && CURRENT.persona ? `<div class="cfg-fila"><button class="small-btn" onclick="cerrarConfig();abrirArrestoAlumno()">🚨 Apuntarme un arresto</button><button class="small-btn" onclick="cerrarConfig();abrirViernesAlumno()">📅 Pedir viernes libres</button></div>` : ''}
     <div class="cfg-fila"><button class="small-btn" onclick="cerrarConfig();abrirNotificaciones()">🔔 Notificaciones</button></div>
     ${disenoOcultasHtml()}
     <div class="cfg-label">Semana</div>
@@ -3109,8 +3206,10 @@ async function setModule(mod){
   document.getElementById(prefix+'-comidas-mod').classList.toggle('hidden', mod!=='comidas');
   document.getElementById(prefix+'-pernoctas-mod').classList.toggle('hidden', mod!=='pernoctas');
   document.getElementById(prefix+'-servicios-mod').classList.toggle('hidden', mod!=='servicios');
+  if(isAdmin){ document.getElementById('admin-mod-personal-btn').classList.toggle('active', mod==='personal'); document.getElementById('admin-personal-mod').classList.toggle('hidden', mod!=='personal'); } // «Personal» solo existe en el panel del Furry
   try{ blqAplicar(); }catch(e){}
-  if(mod==='pernoctas'){ await (isAdmin ? renderAdminPernoctas() : renderAlumnoPernoctas()); }
+  if(mod==='personal'){ if(isAdmin) await renderAdminPersonal(); else await setModule('comidas'); }
+  else if(mod==='pernoctas'){ await (isAdmin ? renderAdminPernoctas() : renderAlumnoPernoctas()); }
   else if(mod==='servicios'){
     if(!servWeekIndexInitialized){ servWeekIndex = defaultServWeekIndex(); servWeekIndexInitialized = true; }
     await (isAdmin ? renderAdminServicios() : renderAlumnoServicios());
@@ -3122,7 +3221,7 @@ async function setModule(mod){
 async function boot(){
   try{
     const { data: { session } } = await sb.auth.getSession();
-    if(EN_RECUPERACION){ showScreen(session ? 'screen-reset-password' : 'screen-login'); if(!session) EN_RECUPERACION = false; return; } // viene del enlace del correo: primero la contraseña nueva
+    if(EN_RECUPERACION){ showScreen(session ? 'screen-reset-password' : 'screen-login'); if(!session){ EN_RECUPERACION = false; marcarRecuperacion(false); } return; } // viene del enlace del correo: primero la contraseña nueva
     if(session){ await routeAfterAuth(session.user.id); }
     else { showScreen('screen-login'); }
   }catch(e){
@@ -3160,11 +3259,14 @@ function describirDispositivo(){
   else if(/Safari/i.test(ua)) nav = 'Safari';
   return so + ' · ' + nav;
 }
-const presenciaPing = async ()=>{ try{ await sb.rpc('actualizar_conexion'); }catch(e){} };
+/* «Conectado ahora»: antes cada móvil escribía en la base de datos CADA MINUTO, también con la app en segundo plano (cientos de escrituras por minuto de más).
+   Ahora la señal se da cada 3 minutos y SOLO si la app está a la vista (al volver a mirarla se da enseguida). Por eso «conectado ahora» = señal de hace menos de 4 minutos. */
+const PRESENCIA_VENTANA_MS = 4 * 60 * 1000;
+const presenciaPing = async ()=>{ if(document.visibilityState==='hidden') return; try{ await sb.rpc('actualizar_conexion'); }catch(e){} };
 function startPresenceHeartbeat(){
   if(window._presenceInterval) return;
   presenciaPing();
-  window._presenceInterval = setInterval(presenciaPing, 60000);
+  window._presenceInterval = setInterval(presenciaPing, 180000);
   if(!window._presenceListener){ window._presenceListener = true; document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && window._presenceInterval) presenciaPing(); }); }
 }
 // Al cerrar sesión se paran los temporizadores y se vacían los datos en memoria (así no se acumulan ni los ve la siguiente persona que entre en este dispositivo)
@@ -3391,22 +3493,6 @@ async function doLogin(){
   if(email && !email.includes('@')) email = email.toLowerCase() + '@portalagm.es'; // usuarios sin email, ej. "cuartel"
   const password = document.getElementById('login-password').value;
   err.style.color = '';
-  // Usuario antiguo del cuartel («cuartel» + contraseña tipo AGM11-2026): ahora cada compañía tiene el suyo (cuartel11, cuartel12…).
-  // Se comprueba la contraseña con el usuario nuevo y se avisa SIN entrar.
-  const mViejo = /^cuartel$/i.test(document.getElementById('login-email').value.trim()) ? password.match(/^AGM(\d{1,2})-\d{4}$/i) : null;
-  if(mViejo){
-    const nuevo = 'cuartel' + mViejo[1];
-    const prueba = await sb.auth.signInWithPassword({ email: nuevo + '@portalagm.es', password });
-    if(!prueba.error){
-      await sb.auth.signOut({ scope: 'local' });
-      btn.disabled = false;
-      err.textContent = `El usuario del servicio de cuartel ha cambiado: ahora es «${nuevo}». Tu contraseña es correcta, entra con ese usuario.`;
-      err.style.color = 'var(--olive)';
-      err.classList.remove('hidden');
-      document.getElementById('login-email').value = nuevo;
-      return;
-    }
-  }
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   btn.disabled = false;
   if(error){ err.textContent = 'Usuario/email o contraseña incorrectos.'; err.classList.remove('hidden'); return; }
@@ -3414,6 +3500,7 @@ async function doLogin(){
 }
 async function doLogout(){
   try{ blqSalirEdicion(); }catch(e){}
+  EN_RECUPERACION = false; marcarRecuperacion(false);
   if(CURRENT && CURRENT.mode==='cuartel'){
     try{ await sb.rpc('cuartel_salir', { p_device_id: idDispositivo() }); }catch(e){}
     try{ sessionStorage.removeItem('portalagm_cuartel_sesion'); }catch(e){}
@@ -3524,21 +3611,127 @@ async function fetchPersonalCfg(){
     if(!error && data) PERSONAL_CFG = { obl: new Set(data.externado_obligatorias || []), viernesDos: Array.isArray(data.viernes_dos) ? new Set(data.viernes_dos) : null };
   }catch(e){}
 }
+/* ================= Arrestos y solicitudes de viernes (parche SQL 101) =================
+   Un arrestado (de «desde» a «hasta», ambos incluidos) tiene OBLIGATORIAS en la AGM la pernocta y todas las comidas. Manda sobre externado, viernes libres,
+   puentes desbloqueados… Solo se puede apuntar (el alumno el suyo, el Furry los de su compañía); quitarlo o cambiarlo es cosa del Furry. */
+let ARRESTOS = new Map();          // persona_id -> [{ id, persona_id, desde, hasta, origen, creado_en }] (el alumno solo ve los suyos; el Furry, los de su compañía)
+let ARRESTOS_FALTA = false;        // true si la tabla no existe todavía (parche 101 sin ejecutar)
+const arrestoEn = (personaId, fecha) => { const l = ARRESTOS.get(personaId); return l ? (l.find(a=>a.desde<=fecha && fecha<=a.hasta) || null) : null; };
+const arrestado = (personaId, fecha) => !!arrestoEn(personaId, fecha);
+async function fetchArrestos({ personaIds, compania } = {}){
+  try{
+    let q = sb.from('arrestos').select('id,persona_id,compania,desde,hasta,origen,creado_en');
+    if(compania) q = q.eq('compania', compania); else if(personaIds && personaIds.length) q = q.in('persona_id', personaIds); else { ARRESTOS = new Map(); return []; }
+    const { data, error } = await q.order('desde').limit(3000);
+    if(error){ ARRESTOS_FALTA = /relation|does not exist|schema cache/i.test(error.message||''); return []; }
+    ARRESTOS_FALTA = false;
+    const m = new Map(); (data||[]).forEach(a=>{ if(!m.has(a.persona_id)) m.set(a.persona_id, []); m.get(a.persona_id).push(a); });
+    ARRESTOS = m; return data || [];
+  }catch(e){ return []; }
+}
+const arrestoTxt = a => `${fmtFecha(a.desde)} → ${fmtFecha(a.hasta)} (${diasEntre(a.desde, a.hasta)+1} día${diasEntre(a.desde, a.hasta)===0?'':'s'})`;
+const arrestoVigente = a => a.hasta >= ymd(new Date());
+// Apuntar un arresto (alumno: el suyo; Furry: cualquiera de su compañía). Devuelve { ok, error }
+async function guardarArresto(personaId, desde, hasta){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(desde||'') || !/^\d{4}-\d{2}-\d{2}$/.test(hasta||'')) return { ok:false, error:'Elige las fechas.' };
+  if(hasta < desde) return { ok:false, error:'La fecha final no puede ser anterior a la de inicio.' };
+  if(diasEntre(desde, hasta) > 120) return { ok:false, error:'Un arresto no puede durar más de 120 días.' };
+  const { error } = await sb.from('arrestos').insert({ persona_id: personaId, desde, hasta });
+  if(error){
+    const m = error.message || '';
+    return { ok:false, error: /relation|does not exist|schema cache/i.test(m) ? 'Falta ejecutar el parche SQL 101.' : /Ya tiene un arresto/i.test(m) ? 'Ya tiene un arresto apuntado en esas fechas.' : /fecha de inicio/i.test(m) ? 'La fecha de inicio no es válida (como mucho 30 días atrás o 90 adelante).' : /Demasiados/i.test(m) ? 'Demasiados arrestos apuntados. Habla con tu Furry.' : m };
+  }
+  logFurry('arresto', `Arresto apuntado: ${desde} → ${hasta}`);
+  return { ok:true };
+}
+// Solo el Furry (o el superadmin): cambiar las fechas o borrar
+async function cambiarArresto(id, desde, hasta){
+  if(hasta < desde) return { ok:false, error:'La fecha final no puede ser anterior a la de inicio.' };
+  const { error } = await sb.from('arrestos').update({ desde, hasta }).eq('id', id);
+  if(error) return { ok:false, error: /Ya tiene un arresto/i.test(error.message||'') ? 'Se solapa con otro arresto de esa persona.' : error.message };
+  logFurry('arresto', `Arresto cambiado: ${desde} → ${hasta}`);
+  return { ok:true };
+}
+async function borrarArresto(id){
+  const { error } = await sb.from('arrestos').delete().eq('id', id);
+  if(error) return { ok:false, error:error.message };
+  logFurry('arresto', 'Arresto borrado');
+  return { ok:true };
+}
+// Viernes libres: el alumno pide 2 o 4 viernes y el Furry la acepta o la rechaza
+async function fetchSolicitudesViernes({ personaId, compania, soloPendientes } = {}){
+  try{
+    let q = sb.from('solicitudes_viernes').select('id,persona_id,compania,quiere,motivo,estado,creado_en,resuelta_en');
+    if(personaId) q = q.eq('persona_id', personaId); else if(compania) q = q.eq('compania', compania); else return [];
+    if(soloPendientes) q = q.eq('estado','pendiente');
+    const { data, error } = await q.order('creado_en', { ascending:false }).limit(300);
+    return error ? [] : (data||[]);
+  }catch(e){ return []; }
+}
+async function pedirViernes(personaId, quiere, motivo){
+  const fila = { persona_id: personaId, quiere };
+  const m = (motivo||'').trim(); if(m) fila.motivo = m.slice(0, 300).replace(/[<>"]/g, '');
+  const { error } = await sb.from('solicitudes_viernes').insert(fila);
+  if(error){
+    const t = error.message || '';
+    return { ok:false, error: /relation|does not exist|schema cache/i.test(t) ? 'Falta ejecutar el parche SQL 101.' : /duplicate|unique/i.test(t) ? 'Ya tienes una solicitud pendiente.' : /Ya tienes esos viernes/i.test(t) ? 'Ya tienes esos viernes (o más).' : t };
+  }
+  return { ok:true };
+}
+async function resolverSolicitudViernes(id, aceptar){
+  const { data, error } = await sb.rpc('resolver_solicitud_viernes', { p_id:id, p_aceptar:!!aceptar });
+  if(error) return { ok:false, error:error.message };
+  logFurry('viernes', `Solicitud de viernes ${aceptar ? 'aceptada' : 'rechazada'}`);
+  return { ok:true, texto:data };
+}
+// Registro del Furry (lo lee el superadmin): solo lo importante. No espera ni molesta si falla.
+function logFurry(tipo, detalle){
+  try{ if(CURRENT && CURRENT.mode==='admin' && !CURRENT.isSuperadmin) sb.rpc('registrar_furry_evento', { p_tipo:tipo, p_detalle:String(detalle||'').slice(0,300) }).then(()=>{}, ()=>{}); }catch(e){}
+}
 const viernesDosPorDefecto = clave => { const ord = Math.ceil(parseInt(String(clave).slice(8,10),10)/7); return ord===1 || ord===3; };
 const valorExternado = p => !p.externado ? 'no' : (p.externado_total ? 'total' : 'findes');
 let VIERNES_FUERA = new Map(); // persona -> permiso para dormir fuera el viernes: 2 = dos fines de semana al mes (1.º y 3.º viernes), 4 = todos; sin entrada = ninguno
 const vfMapa = ps => new Map(ps.filter(p=>p.viernes_fuera>0).map(p=>[p.id, p.viernes_fuera]));
 // ¿Ese viernes (clave 'YYYY-MM-DD') cae en un fin de semana con permiso para esa persona?
+/* Viernes libres = CUOTA MENSUAL: «2 viernes» = la persona puede dormir fuera 2 viernes de cada mes natural, los que quiera (seguidos o separados) y sin acumular los que no use;
+   «4 viernes» = todos. Se cuentan los viernes de ese mes en los que ya tiene marcada la noche FUERA. Si ya ha usado los 2 (en OTROS viernes), ese viernes es obligatorio en la AGM. */
+let VIERNES_USADOS = new Map();    // persona_id -> Set de claves 'YYYY-MM-DD' (viernes) en los que duerme FUERA, del mes de VIERNES_USADOS_MES
+let VIERNES_USADOS_MES = '';       // 'YYYY-MM' al que corresponden los datos de arriba
+const mesDeClave = k => String(k||'').slice(0,7);
+async function fetchViernesUsados({ personaIds } = {}, claveSemana){
+  const mes = mesDeClave(claveSemana || (ACTIVE_WEEK && ACTIVE_WEEK.key)); if(!/^\d{4}-\d{2}$/.test(mes)) return;
+  if(!personaIds || !personaIds.length){ VIERNES_USADOS = new Map(); VIERNES_USADOS_MES = mes; return; }
+  const ini = mes + '-01', fin = ymd(new Date(parseInt(mes.slice(0,4),10), parseInt(mes.slice(5,7),10), 0)); // primer y último día del mes
+  try{
+    const { data, error } = await sb.from('pernoctas').select('persona_id,semana_inicio').eq('dia', 0).eq('duerme_agm', false).gte('semana_inicio', ini).lte('semana_inicio', fin).in('persona_id', personaIds).limit(5000);
+    if(error) return;
+    const m = new Map(); (data||[]).forEach(r=>{ if(!m.has(r.persona_id)) m.set(r.persona_id, new Set()); m.get(r.persona_id).add(r.semana_inicio); });
+    VIERNES_USADOS = m; VIERNES_USADOS_MES = mes;
+  }catch(e){}
+}
+// Carga los viernes ya usados de quienes tienen «2 viernes»: el alumno, los suyos; el Furry, los de su compañía (lo que ya hayan cargado fetchCompanySections / enterAlumno en VIERNES_FUERA)
+async function cargarViernesUsadosActual(){
+  if(!ACTIVE_WEEK) return;
+  const ids = (CURRENT && CURRENT.mode==='alumno' && CURRENT.persona)
+    ? (VIERNES_FUERA.get(CURRENT.persona.id)===2 ? [CURRENT.persona.id] : [])
+    : [...VIERNES_FUERA.entries()].filter(([,n])=>n===2).map(([id])=>id);
+  await fetchViernesUsados({ personaIds: ids }, ACTIVE_WEEK.key);
+}
+const viernesUsadosEnMes = (personaId, claveViernes) => VIERNES_USADOS_MES===mesDeClave(claveViernes) ? [...(VIERNES_USADOS.get(personaId) || [])] : [];
 function viernesFueraPermitido(personaId, claveViernes){
   const n = VIERNES_FUERA.get(personaId) || 0;
   if(n>=4) return true;
-  if(n===2) return PERSONAL_CFG.viernesDos ? PERSONAL_CFG.viernesDos.has(String(claveViernes)) : viernesDosPorDefecto(claveViernes);
+  if(n===2){
+    if(VIERNES_USADOS_MES !== mesDeClave(claveViernes)) return true;                         // sin datos de ese mes todavía: no se bloquea (se repinta al cargarlos)
+    return viernesUsadosEnMes(personaId, claveViernes).filter(k=>k!==String(claveViernes)).length < 2; // ya usó 2 en OTROS viernes del mes: este es obligatorio
+  }
   return false;
 }
 let PERNOCTA_SABADO_FUERA = new Set(); // quiénes han marcado explícitamente que duermen FUERA el sábado (según Pernoctas) — a todos los demás, por defecto, se les asume en la AGM y por tanto obligatorio el desayuno del domingo
 let PERNOCTA_VIERNES_FUERA = new Set(); // quiénes duermen FUERA el viernes de la semana que se está viendo (según Pernoctas)
 // week: la semana a la que pertenece la columna (por defecto, la que se está viendo). Las reglas que dependen de la pernocta del viernes solo valen para la semana cargada.
 function effectiveObligatorio(personaId, col, week){
+  { const wk = week || ACTIVE_WEEK; if(wk && ARRESTOS.size && arrestado(personaId, ymd(diaPern(wk, col.day)))) return true; } // arrestado: TODAS las comidas son obligatorias
   // Externado TOTAL: no tiene desayunos, comidas ni cenas obligatorios, salvo las que el superadmin haya configurado (las maniobras se asignan aparte)
   if(EXTERNADOS_TOTAL.has(personaId)) return PERSONAL_CFG.obl.has(col.type+'|'+col.day);
   if(col.type==='desayuno' && col.day===1 && EXTERNADOS.has(personaId)) return false; // externado: sábado no obligatorio
@@ -3550,6 +3743,7 @@ function effectiveObligatorio(personaId, col, week){
   return !!col.obligatorio;
 }
 async function fetchPernoctaSabadoAgmSetSeccion(compania, seccion, semanaKey){
+  await cargarViernesUsadosActual();
   const set = new Set();
   const { data } = await sb.rpc('pernoctas_de_seccion', { p_compania:compania, p_seccion:seccion, p_semana:semanaKey });
   const vie = new Set();
@@ -3558,6 +3752,7 @@ async function fetchPernoctaSabadoAgmSetSeccion(compania, seccion, semanaKey){
   return set;
 }
 async function fetchPernoctaSabadoAgmSetCompania(compania, semanaKey){
+  await cargarViernesUsadosActual();
   const set = new Set();
   const resp = await Promise.all(Array.from({length:SECTIONS_PER_COMPANY}, (_,i)=>sb.rpc('pernoctas_de_seccion', { p_compania:compania, p_seccion:i+1, p_semana:semanaKey })));
   const vie = new Set();
@@ -3572,6 +3767,7 @@ async function fetchPernoctaSabadoAgmSetCompania(compania, semanaKey){
 const SEMANA_SIN_DEFECTO_DESDE = '2026-10-09';   // desde aquí, lo no tocado NO sale marcado (salvo obligatorias)
 const SEMANA_DOMINGO_LIBRE_DESDE = '2026-10-09'; // desde aquí, el desayuno del domingo deja de ser obligatorio
 function getVal(personaId, col, apuntesMap){
+  if(ACTIVE_WEEK && ARRESTOS.size && arrestado(personaId, ymd(diaPern(ACTIVE_WEEK, col.day)))) return true; // arrestado: siempre en la AGM, aunque hubiera algo guardado antes
   const key = personaId+'|'+col.type+'|'+col.day;
   if(apuntesMap.hasOwnProperty(key)) return apuntesMap[key];
   if(ACTIVE_WEEK && ACTIVE_WEEK.key < SEMANA_SIN_DEFECTO_DESDE) return true; // semanas antiguas: todo marcado por defecto
@@ -4168,6 +4364,19 @@ function seccionSelectHtml(conTodas){
     CUARTEL.data.secciones.map(sec=>`<option value="${sec.code}" ${CUARTEL.seccion===sec.code?'selected':''}>Sección ${sec.code}</option>`));
   return `<div class="field"><label>Sección</label><select onchange="onCuartelSeccion(this.value)">${opts.join('')}</select></div>`;
 }
+// Desplegable tipo acordeón: al abrir uno se cierran los demás de su grupo (mismo prefijo de id)
+function verUno(prefijo, id){
+  const el = document.getElementById(id); if(!el) return;
+  const abrir = el.classList.contains('hidden');
+  document.querySelectorAll(`[id^="${prefijo}"]`).forEach(x=>x.classList.add('hidden'));
+  if(abrir) el.classList.remove('hidden');
+}
+// Los <details> de un mismo contenedor (data-acordeon) se comportan igual: abrir uno cierra los otros
+document.addEventListener('toggle', e=>{
+  const d = e.target; if(!d || d.tagName!=='DETAILS' || !d.open) return;
+  const g = d.closest('[data-acordeon]'); if(!g) return;
+  g.querySelectorAll('details[open]').forEach(x=>{ if(x!==d && !d.contains(x) && !x.contains(d)) x.open = false; });
+}, true);
 function listaNombresHtml(arr){ return arr.length ? arr.map(p=>nameCellHtml(p)).join('<br>') : '<span style="color:var(--ink-soft)">Nadie</span>'; }
 
 function pintarCuartel(){
@@ -4214,13 +4423,18 @@ function cuartelComidasDiaHtml(){
       const si = sec.people.filter(p=>cMarca(p.id,col));
       return `<div style="margin:6px 0;"><b>Sección ${sec.code} (${si.length})</b><br>${listaNombresHtml(si)}</div>`;
     }).join('');
+    const noQuien = secciones.map(sec=>{
+      const no = sec.people.filter(p=>!cMarca(p.id,col));
+      return `<div style="margin:6px 0;"><b>Sección ${sec.code} (${no.length})</b><br>${listaNombresHtml(no)}</div>`;
+    }).join('');
     const intol = secciones.flatMap(s=>s.people).filter(p=>isIntol(p) && cMarca(p.id,col));
-    html += `<div class="cuartel-card">
+    html += `<div class="cuartel-card" data-acordeon>
       <h4>${tipoNombre(col.type)} · ${DAY_NAMES_FULL[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))}</h4>
       <div class="big">${total}/${N}</div>
       ${intol.length ? `<div style="font-size:.8rem;margin-top:4px;">🍽️⚠️ Con intolerancias: <b>${intol.length}</b> — ${intol.map(p=>escHtml(p.apellidos+', '+p.nombre)+' ('+escHtml(p.intolerancias.trim())+')').join(' · ')}</div>` : ''}
       <div class="table-scroll"><table class="roster" style="margin-top:8px;min-width:0;"><thead><tr><th class="name-cell">Sección</th><th>Comen</th></tr></thead><tbody>${filas}</tbody></table></div>
       <details><summary>Ver quién come</summary>${quien}</details>
+      <details><summary>Ver quién NO come</summary>${noQuien}</details>
     </div>`;
   });
   return html;
@@ -4306,6 +4520,146 @@ function pintarBusquedaCuartel(){
       ${isIntol(p) ? `<div style="font-size:.8rem;">🍽️⚠️ Intolerancias: ${escHtml(p.intolerancias.trim())}</div>` : ''}${cuerpo}</div>`;
   }).join('') + (gente.length>60 ? '<p class="small-note">Hay más resultados: afina la búsqueda.</p>' : '');
 }
+/* ---- Alumno (y Furry en su modo alumno): apuntarse un arresto y pedir viernes libres. Solo se apunta o se pide: quitarlo o cambiarlo es cosa del Furry ---- */
+const fechaCortaTxt = k => fmtFecha(k).replace(',', '');
+function sumarDias(k, n){ const d = new Date(k+'T12:00:00'); d.setDate(d.getDate()+n); return ymd(d); }
+function viernesCercano(){ const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate() + (5 - d.getDay() + 7) % 7); return ymd(d); } // hoy si es viernes; si no, el próximo
+const esAlumnoConPersona = () => !!(CURRENT && CURRENT.mode==='alumno' && CURRENT.persona);
+// Aviso en Comidas y Pernoctas: arrestos vigentes hoy o que tocan la semana que se está viendo
+// Quien tiene «2 viernes» ve cuántos lleva este mes (seguidos o separados; no se acumulan)
+function viernesCuotaHtml(){
+  if(!(CURRENT && CURRENT.mode==='alumno' && CURRENT.persona && ACTIVE_WEEK) || VIERNES_FUERA.get(CURRENT.persona.id)!==2) return '';
+  const usados = viernesUsadosEnMes(CURRENT.persona.id, ACTIVE_WEEK.key).length;
+  return `<div class="notice" style="display:block;margin-top:8px;">📅 Tienes <b>2 viernes libres al mes</b> (seguidos o separados; no se acumulan). Este mes llevas <b>${Math.min(usados,2)} de 2</b>.${usados>=2 ? ' Los demás viernes de este mes son obligatorios en la AGM.' : ''}</div>`;
+}
+function arrestoAvisoHtml(){
+  if(!esAlumnoConPersona() || !ACTIVE_WEEK) return '';
+  const hoy = ymd(new Date()), ini = ymd(diaPern(ACTIVE_WEEK, 0)), fin = ymd(diaPern(ACTIVE_WEEK, Math.max(6, pernoctaDiasCount()-1)));
+  return (ARRESTOS.get(CURRENT.persona.id) || []).filter(a=>(a.desde<=hoy && hoy<=a.hasta) || (a.desde<=fin && a.hasta>=ini))
+    .map(a=>`<div class="notice closed" style="margin-top:8px;"><span>🚨 <strong>Arrestado del ${escHtml(fechaCortaTxt(a.desde))} al ${escHtml(fechaCortaTxt(a.hasta))}</strong>: pernocta y comidas obligatorias</span></div>`).join('');
+}
+function arrestosAlumnoListaHtml(){
+  const hoy = ymd(new Date());
+  const l = (ARRESTOS.get(CURRENT.persona.id) || []).filter(arrestoVigente).sort((a,b)=>a.desde<b.desde?-1:1);
+  return l.length ? l.map(a=>`<div class="history-row">🚨 ${escHtml(arrestoTxt(a))} · ${a.desde<=hoy ? '<b>vigente</b>' : 'próximo'}</div>`).join('')
+    : '<p class="modal-nota" style="margin:4px 0;">No tienes ningún arresto vigente ni próximo.</p>';
+}
+function abrirArrestoAlumno(){
+  if(!esAlumnoConPersona()) return;
+  const hoy = ymd(new Date()), desde = viernesCercano();
+  abrirModalGlobal(`<h3>🚨 Apuntarme un arresto</h3>
+    <div class="notice closed" style="margin:0 0 12px;"><strong>Durante el arresto la pernocta y TODAS las comidas son obligatorias en la AGM. Solo tu Furry podrá cambiarlo o quitarlo.</strong></div>
+    <div class="field"><label for="arr-desde">¿Desde qué día?</label><input type="date" id="arr-desde" value="${desde}" min="${sumarDias(hoy,-30)}" max="${sumarDias(hoy,90)}" onchange="arrSincronizar('desde')"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div class="field" style="flex:1 1 100px;min-width:0;"><label for="arr-dias">¿Cuántos días?</label><input type="number" id="arr-dias" min="1" max="120" step="1" value="3" inputmode="numeric" oninput="arrSincronizar('dias')" onchange="arrSincronizar('dias')"></div>
+      <div class="field" style="flex:1 1 140px;min-width:0;"><label for="arr-hasta">Hasta</label><input type="date" id="arr-hasta" value="${sumarDias(desde,2)}" onchange="arrSincronizar('hasta')"></div>
+    </div>
+    <p class="modal-nota" id="arr-resumen" style="margin-top:0;font-weight:700;color:var(--ink);"></p>
+    <div id="arr-error" role="alert" style="color:var(--danger);font-weight:700;font-size:.85rem;margin-bottom:8px;"></div>
+    <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" id="arr-guardar" onclick="enviarArrestoAlumno()">Apuntar arresto</button></div>
+    <h4 style="margin:16px 0 6px;font-size:.9rem;">Tus arrestos</h4>
+    <div id="arr-lista">${arrestosAlumnoListaHtml()}</div>
+    <p class="modal-nota" style="margin-bottom:0;">Si te has equivocado, díselo a tu Furry.</p>`);
+  arrSincronizar('desde');
+  fetchArrestos({ personaIds:[CURRENT.persona.id] }).then(()=>{ const l = document.getElementById('arr-lista'); if(l && esAlumnoConPersona()) l.innerHTML = arrestosAlumnoListaHtml(); });
+}
+// «¿Cuántos días?» y «Hasta» son dos formas de lo mismo: al cambiar una se calcula la otra
+function arrSincronizar(origen){
+  const d = document.getElementById('arr-desde'), n = document.getElementById('arr-dias'), h = document.getElementById('arr-hasta'), res = document.getElementById('arr-resumen');
+  if(!d || !n || !h || !res) return;
+  const f = /^\d{4}-\d{2}-\d{2}$/;
+  if(!f.test(d.value)){ res.textContent = 'Elige el día de inicio.'; return; }
+  h.min = d.value; h.max = sumarDias(d.value, 119);
+  let dias;
+  if(origen==='hasta' && f.test(h.value)){
+    dias = diasEntre(d.value, h.value) + 1;
+    if(dias < 1){ dias = 1; h.value = d.value; }
+    if(dias > 120){ dias = 120; h.value = sumarDias(d.value, 119); }
+    n.value = dias;
+  } else {
+    if(origen==='dias' && n.value.trim()===''){ res.textContent = 'Escribe cuántos días.'; return; }
+    dias = parseInt(n.value, 10);
+    if(!(dias >= 1)) dias = 1;
+    if(dias > 120) dias = 120;
+    if(String(dias)!==n.value) n.value = dias;
+    h.value = sumarDias(d.value, dias-1);
+  }
+  res.textContent = `Del ${fechaCortaTxt(d.value)} al ${fechaCortaTxt(h.value)} · ${dias} día${dias===1?'':'s'}`;
+}
+async function enviarArrestoAlumno(){
+  if(!esAlumnoConPersona()) return;
+  const d = document.getElementById('arr-desde'), n = document.getElementById('arr-dias'), h = document.getElementById('arr-hasta'), err = document.getElementById('arr-error'), btn = document.getElementById('arr-guardar');
+  if(!d || !h || !err) return;
+  err.textContent = '';
+  if(n && !(parseInt(n.value, 10) >= 1)){ err.textContent = 'Escribe cuántos días.'; return; }
+  const desde = d.value, hasta = h.value, personaId = CURRENT.persona.id;
+  if(btn) btn.disabled = true;
+  let r; try{ r = await guardarArresto(personaId, desde, hasta); }catch(e){ r = { ok:false, error:(e && e.message) || 'No se pudo apuntar.' }; }
+  if(!r || !r.ok){ const e2 = document.getElementById('arr-error'); if(e2) e2.textContent = (r && r.error) || 'No se pudo apuntar.'; const b2 = document.getElementById('arr-guardar'); if(b2) b2.disabled = false; return; }
+  cerrarModalGlobal();
+  await fetchArrestos({ personaIds:[personaId] });
+  showToast(`Arresto apuntado: del ${fechaCortaTxt(desde)} al ${fechaCortaTxt(hasta)}`);
+  await rerenderActual();
+}
+// Viernes libres: «2 viernes» o «4 viernes». Lo acepta o lo rechaza el Furry
+let VF_SEL = 0;
+function abrirViernesAlumno(){
+  if(!esAlumnoConPersona()) return;
+  VF_SEL = 0;
+  abrirModalGlobal(`<h3>📅 Pedir viernes libres</h3>
+    <p class="modal-nota" style="margin-top:0;">Tu Furry revisará la solicitud. Con «2 viernes» puedes dormir fuera 2 viernes de cada mes, los que quieras (seguidos o separados, sin acumular los que no uses).</p>
+    <div id="vf-cuerpo"><p class="modal-nota">Cargando…</p></div>
+    <div class="modal-botones" style="margin-top:12px;"><button class="small-btn" onclick="cerrarModalGlobal()">Cerrar</button></div>`);
+  pintarViernesAlumno();
+}
+async function pintarViernesAlumno(){
+  const id = CURRENT.persona.id;
+  let tiene = Number(CURRENT.persona.viernes_fuera) || 0, sols = [];
+  try{
+    const [r, s] = await Promise.all([ sb.from('personas').select('viernes_fuera').eq('id', id).maybeSingle(), fetchSolicitudesViernes({ personaId:id }) ]);
+    sols = s || [];
+    if(r && !r.error && r.data){ // la persona cargada al entrar puede estar desfasada (p. ej. el Furry acaba de aceptar)
+      tiene = Number(r.data.viernes_fuera) || 0;
+      CURRENT.persona.viernes_fuera = tiene;
+      if(tiene > 0) VIERNES_FUERA.set(id, tiene); else VIERNES_FUERA.delete(id);
+    }
+  }catch(e){}
+  const cuerpo = document.getElementById('vf-cuerpo'); if(!cuerpo || !esAlumnoConPersona() || CURRENT.persona.id!==id) return;
+  const pend = sols.find(s=>s.estado==='pendiente');
+  const fechaTs = t => t ? new Date(t).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '';
+  const bloqueo = tiene>=4 ? 'Ya tienes los 4 viernes: no hace falta pedir más.'
+    : pend ? `Ya tienes una solicitud pendiente (${Number(pend.quiere)||''} viernes, del ${escHtml(fechaTs(pend.creado_en))}). Espera a que tu Furry la revise.` : '';
+  if(bloqueo || VF_SEL <= tiene) VF_SEL = 0;
+  const opcion = (n, sub) => { const dis = !!bloqueo || tiene >= n;
+    return `<button type="button" class="small-btn vf-op${VF_SEL===n?' active':''}" data-vf="${n}" ${dis?'disabled':''} onclick="vfElegir(${n})" style="flex:1 1 0;min-width:0;padding:14px 8px;font-size:1rem;font-weight:700;line-height:1.25;white-space:normal;${dis?'opacity:.45;cursor:not-allowed;':''}">${n} viernes<span style="display:block;font-size:.72rem;font-weight:400;">${sub}</span></button>`; };
+  const ESTADO = { pendiente:'⏳ Pendiente', aceptada:'✅ Aceptada', rechazada:'❌ Rechazada' };
+  cuerpo.innerHTML = `<div class="notice" style="margin-bottom:10px;"><span>Ahora tienes: <strong>${tiene>=4 ? 'los 4 viernes (todos)' : tiene===2 ? '2 viernes al mes' : 'ningún viernes libre'}</strong></span></div>
+    ${bloqueo ? `<div class="notice closed" style="margin-bottom:10px;"><strong>${bloqueo}</strong></div>` : ''}
+    <div style="display:flex;gap:10px;margin-bottom:12px;">${opcion(2, 'dos fines de semana al mes')}${opcion(4, 'todos los viernes')}</div>
+    <div class="field"><label for="vf-motivo">Motivo (opcional)</label><textarea id="vf-motivo" rows="3" maxlength="300" ${bloqueo?'disabled':''} oninput="this.value=this.value.replace(/[<>&quot;]/g,'')" placeholder="Por qué lo necesitas…" style="width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;"></textarea></div>
+    <div id="vf-error" role="alert" style="color:var(--danger);font-weight:700;font-size:.85rem;margin-bottom:8px;"></div>
+    <div class="modal-botones"><button class="primary-btn" id="vf-enviar" ${bloqueo?'disabled':''} onclick="enviarViernesAlumno()">Enviar solicitud</button></div>
+    <h4 style="margin:16px 0 6px;font-size:.9rem;">Tus solicitudes</h4>
+    ${sols.length ? sols.slice(0, 10).map(s=>`<div class="history-row">${ESTADO[s.estado] || escHtml(s.estado)} · ${Number(s.quiere)||''} viernes · pedida el ${escHtml(fechaTs(s.creado_en))}${s.resuelta_en ? ` · ${s.estado==='aceptada'?'aceptada':'resuelta'} el ${escHtml(fechaTs(s.resuelta_en))}` : ''}${s.motivo ? `<div class="sub2" style="overflow-wrap:anywhere;">${escHtml(s.motivo)}</div>` : ''}</div>`).join('')
+      : '<p class="modal-nota" style="margin:4px 0;">Todavía no has pedido nada.</p>'}`;
+}
+function vfElegir(n){
+  VF_SEL = n;
+  document.querySelectorAll('#vf-cuerpo .vf-op').forEach(b=>b.classList.toggle('active', b.dataset.vf===String(n)));
+  const e = document.getElementById('vf-error'); if(e) e.textContent = '';
+}
+async function enviarViernesAlumno(){
+  if(!esAlumnoConPersona()) return;
+  const err = document.getElementById('vf-error'), btn = document.getElementById('vf-enviar'); if(!err) return;
+  if(VF_SEL!==2 && VF_SEL!==4){ err.textContent = 'Elige «2 viernes» o «4 viernes».'; return; }
+  const m = document.getElementById('vf-motivo'), motivo = m ? m.value : '';
+  err.textContent = ''; if(btn) btn.disabled = true;
+  let r; try{ r = await pedirViernes(CURRENT.persona.id, VF_SEL, motivo); }catch(e){ r = { ok:false, error:(e && e.message) || 'No se pudo enviar.' }; }
+  if(!r || !r.ok){ const e2 = document.getElementById('vf-error'); if(e2) e2.textContent = (r && r.error) || 'No se pudo enviar.'; const b2 = document.getElementById('vf-enviar'); if(b2) b2.disabled = false; return; }
+  showToast(`Solicitud enviada (${VF_SEL} viernes): tu Furry la revisará.`);
+  VF_SEL = 0;
+  await pintarViernesAlumno();
+}
 /* ================= ALUMNO ================= */
 async function enterAlumno(persona, adminCompania, isSuperadmin){
   registrarUsoApp();
@@ -4313,6 +4667,7 @@ async function enterAlumno(persona, adminCompania, isSuperadmin){
   const wasSuperadmin = CURRENT && CURRENT.isSuperadmin;
   CURRENT = { mode:'alumno', persona, seccionPeople: seccion || [persona], adminCompania: adminCompania || null, isSuperadmin: (isSuperadmin!=null?isSuperadmin:wasSuperadmin) };
   EXTERNADOS = new Set((seccion||[persona]).filter(p=>p.externado).map(p=>p.id));
+  await fetchArrestos({ personaIds:[persona.id] }); // los arrestos propios (solo ves los tuyos)
   EXTERNADOS_TOTAL = new Set((seccion||[persona]).filter(p=>p.externado && p.externado_total).map(p=>p.id));
   VIERNES_FUERA = vfMapa(seccion||[persona]);
   pintarModo('alumno', (CURRENT.adminCompania || CURRENT.isSuperadmin) ? [['alumno','🎓 MODO ALUMNO', modoAccion()]] : []); // el aviso de modo solo les sale a los admins y al superadmin
@@ -4345,7 +4700,7 @@ async function renderAlumno(){
   const diasDesbloqueadosTxt = diasDesbloqueados.map(d=>DAY_NAMES[(d)%7]+' '+fmt(diaPern(ACTIVE_WEEK,d))).join(', ');
   pintarSelectorSemanas('comidas', 'alumno', 'onAlumnoWeekChange', horaCorte, true);
   document.getElementById('alumno-maniobras').innerHTML = maniobrasBannerHtml(ACTIVE_WEEK, false); // el aviso de maniobras va debajo del mensaje de confirmación
-  document.getElementById('alumno-notice').innerHTML = noticeHtmlBase(ACTIVE_WEEK, horaCorte);
+  document.getElementById('alumno-notice').innerHTML = noticeHtmlBase(ACTIVE_WEEK, horaCorte) + arrestoAvisoHtml();
   document.getElementById('alumno-desbloqueo').innerHTML = diasDesbloqueados.length ? `<div class="notice" style="border-color:var(--brass);margin-top:8px;"><span>🌉 Tu compañía ha abierto el desbloqueo de obligatorias esta semana (puente)</span><strong>Puedes desmarcar desayuno y comida el ${diasDesbloqueadosTxt}</strong></div>` : '';
 
   const cols = COLS();
@@ -4451,7 +4806,7 @@ async function renderAlumno(){
     tbody += `<tr class="${isMe?'me':''}"><td class="name-cell">${escHtml(p.apellidos)}, ${escHtml(p.nombre)}${isMe?' (tú)':''}</td>`;
     cols.forEach(c=>{
       const val = getVal(p.id, c, apuntesMap);
-      const locked = effectiveObligatorio(p.id, c) && !diaComidaDesbloqueado(c.day) && !comidaLiberadaPorPuente(ACTIVE_WEEK, c);
+      const locked = arrestado(p.id, ymd(diaPern(ACTIVE_WEEK, c.day))) || (effectiveObligatorio(p.id, c) && !diaComidaDesbloqueado(c.day) && !comidaLiberadaPorPuente(ACTIVE_WEEK, c));
       const tdClass = (isCurrentMealColumn(c) ? 'col-today' : '') + (comidaEnManiobras(ACTIVE_WEEK, c) ? ' col-mani' : '');
       if(locked){
         // Se pinta el valor REAL guardado (antes salía siempre marcada aunque en la base de datos no lo estuviera,
@@ -4477,20 +4832,21 @@ async function renderAlumno(){
 
   // Las dos PRÓXIMAS comidas que todavía no han terminado (hoy mismo si quedan, y si no, las siguientes días)
   const proximas = proximasComidas(ACTIVE_WEEK, cols, 3);
-  const listaNombres = arr => arr.length ? arr.map(p=>escHtml(p.apellidos+', '+p.nombre)).join('<br>') : 'Nadie de tu sección tiene esta comida.';
+  const listaNombres = (arr, vacio) => arr.length ? arr.map(p=>escHtml(p.apellidos+', '+p.nombre)).join('<br>') : (vacio || 'Nadie de tu sección tiene esta comida.');
   const nombreTipoComida = t => t==='desayuno' ? 'Desayuno' : t==='comida' ? 'Comida' : 'Cena';
   const datosProximas = proximas.map(col=>({
     titulo: `${nombreTipoComida(col.type)} ${ymd(diaPern(ACTIVE_WEEK,col.day))===ymd(new Date()) ? 'hoy' : ymd(diaPern(ACTIVE_WEEK,col.day))===ymd(new Date(Date.now()+86400000)) ? 'mañana' : DAY_NAMES[col.day]} ${fmt(diaPern(ACTIVE_WEEK,col.day))}`,
-    quienes: seccionPeople.filter(p=>getVal(p.id,col,apuntesMap))
+    quienes: seccionPeople.filter(p=>getVal(p.id,col,apuntesMap)),
+    noQuienes: seccionPeople.filter(p=>!getVal(p.id,col,apuntesMap))
   }));
   document.getElementById('alumno-summary').innerHTML = datosProximas.length ? datosProximas.map((d,i)=>`
-    <div class="stat-card" style="cursor:pointer;" onclick="document.getElementById('quienes-${i}').classList.toggle('hidden')">
-      <div class="num">${d.quienes.length}/${seccionPeople.length}</div><div class="lbl">${d.titulo} — tu sección<br><span style="text-decoration:underline;">toca para ver quién</span></div>
+    <div class="stat-card" style="cursor:pointer;" onclick="verUno('quienes-','quienes-${i}')">
+      <div class="num">${d.quienes.length}/${seccionPeople.length}</div><div class="lbl">${d.titulo} — tu sección<br><span style="text-decoration:underline;">toca para ver quién y quién no</span></div>
     </div>`).join('') : `<div class="small-note">No quedan más comidas en esta semana.</div>`;
   JEFE_DATOS = { week:ACTIVE_WEEK, cols, people:seccionPeople, apuntesMap, code }; // para el desplegable «Jefe de clase»
   pintarJefeClase();
   document.getElementById('alumno-summary-quienes').innerHTML = datosProximas.map((d,i)=>`
-    <div id="quienes-${i}" class="servicio-card hidden"><div class="titulo">${d.titulo} — quién de tu sección</div><div class="meta">${listaNombres(d.quienes)}</div></div>`).join('');
+    <div id="quienes-${i}" class="servicio-card hidden"><div class="titulo">${d.titulo} — tu sección</div><div class="meta"><b>✅ La tienen (${d.quienes.length})</b><br>${listaNombres(d.quienes)}</div><div class="meta" style="margin-top:8px;"><b>❌ No la tienen (${d.noQuienes.length})</b><br>${listaNombres(d.noQuienes, 'Todos la tienen.')}</div></div>`).join('');
 
   const nowIso = new Date().toISOString();
   const { data: avisos } = await sb.from('avisos').select('*')
@@ -4554,6 +4910,7 @@ function jefeListadoHtml(){
     const cuando = fs===hoyStr ? 'hoy' : fs===manStr ? 'mañana' : DAY_NAMES_FULL[c.day].toLowerCase();
     return `<details class="jf-comida ${esProx?'prox':''}" ${JEFE_AB[k]?'open':''} ontoggle="JEFE_AB['${k}']=this.open"><summary><span>${ico[c.type]||'🍽️'}</span><span><b>${NOMBRE_COMIDA[c.type]}</b> <small>${cuando} · ${fmt(f)}</small></span><span class="jf-cant">${gente.length}/${total}</span><span class="jf-flecha">›</span></summary>`
       + (gente.length ? `<div class="jf-nombres">${gente.map(p=>`<div class="${p.id===yo?'yo':''}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)}${p.id===yo?' (tú)':''}</div>`).join('')}</div>` : '<div class="jf-vacio">Nadie de la sección tiene esta comida.</div>')
+      + (() => { const no = D.people.filter(p=>!gente.includes(p)).sort((a,b)=>(a.apellidos+' '+a.nombre).localeCompare(b.apellidos+' '+b.nombre, 'es')); return no.length ? `<div class="jf-no-tit">❌ No la tienen (${no.length})</div><div class="jf-nombres jf-no">${no.map(p=>`<div class="${p.id===yo?'yo':''}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)}${p.id===yo?' (tú)':''}</div>`).join('')}</div>` : '<div class="jf-no-tit">Todos la tienen.</div>'; })()
       + '</details>';
   };
   return `<details class="jf-lista" ${JEFE_AB['_todo']?'open':''} ontoggle="JEFE_AB['_todo']=this.open"><summary><span>👥</span><span>Ver quién tiene cada comida</span><span class="jf-flecha">›</span></summary><div class="jf-cuerpo">`
@@ -4582,6 +4939,12 @@ function descargarArchivo(blob, nombre){
   const url = URL.createObjectURL(blob), a = document.createElement('a');
   a.href = url; a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  try{ // registro del Furry (lo ve el superadmin): solo los Excel y PDF que descarga un Furry en su modo Furry (no alumnos, cuartel ni el superadmin; los .ics no)
+    if(CURRENT && CURRENT.mode==='admin' && !CURRENT.isSuperadmin){
+      const n = String(nombre||'').toLowerCase(), t = /\.pdf$/.test(n) ? 'pdf' : /\.(xlsx|xls|csv)$/.test(n) ? 'excel' : null;
+      if(t) logFurry(t, nombre);
+    }
+  }catch(e){}
   descargaListo(nombre, blob);
 }
 function pdfDesdeDoc(doc){
@@ -4827,6 +5190,7 @@ async function enterAdmin(compania, linkedPersona, isSuperadmin){
   showScreen('screen-admin');
   mostrarNovedadesAdmin(); // aviso de novedades para Furrys (una sola vez) nada más abrir el menú Furry; no se espera
   setActiveWeek(defaultWeekIndex());
+  peContarSolicitudes(); // numerito de «Personal» sin esperar a abrir la pestaña (no se espera)
   await setModule('comidas');
 }
 
@@ -4841,9 +5205,9 @@ function volverDeSuperadmin(){
   showScreen(CURRENT && CURRENT.mode==='alumno' ? 'screen-alumno' : 'screen-admin');
 }
 /* ---- Superadmin: personas conectadas (en total y por compañía) ---- */
-// "Conectado ahora" = última señal hace menos de 2 minutos (la app da señal cada minuto); además se enseñan las de las últimas 24 horas
+// "Conectado ahora" = última señal hace menos de 4 minutos (la app da señal cada 3 minutos si está a la vista); además se enseñan las de las últimas 24 horas
 const CONECT_SUPER = { vista:'ahora', filas:null, error:null, tope:false };
-const conectadoAhora = p => !!(p.ultima_conexion && (Date.now() - new Date(p.ultima_conexion).getTime()) < 120000);
+const conectadoAhora = p => !!(p.ultima_conexion && (Date.now() - new Date(p.ultima_conexion).getTime()) < PRESENCIA_VENTANA_MS);
 function setVistaConectados(v){ CONECT_SUPER.vista = v; pintarConectadosSuper(); }
 async function cargarConectadosSuper(){
   const cont = document.getElementById('super-conectados-cont'); if(cont) cont.innerHTML = '<p class="small-note">Cargando…</p>';
@@ -5204,12 +5568,21 @@ async function renderSuperadmin(){
       return r.error ? 0 : (r.count || 0);
     }catch(e){ return 0; }
   })();
+  const pFurryLog = (async()=>{ // lo mismo para «Registro del Furry» (parche SQL 101)
+    await DISENO_PROMESA;
+    try{
+      const visto = disenoVisto('super|furry-log');
+      if(!visto){ DISENO._vistas = DISENO._vistas || {}; DISENO._vistas['super|furry-log'] = new Date().toISOString(); guardarDiseno(); return 0; }
+      const r = await sb.from('furry_eventos').select('id', { count:'exact', head:true }).gt('creado_en', visto);
+      return r.error ? 0 : (r.count || 0);
+    }catch(e){ return 0; }
+  })();
   const pMsg = (async()=>{ // mensajes sin leer que te envían desde la app (parche SQL 68)
     try{ const r = await sb.from('mensajes_app').select('id', { count:'exact', head:true }).eq('leido', false); return r.error ? 0 : (r.count || 0); }catch(e){ return 0; }
   })();
   const pAyuda = (async()=>{ try{ const r = await sb.from('ayuda_mensajes').select('id', { count:'exact', head:true }).eq('leido', false); return r.error ? 0 : (r.count || 0); }catch(e){ return 0; } })();
   const pSug = (async()=>{ try{ const r = await sb.from('sugerencias').select('id', { count:'exact', head:true }).eq('leida', false); return r.error ? 0 : (r.count || 0); }catch(e){ return 0; } })();
-  const [rSol, rPue, rMan, cuartelHtml, totalesCia, rCias, nLog, nMsg, gsHtml, nSug, nAyudaS] = await Promise.all([
+  const [rSol, rPue, rMan, cuartelHtml, totalesCia, rCias, nLog, nMsg, gsHtml, nSug, nAyudaS, nFurryLog] = await Promise.all([
     sb.from('admin_solicitudes').select('*').eq('estado','pendiente').order('creado_en'),
     sb.from('pernocta_puentes').select('*').order('semana_inicio'),
     sb.from('maniobras').select('*').order('fecha_inicio'),
@@ -5223,7 +5596,7 @@ async function renderSuperadmin(){
       return { c:cc, total:t.count||0, registrados:r.count||0 };
     })),
     sb.from('companias').select('numero,total_efectivos'),
-    pLog, pMsg, gsCalendarioHtml(), pSug, pAyuda
+    pLog, pMsg, gsCalendarioHtml(), pSug, pAyuda, pFurryLog
   ]);
   const solicitudes = rSol.data, puentes = rPue.data, errPuentes = rPue.error, maniAcad = rMan.data, errManiAcad = rMan.error, companiasInfo = rCias.data;
   const efectivosReales = {}; (companiasInfo||[]).forEach(r=>{ efectivosReales[r.numero] = r.total_efectivos; });
@@ -5282,6 +5655,7 @@ async function renderSuperadmin(){
       { id:'ayuda', icono:'🆘', titulo:'Peticiones de ayuda', sub: nAyudaS ? `${nAyudaS} sin atender` : 'De todas las compañías', badge:(nAyudaS||''), tituloPanel:'Peticiones de ayuda', alAbrir:'cargarAyudaFurry()', cuerpo:'<div id="super-ayuda-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'sugerencias', icono:'💡', titulo:'Sugerencias', sub: nSug ? `${nSug} sin leer` : 'Ideas de los usuarios', badge:(nSug||''), tituloPanel:'Sugerencias para la app', alAbrir:'cargarSugerenciasSuper()', cuerpo:'<div id="super-sugerencias-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'cuartel-log', icono:'🔎', titulo:'Registro del cuartel', sub: nLog ? `${nLog} movimiento${nLog===1?'':'s'} nuevo${nLog===1?'':'s'}` : 'Quién entra, a quién contacta y qué descarga', badge:(nLog||''), tituloPanel:'Registro del servicio de cuartel (solo lo ves tú)', alAbrir:'cargarCuartelEventosSuper(true)', cuerpo:'<div id="super-cuartel-log-cont"><p class="small-note">Cargando…</p></div>' },
+      { id:'furry-log', icono:'🧾', titulo:'Registro del Furry', sub: nFurryLog ? `${nFurryLog} movimiento${nFurryLog===1?'':'s'} nuevo${nFurryLog===1?'':'s'}` : 'Excel, PDF y cambios importantes', badge:(nFurryLog||''), tituloPanel:'Registro del Furry (solo lo ves tú)', alAbrir:'cargarFurryEventosSuper(true)', cuerpo:'<div id="super-furry-log-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'registros', icono:'🗂️', titulo:'Registros', sub:'Conectados, historial, contraseñas y salud', tituloPanel:'Registros y salud de la app',
         cuerpo: `<details class="caja-det" ontoggle="if(this.open) cargarConectadosSuper()"><summary>🟢 Personas conectadas</summary><div class="caja-sub-body"><div id="super-conectados-cont"><p class="small-note">Cargando…</p></div></div></details>`
           + `<details class="caja-det" ontoggle="if(this.open) cargarHistorialSuper()"><summary>📜 Historial de cambios</summary><div class="caja-sub-body"><div id="super-historial-cont"><p class="small-note">Cargando…</p></div></div></details>`
@@ -5291,6 +5665,7 @@ async function renderSuperadmin(){
   avisoEsquemaSuper();
   const abierta = CAJAS_ABIERTA.super;
   if(abierta==='cuartel-log') cargarCuartelEventosSuper();
+  else if(abierta==='furry-log') cargarFurryEventosSuper();
   else if(abierta==='mensajes') cargarMensajesSuper();
   else if(abierta==='personal') cargarGestionPersonal();
 }
@@ -5307,8 +5682,7 @@ function gestionPersonalHtml(){
         <label class="gp-solo"><input type="checkbox" ${GP.soloPI?'checked':''} onchange="GP.soloPI=this.checked; pintarGpLista()"> Solo promoción interna</label>
         <button class="small-btn" onclick="cargarGestionPersonal(true)">↻ Recargar</button>
       </div><div id="gp-lista">${gpListaHtml()}</div>`)
-    + cajaSub('gp-obl', '🍽️ Externados totales: comidas obligatorias', `<div id="gp-obl-cont">${gpOblHtml()}</div>`)
-    + cajaSub('gp-vie', '📅 Viernes libres de los «2 viernes»', `<div id="gp-vie-cont">${gpViernesHtml()}</div>`);
+    + cajaSub('gp-obl', '🍽️ Externados totales: comidas obligatorias', `<div id="gp-obl-cont">${gpOblHtml()}</div>`);
 }
 async function cargarGestionPersonal(forzar){
   const pCfg = fetchPersonalCfg().then(()=>{ gpPintar('gp-obl-cont', gpOblHtml); gpPintar('gp-vie-cont', gpViernesHtml); });
@@ -5388,7 +5762,7 @@ function gpFilaHtml(p){
   return `<div class="gp-fila" id="gp-f-${id}">
       <span class="gp-nom"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)} <span class="gp-sec">(${p.compania}${p.seccion})</span></span>
       <select aria-label="Externado" title="Findes: el sábado no es obligatorio. Total: sin desayunos, comidas ni cenas obligatorios (salvo maniobras y las que marques en «Externados totales»)." onchange="gpCambiarExternado('${id}', this)">${op('no','No externado',ext)}${op('findes','Externado findes',ext)}${op('total','Externado total',ext, GP.sinTotal && ext!=='total')}</select>
-      <select aria-label="Viernes fuera" title="Permiso para dormir fuera el viernes" onchange="gpCambiarViernes('${id}', this)">${op('0','Sin viernes fuera',vf)}${op('2','2 viernes',vf)}${op('4','4 viernes',vf)}</select>
+      <select aria-label="Viernes fuera" title="Permiso para dormir fuera el viernes" onchange="gpCambiarViernes('${id}', this)">${op('0','Sin viernes fuera',vf)}${op('2','2 viernes al mes',vf)}${op('4','4 viernes',vf)}</select>
       <label class="gp-pi" title="Marca a las personas de promoción interna"><input type="checkbox" ${p.promocion_interna?'checked':''} ${GP.sinPI?'disabled':''} onchange="gpCambiarPromo('${id}', this)"> Promoción interna</label>
     </div>`;
 }
@@ -5417,7 +5791,7 @@ async function gpCambiarViernes(id, sel){
   const v = sel.value; sel.disabled = true;
   if(await guardarViernesFuera(p.id, v)){
     p.viernes_fuera = parseInt(v,10) || 0;
-    showToast(`${p.nombre} ${p.apellidos}: ${v==='0' ? 'sin viernes fuera' : v==='2' ? 'los «2 viernes»' : 'los 4 viernes'}.`);
+    showToast(`${p.nombre} ${p.apellidos}: ${v==='0' ? 'sin viernes fuera' : v==='2' ? '2 viernes al mes' : 'los 4 viernes'}.`);
   }
   sel.value = String(p.viernes_fuera||0); sel.disabled = false;
 }
@@ -5583,6 +5957,57 @@ function pintarCuartelEventosSuper(){
     <p class="small-note" style="margin-top:0;">Se muestran los últimos 300 movimientos ${CUARTEL_LOG.compania ? 'de la '+CUARTEL_LOG.compania+'ª Compañía' : 'de todas las compañías'}${CUARTEL_LOG.empleo ? ', solo de '+EMPLEO_GRUPOS[CUARTEL_LOG.empleo].nombre : ''}.</p>
     ${filas.length ? filas.map(fila).join('') : '<p class="small-note">No hay movimientos de este tipo.</p>'}`;
 }
+/* ---- Registro del Furry (solo superadmin, parche SQL 101): Excel y PDF que exporta cada Furry y sus cambios importantes ---- */
+const FURRY_LOG = { filas:null, error:null, compania:null, tipo:'todos', q:'', ver:100, nuevosDesde:null };
+const FURRY_LOG_TIPO = { excel:'📊 Excel', pdf:'📄 PDF', arresto:'🚨 Arresto', viernes:'📅 Viernes', externado:'🎒 Externado', otro:'📝 Otro' };
+async function cargarFurryEventosSuper(abriendo){
+  if(abriendo===true){ FURRY_LOG.nuevosDesde = disenoVisto('super|furry-log'); disenoMarcarVisto('super|furry-log'); }
+  const cont = document.getElementById('super-furry-log-cont'); if(cont) cont.innerHTML = '<p class="small-note">Cargando…</p>';
+  let q = sb.from('furry_eventos').select('*');
+  if(FURRY_LOG.compania) q = q.eq('compania', FURRY_LOG.compania);
+  const { data, error } = await q.order('creado_en', { ascending:false }).limit(300);
+  FURRY_LOG.error = error ? cuErrorParche(error, 101) : null; FURRY_LOG.filas = error ? null : (data||[]); FURRY_LOG.ver = 100;
+  pintarFurryEventosSuper();
+}
+function furryLogFiltradas(){
+  const t = FURRY_LOG.tipo, q = FURRY_LOG.q.trim().toLowerCase();
+  return (FURRY_LOG.filas||[]).filter(e=>
+    (t==='todos' || (t==='cambios' ? !['excel','pdf'].includes(e.tipo) : e.tipo===t)) &&
+    (!q || ((e.nombre||'')+' '+(e.detalle||'')).toLowerCase().includes(q)));
+}
+function pintarFurryEventosSuper(){
+  const cont = document.getElementById('super-furry-log-cont'); if(!cont) return;
+  if(FURRY_LOG.error){ cont.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar: ${escHtml(FURRY_LOG.error)}</p><button class="small-btn" onclick="cargarFurryEventosSuper()">↻ Reintentar</button>`; return; }
+  cont.innerHTML = `<div class="cuartel-bar" style="margin-top:0;">
+      <div class="field"><label>Compañía</label><select onchange="FURRY_LOG.compania = this.value ? parseInt(this.value,10) : null; cargarFurryEventosSuper()"><option value="">Todas las compañías</option>${companiasOptionsHtml(FURRY_LOG.compania)}</select></div>
+      <div class="field"><label>Buscar</label><input type="search" placeholder="Nombre o archivo…" value="${escHtml(FURRY_LOG.q)}" oninput="FURRY_LOG.q = this.value; FURRY_LOG.ver = 100; pintarFurryLogLista()"></div>
+      <button class="small-btn" onclick="cargarFurryEventosSuper()">↻ Actualizar</button>
+      <button class="small-btn danger" onclick="borrarFurryEventosFiltrados()">🗑 Borrar lo filtrado…</button>
+    </div>
+    <div class="semanas-toggle" style="max-width:460px;margin-bottom:10px;">${[['todos','Todo'],['excel','Excel'],['pdf','PDF'],['cambios','Cambios']].map(([v,n])=>`<button type="button" class="${FURRY_LOG.tipo===v?'active':''}" onclick="FURRY_LOG.tipo='${v}'; FURRY_LOG.ver = 100; pintarFurryEventosSuper()">${n}</button>`).join('')}</div>
+    <div id="super-furry-log-lista"></div>`;
+  pintarFurryLogLista();
+}
+function pintarFurryLogLista(){
+  const box = document.getElementById('super-furry-log-lista'); if(!box) return;
+  const filas = furryLogFiltradas(), vis = filas.slice(0, FURRY_LOG.ver);
+  const nuevo = e => !!(FURRY_LOG.nuevosDesde && new Date(e.creado_en) > new Date(FURRY_LOG.nuevosDesde));
+  const fila = e => `<div class="history-row" style="overflow-wrap:anywhere;">${nuevo(e) ? '<span style="color:#d93025;font-weight:900;margin-right:4px;" title="Movimiento nuevo">●</span>' : ''}<span class="ts">${escHtml(new Date(e.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}))}</span> · <b>${FURRY_LOG_TIPO[e.tipo]||escHtml(e.tipo)}</b> · 🧑 ${escHtml(e.nombre||'Furry')} · ${e.compania!=null ? escHtml(e.compania+'ª') : 'sin compañía'}${e.detalle ? ' · '+escHtml(e.detalle) : ''}</div>`;
+  box.innerHTML = `<p class="small-note" style="margin-top:0;">${filas.length} de los últimos ${(FURRY_LOG.filas||[]).length} movimientos ${FURRY_LOG.compania ? 'de la '+FURRY_LOG.compania+'ª Compañía' : 'de todas las compañías'}.</p>
+    ${vis.length ? vis.map(fila).join('') : '<p class="small-note">No hay movimientos con estos filtros.</p>'}
+    ${filas.length > vis.length ? `<button class="small-btn" style="margin-top:8px;" onclick="FURRY_LOG.ver += 100; pintarFurryLogLista()">Ver más (${filas.length - vis.length})</button>` : ''}`;
+}
+async function borrarFurryEventosFiltrados(){
+  const ids = furryLogFiltradas().map(e=>e.id);
+  if(!ids.length){ showToast('No hay nada que borrar con esos filtros.'); return; }
+  if(!await confirmarApp(`Se van a borrar ${ids.length} movimiento${ids.length===1?'':'s'} del registro del Furry (los que salen con estos filtros). No se puede deshacer. ¿Seguro?`, { si:'Borrar', peligro:true })) return;
+  for(let i = 0; i < ids.length; i += 200){
+    const { error } = await sb.from('furry_eventos').delete().in('id', ids.slice(i, i+200));
+    if(error){ showToast('No se pudo borrar: '+cuErrorParche(error, 101)); await cargarFurryEventosSuper(); return; }
+  }
+  showToast(`Borrados ${ids.length} movimientos.`);
+  await cargarFurryEventosSuper();
+}
 // Registro (solo lectura) de los cambios de contraseña — parche SQL 78
 async function cargarLogPassword(){
   const box = document.getElementById('super-passlog'); if(!box) return;
@@ -5616,17 +6041,17 @@ async function submitNewPassword(){
   btn.disabled = false;
   if(error){ err.textContent = error.message; err.classList.remove('hidden'); return; }
   showToast('Contraseña actualizada. Ya puedes usarla para entrar.');
-  EN_RECUPERACION = false;
+  EN_RECUPERACION = false; marcarRecuperacion(false);
   try{ history.replaceState(null, '', location.pathname); }catch(e){} // se quita el #… del enlace
   const { data: { session } } = await sb.auth.getSession();
   if(session){ await routeAfterAuth(session.user.id); } else { showScreen('screen-login'); }
 }
 sb.auth.onAuthStateChange((event)=>{
-  if(event === 'PASSWORD_RECOVERY'){ EN_RECUPERACION = true; showScreen('screen-reset-password'); }
+  if(event === 'PASSWORD_RECOVERY'){ EN_RECUPERACION = true; marcarRecuperacion(true); showScreen('screen-reset-password'); }
 });
 // Si alguien abre el enlace y se arrepiente: se cierra esa sesión y se vuelve a la entrada
 async function cancelarRecuperacion(){
-  EN_RECUPERACION = false;
+  EN_RECUPERACION = false; marcarRecuperacion(false);
   try{ history.replaceState(null, '', location.pathname); }catch(e){}
   try{ await sb.auth.signOut(); }catch(e){}
   showScreen('screen-login');
@@ -5635,14 +6060,13 @@ function switchToAlumno(){ return enterAlumno(CURRENT.linkedPersona, CURRENT.com
 async function onAdminWeekChange(v){ setActiveWeek(parseInt(v,10)); absenceSelIndex=null; await (currentModule==='pernoctas' ? renderAdminPernoctas() : renderAdmin()); }
 let absenceSelIndex = null;
 let expandedSections = new Set();
-let managedSections = new Set();
 let historyOpen = false;
 let historyFiltroDesde = '';
 let historyFiltroHasta = '';
 
 async function fetchCompanySections(compania){
   // Una sola consulta para toda la compañía (antes eran 4, una por sección, en serie); luego se reparte por sección
-  const { data } = await sb.from('personas').select('*').eq('compania',compania).order('seccion').order('apellidos');
+  const [{ data }] = await Promise.all([ sb.from('personas').select('*').eq('compania',compania).order('seccion').order('apellidos'), fetchArrestos({ compania }) ]); // y los arrestos de la compañía
   const secciones = [];
   for(let s=1;s<=SECTIONS_PER_COMPANY;s++) secciones.push({ code: ''+compania+s, seccion: s, people: (data||[]).filter(p=>p.seccion===s) });
   EXTERNADOS = new Set(secciones.flatMap(s=>s.people).filter(p=>p.externado).map(p=>p.id));
@@ -5793,7 +6217,6 @@ async function _renderAdminImpl(){
   const filaHistorial = `<div style="margin:10px 0;"><button class="small-btn" onclick="toggleHistory()">${historyOpen?'Cerrar historial':'Ver historial de cambios'}</button></div>${historyHtml}`;
   document.getElementById('admin-cajas').innerHTML = adminCajas('admin', [
     { id:'editar', icono:'✏️', titulo:'Editar', sub:'Marcar comidas por sección', tituloPanel:'Editar comidas', cuerpo:adminEditarHtml(secciones, apuntesMap) },
-    { id:'gestionar', icono:'⚙️', titulo:'Gestionar', sub:'Alumnos y datos de cada sección', tituloPanel:'Gestionar secciones', cuerpo:adminGestionarHtml(secciones) },
     { id:'avisos', icono:'📢', titulo:'Avisos', sub:'A la compañía, una sección o una persona', tituloPanel:'Avisos a los alumnos', cuerpo:filaAviso },
     { id:'semana', icono:'📅', titulo:'Ajustes de semana', sub:'Desbloqueos, ocultar y cierre', tituloPanel:'Ajustes de esta semana',
       cuerpo: cajaSub('cs-desbloqueo','🔓 Permitir desmarcar comidas obligatorias', filaDesbloqueo) + cajaSub('cs-oculta','🙈 Ocultar esta semana a los alumnos', filaOculta)
@@ -5803,12 +6226,11 @@ async function _renderAdminImpl(){
       cuerpo: cajaSub('cg-plazos','📆 Abrir plazos hasta fin de curso', plazosFilaHtml()) + cajaSub('cg-bloque','✏️ Marcar o desmarcar comidas en bloque', bloqueComidasHtml(c))
         + cajaSub('cg-confirmar','✅ Confirmar a todos', filaConfirmarTodos) + cajaSub('cg-nocomen','🍽️ Quiénes no comen / no cenan', companyAbsencesSummary(secciones, apuntesMap)) + cajaSub('cg-hist','📜 Historial de cambios', filaHistorial) },
     { id:'excel', icono:'🔍', titulo:'Comprobar Excel', sub:'Compáralo con lo que hay en la app', tituloPanel:'Comprobar un Excel contra la app', cuerpo:filaExcel },
-    { id:'compania', icono:'🏢', titulo:'Compañía y alumnos', sub:'Efectivos, código y conexiones', tituloPanel:'Compañía y alumnos',
-      cuerpo: cajaSub('cc-efectivos','👥 Efectivos y código de invitación', filaEfectivos + filaCodigo) + cajaSub('cc-domingo','🍳 Desayuno del domingo sin marcar', domingoRevisionHtml(secciones, apuntesMap)) + cajaSub('cc-faltan','📝 Quién falta por registrarse', faltanRegistrarseHtml(secciones)) + cajaSub('cc-conex','🟢 Conexión de los alumnos', conexionAlumnosHtml(secciones))
-        + cajaSub('cc-cuartel','🪖 Contraseña del servicio de cuartel', `<div class="panel-row" style="flex-direction:column;align-items:stretch;"><div class="switch-label">Cuenta de cuartel de la ${c}ª<span class="sub2">Si el servicio de cuartel olvida la contraseña, aquí pones una nueva (se enseña una sola vez, apúntala y dísela). Se cierran las sesiones abiertas de esa cuenta.</span></div><div style="margin-top:8px;"><button class="small-btn" onclick="cambiarPasswordCuartel(${c})">🔑 Cambiar contraseña</button></div></div>`) },
+    { id:'compania', icono:'🏢', titulo:'Compañía y alumnos', sub:'Efectivos, código y domingo', tituloPanel:'Compañía y alumnos', // conexiones, cuartel y «quién falta por registrarse»: en la pestaña Personal
+      cuerpo: cajaSub('cc-efectivos','👥 Efectivos y código de invitación', filaEfectivos + filaCodigo) + cajaSub('cc-domingo','🍳 Desayuno del domingo sin marcar', domingoRevisionHtml(secciones, apuntesMap)) },
     { id:'ayuda', icono:'🆘', titulo:'Peticiones de ayuda', sub: nAyuda ? `${nAyuda} sin atender` : 'De tu compañía', badge:(nAyuda||''), tituloPanel:'Peticiones de ayuda', alAbrir:'cargarAyudaFurry()', cuerpo:'<div id="admin-ayuda-cont"><p class="small-note">Cargando…</p></div>' },
     { id:'intol', icono:'🍽️', titulo:'Intolerancias', sub:'Peticiones de los alumnos', badge:(intolPendientesCount||''), tituloPanel:'Solicitudes de intolerancias', cuerpo:filaIntol },
-  ]);
+  ]) + '<p class="small-note">👥 Altas, bajas, externados, viernes, intolerancias, arrestos, quién falta por registrarse, conexión de los alumnos y contraseña del cuartel: en la pestaña <a href="#" onclick="setModule(\'personal\'); return false;">Personal</a>.</p>';
 
   // Los totales de "registrados / faltan por registrarse" los ve solo el superadmin (en su panel de totales)
   document.getElementById('admin-grand').innerHTML = `
@@ -6093,10 +6515,10 @@ let avisosGeneralesOpen = false;
 function toggleAvisosGenerales(){ avisosGeneralesOpen = !avisosGeneralesOpen; renderAdmin(); }
 let conexionAlumnosOpen = false;
 let conexionSeccionFiltro = 'todas';
-function toggleConexionAlumnos(){ conexionAlumnosOpen = !conexionAlumnosOpen; renderAdmin(); }
-function onConexionSeccionChange(v){ conexionSeccionFiltro = v; renderAdmin(); }
+function toggleConexionAlumnos(){ conexionAlumnosOpen = !conexionAlumnosOpen; pePintarConexion(); } // vive en la pestaña Personal
+function onConexionSeccionChange(v){ conexionSeccionFiltro = v; pePintarConexion(); }
 function conexionAlumnosHtml(secciones){
-  const totalConectados = secciones.reduce((a,sec)=>a+sec.people.filter(p=>p.registrado && p.ultima_conexion && (Date.now()-new Date(p.ultima_conexion).getTime())<120000).length, 0);
+  const totalConectados = secciones.reduce((a,sec)=>a+sec.people.filter(p=>p.registrado && p.ultima_conexion && (Date.now()-new Date(p.ultima_conexion).getTime())<PRESENCIA_VENTANA_MS).length, 0);
   const header = `<div style="margin:16px 0 10px;"><button class="small-btn" onclick="toggleConexionAlumnos()">${conexionAlumnosOpen?'Cerrar':'Ver'} conexión de alumnos ${totalConectados?`(🟢 ${totalConectados} ahora)`:''}</button></div>`;
   if(!conexionAlumnosOpen) return header;
   const opciones = `<option value="todas" ${conexionSeccionFiltro==='todas'?'selected':''}>Todas las secciones</option>`
@@ -6105,7 +6527,7 @@ function conexionAlumnosHtml(secciones){
   const personas = seccionesFiltradas.flatMap(sec=>sec.people.filter(p=>p.registrado).map(p=>({...p, seccionCode:sec.code})))
     .sort((a,b)=>(b.ultima_conexion||'').localeCompare(a.ultima_conexion||''));
   const filas = personas.length ? personas.map(p=>{
-    const conectadoAhora = p.ultima_conexion && (Date.now()-new Date(p.ultima_conexion).getTime())<120000;
+    const conectadoAhora = p.ultima_conexion && (Date.now()-new Date(p.ultima_conexion).getTime())<PRESENCIA_VENTANA_MS;
     return `<div class="history-row">${conectadoAhora?'🟢':'⚪'} <b>${escHtml(p.apellidos)}, ${escHtml(p.nombre)}</b> (Sec. ${p.seccionCode}) — <span class="ts">${formatRelativeTime(p.ultima_conexion)}</span></div>`;
   }).join('') : `<div style="font-size:.78rem;color:var(--ink-soft);">Nadie registrado en esta sección.</div>`;
   return `${header}<h3 class="section-title" style="margin-top:0;">Conexión de alumnos</h3>
@@ -6216,69 +6638,34 @@ async function adminToggle(personaId, type, day, obligatorio, checked){
   await renderAdmin();
 }
 
-/* ---- Alta / baja / reinicio de acceso ---- */
+/* ---- Alta / baja / reinicio de acceso (pestaña «Personal»). Devuelven true si se ha guardado; repinta quien llama ---- */
 async function resetAccess(personaId, nombreCompleto){
-  if(!await confirmarApp(`¿Reiniciar el acceso de ${nombreCompleto}? Tendrá que volver a registrarse con una contraseña nueva.`, { si:'Reiniciar', peligro:true })) return;
+  if(!await confirmarApp(`¿Reiniciar el acceso de ${nombreCompleto}? Tendrá que volver a registrarse con una contraseña nueva.`, { si:'Reiniciar', peligro:true })) return false;
   const { error } = await sb.from('personas').update({registrado:false, auth_user_id:null}).eq('id', personaId);
-  if(error){ showToast('No se pudo reiniciar: '+error.message); return; }
-  await renderAdmin();
+  if(error){ showToast('No se pudo reiniciar: '+error.message); return false; }
+  return true;
 }
 async function removeStudent(personaId, nombreCompleto){
-  if(!await confirmarApp(`¿Dar de baja a ${nombreCompleto}?`, { si:'Dar de baja', peligro:true })) return;
+  if(!await confirmarApp(`¿Dar de baja a ${nombreCompleto}?`, { si:'Dar de baja', peligro:true })) return false;
   const { error } = await sb.from('personas').delete().eq('id', personaId);
-  if(error){ showToast('No se pudo dar de baja: '+error.message); return; }
-  await renderAdmin();
+  if(error){ showToast('No se pudo dar de baja: '+error.message); return false; }
+  return true;
 }
 async function addStudent(code, compania, seccion){
   const nInput = document.getElementById('add-nombre-'+code);
   const aInput = document.getElementById('add-apellidos-'+code);
   const nombre = nInput.value.trim(), apellidos = aInput.value.trim();
-  if(!nombre || !apellidos){ showToast('Pon nombre y apellidos.'); return; }
+  if(!nombre || !apellidos){ showToast('Pon nombre y apellidos.'); return false; }
   const { error } = await sb.from('personas').insert({compania, seccion, nombre, apellidos});
-  if(error){ showToast('No se pudo añadir: '+error.message); return; }
+  if(error){ showToast('No se pudo añadir: '+error.message); return false; }
   nInput.value=''; aInput.value='';
-  await renderAdmin();
-}
-function sectionManagePanel(sec){
-  let rows = sec.people.map(p=>`
-    <div class="manage-row">
-      <div>${escHtml(p.apellidos)}, ${escHtml(p.nombre)} ${p.registrado?`<span class="badge ok">Registrado</span>`:`<span class="badge">Sin registrar</span>`}</div>
-      <input type="text" class="intol" value="${(p.intolerancias||'').replace(/"/g,'&quot;')}" placeholder="Intolerancias" onchange="updateIntolerancias('${p.id}', this.value)">
-      <label style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--ink-soft);">Externado
-        <select onchange="updateExternado('${p.id}', this.value)" title="Findes: el sábado no es obligatorio. Total: sin desayunos, comidas ni cenas obligatorios (salvo maniobras)." style="padding:5px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.72rem;">
-          <option value="no" ${valorExternado(p)==='no'?'selected':''}>No</option>
-          <option value="findes" ${valorExternado(p)==='findes'?'selected':''}>Findes</option>
-          <option value="total" ${valorExternado(p)==='total'?'selected':''}>Total</option>
-        </select>
-      </label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--ink-soft);white-space:nowrap;">Viernes fuera
-        <select onchange="updateViernesFuera('${p.id}', this.value)" style="padding:5px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.72rem;">
-          <option value="0" ${!p.viernes_fuera?'selected':''}>Ninguno</option>
-          <option value="2" ${p.viernes_fuera===2?'selected':''}>2 viernes (los que fije el superadmin)</option>
-          <option value="4" ${p.viernes_fuera>=4?'selected':''}>Los 4 findes al mes</option>
-        </select>
-      </label>
-      <select onchange="moverSeccion('${p.id}', this.value)" style="padding:5px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.72rem;">
-        <option value="">Mover de sección…</option>
-        ${[1,2,3,4].filter(s=>s!==sec.seccion).map(s=>`<option value="${s}">A la sección ${CURRENT.compania}${s}</option>`).join('')}
-      </select>
-      <div class="btns">
-        ${p.registrado ? `<button class="small-btn" onclick="resetAccess('${p.id}','${(p.nombre+' '+p.apellidos).replace(/'/g,"")}')">Reiniciar acceso</button>` : ''}
-        <button class="small-btn danger" onclick="removeStudent('${p.id}','${(p.nombre+' '+p.apellidos).replace(/'/g,"")}')">Dar de baja</button>
-      </div>
-    </div>`).join('');
-  return `<div class="admin-edit-note">Gestión de la sección ${sec.code}: alta, baja, reinicio de acceso, intolerancias, externados y sección</div>
-    ${rows || '<div style="font-size:.8rem;color:var(--ink-soft);">Sin alumnos en esta sección.</div>'}
-    <div class="add-student-row">
-      <input type="text" id="add-nombre-${sec.code}" placeholder="Nombre">
-      <input type="text" id="add-apellidos-${sec.code}" placeholder="Apellidos">
-      <button class="small-btn" onclick="addStudent('${sec.code}',${CURRENT.compania},${sec.seccion})">+ Añadir alumno</button>
-    </div>`;
+  return true;
 }
 async function updateIntolerancias(personaId, value){
   const { error } = await sb.from('personas').update({ intolerancias: value.trim() || null }).eq('id', personaId);
-  if(error){ showToast('No se pudo guardar: '+error.message); return; }
+  if(error){ showToast('No se pudo guardar: '+error.message); return false; }
   showToast('Intolerancia guardada.');
+  return true;
 }
 // valor: 'no' | 'findes' | 'total'. Devuelve true si se ha guardado (sin repintar nada: lo hace quien llama)
 async function guardarExternadoPersona(personaId, valor){
@@ -6296,22 +6683,484 @@ async function guardarViernesFuera(personaId, valor){
   if(error){ showToast('No se pudo guardar: '+error.message+' — ¿has ejecutado el parche SQL 74?'); return false; }
   return true;
 }
-async function updateExternado(personaId, valor){
-  if(!await guardarExternadoPersona(personaId, valor)){ await renderAdmin(); return; }
-  showToast(valor==='no' ? 'Ya no es externado.' : valor==='findes' ? 'Externado de fin de semana (con los 4 viernes libres).' : 'Externado total: sin desayunos, comidas ni cenas obligatorios (con los 4 viernes libres).');
-  await renderAdmin();
-}
-async function updateViernesFuera(personaId, valor){
-  if(!await guardarViernesFuera(personaId, valor)){ await renderAdmin(); return; }
-  showToast(valor==='0' ? 'Ya no puede dormir fuera el viernes.' : valor==='2' ? 'Puede dormir fuera el viernes los «2 viernes» (los que decida el superadmin; por defecto 1.º y 3.º del mes).' : 'Puede dormir fuera el viernes los 4 fines de semana al mes.');
-  await renderAdmin();
-}
 async function moverSeccion(personaId, nuevaSeccion){
-  if(!nuevaSeccion) return;
+  if(!nuevaSeccion) return false;
   const { error } = await sb.from('personas').update({ seccion: parseInt(nuevaSeccion,10) }).eq('id', personaId);
-  if(error){ showToast('No se pudo mover: '+error.message); return; }
+  if(error){ showToast('No se pudo mover: '+error.message); return false; }
   showToast('Movido a la sección '+CURRENT.compania+nuevaSeccion+'.');
-  await renderAdmin();
+  return true;
+}
+
+/* ================= Pestaña «Personal» del Furry: todo lo de la gente de su compañía =================
+   Arriba las solicitudes de viernes pendientes; luego buscador y filtros, la lista (cada fila se despliega con su ficha:
+   arrestos, servicios, externado, viernes, intolerancias, sección, acceso y baja) y, al final, el alta. Cada cambio repinta SOLO esa fila. */
+// secAb: secciones desplegadas a mano · secMax: filas visibles por sección · multi/sel/soloSel: selección múltiple (la selección se conserva al buscar y filtrar)
+const PE = { personas:null, error:null, sols:[], q:'', sec:'', filtros:new Set(), abiertos:new Set(), serv:new Map(), altaAbierta:false, t:null,
+  secAb:new Set(), secMax:{}, multi:false, sel:new Set(), soloSel:false, ocupado:false, conexAb:false, cuartelAb:false };
+const PE_TANDA = 40; // filas por tanda en cada sección («Ver más» enseña otras tantas)
+const PE_VF_TXT = { 0:'Ninguno', 2:'2 viernes al mes', 4:'4 viernes (todos)' }; // «2» = cuota de 2 viernes por mes natural (seguidos o no, sin acumular)
+const PE_FILTROS = [['arresto','🚨 Arrestados'],['externado','🎒 Externados'],['intol','🥗 Con intolerancia'],['viernes','📅 Con viernes'],['sinreg','⏳ Sin registrar']];
+const peSecs = () => Array.from({length:SECTIONS_PER_COMPANY}, (_,i)=>i+1);
+const peFC = f => parseInt(f.slice(8,10),10)+'/'+parseInt(f.slice(5,7),10); // 'YYYY-MM-DD' → 'd/m'
+const peOrden = (a,b) => (a.seccion-b.seccion) || String(a.apellidos).localeCompare(String(b.apellidos),'es') || String(a.nombre).localeCompare(String(b.nombre),'es');
+const pePersona = id => (PE.personas||[]).find(p=>String(p.id)===String(id));
+const peArrestosVivos = p => (ARRESTOS.get(p.id)||[]).filter(arrestoVigente); // el de ahora o los próximos
+const peCumple = (p, f) => f==='arresto' ? peArrestosVivos(p).length>0 : f==='externado' ? !!p.externado : f==='intol' ? !!String(p.intolerancias||'').trim() : f==='viernes' ? (p.viernes_fuera||0)>0 : f==='sinreg' ? !p.registrado : true;
+function pePonerHtml(id, html){ const el = document.getElementById(id); if(el) el.innerHTML = html; }
+function pePintarBadge(n){ const b = document.getElementById('admin-pe-badge'); if(!b) return; b.textContent = n ? String(n) : ''; b.classList.toggle('hidden', !n); }
+// Consulta ligera (solo el número) para el numerito de la pestaña al entrar en el panel Furry
+async function peContarSolicitudes(){
+  try{
+    if(!CURRENT || CURRENT.mode!=='admin') return;
+    const { count, error } = await sb.from('solicitudes_viernes').select('id', { count:'exact', head:true }).eq('compania', CURRENT.compania).eq('estado', 'pendiente');
+    pePintarBadge(error ? 0 : (count||0));
+  }catch(e){}
+}
+const renderAdminPersonal = serializarRender(()=>_renderAdminPersonalImpl());
+async function _renderAdminPersonalImpl(){
+  const c = CURRENT.compania;
+  pePonerHtml('admin-week-select', ''); pePonerHtml('admin-notice', ''); // esta pestaña no va por semanas
+  if(!PE.personas) pePonerHtml('admin-pe-lista', '<p class="small-note">Cargando…</p>');
+  PE.serv = new Map(); // los servicios se vuelven a pedir al abrir cada ficha
+  try{
+    const [secciones, sols] = await Promise.all([ fetchCompanySections(c), fetchSolicitudesViernes({ compania:c, soloPendientes:true }) ]);
+    PE.personas = secciones.flatMap(s=>s.people).map(p=>Object.assign(p, { _n: cuartelNorm(p.apellidos+' '+p.nombre) })).sort(peOrden);
+    PE.sols = sols || []; PE.error = null;
+    if(typeof cargarViernesUsadosActual==='function'){ try{ await cargarViernesUsadosActual(); }catch(e){} } // «Este mes ha usado X de 2» (usa los VIERNES_FUERA recién cargados)
+    const ids = new Set(PE.personas.map(p=>String(p.id))); PE.sel.forEach(id=>{ if(!ids.has(id)) PE.sel.delete(id); }); // la selección, solo con quien sigue en la compañía
+  }catch(e){ PE.error = (e && e.message) || String(e); }
+  pePintarBadge(PE.sols.length);
+  pePintarSolicitudes();
+  pePonerHtml('admin-pe-buscar', peBuscadorHtml());
+  pePintarLista();
+  pePonerHtml('admin-pe-alta', peAltaHtml());
+  pePintarConexion();
+  pePonerHtml('admin-pe-cuartel', `<details class="caja-det" ${PE.cuartelAb?'open':''} ontoggle="PE.cuartelAb=this.open"><summary>🪖 Contraseña del servicio de cuartel</summary><div class="caja-sub-body"><div class="panel-row" style="flex-direction:column;align-items:stretch;"><div class="switch-label">Cuenta de cuartel de la ${c}ª<span class="sub2">Si el servicio de cuartel olvida la contraseña, aquí pones una nueva (se enseña una sola vez, apúntala y dísela). Se cierran las sesiones abiertas de esa cuenta.</span></div><div style="margin-top:8px;"><button type="button" class="small-btn" onclick="cambiarPasswordCuartel(${c})">🔑 Cambiar contraseña</button></div></div></div></details>`);
+}
+// Conexión de los alumnos (lo de siempre: conexionAlumnosHtml), con las secciones armadas desde PE.personas; «↻» vuelve a leer la última conexión
+function pePintarConexion(){
+  if(!PE.personas) return;
+  const c = CURRENT.compania, secciones = peSecs().map(s=>({ code:''+c+s, seccion:s, people:PE.personas.filter(p=>p.seccion===s) }));
+  pePonerHtml('admin-pe-conexion', `<details class="caja-det" ${PE.conexAb?'open':''} ontoggle="PE.conexAb=this.open"><summary>🟢 Conexión de los alumnos</summary><div class="caja-sub-body">${conexionAlumnosHtml(secciones)}<button type="button" class="small-btn" style="margin-top:8px;" onclick="renderAdminPersonal()">↻ Actualizar</button></div></details>`);
+}
+/* ---- Solicitudes de viernes libres (solo se ve si hay pendientes) ---- */
+function pePintarSolicitudes(){
+  const ls = PE.sols || [];
+  pePintarBadge(ls.length);
+  if(!ls.length){ pePonerHtml('admin-pe-solicitudes', ''); return; }
+  pePonerHtml('admin-pe-solicitudes', `<h3 class="section-title">📅 Solicitudes de viernes libres <span class="mod-badge">${ls.length}</span></h3>` + ls.map(s=>{
+    const p = pePersona(s.persona_id), sid = escHtml(String(s.id));
+    const quien = p ? `<b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)} <span class="pe-sec">(${escHtml(CURRENT.compania+''+p.seccion)})</span>` : 'Alguien que ya no está en la lista de la compañía';
+    const ahora = p && p.viernes_fuera ? ` Ahora tiene ${PE_VF_TXT[p.viernes_fuera>=4 ? 4 : 2]}.` : '';
+    return `<div class="pe-sol"><div>${quien}</div><p>Pide viernes libres: <b>${PE_VF_TXT[Number(s.quiere)===4 ? 4 : 2]}</b>.${ahora}${s.motivo ? ' Motivo: «'+escHtml(s.motivo)+'»' : ''}</p>
+      <div class="pe-btns"><button type="button" class="small-btn active" onclick="peResolverSolicitud('${sid}', true, this)">✅ Aceptar</button><button type="button" class="small-btn danger" onclick="peResolverSolicitud('${sid}', false, this)">✖ Rechazar</button></div></div>`;
+  }).join(''));
+}
+async function peResolverSolicitud(sid, aceptar, btn){
+  const s = (PE.sols||[]).find(x=>String(x.id)===String(sid)); if(!s) return;
+  const p = pePersona(s.persona_id);
+  if(!aceptar && !await confirmarApp(`¿Rechazar la solicitud de ${p ? p.nombre+' '+p.apellidos : 'esta persona'}?`, { si:'Rechazar', peligro:true })) return;
+  const caja = btn && btn.closest('.pe-sol'), bloquear = v => { if(caja) caja.querySelectorAll('button').forEach(b=>b.disabled = v); };
+  bloquear(true);
+  const r = await resolverSolicitudViernes(s.id, aceptar);
+  if(!r.ok){ bloquear(false); showToast('No se pudo: '+r.error); return; }
+  const yaEstaba = /ya estaba resuelta/i.test(String(r.texto||''));
+  if(aceptar && p && !yaEstaba){ p.viernes_fuera = Math.max(p.viernes_fuera||0, Number(s.quiere)||0); VIERNES_FUERA = vfMapa(PE.personas); peRefrescarFila(p.id); pePintarChips(); }
+  showToast(yaEstaba ? 'Esa solicitud ya estaba resuelta.' : aceptar ? `Aceptada: ${p ? p.nombre+' '+p.apellidos+' tiene' : 'tiene'} viernes libres: ${PE_VF_TXT[Number(s.quiere)===4 ? 4 : 2]}.` : 'Solicitud rechazada.');
+  PE.sols = PE.sols.filter(x=>x!==s);
+  pePintarSolicitudes();
+}
+/* ---- Buscador y filtros (se filtra en memoria; la lista se repinta como mucho cada 200 ms al escribir) ---- */
+function peBuscadorHtml(){
+  const c = CURRENT.compania;
+  return `<div class="cuartel-bar" style="margin-top:0;">
+      <div class="field" style="flex:1 1 170px;min-width:0;"><label for="pe-q">Buscar por apellidos o nombre</label><input type="search" id="pe-q" value="${escHtml(PE.q)}" placeholder="Ej.: garcía juan" autocomplete="off" oninput="peBuscar(this.value)" style="width:100%;"></div>
+      <div class="field" style="min-width:0;"><label for="pe-sec">Sección</label><select id="pe-sec" onchange="PE.sec=this.value; PE.secMax={}; pePintarLista()"><option value="">Todas</option>${peSecs().map(s=>`<option value="${s}" ${String(PE.sec)===String(s)?'selected':''}>${c}${s}</option>`).join('')}</select></div>
+      <button type="button" id="pe-multi-btn" class="small-btn${PE.multi?' active':''}" aria-pressed="${PE.multi}" onclick="peMulti()" style="padding:9px 10px;">☑ Selección múltiple</button>
+    </div><div class="pe-chips" id="pe-chips">${peChipsHtml()}</div>`;
+}
+function peChipsHtml(){
+  const ps = PE.personas || [];
+  return PE_FILTROS.map(([f,t])=>`<button type="button" class="small-btn${PE.filtros.has(f)?' active':''}" aria-pressed="${PE.filtros.has(f)}" onclick="peFiltro('${f}')">${t} <span style="opacity:.7;">${ps.filter(p=>peCumple(p,f)).length}</span></button>`).join('');
+}
+function pePintarChips(){ pePonerHtml('pe-chips', peChipsHtml()); peRefrescarSecciones(); }
+function peBuscar(v){ PE.q = v; clearTimeout(PE.t); PE.t = setTimeout(()=>{ PE.secMax = {}; pePintarLista(); }, 200); }
+function peFiltro(f){ if(PE.filtros.has(f)) PE.filtros.delete(f); else PE.filtros.add(f); PE.secMax = {}; pePonerHtml('pe-chips', peChipsHtml()); pePintarLista(); }
+// Hay búsqueda o filtro: se abren solas las secciones con resultados y se ocultan las demás
+const peActivo = () => !!cuartelNorm(PE.q) || PE.filtros.size>0 || PE.soloSel || !!PE.sec;
+function peFiltradas(){
+  const w = cuartelNorm(PE.q).split(' ').filter(Boolean), fs = [...PE.filtros];
+  return (PE.personas||[]).filter(p=>(!PE.sec || String(p.seccion)===String(PE.sec)) && (!PE.soloSel || PE.sel.has(String(p.id))) && w.every(x=>p._n.includes(x)) && fs.every(f=>peCumple(p,f)));
+}
+const peCuentaTxt = n => `${n} persona${n===1?'':'s'}`;
+// Cabecera de cada sección: nombre, nº de personas y un resumen (arrestados, externados…); con selección múltiple, su casilla
+function peSecCabHtml(s, ps){
+  const n = f => ps.filter(p=>peCumple(p,f)).length, r = [];
+  [['arresto','🚨'],['externado','🎒'],['intol','🥗'],['viernes','📅'],['sinreg','⏳']].forEach(([f,ic])=>{ const k = n(f); if(k) r.push(`<span class="pe-t${f==='arresto'?' rojo':''}" title="${escHtml(PE_FILTROS.find(x=>x[0]===f)[1].slice(2))}">${ic} ${k}</span>`); });
+  const todas = ps.length>0 && ps.every(p=>PE.sel.has(String(p.id)));
+  return (PE.multi ? `<input type="checkbox" class="pe-chk" aria-label="Seleccionar la sección ${CURRENT.compania}${s}" ${todas?'checked':''} onclick="event.stopPropagation()" onchange="peSelSeccion(${s}, this.checked)">` : '')
+    + `<b>Sección ${CURRENT.compania}${s}</b> <span class="gp-cuenta" style="margin-left:0;">${peCuentaTxt(ps.length)}</span>${r.join('')}`;
+}
+function peSecBodyHtml(s, ps){
+  const max = PE.secMax[s] || PE_TANDA, vis = ps.slice(0, max);
+  return vis.map(peFilaHtml).join('') + (ps.length>vis.length ? `<button type="button" class="small-btn" style="margin:8px 0 4px;" onclick="peVerMas(${s})">Ver más (quedan ${ps.length-vis.length})</button>` : '')
+    + (ps.length ? '' : '<p class="small-note" style="margin:4px 0;">Sin nadie en esta sección.</p>');
+}
+function pePintarLista(){
+  const c = CURRENT.compania, tit = `<h3 class="section-title">👥 Personal de la ${c}ª Compañía</h3>`;
+  if(PE.error){ pePonerHtml('admin-pe-lista', tit + `<p class="small-note" style="color:var(--danger);">No se pudo cargar el personal: ${escHtml(PE.error)}</p><button type="button" class="small-btn" onclick="renderAdminPersonal()">↻ Reintentar</button>`); return; }
+  if(!PE.personas){ pePonerHtml('admin-pe-lista', tit + '<p class="small-note">Cargando…</p>'); return; }
+  const ls = peFiltradas(), activo = peActivo();
+  let html = `<div class="pe-cuenta" id="pe-cuenta">${peCuentaTxt(ls.length)}</div>` + (PE.multi ? `<div class="pe-chips" id="pe-selbar">${peSelBarHtml(ls.length)}</div>` : '');
+  peSecs().forEach(s=>{
+    const ps = ls.filter(p=>p.seccion===s); if(activo && !ps.length) return;
+    const ab = activo || PE.secAb.has(s);
+    html += `<details class="caja-det pe-secdet" data-pesec="${s}" ${ab?'open':''} ontoggle="peSecToggle(${s}, this)"><summary><span class="pe-sech" id="pe-sech-${s}">${peSecCabHtml(s, ps)}</span></summary><div class="caja-sub-body" id="pe-secb-${s}">${ab ? peSecBodyHtml(s, ps) : ''}</div></details>`;
+  });
+  const sueltos = ls.filter(p=>!peSecs().includes(p.seccion)); // por si alguien tuviera una sección fuera de rango
+  if(sueltos.length) html += `<div class="gp-mes">Sin sección válida</div>` + sueltos.map(peFilaHtml).join('');
+  if(!ls.length) html += `<p class="small-note">${PE.personas.length ? (PE.soloSel && !PE.sel.size ? 'No hay nadie seleccionado.' : 'Nadie coincide con la búsqueda o los filtros.') : 'Todavía no hay nadie en la compañía.'}</p>`;
+  if(PE.multi) html += `<div class="pe-barra" id="pe-barra">${peBarraHtml()}</div>`;
+  pePonerHtml('admin-pe-lista', tit + html);
+  PE.abiertos.forEach(id=>{ if(document.getElementById('pe-f-'+id)) peCargarServicios(id); }); // fichas que siguen abiertas
+}
+function peSecToggle(s, det){
+  if(!peActivo()){ if(det.open) PE.secAb.add(s); else PE.secAb.delete(s); } // lo que abre una búsqueda no se recuerda
+  const b = document.getElementById('pe-secb-'+s);
+  if(det.open && b && !b.innerHTML.trim()){ b.innerHTML = peSecBodyHtml(s, peFiltradas().filter(p=>p.seccion===s)); PE.abiertos.forEach(id=>{ if(b.querySelector('#pe-f-'+CSS.escape(id))) peCargarServicios(id); }); }
+}
+function peVerMas(s){ PE.secMax[s] = (PE.secMax[s] || PE_TANDA) + PE_TANDA; const b = document.getElementById('pe-secb-'+s); if(b) b.innerHTML = peSecBodyHtml(s, peFiltradas().filter(p=>p.seccion===s)); }
+// Repinta solo las cabeceras de sección (números y casillas), sin tocar las filas
+function peRefrescarSecciones(){ const ls = peFiltradas(); peSecs().forEach(s=>pePonerHtml('pe-sech-'+s, peSecCabHtml(s, ls.filter(p=>p.seccion===s)))); peActualizarCuenta(); }
+function peActualizarCuenta(){ const el = document.getElementById('pe-cuenta'); if(el) el.textContent = peCuentaTxt(peFiltradas().length); }
+/* ---- Selección múltiple: la selección (PE.sel) se conserva al buscar, filtrar o cambiar de sección ---- */
+function peMulti(){ PE.multi = !PE.multi; if(!PE.multi) PE.soloSel = false; const b = document.getElementById('pe-multi-btn'); if(b){ b.classList.toggle('active', PE.multi); b.setAttribute('aria-pressed', PE.multi); } pePintarLista(); }
+function peSelBarHtml(n){
+  return `<button type="button" class="small-btn" onclick="peSelResultados(true)">☑ Seleccionar los ${n} resultado${n===1?'':'s'}</button>`
+    + `<button type="button" class="small-btn" onclick="peSelQuitar()" ${PE.sel.size?'':'disabled'}>✖ Quitar selección</button>`
+    + `<button type="button" class="small-btn${PE.soloSel?' active':''}" aria-pressed="${PE.soloSel}" onclick="PE.soloSel=!PE.soloSel; PE.secMax={}; pePintarLista()">👁 Ver solo seleccionados (${PE.sel.size})</button>`;
+}
+const peBarraHtml = () => `<span><b id="pe-nsel">${PE.sel.size}</b> seleccionada${PE.sel.size===1?'':'s'}</span><button type="button" class="primary-btn" id="pe-acc-btn" onclick="peAccionesModal()" ${PE.sel.size && !PE.ocupado ? '' : 'disabled'}>${PE.ocupado ? '⏳ Aplicando…' : 'Acciones ▾'}</button>`;
+function peSelPintar(){ // tras cambiar la selección: barra, utilidades y cabeceras (las casillas de las filas ya están bien)
+  pePonerHtml('pe-barra', peBarraHtml()); pePonerHtml('pe-selbar', peSelBarHtml(peFiltradas().length)); peRefrescarSecciones();
+}
+function peSelUno(id, v){ if(v) PE.sel.add(String(id)); else PE.sel.delete(String(id)); peSelPintar(); }
+function peMarcarFilas(){ document.querySelectorAll('#admin-pe-lista .pe-fila').forEach(f=>{ const c = f.querySelector('.pe-chk'); if(c) c.checked = PE.sel.has(f.dataset.id); }); }
+function peSelSeccion(s, v){ peFiltradas().filter(p=>p.seccion===s).forEach(p=>{ if(v) PE.sel.add(String(p.id)); else PE.sel.delete(String(p.id)); }); peMarcarFilas(); peSelPintar(); }
+function peSelResultados(v){ peFiltradas().forEach(p=>{ if(v) PE.sel.add(String(p.id)); else PE.sel.delete(String(p.id)); }); peMarcarFilas(); peSelPintar(); }
+function peSelQuitar(){ PE.sel.clear(); if(PE.soloSel){ PE.soloSel = false; pePintarLista(); return; } peMarcarFilas(); peSelPintar(); }
+/* ---- Fila de cada persona: compacta; al tocarla se despliega su ficha (pueden abrirse varias) ---- */
+function peCabHtml(p){
+  const hoy = ymd(new Date()), a = peArrestosVivos(p)[0], t = [];
+  if(a) t.push(`<span class="pe-t rojo" title="${escHtml(arrestoTxt(a))}">🚨 ${a.desde<=hoy ? 'hasta '+peFC(a.hasta) : peFC(a.desde)+'–'+peFC(a.hasta)}</span>`);
+  if(p.externado) t.push(`<span class="pe-t">🎒 ${p.externado_total ? 'Total' : 'Findes'}</span>`);
+  if(String(p.intolerancias||'').trim()) t.push(`<span class="pe-t" title="${escHtml(p.intolerancias)}">🥗 Intolerancia</span>`);
+  if((p.viernes_fuera||0)>0) t.push(`<span class="pe-t">📅 ${p.viernes_fuera>=4 ? 'Todos los viernes' : '2 viernes al mes'}</span>`);
+  if(p.promocion_interna) t.push('<span class="pe-t">🎓 Promoción interna</span>');
+  if(!p.registrado) t.push('<span class="pe-t">⚠ Sin registrar</span>');
+  return `<span class="pe-nom"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)}</span><span class="pe-sec">${CURRENT.compania}${escHtml(p.seccion)}</span>${t.join('')}`;
+}
+function peFilaHtml(p){
+  const id = escHtml(p.id), ab = PE.abiertos.has(String(p.id));
+  const chk = PE.multi ? `<input type="checkbox" class="pe-chk" aria-label="Seleccionar a ${escHtml(p.nombre+' '+p.apellidos)}" ${PE.sel.has(String(p.id))?'checked':''} onchange="peSelUno('${id}', this.checked)">` : '';
+  return `<div class="pe-fila${ab?' open':''}" id="pe-f-${id}" data-id="${id}"><div class="pe-fila-top">${chk}<button type="button" class="pe-cab" aria-expanded="${ab}" onclick="peToggle('${id}')">${peCabHtml(p)}</button></div>${ab ? `<div class="pe-det">${peDetalleHtml(p)}</div>` : ''}</div>`;
+}
+function peRefrescarFila(pid){ const el = document.getElementById('pe-f-'+pid), p = pePersona(pid); if(!el) return; if(!p){ el.remove(); return; } el.outerHTML = peFilaHtml(p); }
+function peRefrescarCab(pid){ const el = document.getElementById('pe-f-'+pid), p = pePersona(pid), b = el && el.querySelector('.pe-cab'); if(b && p) b.innerHTML = peCabHtml(p); }
+function peToggle(pid){
+  if(PE.abiertos.has(pid)) PE.abiertos.delete(pid); else PE.abiertos.add(pid);
+  peRefrescarFila(pid);
+  if(PE.abiertos.has(pid)) peCargarServicios(pid);
+}
+function peDetalleHtml(p){
+  const id = escHtml(p.id), c = CURRENT.compania, hoy = ymd(new Date()), ext = valorExternado(p), vf = String(p.viernes_fuera>=4 ? 4 : (p.viernes_fuera||0));
+  const op = (v, t, sel) => `<option value="${v}" ${v===sel?'selected':''}>${t}</option>`;
+  const arrs = (ARRESTOS.get(p.id)||[]).slice().reverse(); // el más reciente primero
+  const arrHtml = ARRESTOS_FALTA ? '<p class="small-note" style="margin:0;">Falta ejecutar el parche SQL 101 para poder apuntar arrestos.</p>'
+    : (arrs.length ? arrs.map(a=>{ const aid = escHtml(String(a.id));
+        return `<div class="pe-it${arrestoVigente(a)?'':' pasado'}"><span>${a.desde<=hoy && hoy<=a.hasta ? '🚨 <b>Ahora</b> · ' : a.desde>hoy ? '⏳ Próximo · ' : ''}${escHtml(arrestoTxt(a))}${a.origen==='alumno' ? ' <span class="pe-sec">(lo apuntó el alumno)</span>' : ''}</span>
+          <span class="pe-btns"><button type="button" class="small-btn" onclick="peArrestoModal('${id}','${aid}')">✏️ Fechas</button><button type="button" class="small-btn danger" onclick="peBorrarArresto('${id}','${aid}')">🗑 Borrar</button></span></div>`; }).join('')
+      : '<p class="small-note" style="margin:0;">Sin arrestos.</p>')
+      + `<div class="pe-btns" style="margin-top:6px;"><button type="button" class="small-btn" onclick="peArrestoModal('${id}')">➕ Apuntar arresto</button></div>`;
+  return `<h4>🚨 Arrestos</h4>${arrHtml}
+    <h4>📋 Servicios</h4><div id="pe-serv-${id}">${peServHtml(String(p.id))}</div>
+    <h4>🎒 Externado y viernes libres</h4>
+    <div class="pe-btns"><select aria-label="Externado" title="Findes: el sábado no es obligatorio. Total: sin desayunos, comidas ni cenas obligatorios (salvo maniobras)." onchange="peCambiarExternado('${id}', this)">${op('no','No externado',ext)}${op('findes','Externado findes',ext)}${op('total','Externado total',ext)}</select>
+      <select aria-label="Viernes libres" title="Viernes que puede dormir fuera: «2 viernes al mes» son 2 de cada mes, los que quiera (seguidos o no); los que no use no se acumulan" onchange="peCambiarViernes('${id}', this)">${['0','2','4'].map(v=>op(v, (v==='0'?'Viernes libres: ':'')+PE_VF_TXT[v], vf)).join('')}</select></div>
+    ${vf==='2' ? `<p class="small-note" style="margin:4px 0 0;">${peViernesUsadosTxt(p)}</p>` : ''}
+    <h4>🎓 Promoción interna</h4>
+    <div class="pe-btns"><select aria-label="Promoción interna" onchange="peCambiarPromo('${id}', this)">${op('no','No',p.promocion_interna?'si':'no')}${op('si','Sí, promoción interna',p.promocion_interna?'si':'no')}</select></div>
+    <h4>🥗 Intolerancias</h4>
+    <div class="pe-btns"><input type="text" aria-label="Intolerancias" maxlength="200" value="${escHtml(p.intolerancias||'')}" placeholder="Ninguna" onchange="peCambiarIntol('${id}', this)"></div>
+    <h4>⚙️ Sección y acceso</h4>
+    <div class="pe-btns"><select aria-label="Mover de sección" onchange="peMover('${id}', this)"><option value="">Mover de sección…</option>${peSecs().filter(s=>s!==p.seccion).map(s=>`<option value="${s}">A la ${c}${s}</option>`).join('')}</select>
+      ${p.registrado ? `<button type="button" class="small-btn" onclick="peReset('${id}')">🔑 Reiniciar acceso</button>` : '<span class="pe-t">⚠ Aún no se ha registrado</span>'}
+      <button type="button" class="small-btn danger" onclick="peBaja('${id}')">Dar de baja</button></div>`;
+}
+/* ---- Servicios de la persona: se piden al abrir su ficha (una sola consulta) ---- */
+function peServHtml(pid){
+  const st = PE.serv.get(pid);
+  if(!st || st.estado==='cargando') return '<p class="small-note" style="margin:0;">Cargando…</p>';
+  if(st.estado==='error') return `<p class="small-note" style="margin:0;color:var(--danger);">No se pudieron cargar: ${escHtml(st.msg)}</p><button type="button" class="small-btn" onclick="peCargarServicios('${escHtml(pid)}')">↻ Reintentar</button>`;
+  const hoy = ymd(new Date()), hechos = st.data.filter(s=>s.fecha<hoy && !s.estimado), prox = st.data.filter(s=>s.fecha>=hoy);
+  return `<div>Ha hecho <b>${hechos.length}</b> servicio${hechos.length===1?'':'s'}${hechos.length ? ':' : '.'}</div>${hechos.length ? cuentaServTablaHtml(hechos) : ''}`
+    + (prox.length ? `<div style="margin-top:6px;font-weight:700;">Próximos servicios${prox.length>8 ? ` (8 de ${prox.length})` : ''}</div>`
+        + prox.slice(0,8).map(s=>`<div class="pe-it"><span>${escHtml(fmtFecha(s.fecha))} · ${escHtml(servicioLabel(s))}${s.estimado ? ' <i class="pe-sec">(estimado)</i>' : ''}</span></div>`).join('')
+      : '<div class="small-note" style="margin-top:4px;">No tiene próximos servicios.</div>');
+}
+async function peCargarServicios(pid){
+  const st = PE.serv.get(pid); if(st && st.estado!=='error') return;
+  PE.serv.set(pid, { estado:'cargando' }); pePonerHtml('pe-serv-'+pid, peServHtml(pid));
+  try{
+    const { data, error } = await sb.from('servicios').select('fecha,tipo,turno,estimado,codigo').eq('persona_id', pid).order('fecha').limit(1000);
+    PE.serv.set(pid, error ? { estado:'error', msg:error.message } : { estado:'ok', data:data||[] });
+  }catch(e){ PE.serv.set(pid, { estado:'error', msg:(e && e.message) || String(e) }); }
+  pePonerHtml('pe-serv-'+pid, peServHtml(pid));
+}
+/* ---- Arrestos: apuntar, cambiar fechas y borrar (tras cada cambio se recargan los de la compañía y se repinta solo esa fila) ---- */
+function peArrestoModal(pid, aid){
+  const p = pePersona(pid); if(!p) return;
+  const a = aid!=null ? (ARRESTOS.get(p.id)||[]).find(x=>String(x.id)===String(aid)) : null;
+  const desde = a ? a.desde : ymd(new Date()), hasta = a ? a.hasta : desde;
+  const sty = 'width:100%;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;';
+  abrirModalGlobal(`<h3>🚨 ${a ? 'Cambiar las fechas del arresto' : 'Apuntar arresto'}</h3>
+    <p class="modal-nota" style="margin-top:0;"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)}. Mientras dure, tiene obligatorias en la AGM la pernocta y todas las comidas.</p>
+    <div class="field"><label for="pe-arr-desde">Empieza el</label><input type="date" id="pe-arr-desde" value="${desde}" oninput="peArrCalc('dias')" style="${sty}"></div>
+    <div class="field"><label for="pe-arr-dias">Número de días</label><input type="number" id="pe-arr-dias" min="1" max="121" value="${diasEntre(desde, hasta)+1}" oninput="peArrCalc('dias')" style="${sty}"></div>
+    <div class="field"><label for="pe-arr-hasta">Hasta el (incluido)</label><input type="date" id="pe-arr-hasta" value="${hasta}" oninput="peArrCalc('hasta')" style="${sty}"></div>
+    <div class="modal-botones"><button type="button" class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button type="button" class="primary-btn" id="pe-arr-ok" onclick="peGuardarArresto('${escHtml(p.id)}', ${a ? `'${escHtml(String(a.id))}'` : 'null'})">${a ? 'Guardar' : 'Apuntar'}</button></div>`);
+}
+// «Hasta» sale de inicio + nº de días; si se cambia «hasta» a mano, se recalcula el nº de días
+function peArrCalc(que){
+  const d = document.getElementById('pe-arr-desde'), n = document.getElementById('pe-arr-dias'), h = document.getElementById('pe-arr-hasta');
+  if(!d || !n || !h || !d.value) return;
+  if(que==='dias'){ const k = Math.max(1, parseInt(n.value,10)||1), f = new Date(d.value+'T00:00:00'); f.setDate(f.getDate()+k-1); h.value = ymd(f); }
+  else if(h.value && h.value>=d.value) n.value = diasEntre(d.value, h.value)+1;
+}
+async function peGuardarArresto(pid, aid){
+  const p = pePersona(pid); if(!p) return;
+  const desde = (document.getElementById('pe-arr-desde')||{}).value || '', hasta = (document.getElementById('pe-arr-hasta')||{}).value || '';
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(desde) || !/^\d{4}-\d{2}-\d{2}$/.test(hasta)){ showToast('Elige las fechas.'); return; }
+  const a = aid!=null ? (ARRESTOS.get(p.id)||[]).find(x=>String(x.id)===String(aid)) : null;
+  if(aid!=null && !a){ showToast('Ese arresto ya no existe.'); cerrarModalGlobal(); await peRecargarArrestos(pid); return; }
+  const btn = document.getElementById('pe-arr-ok'); if(btn) btn.disabled = true;
+  const r = a ? await cambiarArresto(a.id, desde, hasta) : await guardarArresto(p.id, desde, hasta);
+  if(!r.ok){ if(btn) btn.disabled = false; showToast(r.error || 'No se pudo guardar.'); return; }
+  cerrarModalGlobal();
+  showToast(`${a ? 'Arresto cambiado' : 'Arresto apuntado'}: ${p.nombre} ${p.apellidos}, del ${peFC(desde)} al ${peFC(hasta)}.`);
+  await peRecargarArrestos(pid);
+}
+async function peBorrarArresto(pid, aid){
+  const p = pePersona(pid), a = p && (ARRESTOS.get(p.id)||[]).find(x=>String(x.id)===String(aid)); if(!a) return;
+  if(!await confirmarApp(`¿Borrar el arresto de ${p.nombre} ${p.apellidos} (${arrestoTxt(a)})?`, { si:'Borrar', peligro:true })) return;
+  const r = await borrarArresto(a.id);
+  if(!r.ok){ showToast('No se pudo borrar: '+r.error); return; }
+  showToast('Arresto borrado.');
+  await peRecargarArrestos(pid);
+}
+async function peRecargarArrestos(pid){ await fetchArrestos({ compania:CURRENT.compania }); peRefrescarFila(pid); pePintarChips(); }
+/* ---- Externado, viernes, intolerancias, sección, acceso y baja ---- */
+function peSyncMapas(){
+  const ps = PE.personas || [];
+  EXTERNADOS = new Set(ps.filter(p=>p.externado).map(p=>p.id));
+  EXTERNADOS_TOTAL = new Set(ps.filter(p=>p.externado && p.externado_total).map(p=>p.id));
+  VIERNES_FUERA = vfMapa(ps);
+}
+async function peCambiarExternado(pid, sel){
+  const p = pePersona(pid); if(!p) return; const v = sel.value; sel.disabled = true;
+  if(await guardarExternadoPersona(p.id, v)){
+    p.externado = v!=='no'; p.externado_total = v==='total';
+    if(v!=='no') p.viernes_fuera = 4; // al hacerle externado se le dejan automáticamente los 4 viernes libres
+    peSyncMapas();
+    const txt = v==='no' ? 'ya no es externado' : v==='findes' ? 'externado de fin de semana' : 'externado total';
+    logFurry('externado', `${p.apellidos}, ${p.nombre}: ${txt}`);
+    showToast(`${p.nombre} ${p.apellidos}: ${txt}${v!=='no' ? ', con los 4 viernes libres' : ''}.`);
+    const fila = document.getElementById('pe-f-'+pid), sv = fila && fila.querySelector('select[aria-label="Viernes libres"]'); if(sv) sv.value = String(p.viernes_fuera>=4 ? 4 : (p.viernes_fuera||0));
+    peRefrescarCab(pid); pePintarChips();
+  } else sel.value = valorExternado(p);
+  sel.disabled = false;
+}
+async function peCambiarViernes(pid, sel){
+  const p = pePersona(pid); if(!p) return; const v = sel.value; sel.disabled = true;
+  if(await guardarViernesFuera(p.id, v)){
+    p.viernes_fuera = parseInt(v,10) || 0; peSyncMapas();
+    const txt = 'viernes libres: ' + PE_VF_TXT[v==='4' ? 4 : v==='2' ? 2 : 0];
+    logFurry('viernes', `${p.apellidos}, ${p.nombre}: ${txt}`);
+    showToast(`${p.nombre} ${p.apellidos}: ${txt}.`);
+    peRefrescarFila(pid); peRefrescarSecciones(); pePonerHtml('pe-chips', peChipsHtml());
+  } else { sel.value = String(p.viernes_fuera>=4 ? 4 : (p.viernes_fuera||0)); sel.disabled = false; }
+}
+// «Este mes ha usado X de 2» (datos de cargarViernesUsadosActual: el mes de la semana que se está viendo)
+function peViernesUsadosTxt(p){
+  if(typeof VIERNES_USADOS==='undefined' || typeof VIERNES_USADOS_MES==='undefined' || !VIERNES_USADOS_MES) return 'Puede dormir fuera 2 viernes de cada mes, los que quiera (seguidos o no); los que no use no se acumulan.';
+  const m = /^(\d{4})-(\d{2})$/.exec(VIERNES_USADOS_MES), mes = m ? new Date(+m[1], +m[2]-1, 1).toLocaleDateString('es-ES', { month:'long' }) : VIERNES_USADOS_MES;
+  const u = VIERNES_USADOS.get(p.id), n = u ? u.size : 0;
+  return `En ${escHtml(mes)} ha usado <b>${n} de 2</b> viernes libres${n>=2 ? ' (ya no le quedan este mes)' : ''}.`;
+}
+async function peCambiarPromo(pid, sel){
+  const p = pePersona(pid); if(!p) return; const v = sel.value==='si'; sel.disabled = true;
+  const { error } = await sb.from('personas').update({ promocion_interna: v }).eq('id', p.id);
+  sel.disabled = false;
+  if(error){ sel.value = p.promocion_interna ? 'si' : 'no'; showToast('No se pudo guardar: '+error.message+(/promocion_interna/.test(error.message||'') ? ' — falta ejecutar el parche SQL 95.' : '')); return; }
+  p.promocion_interna = v;
+  showToast(`${p.nombre} ${p.apellidos}: ${v ? 'promoción interna' : 'ya no es promoción interna'}.`);
+  peRefrescarCab(pid);
+}
+async function peCambiarIntol(pid, inp){
+  const p = pePersona(pid); if(!p) return;
+  if(await updateIntolerancias(p.id, inp.value)){ p.intolerancias = inp.value.trim() || null; peRefrescarCab(pid); pePintarChips(); }
+  else inp.value = p.intolerancias || '';
+}
+async function peMover(pid, sel){
+  const p = pePersona(pid); if(!p || !sel.value) return; const s = sel.value; sel.disabled = true;
+  if(await moverSeccion(p.id, s)){ p.seccion = parseInt(s,10); PE.personas.sort(peOrden); PE.secAb.add(p.seccion); pePintarLista(); } // pasa a la caja de su nueva sección
+  else { sel.value = ''; sel.disabled = false; }
+}
+async function peReset(pid){
+  const p = pePersona(pid); if(!p) return;
+  if(!await resetAccess(p.id, p.nombre+' '+p.apellidos)) return;
+  p.registrado = false; p.auth_user_id = null;
+  showToast(`Acceso de ${p.nombre} ${p.apellidos} reiniciado.`);
+  peRefrescarFila(pid); pePintarChips();
+}
+async function peBaja(pid){
+  const p = pePersona(pid); if(!p) return;
+  if(!await removeStudent(p.id, p.nombre+' '+p.apellidos)) return;
+  PE.personas = PE.personas.filter(x=>x!==p); PE.abiertos.delete(String(pid)); PE.sel.delete(String(pid)); peSyncMapas();
+  PE.sols = (PE.sols||[]).filter(s=>s.persona_id!==p.id); pePintarSolicitudes(); // sus solicitudes se borran con él
+  showToast(`${p.nombre} ${p.apellidos} dado de baja.`);
+  peRefrescarFila(pid); pePintarChips(); if(PE.multi) peSelPintar();
+}
+/* ---- Acciones en lote sobre la selección (cada una: resumen + confirmación, progreso y un solo apunte en el registro del Furry) ---- */
+const peSelPersonas = () => (PE.personas||[]).filter(p=>PE.sel.has(String(p.id)));
+const peNombresTxt = ps => ps.slice(0,5).map(p=>p.apellidos+', '+p.nombre).join('; ') + (ps.length>5 ? ` y ${ps.length-5} más` : '');
+function peAccionesModal(){
+  const n = PE.sel.size; if(!n || PE.ocupado) return;
+  const b = (acc, val, txt, cls) => `<button type="button" class="small-btn${cls?' '+cls:''}" onclick="peLote('${acc}','${val}')">${txt}</button>`;
+  const fila = (tit, cuerpo) => `<div class="pe-acc"><div class="pe-acc-t">${tit}</div><div class="pe-btns">${cuerpo}</div></div>`;
+  abrirModalGlobal(`<h3>☑ Acciones para ${n} persona${n===1?'':'s'}</h3>
+    <p class="modal-nota" style="margin-top:0;">${escHtml(peNombresTxt(peSelPersonas()))}</p>
+    ${fila('🎒 Externado', b('externado','no','No') + b('externado','findes','Findes') + b('externado','total','Total'))}
+    ${fila('📅 Viernes libres', b('viernes','0',PE_VF_TXT[0]) + b('viernes','2',PE_VF_TXT[2]) + b('viernes','4',PE_VF_TXT[4]))}
+    ${fila('🎓 Promoción interna', b('promo','si','Sí') + b('promo','no','No'))}
+    ${fila('🥗 Intolerancia', b('intol','poner','Poner texto') + b('intol','anadir','Añadir texto') + b('intol','quitar','Quitar'))}
+    ${fila('🔀 Mover de sección', `<select id="pe-lote-sec" aria-label="Sección de destino">${peSecs().map(s=>`<option value="${s}">${CURRENT.compania}${s}</option>`).join('')}</select><button type="button" class="small-btn" onclick="peLote('mover', document.getElementById('pe-lote-sec').value)">Mover</button>`)}
+    ${fila('🚨 Arresto', b('arresto','','➕ Apuntar arresto…'))}
+    ${fila('🗑 Baja', b('baja','','Dar de baja', 'danger'))}
+    <div class="modal-botones"><button type="button" class="small-btn" onclick="cerrarModalGlobal()">Cerrar</button></div>`);
+}
+// Modal de arresto en lote: desde, nº de días y hasta sincronizados (mismos ids que el individual, para reutilizar peArrCalc)
+function peLoteArrestoModal(){
+  const hoy = ymd(new Date()), n = PE.sel.size;
+  const sty = 'width:100%;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;';
+  abrirModalGlobal(`<h3>🚨 Apuntar arresto a ${n} persona${n===1?'':'s'}</h3>
+    <p class="modal-nota" style="margin-top:0;">${escHtml(peNombresTxt(peSelPersonas()))}</p>
+    <div class="field"><label for="pe-arr-desde">Empieza el</label><input type="date" id="pe-arr-desde" value="${hoy}" oninput="peArrCalc('dias')" style="${sty}"></div>
+    <div class="field"><label for="pe-arr-dias">Número de días</label><input type="number" id="pe-arr-dias" min="1" max="121" value="1" oninput="peArrCalc('dias')" style="${sty}"></div>
+    <div class="field"><label for="pe-arr-hasta">Hasta el (incluido)</label><input type="date" id="pe-arr-hasta" value="${hoy}" oninput="peArrCalc('hasta')" style="${sty}"></div>
+    <div class="modal-botones"><button type="button" class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button type="button" class="primary-btn" id="pe-arr-ok" onclick="peLoteArrestoOk()">Apuntar</button></div>`);
+}
+function peLoteArrestoOk(){
+  const desde = (document.getElementById('pe-arr-desde')||{}).value || '', hasta = (document.getElementById('pe-arr-hasta')||{}).value || '';
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(desde) || !/^\d{4}-\d{2}-\d{2}$/.test(hasta)){ showToast('Elige las fechas.'); return; }
+  if(hasta < desde){ showToast('La fecha final no puede ser anterior a la de inicio.'); return; }
+  if(diasEntre(desde, hasta) > 120){ showToast('Un arresto no puede durar más de 120 días.'); return; }
+  peLote('arresto', desde+'|'+hasta);
+}
+// update(...).in('id', …) por tandas de 100. alt(error): campos para reintentar sin una columna que falte (o null). Devuelve { ok:[ids], err:[mensajes] }
+async function peUpdateLote(ids, campos, alt){
+  const ok = [], err = [];
+  for(let i=0; i<ids.length; i+=100){
+    const t = ids.slice(i, i+100);
+    let { error } = await sb.from('personas').update(campos).in('id', t);
+    const c2 = error && alt ? alt(error) : null;
+    if(c2) ({ error } = await sb.from('personas').update(c2).in('id', t));
+    if(error) err.push(error.message || String(error)); else ok.push(...t);
+  }
+  return { ok, err };
+}
+async function peLote(acc, val){
+  const ps = peSelPersonas(); if(!ps.length || PE.ocupado) return;
+  if(acc==='arresto' && !val){ peLoteArrestoModal(); return; }
+  let txt = '', campos = null, alt = null, intol = null, tipoLog = 'otro';
+  if(acc==='externado'){ tipoLog = 'externado'; txt = val==='no' ? 'quitar el externado' : val==='findes' ? 'externado de fin de semana (con los 4 viernes libres)' : 'externado total (con los 4 viernes libres)';
+    campos = { externado: val!=='no', externado_total: val==='total', ...(val!=='no' ? { viernes_fuera:4 } : {}) };
+    alt = e => /externado_total/.test(e.message||'') && val!=='total' ? { externado: val!=='no', ...(val!=='no' ? { viernes_fuera:4 } : {}) } : null; } // sin el parche 94: sin esa columna (el «total» no se puede)
+  else if(acc==='viernes'){ tipoLog = 'viernes'; txt = 'viernes libres: '+PE_VF_TXT[val]; campos = { viernes_fuera: parseInt(val,10)||0 }; }
+  else if(acc==='promo'){ txt = val==='si' ? 'marcar como promoción interna' : 'quitar la promoción interna'; campos = { promocion_interna: val==='si' }; }
+  else if(acc==='mover'){ txt = 'mover a la sección '+CURRENT.compania+val; campos = { seccion: parseInt(val,10) }; }
+  else if(acc==='intol'){
+    if(val!=='quitar'){
+      cerrarModalGlobal();
+      const t = await preguntarApp(val==='poner' ? 'Intolerancia que se pondrá (sustituye la que tengan):' : 'Texto que se añadirá a su intolerancia:', '', { si:'Seguir' });
+      if(t==null) return; intol = t.trim();
+      if(!intol){ showToast('Escribe la intolerancia.'); return; }
+      if(/[<>"]/.test(intol)){ showToast('El texto no puede llevar los símbolos  <  >  " .'); return; }
+      if(intol.length > 200){ showToast('Como mucho 200 caracteres.'); return; }
+    }
+    txt = val==='quitar' ? 'quitar la intolerancia' : (val==='poner' ? 'poner la intolerancia «' : 'añadir a la intolerancia «') + (intol||'') + (val==='quitar' ? '' : '»');
+  }
+  else if(acc==='arresto'){ tipoLog = 'arresto'; const [d,h] = val.split('|'); txt = `apuntar un arresto del ${peFC(d)} al ${peFC(h)} (${diasEntre(d,h)+1} días)`; }
+  else if(acc==='baja') txt = 'DAR DE BAJA (se borran de la app con sus datos)';
+  else return;
+  const n = ps.length;
+  if(!await confirmarApp(`Se aplicará a ${n} persona${n===1?'':'s'}: ${txt}.\n\n${peNombresTxt(ps)}\n\n¿Seguir?`, { si: acc==='baja' ? 'Dar de baja' : 'Aplicar', peligro: acc==='baja' })) return;
+  cerrarModalGlobal();
+  PE.ocupado = true; pePonerHtml('pe-barra', peBarraHtml()); showToast(`⏳ Aplicando a ${n} persona${n===1?'':'s'}…`);
+  const ids = ps.map(p=>p.id); let ok = [], err = [];
+  try{
+    if(campos){ ({ ok, err } = await peUpdateLote(ids, campos, alt)); }
+    else if(acc==='intol'){
+      if(val!=='anadir') ({ ok, err } = await peUpdateLote(ids, { intolerancias: val==='poner' ? intol : null }));
+      else for(const p of ps){ // cada uno con su texto: una llamada por persona
+        const nuevo = [String(p.intolerancias||'').trim(), intol].filter(Boolean).join(', ').slice(0, 200);
+        const { error } = await sb.from('personas').update({ intolerancias: nuevo }).eq('id', p.id);
+        if(error) err.push(error.message); else { ok.push(p.id); p._intolNueva = nuevo; }
+      }
+    }
+    else if(acc==='baja'){
+      for(let i=0; i<ids.length; i+=100){ const t = ids.slice(i, i+100); const { error } = await sb.from('personas').delete().in('id', t); if(error) err.push(error.message); else ok.push(...t); }
+    }
+    else if(acc==='arresto'){
+      const [d,h] = val.split('|');
+      for(const p of ps){ // uno a uno: cada persona puede fallar por su cuenta (p. ej. si se solapa con otro arresto suyo)
+        const { error } = await sb.from('arrestos').insert({ persona_id:p.id, desde:d, hasta:h });
+        if(!error){ ok.push(p.id); continue; }
+        const m = error.message || '';
+        err.push(`${p.apellidos}, ${p.nombre}: ${/Ya tiene un arresto/i.test(m) ? 'se solapa con otro arresto' : /fecha de inicio/i.test(m) ? 'fecha de inicio no válida (como mucho 30 días atrás o 90 adelante)' : /relation|does not exist|schema cache/i.test(m) ? 'falta ejecutar el parche SQL 101' : m}`);
+      }
+    }
+  }catch(e){ err.push((e && e.message) || String(e)); }
+  // Memoria y repintado de lo afectado
+  const okSet = new Set(ok.map(String)), okPs = ps.filter(p=>okSet.has(String(p.id)));
+  okPs.forEach(p=>{
+    if(acc==='externado'){ p.externado = val!=='no'; p.externado_total = val==='total'; if(val!=='no') p.viernes_fuera = 4; }
+    else if(acc==='viernes') p.viernes_fuera = parseInt(val,10)||0;
+    else if(acc==='promo') p.promocion_interna = val==='si';
+    else if(acc==='mover') p.seccion = parseInt(val,10);
+    else if(acc==='intol'){ p.intolerancias = val==='quitar' ? null : val==='poner' ? intol : p._intolNueva; delete p._intolNueva; }
+  });
+  if(acc==='baja'){ PE.personas = PE.personas.filter(p=>!okSet.has(String(p.id))); okSet.forEach(id=>{ PE.sel.delete(id); PE.abiertos.delete(id); }); PE.sols = (PE.sols||[]).filter(s=>!okSet.has(String(s.persona_id))); pePintarSolicitudes(); }
+  if(acc==='arresto' && ok.length) await fetchArrestos({ compania:CURRENT.compania });
+  peSyncMapas();
+  PE.ocupado = false;
+  if(ok.length) logFurry(tipoLog, `En lote (${ok.length} persona${ok.length===1?'':'s'}): ${txt}${err.length ? ` · ${err.length} error${err.length===1?'':'es'}` : ''}`);
+  if(acc==='mover' || acc==='baja'){ PE.personas.sort(peOrden); if(acc==='mover') PE.secAb.add(parseInt(val,10)); pePintarLista(); pePonerHtml('pe-chips', peChipsHtml()); }
+  else { okPs.forEach(p=>peRefrescarFila(String(p.id))); pePintarChips(); peSelPintar(); }
+  const fallos = err.length ? ` · ${err.length} fallo${err.length===1?'':'s'}: ${err.slice(0,3).join(' | ')}${err.length>3?' …':''}` : '';
+  showToast((ok.length ? `Hecho en ${ok.length} persona${ok.length===1?'':'s'}.` : 'No se pudo aplicar.') + fallos);
+}
+/* ---- Alta de alumnos, por sección (plegado) ---- */
+function peAltaHtml(){
+  const c = CURRENT.compania;
+  return `<details class="caja-det" ${PE.altaAbierta?'open':''} ontoggle="PE.altaAbierta=this.open"><summary>➕ Añadir alumno</summary><div class="caja-sub-body">
+    ${peSecs().map(s=>{ const code = ''+c+s; return `<div class="gp-mes">Sección ${code}</div><div class="add-student-row" style="margin-top:4px;"><input type="text" id="add-nombre-${code}" placeholder="Nombre" maxlength="60" aria-label="Nombre (${code})"><input type="text" id="add-apellidos-${code}" placeholder="Apellidos" maxlength="80" aria-label="Apellidos (${code})"><button type="button" class="small-btn" onclick="peAlta('${code}', ${s})">+ Añadir</button></div>`; }).join('')}
+  </div></details>`;
+}
+async function peAlta(code, seccion){
+  if(!await addStudent(code, CURRENT.compania, seccion)) return;
+  showToast('Alumno añadido a la '+code+'.');
+  await renderAdminPersonal();
 }
 
 /* ---- Ausencias por comida ---- */
@@ -6623,7 +7472,6 @@ async function exportCompanyExcel(){
 
 /* ---- Bloque de compañía ---- */
 function toggleSectionDetail(code){ if(expandedSections.has(code)) expandedSections.delete(code); else expandedSections.add(code); renderAdmin(); }
-function toggleManage(code){ if(managedSections.has(code)) managedSections.delete(code); else managedSections.add(code); renderAdmin(); }
 
 function adminDetailTable(sec, apuntesMap){
   const cols = COLS();
@@ -6648,16 +7496,11 @@ function adminDetailTable(sec, apuntesMap){
 }
 let viewedSections = new Set();
 function toggleSectionView(code){ if(viewedSections.has(code)) viewedSections.delete(code); else viewedSections.add(code); renderAdmin(); }
-// Cajas «Editar» y «Gestionar» del admin: un botón por sección y, debajo, la tabla o el panel de las secciones que estén abiertas
+// Caja «Editar» del admin: un botón por sección y, debajo, la tabla o el panel de las secciones que estén abiertas
 function adminEditarHtml(secciones, apuntesMap){
   const botones = secciones.map(sec=>`<button class="big-btn" onclick="toggleSectionDetail('${sec.code}')">${expandedSections.has(sec.code)?'Cerrar':'✎ Editar'} ${sec.code}</button>`).join('');
   const tablas = secciones.filter(sec=>expandedSections.has(sec.code)).map(sec=>adminDetailTable(sec, apuntesMap)).join('');
   return `<div class="section-btn-row">${botones}</div>${tablas || '<p class="small-note">Elige una sección para marcar o desmarcar sus comidas, incluidas las obligatorias.</p>'}`;
-}
-function adminGestionarHtml(secciones){
-  const botones = secciones.map(sec=>`<button class="big-btn" onclick="toggleManage('${sec.code}')">${managedSections.has(sec.code)?'Cerrar gestión':'⚙ Gestionar'} ${sec.code}</button>`).join('');
-  const paneles = secciones.filter(sec=>managedSections.has(sec.code)).map(sec=>sectionManagePanel(sec)).join('');
-  return `<div class="section-btn-row">${botones}</div>${paneles || '<p class="small-note">Elige una sección para gestionarla (alumnos, externados, etc.).</p>'}`;
 }
 function comidaViewOnlyTable(sec, apuntesMap){
   const cols = COLS();
@@ -6681,21 +7524,6 @@ function comidaViewOnlyTable(sec, apuntesMap){
     <div class="table-scroll"><table class="roster">${thead}${tbody}${tfoot}</table></div>`;
 }
 
-let faltanRegistrarseOpen = false;
-function toggleFaltanRegistrarse(){ faltanRegistrarseOpen = !faltanRegistrarseOpen; renderAdmin(); }
-function faltanRegistrarseHtml(secciones){
-  const totalFaltan = secciones.reduce((a,sec)=>a+sec.people.filter(p=>!p.registrado).length, 0);
-  const header = `<div style="margin:16px 0 10px;"><button class="small-btn" onclick="toggleFaltanRegistrarse()">${faltanRegistrarseOpen?'Cerrar':'Ver'} quién falta por registrarse (${totalFaltan})</button></div>`;
-  if(!faltanRegistrarseOpen) return header;
-  const bloques = secciones.map(sec=>{
-    const faltan = sec.people.filter(p=>!p.registrado);
-    return `<div style="border:1px solid var(--line);padding:10px 12px;margin-bottom:8px;">
-      <div style="font-weight:700;font-size:.8rem;margin-bottom:4px;">Sección ${sec.code} <span style="color:var(--ink-soft);font-weight:400;">(${faltan.length} sin registrar)</span></div>
-      <div style="font-size:.78rem;color:${faltan.length?'var(--danger)':'var(--ink-soft)'};">${faltan.length ? faltan.map(p=>escHtml(p.apellidos+', '+p.nombre)).join(' · ') : 'Todos registrados'}</div>
-    </div>`;
-  }).join('');
-  return `${header}<h3 class="section-title" style="margin-top:0;">Quién falta por registrarse</h3>${bloques}`;
-}
 async function companyBlockHtml(c, secciones, apuntesMap, confirmMap){
   const cols = COLS();
   const allPeopleBlock = secciones.flatMap(s=>s.people);
@@ -6814,6 +7642,7 @@ function comidaEnManiobras(week, col){ const f = comidaTermina(week, col); retur
 // Noche OBLIGATORIA por unas maniobras: todas las noches desde el día de salida hasta la víspera del día en que acaban
 // (la noche del día que acaban NO es obligatoria). Quien esté en "Personas que no van" de esas maniobras queda libre.
 function nocheObligatoriaManiobra(personaId, week, d){
+  if(ARRESTOS.size && arrestado(personaId, ymd(diaPern(week, d)))) return true; // arrestado: la noche es obligatoria en la AGM (por eso también queda bloqueada en las tablas)
   if(!MANIOBRAS_LISTA.length) return false;
   const dia = diaPern(week, d), key = ymd(dia), f = new Date(dia); f.setHours(23,0,0,0);
   return MANIOBRAS_LISTA.some(m=> key >= m.fecha_inicio && key < m.fecha_fin && maniDT(m,'ini') <= f
@@ -7427,8 +8256,9 @@ async function renderAlumnoPernoctas(){
   pernoctaListEl.classList.toggle('plazo-cerrado', !open);
   pintarSelectorSemanas('pernoctas', 'alumno', 'onAlumnoWeekChange', horaCorte, true);
   document.getElementById('alumno-pernocta-maniobras').innerHTML = maniobrasBannerHtml(ACTIVE_WEEK, true); // debajo del mensaje de confirmación
-  document.getElementById('alumno-notice').innerHTML = noticeHtmlWeekendBase(ACTIVE_WEEK, horaCorte);
+  document.getElementById('alumno-notice').innerHTML = noticeHtmlWeekendBase(ACTIVE_WEEK, horaCorte) + arrestoAvisoHtml() + viernesCuotaHtml();
 
+  await cargarViernesUsadosActual(); // cuántos viernes libres lleva este mes (quien tiene «2 viernes»)
   const [seccionMap, ownMap, habitual] = await Promise.all([
     fetchPernoctaSeccion(persona.compania, persona.seccion, ACTIVE_WEEK.key),
     fetchPernoctaOwn(persona.id, ACTIVE_WEEK.key),
@@ -7508,8 +8338,13 @@ async function renderAlumnoPernoctas(){
   document.getElementById('alumno-pernocta-summary').innerHTML = (verSoloYoPernocta && PREFS.totalesSiempre!=='si') ? '' : Array.from({length:pernoctaDiasCount()},(_,i)=>i).map(d=>{
     const n = seccionPeople.filter(p=>valFor(p.id,d)).length;
     const fuera = seccionPeople.length - n;
-    return `<div class="stat-card"><div class="num">${n}/${seccionPeople.length}</div><div class="lbl">AGM ${DAY_NAMES[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))} · ${fuera} fuera</div></div>`;
-  }).join('');
+    return `<div class="stat-card" style="cursor:pointer;" onclick="verUno('pernq-','pernq-${d}')"><div class="num">${n}/${seccionPeople.length}</div><div class="lbl">AGM ${DAY_NAMES[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))} · ${fuera} fuera<br><span style="text-decoration:underline;">toca para ver quién</span></div></div>`;
+  }).join('') + (verSoloYoPernocta && PREFS.totalesSiempre!=='si' ? '' : Array.from({length:pernoctaDiasCount()},(_,i)=>i).map(d=>{
+    // solo nombres (la dirección y el teléfono no los ve nadie de la sección)
+    const dentro = seccionPeople.filter(p=>valFor(p.id,d)), fuera = seccionPeople.filter(p=>!valFor(p.id,d));
+    const lista = (a, vacio) => a.length ? a.map(p=>escHtml(p.apellidos+', '+p.nombre)).join('<br>') : vacio;
+    return `<div id="pernq-${d}" class="servicio-card hidden" style="grid-column:1/-1;"><div class="titulo">Noche del ${DAY_NAMES_FULL[d%7]} ${fmt(diaPern(ACTIVE_WEEK,d))} — tu sección</div><div class="meta"><b>🏠 Duermen FUERA (${fuera.length})</b><br>${lista(fuera, 'Nadie duerme fuera.')}</div><div class="meta" style="margin-top:8px;"><b>🛏️ Duermen en la AGM (${dentro.length})</b><br>${lista(dentro, 'Nadie.')}</div></div>`;
+  }).join(''));
 
   document.getElementById('alumno-pernocta-own').innerHTML = '';
 
@@ -7655,8 +8490,20 @@ async function guardarHabitualManual(){
   if(!tel || !dir) return;
   const ciu = document.getElementById('pernocta-ciudad-shared');
   if(!tel.value.trim() || !dir.value.trim() || (CIUDAD_OK && ciu && !ciu.value.trim())){ showToast('Escribe primero la dirección, la ciudad y el teléfono.'); return; }
-  const ok = await guardarHabitual(dir.value, tel.value, true, ciu ? ciu.value : '');
-  if(ok){ showToast('Guardado como habitual ⭐'); await renderAlumnoPernoctas(); }
+  const direccion = dir.value, telefono = tel.value, ciudad = ciu ? ciu.value : '';
+  await encolarMarcaPernocta.vaciar(); // lo pendiente de escribir se guarda ANTES: si no, al repintar se leía todavía la dirección de antes
+  const ok = await guardarHabitual(direccion, telefono, true, ciudad);
+  if(ok){
+    await aplicarContactoAFuera(direccion, telefono, ciudad); // y se pone también en las noches «Fuera» de esta semana, para que al repintar salga la nueva
+    showToast('Guardado como habitual ⭐'); await renderAlumnoPernoctas();
+  }
+}
+async function aplicarContactoAFuera(direccion, telefono, ciudad){
+  const personaId = CURRENT.persona.id, sem = ACTIVE_WEEK.key, nDias = pernoctaDiasCount();
+  const ownMap = await fetchPernoctaOwn(personaId, sem);
+  for(let d=0; d<nDias; d++){
+    if(ownMap.hasOwnProperty(d) && !ownMap[d].duerme_agm) await setPernocta(personaId, d, false, direccion, telefono, sem, pernoctaObligatoria(personaId, d), (ciudad||'').trim() || undefined);
+  }
 }
 // Botón "⭐ Habitual": rellena los cuadros de teléfono y dirección con los datos habituales y los aplica a las noches "Fuera"
 async function usarHabitual(){
@@ -8475,7 +9322,18 @@ async function siguienteTurnoGS(fecha){
   const { data } = await sb.from('servicios').select('turno').eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo','guardia_seguridad').order('turno',{ascending:false}).limit(1);
   return ((data && data[0]) ? data[0].turno : 0) + 1;
 }
+// Con aviso mientras se guarda (antes no salía nada hasta que terminaba) y sin poder pulsar dos veces
 async function asignarServicio(){
+  if(window._servGuardando) return;
+  const btn = document.getElementById('serv-btn-guardar'), q = document.getElementById('serv-btn-quitar'), txt = btn ? btn.textContent : '';
+  window._servGuardando = true;
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Guardando…'; }
+  if(q) q.disabled = true;
+  showToast('⏳ Guardando el servicio…');
+  try{ await _asignarServicioImpl(); }
+  finally{ window._servGuardando = false; if(btn){ btn.disabled = false; btn.textContent = txt; } if(q) q.disabled = false; }
+}
+async function _asignarServicioImpl(){
   const fecha = document.getElementById('serv-fecha').value;
   const tipo = document.getElementById('serv-tipo').value;
   let turno = (tipo==='imaginaria' || tipo==='imaginaria_gs') ? parseInt(document.getElementById('serv-turno').value,10) : 0;
@@ -8493,7 +9351,8 @@ async function asignarServicio(){
   const { error } = await sb.from('servicios').upsert(fila, { onConflict: 'compania,fecha,tipo,turno' });
   if(error){ showToast('No se pudo asignar: '+error.message+(/tipo|check|constraint/i.test(error.message) ? ' — ¿has ejecutado el patch 60' + (tipo==='imaginaria_gs' ? ' y el 98' : '') + '?' : '')); return; }
   window._servGsTurno = null;
-  showToast('Servicio asignado.'); // solo este servicio: no se toca ninguna imaginaria de otro día
+  const selP = document.getElementById('serv-persona'), nomP = selP && selP.selectedOptions[0] ? selP.selectedOptions[0].textContent.replace(/\s*\(\d+\)\s*$/, '') : '';
+  showToast(`✅ Servicio guardado: ${servicioLabel({tipo,turno})} · ${nomP} · ${fmtFecha(fecha)}`); // solo este servicio: no se toca ninguna imaginaria de otro día
   await renderAdminServicios();
 }
 async function quitarServicioManual(){
@@ -8503,9 +9362,10 @@ async function quitarServicioManual(){
   if(tipo==='guardia_seguridad'){ if(window._servGsTurno==null){ showToast('Para quitar una guardia de seguridad, toca su «GS» en la tabla.'); return; } turno = window._servGsTurno; }
   if(!fecha){ showToast('Elige la fecha.'); return; }
   if(!await confirmarApp(`¿Quitar ${servicioLabel({tipo,turno})} del ${fmtFecha(fecha)} del cuadrante?`, { si:'Quitar', peligro:true })) return;
+  showToast('⏳ Quitando el servicio…');
   const { error } = await sb.from('servicios').delete().eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo', tipo).eq('turno', turno);
   if(error){ showToast('No se pudo quitar: '+error.message); return; }
-  showToast('Quitado.');
+  showToast('✅ Servicio quitado.');
   await renderAdminServicios();
 }
 async function borrarServiciosTramo(){
@@ -8548,17 +9408,30 @@ function servModoManual(modo, texto){
   document.getElementById('serv-btn-guardar').textContent = modo==='añadir' ? '➕ Añadir servicio' : '💾 Guardar cambio';
   document.getElementById('serv-btn-quitar').classList.toggle('hidden', modo==='añadir');
 }
+// Deja elegida a esa persona en el desplegable del formulario (si por lo que sea no está en la lista, se añade) y lo vuelve a comprobar un momento después, por si se repinta
+function servElegirPersona(personaId){
+  const sel = document.getElementById('serv-persona'); if(!sel || personaId==null) return;
+  const poner = () => {
+    if(![...sel.options].some(o=>o.value===String(personaId))){
+      const p = SERV_GRID && SERV_GRID.roster && SERV_GRID.roster.find(x=>String(x.id)===String(personaId));
+      if(p) sel.insertAdjacentHTML('afterbegin', `<option value="${escHtml(String(p.id))}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)}</option>`);
+    }
+    sel.value = String(personaId);
+  };
+  poner(); setTimeout(()=>{ if(sel.value!==String(personaId)){ poner(); actualizarDeudasPersonaServ(); } }, 300);
+}
 function abrirAsignarRapido(personaId, fecha){
   document.getElementById('serv-fecha').value = fecha;
-  document.getElementById('serv-persona').value = personaId;
+  servElegirPersona(personaId);
   window._servGsTurno = null;
   actualizarDeudasPersonaServ();
   const p = SERV_GRID && SERV_GRID.roster.find(x=>x.id===personaId);
   servModoManual('añadir', `➕ Añadir un servicio a ${p ? p.apellidos+', '+p.nombre : ''} el ${fmtFecha(fecha)}`);
   document.getElementById('serv-tipo').scrollIntoView({behavior:'smooth', block:'center'});
 }
-function prellenarSustitucion(fecha, tipo, turno){
+function prellenarSustitucion(fecha, tipo, turno, personaId){
   document.getElementById('serv-fecha').value = fecha;
+  if(personaId) servElegirPersona(personaId); // al cambiar un servicio ya puesto, sale elegido quien lo hace ahora
   document.getElementById('serv-tipo').value = tipo;
   onServTipoChange();
   if(tipo==='imaginaria' || tipo==='imaginaria_gs') document.getElementById('serv-turno').value = turno;
@@ -8586,6 +9459,7 @@ function bandejaPintar(k){
   const max = window._bandejaMax[k] || 0, nuevos = window._bandejaNuevos ? (window._bandejaNuevos[k] || 0) : 0;
   const chip = document.getElementById('serv-nue-'+k); if(chip){ chip.textContent = nuevos + (nuevos===1 ? ' nueva' : ' nuevas'); chip.classList.toggle('hidden', !nuevos); }
   const bd = document.getElementById('serv-badge-'+k); if(bd){ bd.textContent = nuevos; bd.classList.toggle('hidden', !nuevos); }
+  const bc = document.getElementById('serv-badge-'+k+'-caja'); if(bc){ bc.textContent = nuevos; bc.classList.toggle('hidden', !nuevos); } // «Deudas» tiene su propia caja
   actualizarBadgeBandeja();
 }
 function bandejaActualizar(k, pend){
@@ -8593,7 +9467,8 @@ function bandejaActualizar(k, pend){
   const max = pend.reduce((m, x)=>Math.max(m, Number(x.id) || 0), 0);
   window._bandejaMax[k] = max;
   const det = document.getElementById('serv-det-'+k), panel = det && det.closest('.caja-panel');
-  if(det && det.open && panel && !panel.classList.contains('hidden') && max > bandejaVistoMax(k)){ // si lo tienes abierto delante, ya lo estás viendo
+  const abierto = det && (det.tagName==='DETAILS' ? det.open : true), pan = det && (det.classList.contains('caja-panel') ? det : panel);
+  if(det && abierto && pan && !pan.classList.contains('hidden') && max > bandejaVistoMax(k)){ // si lo tienes abierto delante, ya lo estás viendo
     if(!DISENO._bandeja) DISENO._bandeja = {}; DISENO._bandeja[k] = max; guardarDiseno();
   }
   window._bandejaNuevos[k] = pend.filter(x=>(Number(x.id) || 0) > bandejaVistoMax(k)).length;
@@ -8607,9 +9482,9 @@ function bandejaVisto(k){
   (window._bandejaNuevos = window._bandejaNuevos || {})[k] = 0;
   bandejaPintar(k);
 }
-// El numerito de la «Bandeja» es la suma de lo NUEVO que aún no has visto (cambios + dudas + deudas)
+// El numerito de la «Bandeja» es la suma de lo NUEVO que aún no has visto (cambios + dudas); las deudas tienen su propia caja
 function actualizarBadgeBandeja(){
-  const n = ['cambios','dudas','deudas'].reduce((a,k)=>{ const e = document.getElementById('serv-badge-'+k); return a + (e ? (parseInt(e.textContent,10)||0) : 0); }, 0);
+  const n = ['cambios','dudas'].reduce((a,k)=>{ const e = document.getElementById('serv-badge-'+k); return a + (e ? (parseInt(e.textContent,10)||0) : 0); }, 0);
   const b = document.getElementById('serv-badge-bandeja'); if(b){ b.textContent = n; b.classList.toggle('hidden', !n); }
 }
 async function cargarDudasAdmin(){
@@ -8952,12 +9827,12 @@ async function exportServiciosExcel(){
     .select('*, personas(nombre,apellidos,seccion)')
     .eq('compania', c).gte('fecha', desde).lte('fecha', hasta)
     .order('fecha').order('tipo').order('turno');
-  const header = ['Día', 'Código', 'Servicio', 'Sección', 'Nombre y apellidos'];
+  const header = ['Día', 'Código', 'Servicio', 'Sección', 'Nombre y apellidos', 'Estimado'];
   const rows = [header];
-  (servicios||[]).forEach(s=>{ rows.push([fmtFecha(s.fecha), servCorto(s), servicioLabel(s), `${c}${s.personas.seccion}`, `${s.personas.apellidos}, ${s.personas.nombre}`]); });
+  (servicios||[]).forEach(s=>{ rows.push([fmtFecha(s.fecha), servCorto(s), servicioLabel(s), `${c}${s.personas.seccion}`, `${s.personas.apellidos}, ${s.personas.nombre}`, s.estimado ? 'Sí (estimado)' : '']); }); // la última columna dice cuáles son estimados (borde de puntos) y cuáles están puestos a mano o vienen del Excel
   if(rows.length===1) rows.push(['—','','Sin servicios en estos días','','']);
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{wch:14},{wch:8},{wch:26},{wch:9},{wch:30}];
+  ws['!cols'] = [{wch:14},{wch:8},{wch:26},{wch:9},{wch:30},{wch:14}];
   xlsxHeaderOnly(ws, header.length);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Servicios');
@@ -9097,7 +9972,7 @@ function pintarFichaServ(){
     return `<div class="history-row"><button class="small-btn" style="min-width:92px;" title="Ver este día en la tabla" onclick="irAFechaServ('${s.fecha}')">📍 ${fmtFecha(s.fecha)}</button>
       <span class="serv-cod ${servClase(s)}${s.estimado?' est':''}${dl?' deu':''}" style="cursor:default;">${escHtml(servCorto(s))}</span>
       <span>${escHtml(servicioLabel(s))} · ${esGS(s)?'guardia':(esFindeServ(s.fecha)?'fin de semana / festivo':'entre semana')}${s.estimado?' · <i>estimado</i>':''}${dl?` · <b style="color:#8e44ad;">💸 para saldar deuda${d&&d.fecha_origen?' del '+fmtFecha(d.fecha_origen):''}${d&&d.acreedor?' con '+nom(d.acreedor):''}</b>`:''}</span>
-      ${(s.tipo!=='otro' && s.fecha>=hoy) ? `<button class="small-btn" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno||0})">✏️ Cambiar</button>` : ''}
+      ${(s.tipo!=='otro' && s.fecha>=hoy) ? `<button class="small-btn" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno||0},'${s.persona_id}')">✏️ Cambiar</button>` : ''}
     </div>`;
   };
   const proximos = mios.filter(s=>s.fecha>=hoy), pasados = mios.filter(s=>s.fecha<hoy).reverse();
@@ -9114,7 +9989,8 @@ function pintarFichaServ(){
   el.innerHTML = `<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
       <h4>${nom(p)} <span style="color:var(--ink-soft);font-weight:400;">· sección ${c}${p.seccion}${p.sin_gs?' · 🪖 promoción interna (no hace GS)':''}${p.sin_servicios?' · no hace servicios':''}</span></h4>
       <button class="small-btn" onclick="cerrarFichaServ()">Cerrar ✕</button></div>
-    <div style="font-size:.8rem;margin-bottom:4px;"><b>${cuentas.total||0}</b> servicio${(cuentas.total||0)===1?'':'s'} en total ${cuentas.total ? '· '+cuentaServHtml(p.id) : ''}</div>
+    <div style="font-size:.8rem;margin-bottom:4px;"><b>${cuentas.total||0}</b> servicio${(cuentas.total||0)===1?'':'s'} en total</div>
+    ${cuentaServTablaHtml(serviciosDePersona(p.id))}
     <div style="margin:6px 0;"><button class="small-btn" onclick="abrirAsignarRapido('${p.id}','${hoy}')">✍️ Añadir un servicio a esta persona</button></div>
     <h5>Próximos servicios (${proximos.length})</h5>
     ${proximos.length ? proximos.map(fila).join('') : '<p class="small-note" style="margin:0;">Ninguno a partir de hoy.</p>'}
@@ -9164,6 +10040,34 @@ function calcularCuentasServ(servs){
   });
   return out;
 }
+/* Cuenta de servicios por persona en una tablita: Imaginaria (da igual el turno; incluye la de imaginaria), Cuartelero e Imaginaria de cuartelero, cada una entre semana y en fin de semana / festivo, y GS.
+   Solo cuentan los oficiales (puestos a mano o del Excel); los estimados se avisan aparte. */
+let _spCache = { src:null, map:null };
+function serviciosDePersona(id){
+  const src = window._servTodos || [];
+  if(_spCache.src !== src){ const m = {}; src.forEach(s=>{ (m[s.persona_id] = m[s.persona_id] || []).push(s); }); _spCache = { src, map:m }; }
+  return _spCache.map[id] || [];
+}
+function cuentaServTabla(filas){
+  const t = { I:[0,0], C:[0,0], IC:[0,0], GS:0, IGS:0, est:0 };   // [entre semana, fin de semana]
+  (filas||[]).forEach(s=>{
+    if(s.estimado){ t.est++; return; }
+    if(esGS(s)){ t.GS++; return; }
+    if(s.tipo==='imaginaria_gs'){ t.IGS++; return; }
+    const k = s.tipo==='cuartelero' ? 'C' : s.tipo==='imaginaria_cuartelero' ? 'IC' : (s.tipo==='imaginaria' || s.tipo==='imaginaria_imaginaria') ? 'I' : null;
+    if(k) t[k][esFindeServ(s.fecha) ? 1 : 0]++;
+  });
+  return t;
+}
+function cuentaServTablaHtml(filas){
+  const t = cuentaServTabla(filas), n = x => x ? `<b>${x}</b>` : '<span class="cs-0">0</span>';
+  const fila = (nom, a) => `<tr><th>${nom}</th><td>${n(a[0])}</td><td>${n(a[1])}</td></tr>`;
+  return `<table class="cuenta-serv"><thead><tr><th></th><th>Entre semana</th><th>Fin de semana</th></tr></thead><tbody>
+      ${fila('Imaginaria', t.I)}${fila('Cuartelero', t.C)}${fila('Imag. de cuartelero', t.IC)}
+      <tr><th>GS</th><td colspan="2">${n(t.GS)}${t.IGS ? ` <span class="cs-nota">+ ${t.IGS} imaginaria${t.IGS===1?'':'s'} de GS</span>` : ''}</td></tr></tbody></table>`
+    + (t.est ? `<div class="cs-nota">+ ${t.est} estimado${t.est===1?'':'s'} (no cuentan)</div>` : '');
+}
+const cuentaServTitulo = filas => { const t = cuentaServTabla(filas); return `Imaginaria: ${t.I[0]} entre semana, ${t.I[1]} fin de semana · Cuartelero: ${t.C[0]} / ${t.C[1]} · Imag. de cuartelero: ${t.IC[0]} / ${t.IC[1]} · GS: ${t.GS}`; };
 function cuentaServHtml(personaId){
   const c = (window._servCuentas||{})[personaId] || {};
   return ORDEN_CUENTA_SERV.filter(k=>c[k]).map(k=>{
@@ -9211,13 +10115,13 @@ function pintarServGrid(){
     tbody += servOrdenando
       ? `<tr data-id="${p.id}" class="${p.sin_servicios?'exento':''}" ondragover="event.preventDefault()" ondrop="soltarFilaServ(event,'${p.id}')"><td class="nc" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" style="cursor:grab;"><span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',-1)">▲</span> <span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',1)">▼</span> <span style="cursor:pointer;" title="Marcar / desmarcar que no hace servicios" onclick="toggleExentoServ('${p.id}')">🚫</span> <span style="cursor:pointer;" title="Marcar / desmarcar promoción interna: no hace guardia de seguridad" onclick="toggleSinGsServ('${p.id}')">🪖</span> <span style="cursor:pointer;${p.dama?'':'opacity:.35;'}" title="${p.dama?'Dama cadete — toca para cambiar a Caballero':'Caballero cadete — toca para cambiar a Dama'}" onclick="toggleDamaServ('${p.id}')">♀</span> ⠿ ${nombreCelda}</td>`
       : `<tr class="${p.sin_servicios?'exento':''}${p.id===servFichaId?' sel':''}"><td class="nc" style="cursor:pointer;" onclick="abrirFichaServ('${p.id}')" title="Toca para ver sus servicios y deudas — ${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})${p.sin_servicios?' — no hace servicios':''}">${nombreCelda}</td>`;
-    tbody += `<td class="cnt"><span class="cnt-n" onclick="abrirFichaServ('${p.id}')" title="Ver sus servicios, fechas y deudas">${((window._servCuentas||{})[p.id]||{}).total||0}</span></td>`;
+    tbody += `<td class="cnt"><span class="cnt-n" onclick="abrirFichaServ('${p.id}')" title="${escHtml('Ver sus servicios, fechas y deudas — '+cuentaServTitulo(serviciosDePersona(p.id)))}">${((window._servCuentas||{})[p.id]||{}).total||0}</span></td>`;
     dias.forEach(d=>{
       const f = ymd(d), finde = d.getDay()===0 || d.getDay()===6;
       const lista = porPD[p.id+'|'+f] || [];
       const cont = lista.map(s=> s.tipo==='otro'
         ? `<span class="serv-cod ${esGS(s)?'gs':'otro'}" title="${escHtml(s.codigo||'')} (código del Excel)">${escHtml(servCorto(s))}</span>`
-        : `<span class="serv-cod ${servClase(s)}${s.estimado?' est':''}${s.deuda_id?' deu':''}${esResalte(s)?' rs':''}${esResalteServ(s)?' rsx':''}" title="${escHtml(servicioLabel(s)+(s.estimado?' (ESTIMADO)':'')+(s.deuda_id?' · '+textoSaldarCorto(s):'')+' — toca para cambiar')}" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno})">${escHtml(servCorto(s))}</span>`).join(' ');
+        : `<span class="serv-cod ${servClase(s)}${s.estimado?' est':''}${s.deuda_id?' deu':''}${esResalte(s)?' rs':''}${esResalteServ(s)?' rsx':''}" title="${escHtml(servicioLabel(s)+(s.estimado?' (ESTIMADO)':'')+(s.deuda_id?' · '+textoSaldarCorto(s):'')+' — toca para cambiar')}" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno},'${s.persona_id}')">${escHtml(servCorto(s))}</span>`).join(' ');
       const gh = lista.length ? null : fantasma[p.id+'|'+f];
       const sk = (lista.length || gh) ? null : (window._servSaltos||{})[p.id+'|'+f]; // se le saltó por haberlo hecho ya
       tbody += lista.length ? `<td class="${finde?'fin':''}${claseFest(f)} ${f===hoy?'hoy':''}">${cont}</td>`
@@ -9257,7 +10161,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   const puenteDia = {};
   Object.values(op.puentes || {}).forEach(p=>(p.dias||[]).forEach(d=>{
     const primero = d===p.ini, ultimo = d===p.fin;
-    puenteDia[d] = { modo:p.modo, ini:p.ini, esPrimero:primero, esUltimo:ultimo, finde: primero ? (p.primero==='finde') : ultimo ? (p.ultimo==='finde') : (p.medio==='finde') };
+    puenteDia[d] = { modo:p.modo, ini:p.ini, esPrimero:primero, esUltimo:ultimo, finde: primero ? (p.primero==='finde') : ultimo ? (p.ultimo==='finde') : (p.medio==='finde' || [0,6].includes(new Date(d+'T00:00:00').getDay())) }; // los sábados y domingos de en medio de un puente cuentan siempre como fin de semana
   }));
   const esFinde = f => { const pu = puenteDia[f]; if(pu && pu.finde!==undefined) return pu.finde; return op.festivos.has(f) || [0,6].includes(new Date(f+'T00:00:00').getDay()); };
   const porFecha = {};
@@ -9279,9 +10183,13 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   const usadas = new Set(existentes.filter(s=>s.deuda_id).map(s=>s.deuda_id));
   const pend = (deudas||[]).filter(d=>!usadas.has(d.id) && d.tipo!=='nota' && pos[d.deudor_id]!==undefined);
   const ocupado = new Set(existentes.map(s=>s.persona_id+'|'+s.fecha));
+  /* Deudas IMPLÍCITAS: si en un día ya puesto (a mano o del Excel) hace el cuartelero otra persona (Y) en el turno de alguien (E), se da el turno de E por cumplido
+     (la cola sigue su ritmo, E NO pasa al día siguiente) y E le debe uno a Y. Lo paga cuando le toca a Y, no antes (así lo hacen las deudas de siempre).
+     No se guardan en la base de datos: se vuelven a deducir cada vez leyendo TODA la tabla (sin límite de tiempo: una deuda puede venir de mucho antes). */
+  const implicitas = [];
   const deudasAplicadas = [];
   const saltos = []; // a quién se ha saltado por ya haber hecho el servicio en la ronda sin que nadie se lo deba (para explicarlo en la casilla vacía)
-  const deudaPara =(acreedorId, tipo, entre, f) => pend.find(x=>!x._u && x.acreedor_id===acreedorId && x.tipo===tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+f)); // el turno de imaginaria da igual
+  const deudaPara =(acreedorId, tipo, entre, f) => pend.find(x=>!x._u && x.acreedor_id===acreedorId && x.tipo===tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+f) && (!x.implicita || x.fecha_origen<f));
   // A quién le toca el siguiente servicio de una cola. Si por el camino se salta a alguien que YA lo hizo en la ronda (A) y alguien le DEBE ese servicio a A,
   // lo hace el que se lo debe (y la cola sigue por la persona de después de A, que no pierde su turno).
   const elegir = (k, q, idx, f, tipo, finde, consumir) => {
@@ -9306,11 +10214,28 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   // Un cambio aprobado en la app se reconoce por su deuda (el que lo pidió es a quien tocaba). Si varios días seguidos siguen otro orden (el Excel se salta a alguien), la cola sí se mueve.
   const swapPor = {}; (deudas||[]).forEach(d=>{ if(d.tipo==='cuartelero' && d.fecha_origen) swapPor[d.fecha_origen+'|'+d.acreedor_id] = d.deudor_id; });
   const ult = { semana:null, finde:null }; // índice del último cuartelero «suelto» leído en cada cola
+  // Cuando un cuartelero puesto a mano no es el que tocaba (E), se mira qué hacen los siguientes días YA PUESTOS a mano o del Excel en esa misma cola:
+  //  · si más adelante aparece E → ese cambio fue una excepción «a posta» y NO gastó el turno de E (la cola sigue donde estaba);
+  //  · si aparece quien va DESPUÉS de E → el turno de E se dio por cumplido (E le debe uno a quien lo hizo);
+  //  · si no hay nada más puesto → se da por cumplido (como si lo hubiera hecho el otro en su lugar).
+  const fechasOrd = Object.keys(porFecha).sort();
+  const evidenciaCambio = (f, q, esp, hechoHoy) => {
+    let nextIdx = esp-1; while(nextIdx>=0 && hechoHoy.has(roster[nextIdx].id)) nextIdx--;
+    for(const g of fechasOrd){
+      if(g<=f || (esFinde(g) ? 'finde' : 'semana')!==q) continue;
+      const pg = puenteDia[g]; if(pg && pg.modo==='repite' && pg.esUltimo) continue; // el cuartelero repetido de un puente no es evidencia
+      const cg = (porFecha[g]||[]).find(s=>s.tipo==='cuartelero' && !s.estimado); if(!cg || !enLista(cg)) continue;
+      const ip = pos[cg.persona_id];
+      if(ip===esp) return 'no';
+      if(ip===nextIdx) return 'si';
+    }
+    return null;
+  };
   const sincronizar = (f, lista) => {
     const q = esFinde(f) ? 'finde' : 'semana';
     const c = lista.find(s=>s.tipo==='cuartelero'), ic = lista.find(s=>s.tipo==='imaginaria_cuartelero');
     const esp = (pC[q]!==null && pC[q]>=0) ? sig('C', q, pC[q]) : null; // a quién tocaba hoy por turno (antes de apuntar lo de hoy)
-    const tras = (esp!==null && esp>0) ? sig('C', q, esp-1) : null;      // y el siguiente a ese
+    const hechoAntes = new Set(hecho.C[q]); // quién lo había hecho en la ronda ANTES de apuntar lo de hoy (al apuntarlo la ronda puede reiniciarse)
     lista.forEach(s=>{ if(s.tipo==='cuartelero') marca('C', q, s.persona_id); else if(s.tipo==='imaginaria' && s.turno>=1 && s.turno<=4) marca('I', q, s.persona_id); });
     const vic = enLista(ic) ? pos[ic.persona_id] : null; // sin dar la vuelta: -1 = se acabó la lista
     if(enLista(c)){
@@ -9318,11 +10243,30 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
       const pidio = swapPor[f+'|'+c.persona_id]; if(pidio && pos[pidio]!==undefined) idx = pos[pidio]; // cambio aprobado: tocaba a quien lo pidió
       if(pC[q]===null || pC[q]<0){ pC[q] = idx-1; ult[q] = null; }                 // la cola empieza aquí (o se ha vuelto a rellenar el principio a mano)
       else if(esp!==null && idx===esp){ pC[q] = idx-1; ult[q] = null; }            // era quien tocaba: la cola avanza
-      else if(ult[q]!==null && idx===ult[q]-1){ pC[q] = idx-1; ult[q] = null; }    // varios días seguidos siguiendo otro orden: la cola se ha movido de verdad
-      else if(tras!==null && tras>=0 && idx===tras){                  // hoy lo hace el SIGUIENTE al que tocaba: a quien tocaba ya se lo cubrieron otro día (cambio o deuda, p. ej. Peinador por Vara)
-        marca('C', q, roster[esp].id); pC[q] = idx-1; ult[q] = null;             // su turno de esta vuelta cuenta como pasado (si lo debe, lo saldará la deuda) y la cola sigue
+      else if(ult[q]!==null && idx===ult[q]-1){ pC[q] = idx-1; ult[q] = null; }    // (ya no se usa: ver la línea de abajo)
+      else if(esp!==null && c.estimado){ ult[q] = null; } // una fila ESTIMADA que no sigue el ritmo no es un cambio a mano: no cuenta (ni mueve la cola ni crea deuda); solo cuentan las puestas a mano o del Excel
+      else if(esp!==null){ // esp = -1 si ya no queda nadie por hacerlo en la lista (se puede estar pagando una deuda justo al final)
+        // Puesto a mano, distinto del que tocaba (E): lo hizo otra persona (Y) en su lugar. El turno de E se da por cumplido y la cola sigue su ritmo;
+        // E le debe uno a Y y lo paga cuando le toque a Y. Si Y es quien estaba PAGANDO una deuda de ese tipo, se salda y no se crea otra.
+        const E = esp>=0 ? roster[esp].id : null, Y = c.persona_id, hechoC = hechoAntes;
+        const paga = implicitas.filter(x=>x.deudor_id===Y && x.entre_semana===(q==='semana')).map(x=>({ x, pa:pos[x.acreedor_id] }))
+          .filter(o=>o.pa===esp || (o.pa<=pC[q] && o.pa>esp && hechoC.has(roster[o.pa].id))).sort((a,b)=>b.pa-a.pa)[0]; // la primera que se encuentra yendo hacia arriba
+        const hechoHoy = new Set(hechoAntes); hechoHoy.add(Y);
+        if(paga){
+          implicitas.splice(implicitas.indexOf(paga.x), 1); const k = pend.indexOf(paga.x); if(k>=0) pend.splice(k, 1);
+          pC[q] = paga.pa===esp ? esp-1 : paga.pa-1;
+        } else if(esp>=0 && evidenciaCambio(f, q, esp, hechoHoy)==='no'){
+          // excepción «a posta»: E sigue siendo el siguiente de la cola, sin deuda
+        } else {
+          if(E!==null && Y!==E){
+            const d = { id:'impl|'+f+'|'+E, implicita:true, tipo:'cuartelero', entre_semana:(q==='semana'), deudor_id:E, acreedor_id:Y, fecha_origen:f };
+            implicitas.push(d); pend.push(d);
+          }
+          pC[q] = esp>=0 ? esp-1 : -1;
+        }
+        ult[q] = null;
       }
-      else { ult[q] = idx; }                                                       // puesto a mano: la cola no se mueve (quien tocaba pasa al día siguiente)
+      else { ult[q] = idx; }
     } else if(vic!==null){ pC[q] = vic; }
     // Dónde empieza la siguiente noche de imaginarias: la I I de hoy (regla 3), salvo que los 4 turnos de hoy digan otra cosa (p. ej. una I I que hace alguien por una deuda)
     const votosT = [];
@@ -9337,7 +10281,9 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   //    (regla 2: la IC del último día dice quién es el siguiente Cuartelero; regla 3: la I I, la siguiente 1ª Imaginaria)
   // En los días de maniobras (sin servicio) solo se leen las imaginarias: la vuelta puede llevarlas y así no se repite a quien ya las hizo.
   Object.keys(porFecha).filter(f=>f<op.desde).sort().forEach(f=>{
-    if(!op.sinServicio.has(f)) { sincronizar(f, porFecha[f]); return; }
+    // El último día de un puente «repite»: el cuartelero de ese día es el del primer día, repetido. NO cuenta para la cola (si no, la cola de fin de semana saltaba a la posición de la de entre semana)
+    const puF = puenteDia[f], repetido = !!puF && puF.modo==='repite' && puF.esUltimo;
+    if(!op.sinServicio.has(f)) { sincronizar(f, repetido ? porFecha[f].filter(s=>s.tipo!=='cuartelero') : porFecha[f]); return; }
     if(!(window._servManiobras||[]).some(m=>m.fin===f)) return; // solo la vuelta (último día): los días de en medio los hacen los rebajados a mano
     const imag = porFecha[f].filter(s=>s.tipo==='imaginaria' || s.tipo==='imaginaria_imaginaria');
     if(imag.length) sincronizar(f, imag);
@@ -9370,10 +10316,17 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
     const sinCuartelero = !!pu && (pu.modo==='ninguno' || (pu.modo==='repite' && !pu.esPrimero));
     const hacerC = quiereC && !soloImag;
     if(hacerC && pC[q]!==null && sinCuartelero){
+      // Lo que se haya puesto a mano en un día de en medio de un puente sí cuenta para la cola (el repetido del último día no)
+      if(!(pu.modo==='repite' && pu.esUltimo)){ const yc = ya.filter(s=>s.tipo==='cuartelero'||s.tipo==='imaginaria_cuartelero'); if(yc.some(s=>s.tipo==='cuartelero')) sincronizar(f, yc); }
       if(pu.modo==='repite' && pu.esUltimo){
         const origen = filas.find(r=>r.tipo==='cuartelero' && r.fecha===pu.ini) || (porFecha[pu.ini]||[]).find(s=>s.tipo==='cuartelero');
         if(origen && !ya.find(s=>s.tipo==='cuartelero')) addP('cuartelero',0,origen.persona_id,'C');
-        if(!ya.find(s=>s.tipo==='imaginaria_cuartelero')){ const p = elegirConVuelta('C',q,pC[q],f,'cuartelero',finde,false); if(p.quien) addP('imaginaria_cuartelero',0,p.quien,'IC'); }
+        if(!ya.find(s=>s.tipo==='imaginaria_cuartelero')){
+          // se repite también la IC del primer día (si el primer día no la tuvo, la que toque por la cola)
+          const icOrigen = filas.find(r=>r.tipo==='imaginaria_cuartelero' && r.fecha===pu.ini) || (porFecha[pu.ini]||[]).find(s=>s.tipo==='imaginaria_cuartelero');
+          if(icOrigen) addP('imaginaria_cuartelero',0,icOrigen.persona_id,'IC');
+          else { const p = elegirConVuelta('C',q,pC[q],f,'cuartelero',finde,false); if(p.quien) addP('imaginaria_cuartelero',0,p.quien,'IC'); }
+        }
       }
     } else if(hacerC && pC[q]!==null){
       const c = ya.find(s=>s.tipo==='cuartelero'), hayIC = ya.find(s=>s.tipo==='imaginaria_cuartelero');
@@ -9385,7 +10338,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
         const r = elegirConVuelta('C',q,pC[q],f,'cuartelero',finde,true); // si le toca a alguien que ya lo hizo, pasa a la siguiente (o a quien se lo debe)
         if(!r.quien){ finCola.add(nombreCola('C',q)); pC[q] = -1; } // se acabó la lista: no vuelve a empezar por abajo (salvo «vuelta»)
         else {
-          addP('cuartelero',0,r.quien,'C', r.deuda ? r.deuda.id : null); marca('C',q,r.quien); pC[q] = r.sig;
+          addP('cuartelero',0,r.quien,'C', r.deuda && !r.deuda.implicita ? r.deuda.id : null); marca('C',q,r.quien); pC[q] = r.sig;
           if(r.deuda) deudasAplicadas.push({ fecha:f, tipo:'cuartelero', de:r.saltado, a:r.quien, deuda:r.deuda, saltado:true });
           if(!hayIC && !sinIC){ const p = elegirConVuelta('C',q,pC[q],f,'cuartelero',finde,false); if(p.quien) addP('imaginaria_cuartelero',0,p.quien,'IC'); else finCola.add(nombreCola('C',q)); } // la IC es el Cuartelero del siguiente día de su cola
         }
@@ -9399,7 +10352,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
         for(let turno=1; turno<=4; turno++){
           const r = elegirConVuelta('I',q,i,f,'imaginaria',finde,true);
           if(!r.quien){ completa = false; break; }
-          addP('imaginaria',turno,r.quien,turno+' I', r.deuda ? r.deuda.id : null); marca('I',q,r.quien); i = r.sig;
+          addP('imaginaria',turno,r.quien,turno+' I', r.deuda && !r.deuda.implicita ? r.deuda.id : null); marca('I',q,r.quien); i = r.sig;
           if(r.deuda) deudasAplicadas.push({ fecha:f, tipo:'imaginaria', turno, de:r.saltado, a:r.quien, deuda:r.deuda, saltado:true });
         }
         if(completa){
@@ -9466,22 +10419,22 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   filas.forEach(r=>{
     if(r.deuda_id) return; // las que ya salieron de saltar a alguien por una deuda no se tocan
     const entre = !esFinde(r.fecha);
-    const d = pend.find(x=>!x._u && x.acreedor_id===r.persona_id && x.tipo===r.tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+r.fecha)
+    const d = pend.find(x=>!x._u && x.acreedor_id===r.persona_id && x.tipo===r.tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+r.fecha) && (!x.implicita || x.fecha_origen<r.fecha)
                          && !(r.tipo==='guardia_seguridad' && roster[pos[x.deudor_id]].sin_gs));
     if(!d) return;
     d._u = true;
     const antes = r.persona_id;
-    ocupado.delete(antes+'|'+r.fecha); r.persona_id = d.deudor_id; r.deuda_id = d.id; ocupado.add(d.deudor_id+'|'+r.fecha);
+    ocupado.delete(antes+'|'+r.fecha); r.persona_id = d.deudor_id; if(!d.implicita) r.deuda_id = d.id; ocupado.add(d.deudor_id+'|'+r.fecha);
     // solo se cambia ESTE servicio: ninguna imaginaria de otro día se toca
     deudasAplicadas.push({ fecha:r.fecha, tipo:r.tipo, de:antes, a:d.deudor_id, deuda:d });
   });
   const aId = v => (v===null || v<0) ? null : idAt(v);
-  return { filas, porDia, faltan, deudasAplicadas, saltos, gsInfo, finCola: [...finCola], arranque: { C:{ semana:aId(arranque.C.semana), finde:aId(arranque.C.finde) }, I:{ semana:aId(arranque.I.semana), finde:aId(arranque.I.finde) } } };
+  return { filas, porDia, faltan, deudasAplicadas, implicitas, saltos, gsInfo, finCola: [...finCola], arranque: { C:{ semana:aId(arranque.C.semana), finde:aId(arranque.C.finde) }, I:{ semana:aId(arranque.I.semana), finde:aId(arranque.I.finde) } } };
 }
 async function cargarDatosEstimacion(){
   const c = CURRENT.compania;
-  try{ return await traerTodoServ(()=>sb.from('servicios').select('fecha,tipo,turno,codigo,persona_id,estimado,deuda_id').eq('compania', c).order('fecha').order('id')); }
-  catch(e){ return await traerTodoServ(()=>sb.from('servicios').select('fecha,tipo,turno,codigo,persona_id,estimado').eq('compania', c).order('fecha').order('id')); } // sin el patch 60 todavía
+  try{ return await traerTodoServ(()=>sb.from('servicios').select('id,fecha,tipo,turno,codigo,persona_id,estimado,deuda_id').eq('compania', c).order('fecha').order('id')); }
+  catch(e){ return await traerTodoServ(()=>sb.from('servicios').select('id,fecha,tipo,turno,codigo,persona_id,estimado').eq('compania', c).order('fecha').order('id')); } // sin el patch 60 todavía
 }function opcionesEstimacion(){
   const desde = document.getElementById('est-desde').value, hasta = document.getElementById('est-hasta').value;
   if(!desde || !hasta || hasta < desde){ showToast('Elige bien las fechas "desde" y "hasta".'); return null; }
@@ -9570,12 +10523,19 @@ async function previsualizarEstimacion(paso){
   try{
     const roster = SERV_GRID.roster;
     if(!roster.filter(p=>!p.sin_servicios).length){ el.innerHTML = '<div class="notice closed"><span>No hay nadie en la lista que haga servicios: no se puede estimar.</span></div>'; return; }
-    const existentes = await cargarDatosEstimacion();
+    const todasExistentes = await cargarDatosEstimacion();
+    // Una estimación nueva SUSTITUYE a las estimadas (con borde de puntos) que haya de antes en esas fechas: no cuentan para calcular y se borran al guardar
+    const tiposQue = { todos:['cuartelero','imaginaria_cuartelero','imaginaria','imaginaria_imaginaria','guardia_seguridad'], cuartel:['cuartelero','imaginaria_cuartelero'], imag:['imaginaria','imaginaria_imaginaria'], gs:['guardia_seguridad'] }[op.que] || [];
+    const diaFinde = f => op.festivos.has(f) || [0,6].includes(new Date(f+'T00:00:00').getDay());
+    const viejas = todasExistentes.filter(x=>x.estimado && x.id!=null && x.fecha>=op.desde && x.fecha<=op.hasta && tiposQue.includes(x.tipo)
+      && !(op.dias==='semana' && diaFinde(x.fecha)) && !(op.dias==='finde' && !diaFinde(x.fecha)));
+    const idsViejas = new Set(viejas.map(x=>x.id));
+    const existentes = todasExistentes.filter(x=>!idsViejas.has(x.id));
     const rd = await sb.from('deudas_servicio').select('id,deudor_id,acreedor_id,tipo,turno,entre_semana,fecha_origen').eq('compania', CURRENT.compania).eq('saldada', false);
     const rg = await sb.from('gs_dias').select('*').order('fecha'); // calendario de guardias de seguridad (patch 61)
     const r = generarEstimacion({ ...op, compania: CURRENT.compania, gsDias: rg.error ? [] : (rg.data||[]) }, roster, existentes, rd.error ? [] : (rd.data||[]));
     if(rg.error && (op.que==='todos' || op.que==='gs')) r.gsInfo.avisos.push('No se pudo leer el calendario de guardias de seguridad (¿has ejecutado el patch 61?)');
-    EST_PREVIA = { op, filas: r.filas, saltos: r.saltos };
+    EST_PREVIA = { op, filas: r.filas, saltos: r.saltos, reemplazar: [...idsViejas] };
     const sinImagPrev = [...(op.sinImag || [])].filter(f=>f>=op.desde && f<=op.hasta).sort();
     const saltadas = Object.keys(window._servFest||{}).filter(f=>window._servFest[f].tipo==='mani' && f>=op.desde && f<=op.hasta && !(op.maniImag && op.maniImag.has(f))).sort();
     const vueltaImag = [...(op.maniImag || [])].sort();
@@ -9584,6 +10544,7 @@ async function previsualizarEstimacion(paso){
     const celda = (d,tipo,turno) => { const x = d.nuevos.find(n=>n.tipo===tipo && n.turno===turno); return x ? `${nm(x.persona_id)} <span style="color:var(--ink-soft);">#${puesto(x.persona_id)}</span>${x.deuda_id ? ' <span style="color:#8e44ad;" title="Para saldar una deuda">💸</span>' : ''}` : '<span style="color:var(--ink-soft);">—</span>'; };
     const L = ['D','L','M','X','J','V','S'];
     el.innerHTML = `
+      ${idsViejas.size ? `<div class="notice" style="display:block;border-color:#8e44ad;margin-bottom:8px;">♻️ Esta estimación <b>sustituye a ${idsViejas.size} servicio${idsViejas.size===1?'':'s'} estimado${idsViejas.size===1?'':'s'} de antes</b> en esas fechas (los de borde de puntos). Lo que está puesto a mano o del Excel no se toca.</div>` : ''}
       ${r.faltan.length ? `<div class="notice closed"><span>⚠️ No hay datos en la tabla para saber por dónde van: ${r.faltan.join(', ')}. Esas colas no se estiman.</span></div>` : ''}
       <div class="servicio-card">
         <div class="titulo">Saldrían ${r.filas.length} servicios estimados en ${r.porDia.length} días (del ${fmtFecha(op.desde)} al ${fmtFecha(op.hasta)})</div>
@@ -9595,7 +10556,8 @@ async function previsualizarEstimacion(paso){
         ${saltadas.length ? `<div class="notice" style="display:block;border-color:#2e7d32;margin-top:8px;">⛺ <b>Se saltan las maniobras:</b> ${saltadas.map(f=>fmtFecha(f)).join(', ')}. Esos servicios los hacen los rebajados: ponlos a mano.</div>` : ''}
         ${r.gsInfo && r.gsInfo.avisos.length ? `<div class="notice closed" style="display:block;margin-top:8px;"><span>⚠️ <b>Guardias de seguridad:</b><br>${r.gsInfo.avisos.map(escHtml).join('<br>')}</span></div>` : ''}
         ${r.gsInfo && r.gsInfo.restantes!==null ? `<div class="notice" style="display:block;border-color:#c0392b;margin-top:8px;"><b>🛡️ Guardias de seguridad:</b> ${r.gsInfo.dias.length ? r.gsInfo.dias.map(g=>`${fmtFecha(g.fecha)}: ${g.n} persona${g.n===1?'':'s'} nueva${g.n===1?'':'s'}${g.yaHay?` (ya había ${g.yaHay} puesta${g.yaHay===1?'':'s'} a mano o del Excel)`:''}${g.n+(g.yaHay||0)<g.cupo?` (faltan ${g.cupo-g.n-(g.yaHay||0)}: no quedan más en la lista)`:''}`).join(' · ') : 'ningún día de GS de tu compañía entre esas fechas.'}<br>Después de los días del calendario quedan <b>${r.gsInfo.restantes}</b> persona${r.gsInfo.restantes===1?'':'s'} de tu compañía sin hacer GS (sin contar a la promoción interna 🪖).</div>` : ''}
-        ${r.deudasAplicadas.length ? `<div class="notice" style="display:block;border-color:#8e44ad;margin-top:8px;"><b>💸 ${r.deudasAplicadas.length} deuda${r.deudasAplicadas.length===1?'':'s'} se saldarían con esta estimación:</b><br>${r.deudasAplicadas.map(x=>`${nm(x.a)} hace el ${escHtml(servicioLabel({tipo:x.tipo}))} del ${fmtFecha(x.fecha)} ${x.saltado ? 'en lugar de quien tocaba por turno, porque '+nm(x.de)+' ya lo había hecho y se lo debía' : 'que le tocaba a '+nm(x.de)} (deuda del${x.deuda.fecha_origen?fmtFecha(x.deuda.fecha_origen):'—'})`).join('<br>')}</div>` : ''}
+        ${r.deudasAplicadas.length ? `<div class="notice" style="display:block;border-color:#8e44ad;margin-top:8px;"><b>💸 ${r.deudasAplicadas.length} deuda${r.deudasAplicadas.length===1?'':'s'} se saldarían con esta estimación:</b><br>${r.deudasAplicadas.map(x=>`${nm(x.a)} hace el ${escHtml(servicioLabel({tipo:x.tipo}))} del ${fmtFecha(x.fecha)} ${x.saltado ? 'en lugar de quien tocaba por turno, porque '+nm(x.de)+' ya lo había hecho y se lo debía' : 'que le tocaba a '+nm(x.de)} (${x.deuda.implicita ? 'cambio hecho a mano el ' : 'deuda del '}${x.deuda.fecha_origen?fmtFecha(x.deuda.fecha_origen):'—'})`).join('<br>')}</div>` : ''}
+        ${(r.implicitas||[]).length ? `<div class="notice" style="display:block;border-color:#8e44ad;margin-top:8px;"><b>↩️ Cambios hechos a mano que quedan por devolver:</b><br>${r.implicitas.map(x=>`${nm(x.deudor_id)} le debe a ${nm(x.acreedor_id)} el cuartelero del ${fmtFecha(x.fecha_origen)} (lo hizo ${nm(x.acreedor_id)} en su turno); lo paga cuando le toque a ${nm(x.acreedor_id)}.`).join('<br>')}</div>` : ''}
         ${r.gsInfo && r.gsInfo.choques && r.gsInfo.choques.length ? `<div class="notice closed" style="display:block;margin-top:8px;"><span>⚠️ <b>Choques con la guardia de seguridad:</b> la estimación pone otro servicio el mismo día a quien ya tiene GS o IGS. Cámbialos a mano después de añadirla:<br>${r.gsInfo.choques.map(x=>`${fmtFecha(x.fecha)} · ${escHtml(servicioLabel({tipo:x.tipo,turno:x.turno}))} → ${nm(x.persona_id)}`).join('<br>')}</span></div>` : ''}
         ${r.gsInfo && r.gsInfo.dias.length ? r.gsInfo.dias.map(g=>{ const gs = r.filas.filter(f=>f.fecha===g.fecha && f.tipo==='guardia_seguridad').sort((a,b)=>a.turno-b.turno), igs = r.filas.filter(f=>f.fecha===g.fecha && f.tipo==='imaginaria_gs').sort((a,b)=>a.turno-b.turno);
             return `<details class="caja-det" style="margin-top:8px;" ${gs.length||igs.length?'open':''}><summary>🛡️ GS del ${fmtFecha(g.fecha)}${g.compania!==CURRENT.compania?' (sobrante de la '+CURRENT.compania+'ª en la GS de la '+g.compania+'ª)':''}: ${gs.length} nueva${gs.length===1?'':'s'}${g.yaHay?` + ${g.yaHay} ya puesta${g.yaHay===1?'':'s'}`:''} de ${g.cupo} · ${igs.length} imaginaria${igs.length===1?'':'s'} de GS</summary><div class="caja-sub-body" style="font-size:.8rem;">
@@ -9626,6 +10588,8 @@ async function guardarEstimacion(){
   if(rb.error) rb = await sb.from('estimaciones').insert({ ...loteBase, hecha_por: quienHaceEstimacion() }).select('id').single(); // por si la columna "saltos" aún no existe
   if(rb.error) rb = await sb.from('estimaciones').insert(loteBase).select('id').single(); // por si tampoco existe "hecha_por"
   if(!rb.error && rb.data) estId = rb.data.id; // sin el patch 62 se guarda como antes (sin lote)
+  const viejasIds = (EST_PREVIA.reemplazar || []);
+  for(let i=0; i<viejasIds.length; i+=200){ await sb.from('servicios').delete().in('id', viejasIds.slice(i,i+200)).eq('estimado', true); } // solo estimadas, nunca lo puesto a mano
   const conDeuda = EST_PREVIA.filas.some(f=>f.deuda_id);
   const filas = EST_PREVIA.filas.map(f=>{ const o = { compania: CURRENT.compania, ...f }; if(conDeuda) o.deuda_id = f.deuda_id || null; else delete o.deuda_id; if(estId) o.estimacion_id = estId; return o; });
   for(let i=0; i<filas.length; i+=400){
