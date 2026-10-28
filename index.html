@@ -1415,7 +1415,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-27T22:55:55";
+const APP_VERSION = "2026-10-28T10:30:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -3300,8 +3300,8 @@ async function routeAfterAuth(userId){
     const { data: personaRow } = await sb.from('personas').select('*').eq('auth_user_id', userId).maybeSingle();
     if(adminRow){ startPresenceHeartbeat(); await enterAdmin(adminRow.compania, personaRow || null, !!adminRow.is_superadmin); await terminarEntrada(estadoPrevio); return; }
     if(personaRow){ startPresenceHeartbeat(); await enterAlumno(personaRow, null); await terminarEntrada(estadoPrevio); return; }
-    const { data: cuartelRow } = await sb.from('cuarteles').select('compania').eq('auth_user_id', userId).maybeSingle();
-    if(cuartelRow){ await enterCuartel(cuartelRow.compania); return; }
+    const { data: cuartelRow } = await sb.from('cuarteles').select('*').eq('auth_user_id', userId).maybeSingle(); // «*»: así funciona antes y después del parche 103 (columna «tipo»)
+    if(cuartelRow){ await enterCuartel(cuartelRow.compania, { mandos: cuartelRow.tipo==='mandos' }); return; }
     const { data: solRow } = await sb.from('admin_solicitudes').select('estado').eq('auth_user_id', userId).order('creado_en',{ascending:false}).limit(1).maybeSingle();
     if(solRow && solRow.estado==='pendiente'){
       showScreen('screen-login');
@@ -3354,6 +3354,7 @@ async function pedirResetContrasena(){
   const msg = document.getElementById('login-reset-msg'), btn = document.getElementById('login-reset-btn');
   const mostrar = (txt, ok) => { msg.style.display = 'block'; msg.classList.remove('hidden'); msg.style.borderColor = ok ? 'var(--olive)' : 'var(--danger)'; msg.innerHTML = '<span>'+txt+'</span>'; };
   // La cuenta del servicio de cuartel (cuartel11, cuartel12…) no tiene correo: no se manda nada, se dice a quién preguntar
+  if(/^mandos\d{0,2}(@portalagm\.es)?$/i.test(email)){ mostrar('🎖️ La cuenta de mandos no tiene correo, así que no podemos enviar ningún enlace. Pide la contraseña al superadmin.', false); return; }
   if(/^cuartel\d{0,2}(@portalagm\.es)?$/i.test(email)){ mostrar('🪖 La cuenta del servicio de cuartel no tiene correo, así que no podemos enviar ningún enlace. Pregunta la contraseña al servicio de cuartel anterior; si no la tienen, pregúntale al Furry de tu compañía.', false); return; }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ mostrar('✏️ Escribe primero tu email en el campo de arriba.', false); return; }
   btn.disabled = true; const textoBtn = btn.textContent; btn.textContent = 'Enviando…';
@@ -3903,7 +3904,8 @@ async function enterCuartel(compania, opts){
   const previo = vistaPrevia ? CURRENT : null;
   const pantallaPrevia = vistaPrevia ? (['screen-alumno','screen-admin','screen-superadmin'].find(id=>!document.getElementById(id).classList.contains('hidden')) || 'screen-admin') : null;
   const { data: companiaInfo } = await sb.from('companias').select('*').eq('numero', compania).single();
-  CURRENT = { mode:'cuartel', compania, companiaInfo, vistaPrevia, previo, pantallaPrevia };
+  CURRENT = { mode:'cuartel', compania, companiaInfo, vistaPrevia, previo, pantallaPrevia, mandos: !!(opts && opts.mandos) }; // mandos: cuenta de capitán / comandantes (parche 103)
+  document.querySelector('#screen-cuartel .mh-quien').textContent = CURRENT.mandos ? '🎖️ Mandos' : '🪖 Servicio de cuartel';
   await Promise.all([ fetchCortesEspeciales(compania), fetchPernoctaForzarAgm(compania), fetchComidaDesbloqueoDias(compania) ]);
   setActiveWeek(semanaEnCursoIndex());
   document.getElementById('cuartel-subtitle').textContent = `${compania}ª Compañía`;
@@ -3929,16 +3931,22 @@ const CUARTEL_EMPLEOS = ['CAC', 'DAC', 'CC Sgto', 'DC Sgto', 'CC Cabo', 'DC Cabo
 const EMPLEO_NOMBRE = { 'CAC':'Caballero Alférez Cadete', 'DAC':'Dama Alférez Cadete', 'CC Sgto':'Caballero Cadete Sargento', 'DC Sgto':'Dama Cadete Sargento', 'CC Cabo':'Caballero Cadete Cabo', 'DC Cabo':'Dama Cadete Cabo' };
 // Para filtrar el registro por empleo: cada empleo junta a caballeros y damas
 const EMPLEO_GRUPOS = { 'CAC':{ nombre:'Alférez cadete (CAC / DAC)', codigos:['CAC','DAC'] }, 'CC Sgto':{ nombre:'Sargento (CC / DC Sgto)', codigos:['CC Sgto','DC Sgto'] }, 'CC Cabo':{ nombre:'Cabo (CC / DC Cabo)', codigos:['CC Cabo','DC Cabo'] } };
-const filtroEmpleoRegex = g => '^(' + EMPLEO_GRUPOS[g].codigos.join('|') + ') ';
+const filtroEmpleoRegex = g => '^(' + (EMPLEO_GRUPOS[g] || EMPLEO_GRUPOS_MANDOS[g]).codigos.join('|') + ') ';
 // Imágenes de cada empleo (opcionales): PNG en la carpeta «empleos» junto al index.html. Si falta alguna, simplemente no se ve (no rompe nada). Damas y caballeros llevan la misma divisa.
 const EMPLEO_IMG = { 'CAC':'empleos/cac.png', 'DAC':'empleos/cac.png', 'CC Sgto':'empleos/cc-sgto.png', 'DC Sgto':'empleos/cc-sgto.png', 'CC Cabo':'empleos/cc-cabo.png', 'DC Cabo':'empleos/cc-cabo.png' };
-const empleoDeNombre = n => CUARTEL_EMPLEOS.find(e=>String(n||'').startsWith(e+' ')) || null;
+// Cuenta de mandos (parche 103): solo capitán o comandante
+const MANDOS_EMPLEOS = ['Capitán', 'Comandante'];
+EMPLEO_NOMBRE['Capitán'] = 'Capitán'; EMPLEO_NOMBRE['Comandante'] = 'Comandante';
+EMPLEO_IMG['Capitán'] = 'empleos/capitan.png'; EMPLEO_IMG['Comandante'] = 'empleos/comandante.png';
+const EMPLEO_GRUPOS_MANDOS = { 'Capitán':{ nombre:'Capitán', codigos:['Capitán'] }, 'Comandante':{ nombre:'Comandante', codigos:['Comandante'] } };
+const empleosActuales = () => (CURRENT && CURRENT.mode==='cuartel' && CURRENT.mandos) ? MANDOS_EMPLEOS : CUARTEL_EMPLEOS;
+const empleoDeNombre = n => [...CUARTEL_EMPLEOS, ...MANDOS_EMPLEOS].find(e=>String(n||'').startsWith(e+' ')) || null;
 const empleoImgHtml = emp => EMPLEO_IMG[emp] ? `<img class="empleo-ico" src="${EMPLEO_IMG[emp]}" alt="" onerror="this.remove()">` : '';
 const nombreConIcono = n => empleoImgHtml(empleoDeNombre(n)) + escHtml(n); // «🎖 CC Sgto García López, Juan», con la imagen de su empleo si existe
 function iconoEmpleoSel(pre){ const s = document.getElementById(pre+'-empleo'), i = document.getElementById(pre+'-ico'); if(s && i) i.innerHTML = empleoImgHtml(s.value); }
 // Los datos de una persona: empleo + nombre + primer apellido + segundo apellido (los cuatro obligatorios). «pre» = prefijo de los id (cuartel, msg, vcc)
 const camposPersonaHtml = (pre, ult) => `
-    <div class="field"><label>Empleo</label><div style="display:flex;gap:8px;align-items:center;"><span id="${pre}-ico"></span><select id="${pre}-empleo" style="flex:1;" onchange="iconoEmpleoSel('${pre}')">${(ult&&CUARTEL_EMPLEOS.includes(ult.empleo)) ? '' : '<option value="" selected disabled>— Elige tu empleo —</option>'}${CUARTEL_EMPLEOS.map(e=>`<option value="${e}" ${(ult&&ult.empleo)===e?'selected':''}>${e} · ${EMPLEO_NOMBRE[e]}</option>`).join('')}</select></div></div>
+    <div class="field"><label>Empleo</label><div style="display:flex;gap:8px;align-items:center;"><span id="${pre}-ico"></span><select id="${pre}-empleo" style="flex:1;" onchange="iconoEmpleoSel('${pre}')">${(ult&&empleosActuales().includes(ult.empleo)) ? '' : '<option value="" selected disabled>— Elige tu empleo —</option>'}${empleosActuales().map(e=>`<option value="${e}" ${(ult&&ult.empleo)===e?'selected':''}>${e} · ${EMPLEO_NOMBRE[e]}</option>`).join('')}</select></div></div>
     <div class="field"><label>Nombre</label><input type="text" id="${pre}-nombre" value="${escHtml((ult&&ult.nombre)||'')}" placeholder="Ej.: Juan" autocomplete="given-name" maxlength="23"></div>
     <div class="field"><label>Primer apellido</label><input type="text" id="${pre}-ap1" value="${escHtml((ult&&ult.ap1)||'')}" placeholder="Ej.: García" autocomplete="family-name" maxlength="23"></div>
     <div class="field"><label>Segundo apellido</label><input type="text" id="${pre}-ap2" value="${escHtml((ult&&ult.ap2)||'')}" placeholder="Ej.: López" autocomplete="off" maxlength="23"></div>`;
@@ -3946,7 +3954,7 @@ const camposPersonaHtml = (pre, ult) => `
 function leerPersonaCampos(pre){
   const v = id => ((document.getElementById(pre+'-'+id)||{}).value||'').trim().replace(/\s+/g,' ');
   const per = { empleo:v('empleo'), nombre:v('nombre'), ap1:v('ap1'), ap2:v('ap2') };
-  if(!CUARTEL_EMPLEOS.includes(per.empleo)){ showToast('Elige tu empleo.'); return null; }
+  if(!empleosActuales().includes(per.empleo)){ showToast('Elige tu empleo.'); return null; }
   if(per.nombre.length < 2){ showToast('Escribe tu nombre.'); return null; }
   if(per.ap1.length < 2){ showToast('Escribe tu primer apellido.'); return null; }
   if(per.ap2.length < 2){ showToast('Escribe tu segundo apellido.'); return null; }
@@ -3955,8 +3963,9 @@ function leerPersonaCampos(pre){
 }
 const nombreCompletoCuartel = per => `${per.empleo} ${per.ap1} ${per.ap2}, ${per.nombre}`;
 // Lo último que escribió esa persona en este dispositivo (para no tener que repetirlo)
+const clavePersonaCuartel = () => (CURRENT && CURRENT.mode==='cuartel' && CURRENT.mandos) ? 'portalagm_mandos_persona' : 'portalagm_cuartel_persona';
 function personaGuardada(){
-  let u = {}; try{ u = JSON.parse(localStorage.getItem('portalagm_cuartel_persona') || '{}') || {}; }catch(e){}
+  let u = {}; try{ u = JSON.parse(localStorage.getItem(clavePersonaCuartel()) || '{}') || {}; }catch(e){}
   if(u.apellidos && !u.ap1){ const [a1, ...resto] = String(u.apellidos).split(' '); u.ap1 = a1; u.ap2 = resto.join(' '); } // formato anterior (un solo campo «Apellidos»)
   return u;
 }
@@ -3965,8 +3974,9 @@ function pedirNombreCuartel(){
   ['cuartel-week-select','cuartel-notice','cuartel-controles'].forEach(id=>document.getElementById(id).innerHTML='');
   document.getElementById('cuartel-vista').innerHTML = `
     <div class="login-card" style="max-width:420px;margin:24px auto;">
-      <h3 style="margin-top:0;">🪖 ¿Quién está de servicio?</h3>
-      <p class="desc">Elige tu empleo y escribe tu nombre y tus dos apellidos (todo es obligatorio). Queda registrado quién usa la cuenta del servicio de cuartel y desde qué dispositivo. Máximo 3 dispositivos a la vez.</p>
+      ${CURRENT.mandos ? `<h3 style="margin-top:0;">🎖️ ¿Quién entra?</h3>
+      <p class="desc">Elige tu empleo y escribe tu nombre y tus dos apellidos (todo es obligatorio). Queda registrado quién usa la cuenta de mandos y desde qué dispositivo.</p>` : `<h3 style="margin-top:0;">🪖 ¿Quién está de servicio?</h3>
+      <p class="desc">Elige tu empleo y escribe tu nombre y tus dos apellidos (todo es obligatorio). Queda registrado quién usa la cuenta del servicio de cuartel y desde qué dispositivo. Máximo 3 dispositivos a la vez.</p>`}
       <form onsubmit="event.preventDefault(); confirmarNombreCuartel();">
         ${camposPersonaHtml('cuartel', personaGuardada())}
         <button class="primary-btn" type="submit">Entrar</button>
@@ -3976,7 +3986,7 @@ function pedirNombreCuartel(){
 }
 async function confirmarNombreCuartel(){
   const per = leerPersonaCampos('cuartel'); if(!per) return;
-  try{ localStorage.setItem('portalagm_cuartel_persona', JSON.stringify(per)); }catch(e){}
+  try{ localStorage.setItem(clavePersonaCuartel(), JSON.stringify(per)); }catch(e){}
   await iniciarSesionCuartel(nombreCompletoCuartel(per));
 }
 async function iniciarSesionCuartel(nombre){
@@ -3996,7 +4006,7 @@ async function iniciarSesionCuartel(nombre){
   try{ sessionStorage.setItem('portalagm_cuartel_sesion', nombre); }catch(e){}
   CUARTEL.nombre = nombre;
   if(esApp() && !sessionStorage.getItem('portalagm_cuartel_app_log')){ try{ sessionStorage.setItem('portalagm_cuartel_app_log','1'); }catch(e){} cuartelLogApp('Entra desde la app instalada'); }
-  document.getElementById('cuartel-subtitle').innerHTML = `${CURRENT.compania}ª Cía · de servicio: ${nombreConIcono(nombre)}`;
+  document.getElementById('cuartel-subtitle').innerHTML = `${CURRENT.compania}ª Cía · ${CURRENT.mandos ? '' : 'de servicio: '}${nombreConIcono(nombre)}`;
   document.querySelector('#screen-cuartel .module-switch').classList.remove('hidden');
   if(!window._cuartelPing){
     window._cuartelPing = setInterval(cuartelPing, 60000);
@@ -4116,18 +4126,70 @@ async function enviarMensajeCreador(){
   showToast('Mensaje enviado. Gracias.');
 }
 async function cargarCuartelServicios(){
-  const c = CURRENT.compania;
-  CUARTEL_SERV.lunes = lunesDe(new Date());
-  CUARTEL_SERV.dia = (new Date().getDay()+6)%7; // hoy
+  const c = CURRENT.compania, mandos = !!CURRENT.mandos;
+  const lunesHoy = lunesDe(new Date());
+  CUARTEL_SERV.lunes = (mandos && CUARTEL_SERV.lunesSel) ? new Date(CUARTEL_SERV.lunesSel) : lunesHoy; // los mandos eligen la semana; el cuartel, siempre la actual
+  CUARTEL_SERV.dia = ymd(CUARTEL_SERV.lunes)===ymd(lunesHoy) ? (new Date().getDay()+6)%7 : 0; // hoy (o el lunes, si es otra semana)
   document.getElementById('cuartel-week-select').innerHTML = `<h3 class="section-title" style="margin-top:14px;">Servicios del lunes ${fmt(cuFechaDia(0))} al domingo ${fmt(cuFechaDia(6))}</h3>`;
   document.getElementById('cuartel-notice').innerHTML = `<div class="notice"><span>🔒 Solo consulta · el teléfono de contacto solo aparece al pulsar «Contactar»</span></div>`;
-  document.getElementById('cuartel-controles').innerHTML = '';
+  document.getElementById('cuartel-controles').innerHTML = mandos ? mandosControlesServiciosHtml() : '';
   document.getElementById('cuartel-vista').innerHTML = '<p class="small-note">Cargando…</p>';
   try{ await fetchPuentesYManiobras(c); window._servFest = diasFestivosServicios(c); }catch(e){ window._servFest = {}; } // para saber qué días cuentan como «fin de semana» en el PDF
-  const { data, error } = await sb.rpc('cuartel_servicios_semana', { p_compania: c });
+  const { data, error } = await sb.rpc('cuartel_servicios_semana', mandos ? { p_compania: c, p_semana: ymd(CUARTEL_SERV.lunes) } : { p_compania: c });
   if(error){ document.getElementById('cuartel-vista').innerHTML = `<div class="notice closed"><span>No se pudieron cargar los servicios: ${escHtml(cuErrorParche(error))}</span></div>`; return; }
   CUARTEL_SERV.filas = data || [];
   pintarCuartelServicios();
+}
+/* ---- Mandos (parche 103): elegir la semana de la lista y ver el cuadrante entero en un desplegable ---- */
+function mandosControlesServiciosHtml(){
+  const lunesHoy = lunesDe(new Date()), sel = ymd(CUARTEL_SERV.lunes);
+  const ops = [];
+  for(let k=-8; k<=20; k++){
+    const l = new Date(lunesHoy.getFullYear(), lunesHoy.getMonth(), lunesHoy.getDate()+7*k), d = new Date(l.getFullYear(), l.getMonth(), l.getDate()+6);
+    ops.push(`<option value="${ymd(l)}" ${ymd(l)===sel?'selected':''}>${k===0?'Esta semana · ':''}lunes ${fmt(l)} – domingo ${fmt(d)}</option>`);
+  }
+  const abierto = CUADRANTE_AL && CUADRANTE_AL.contId==='mandos-cuadrante-cont' && CUADRANTE_AL.abierto;
+  return `<div class="cuartel-bar" style="margin-top:6px;">
+      <button class="small-btn" onclick="mandosCambiarSemana(-1)" aria-label="Semana anterior">‹</button>
+      <div class="field" style="flex:1;min-width:220px;"><label>Semana</label><select onchange="mandosElegirSemana(this.value)">${ops.join('')}</select></div>
+      <button class="small-btn" onclick="mandosCambiarSemana(1)" aria-label="Semana siguiente">›</button>
+      ${sel!==ymd(lunesHoy) ? `<button class="small-btn" onclick="mandosElegirSemana('${ymd(lunesHoy)}')">📍 Esta semana</button>` : ''}
+    </div>
+    <div id="mandos-cuadrante" style="margin:10px 0 14px;">
+      <button type="button" class="cuad-btn ${abierto?'abierto':''}" id="mandos-cuadrante-btn" onclick="toggleCuadranteMandos()"><span class="cuad-ico">📋</span><span class="cuad-txt"><b id="mandos-cuadrante-tit">${abierto?'Ocultar cuadrante':'Ver cuadrante'}</b><small>Cuándo está nombrado cada uno de la compañía</small></span><span class="cuad-flecha">▾</span></button>
+      <div id="mandos-cuadrante-cont" class="${abierto?'':'hidden'}" style="margin-top:8px;"></div>
+    </div>`;
+}
+async function mandosElegirSemana(v){ CUARTEL_SERV.lunesSel = v ? new Date(v+'T00:00:00') : null; await cargarCuartelServicios(); if(CUADRANTE_AL && CUADRANTE_AL.contId==='mandos-cuadrante-cont' && CUADRANTE_AL.abierto) pintarCuadranteAlumno(); }
+async function mandosCambiarSemana(d){ const l = CUARTEL_SERV.lunes; await mandosElegirSemana(ymd(new Date(l.getFullYear(), l.getMonth(), l.getDate()+7*d))); }
+async function cargarCuadranteMandos(){
+  const c = CURRENT.compania, hoy = new Date(), ini = ymd(lunesDe(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-28)));
+  const fin0 = sumarDia(ini, 186);
+  const [rRoster, rServ] = await Promise.all([
+    sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios').eq('compania', c).order('apellidos'),
+    sb.rpc('mandos_cuadrante', { p_compania: c, p_desde: ini, p_hasta: fin0 })
+  ]);
+  if(rServ.error) throw new Error(cuErrorParche(rServ.error, 103));
+  const servicios = rServ.data || [];
+  const ordenado = (rRoster.data||[]).filter(p=>!p.sin_servicios || servicios.some(s=>s.persona_id===p.id)).sort((a,b)=>{
+    const oa = a.orden_servicio==null ? 1e9 : a.orden_servicio, ob = b.orden_servicio==null ? 1e9 : b.orden_servicio;
+    return oa!==ob ? oa-ob : (a.apellidos+a.nombre).localeCompare(b.apellidos+b.nombre, 'es');
+  });
+  let fin = sumarDia(ini, 89);
+  servicios.forEach(s=>{ if(s.fecha>fin) fin = s.fecha; });
+  const d0 = new Date(ini+'T00:00:00');
+  const dias = Array.from({length: diasEntre(ini, fin)+1}, (_,i)=>{ const d = new Date(d0); d.setDate(d0.getDate()+i); return d; });
+  try{ await fetchPuentesYManiobras(c); }catch(e){}
+  CUADRANTE_AL = { roster: ordenado, servicios, dias, compania: c, fest: diasFestivosServicios(c), contId:'mandos-cuadrante-cont', abierto:true };
+}
+async function toggleCuadranteMandos(){
+  const cont = document.getElementById('mandos-cuadrante-cont'), btn = document.getElementById('mandos-cuadrante-btn'), tit = document.getElementById('mandos-cuadrante-tit');
+  if(!cont) return;
+  if(!cont.classList.contains('hidden')){ cont.classList.add('hidden'); btn.classList.remove('abierto'); tit.textContent = 'Ver cuadrante'; if(CUADRANTE_AL) CUADRANTE_AL.abierto = false; return; }
+  cont.classList.remove('hidden'); btn.classList.add('abierto'); tit.textContent = 'Ocultar cuadrante';
+  cont.innerHTML = '<div class="loading">Cargando el cuadrante…</div>';
+  try{ await cargarCuadranteMandos(); pintarCuadranteAlumno(); }
+  catch(e){ cont.innerHTML = `<div class="small-note">No se pudo cargar el cuadrante: ${escHtml(e.message||String(e))}</div>`; }
 }
 const cuServiciosDelDia = i => { const f = ymd(cuFechaDia(i)); return CUARTEL_SERV.filas.filter(s=>s.fecha===f).sort((a,b)=>((CU_ORDEN_TIPO[a.tipo]||9)-(CU_ORDEN_TIPO[b.tipo]||9)) || ((a.turno||0)-(b.turno||0)) || String(a.apellidos).localeCompare(String(b.apellidos),'es')); };
 function cuartelServDia(i){ CUARTEL_SERV.dia = i; pintarCuartelServicios(); }
@@ -5415,24 +5477,25 @@ async function cargarHistorialSuper(){
     : '<p class="small-note">No hay personas con estos filtros.</p>');
 }
 // Cuentas de servicio de cuartel (una por compañía), sus conexiones y su historial de accesos — solo para el superadmin
-async function cuartelSuperCuerpo(){
+async function cuartelSuperCuerpo(kind){
+  const esM = kind==='mandos', ST = esM ? MANDOS_SUP : CUARTEL_SUP; // kind «mandos»: la cuenta de capitán / comandantes (parche 103)
   const [{ data, error }, { data: cuentas, error: errCuentas }] = await Promise.all([
     sb.from('cuartel_sesiones').select('*').order('inicio', { ascending:false }).limit(400),
     sb.from('cuarteles').select('*')
   ]);
   if(error) return `<p class="small-note">No se pudo cargar: ${escHtml(error.message)} — ¿has ejecutado el patch 43?</p>`;
-  const filas = data || [];
+  const filas = (data || []).filter(r=>esM ? r.cuenta==='mandos' : r.cuenta!=='mandos');
   const ahora = Date.now();
   const activa = r => !r.cerrada && (ahora - new Date(r.ultima).getTime()) < 5*60000;
   const ts = iso => new Date(iso).toLocaleString('es-ES',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   const estado = r => activa(r) ? '🟢 conectado' : r.expulsada ? '⛔ echado por el superadmin' : r.cerrada ? 'salió' : 'sin señal (cerró la app)';
-  const cuentaDe = c => (cuentas||[]).find(x=>String(x.compania)===String(c));
+  const cuentaDe = c => (cuentas||[]).find(x=>String(x.compania)===String(c) && (esM ? x.tipo==='mandos' : x.tipo!=='mandos'));
   // Si la tabla de cuentas no deja leer nada (permisos), NO se puede decir que falte la cuenta: se avisa y se pide el parche SQL 59
   const sinLectura = !!errCuentas || (cuentas||[]).length === 0;
   const avisoLectura = sinLectura ? `<p class="small-note" style="color:var(--danger);">⚠️ No puedo leer la lista de cuentas de cuartel${errCuentas ? ' ('+escHtml(errCuentas.message||'')+')' : ' (sale vacía)'}. Eso NO significa que no existan: ejecuta el parche SQL 59 para que el superadmin pueda verlas.</p>` : '';
-  const c = CUARTEL_SUP.compania || COMPANIES[0];   // un selector de compañía y se ve solo lo de esa compañía
+  const c = ST.compania || COMPANIES[0];   // un selector de compañía y se ve solo lo de esa compañía
   const mias = filas.filter(r=>r.compania===c), act = mias.filter(activa), cu = cuentaDe(c);
-  const cuentaTxt = cu ? `✅ cuenta vinculada${cu.usuario ? ` · usuario <b class="mono">${escHtml(cu.usuario)}</b>` : ''}` : (sinLectura ? '❔ No se puede comprobar (falta el permiso de lectura: parche SQL 59)' : '⚠️ Esta compañía aún no tiene cuenta de cuartel (se crea con el parche SQL 53)');
+  const cuentaTxt = cu ? `✅ cuenta vinculada${cu.usuario ? ` · usuario <b class="mono">${escHtml(cu.usuario)}</b>` : ''}` : (sinLectura ? '❔ No se puede comprobar (falta el permiso de lectura: parche SQL 59)' : (esM ? '⚠️ Esta compañía aún no tiene cuenta de mandos (se crea con el parche SQL 103)' : '⚠️ Esta compañía aún no tiene cuenta de cuartel (se crea con el parche SQL 53)'));
   const conectados = act.length ? act.map(r=>`
     <div class="manage-row">
       <div>🟢 <b>${nombreConIcono(r.nombre||'(sin nombre)')}</b> — 📱 ${escHtml(r.dispositivo||'?')}<br>
@@ -5441,22 +5504,23 @@ async function cuartelSuperCuerpo(){
     </div>`).join('') : '<p class="small-note">Ahora mismo no hay nadie conectado.</p>';
   const historial = mias.length ? mias.slice(0,40).map(r=>`<div class="history-row"><span class="ts">${ts(r.inicio)} → ${ts(r.ultima)}</span> — <b>${nombreConIcono(r.nombre||'(sin nombre)')}</b> · 📱 ${escHtml(r.dispositivo||'?')} · ${estado(r)}</div>`).join('')
     : '<p class="small-note">Todavía nadie ha entrado con la cuenta de esta compañía.</p>';
-  const selector = `<div class="cuartel-bar" style="margin-top:0;"><div class="field"><label>Compañía</label><select onchange="onCuartelSupCompania(this.value)">${companiasOptionsHtml(c)}</select></div><button class="small-btn" onclick="onCuartelSupCompania(${c})">↻ Actualizar</button></div>`;
+  const selector = `<div class="cuartel-bar" style="margin-top:0;"><div class="field"><label>Compañía</label><select onchange="onCuartelSupCompania(this.value,'${esM?'mandos':'cuartel'}')">${companiasOptionsHtml(c)}</select></div><button class="small-btn" onclick="onCuartelSupCompania(${c},'${esM?'mandos':'cuartel'}')">↻ Actualizar</button></div>`;
   return `${avisoLectura}${selector}
     <div class="panel-row" style="flex-direction:column;align-items:stretch;">
-      <div class="switch-label">Cuenta de cuartel de la ${c}ª<span class="sub2">${cuentaTxt}</span></div>
-      <div style="margin-top:8px;"><button class="small-btn" onclick="cambiarPasswordCuartel(${c})">🔑 Cambiar contraseña</button></div>
-      <div style="font-weight:700;margin:12px 0 4px;">Conectados ahora: ${act.length}/3</div>
+      <div class="switch-label">Cuenta de ${esM?'mandos':'cuartel'} de la ${c}ª<span class="sub2">${cuentaTxt}</span></div>
+      <div style="margin-top:8px;"><button class="small-btn" onclick="cambiarPasswordCuartel(${c}${esM?",'mandos'":''})">🔑 Cambiar contraseña</button></div>
+      <div style="font-weight:700;margin:12px 0 4px;">Conectados ahora: ${act.length}${esM?'':'/3'}</div>
       ${conectados}
       <div style="font-weight:700;margin:14px 0 4px;">Historial de accesos (últimos ${Math.min(mias.length,40)})</div>
       ${historial}
     </div>`;
 }
-const CUARTEL_SUP = { compania:null };
+const CUARTEL_SUP = { compania:null }, MANDOS_SUP = { compania:null };
 async function cuartelSuperHtml(){ return `<div id="super-cuartel-cont">${await cuartelSuperCuerpo()}</div>`; }
-async function onCuartelSupCompania(v){
-  CUARTEL_SUP.compania = parseInt(v, 10);
-  const el = document.getElementById('super-cuartel-cont'); if(el) el.innerHTML = await cuartelSuperCuerpo();
+async function onCuartelSupCompania(v, kind){
+  const esM = kind==='mandos';
+  (esM ? MANDOS_SUP : CUARTEL_SUP).compania = parseInt(v, 10);
+  const el = document.getElementById(esM ? 'super-mandos-cont' : 'super-cuartel-cont'); if(el) el.innerHTML = await cuartelSuperCuerpo(kind);
 }
 // Contraseña nueva para la cuenta de cuartel de una compañía. La app NO guarda ni puede mostrar contraseñas antiguas
 // (Supabase solo guarda su versión cifrada): se genera una nueva, se aplica y se enseña UNA vez.
@@ -5465,13 +5529,14 @@ function generarPasswordSegura(n){
   const buf = new Uint32Array(n); crypto.getRandomValues(buf);
   return Array.from(buf, v=>abc[v % abc.length]).join('');
 }
-async function cambiarPasswordCuartel(c){
+async function cambiarPasswordCuartel(c, tipo){
+  const esM = tipo==='mandos';
   // Puedes escribir la contraseña que quieras (que la sepan los que la tengan que saber) o usar la que se propone
-  abrirModalGlobal(`<h3>🔑 Contraseña de cuartel — ${c}ª Compañía</h3>
+  abrirModalGlobal(`<h3>🔑 Contraseña de ${esM?'mandos':'cuartel'} — ${c}ª Compañía</h3>
     <p class="modal-nota" style="margin-top:0;">Escribe la contraseña que quieras (mínimo 10 caracteres) o usa la propuesta. La anterior dejará de funcionar y se cerrarán las sesiones abiertas de esa cuenta. <b>Apúntala: después no se puede volver a ver.</b></p>
     <div class="field"><label>Nueva contraseña</label><input type="text" id="pwd-cuartel" class="mono" style="font-size:1.1rem;" autocomplete="off" autocapitalize="off" spellcheck="false" value="${generarPasswordSegura(12)}" oninput="avisoPasswordCuartel()"></div>
     <div id="pwd-cuartel-aviso" class="small-note" style="min-height:1.2em;"></div>
-    <div class="modal-botones"><button class="small-btn" onclick="document.getElementById('pwd-cuartel').value=generarPasswordSegura(12);avisoPasswordCuartel()">🎲 Otra propuesta</button><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" onclick="aplicarPasswordCuartel(${c})">Aplicar contraseña</button></div>`);
+    <div class="modal-botones"><button class="small-btn" onclick="document.getElementById('pwd-cuartel').value=generarPasswordSegura(12);avisoPasswordCuartel()">🎲 Otra propuesta</button><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" onclick="aplicarPasswordCuartel(${c}${esM?",'mandos'":''})">Aplicar contraseña</button></div>`);
   avisoPasswordCuartel();
 }
 // Avisos mientras se escribe (la contraseña corta no se deja; la fácil de adivinar se avisa pero se permite)
@@ -5485,16 +5550,17 @@ function avisoPasswordCuartel(){
   else msg = '✅ Buena contraseña.';
   el.textContent = msg;
 }
-async function aplicarPasswordCuartel(c){
+async function aplicarPasswordCuartel(c, tipo){
+  const esM = tipo==='mandos';
   const nueva = (document.getElementById('pwd-cuartel')||{}).value || '';
   if(nueva.length < 10){ showToast('La contraseña tiene que tener al menos 10 caracteres.'); return; }
   if(nueva !== nueva.trim()){ showToast('La contraseña no puede empezar ni acabar con espacios.'); return; }
-  const { error } = await sb.rpc(modoActual()==='super' ? 'superadmin_cuartel_set_password' : 'admin_cuartel_set_password', { p_compania: c, p_password: nueva }); // el Furry cambia la de SU compañía (parche SQL 80)
+  const { error } = await sb.rpc(modoActual()==='super' ? 'superadmin_cuartel_set_password' : 'admin_cuartel_set_password', esM ? { p_compania: c, p_password: nueva, p_tipo: 'mandos' } : { p_compania: c, p_password: nueva }); // el Furry cambia la de SU compañía (parche SQL 80); la de mandos, solo el superadmin (parche 103)
   cerrarModalGlobal();
   if(error){ showToast('No se pudo cambiar: '+error.message+' — ¿has ejecutado el parche SQL de cuartel (52 y 80)?'); return; }
   abrirModalGlobal(`<h3>✅ Contraseña cambiada — ${c}ª Compañía</h3>
     <div class="modal-resumen mono" style="font-size:1.2rem;text-align:center;user-select:all;word-break:break-all;">${escHtml(nueva)}</div>
-    <p class="modal-nota">Cópiala y compártela solo con el servicio de cuartel de esa compañía. Esta ventana es la única vez que se muestra.</p>
+    <p class="modal-nota">Cópiala y compártela solo con ${esM?'los mandos':'el servicio de cuartel'} de esa compañía. Esta ventana es la única vez que se muestra.</p>
     <div class="modal-botones"><button class="primary-btn" onclick="cerrarModalGlobal()">Cerrar</button></div>`);
 }
 async function echarCuartel(id){
@@ -5569,7 +5635,17 @@ async function renderSuperadmin(){
     try{
       const visto = disenoVisto('super|cuartel-log');
       if(!visto){ DISENO._vistas = DISENO._vistas || {}; DISENO._vistas['super|cuartel-log'] = new Date().toISOString(); guardarDiseno(); return 0; } // la primera vez no se avisa de lo antiguo
-      const r = await sb.from('cuartel_eventos').select('id', { count:'exact', head:true }).gt('creado_en', visto);
+      let r = await sb.from('cuartel_eventos').select('id', { count:'exact', head:true }).eq('cuenta', 'cuartel').gt('creado_en', visto);
+      if(r.error) r = await sb.from('cuartel_eventos').select('id', { count:'exact', head:true }).gt('creado_en', visto); // sin el parche 103
+      return r.error ? 0 : (r.count || 0);
+    }catch(e){ return 0; }
+  })();
+  const pMandosLog = (async()=>{ // lo mismo para «Mandos» (parche 103)
+    await DISENO_PROMESA;
+    try{
+      const visto = disenoVisto('super|mandos-log');
+      if(!visto){ DISENO._vistas = DISENO._vistas || {}; DISENO._vistas['super|mandos-log'] = new Date().toISOString(); guardarDiseno(); return 0; }
+      const r = await sb.from('cuartel_eventos').select('id', { count:'exact', head:true }).eq('cuenta', 'mandos').gt('creado_en', visto);
       return r.error ? 0 : (r.count || 0);
     }catch(e){ return 0; }
   })();
@@ -5587,7 +5663,7 @@ async function renderSuperadmin(){
   })();
   const pAyuda = (async()=>{ try{ const r = await sb.from('ayuda_mensajes').select('id', { count:'exact', head:true }).eq('leido', false); return r.error ? 0 : (r.count || 0); }catch(e){ return 0; } })();
   const pSug = (async()=>{ try{ const r = await sb.from('sugerencias').select('id', { count:'exact', head:true }).eq('leida', false); return r.error ? 0 : (r.count || 0); }catch(e){ return 0; } })();
-  const [rSol, rPue, rMan, cuartelHtml, totalesCia, rCias, nLog, nMsg, gsHtml, nSug, nAyudaS, nFurryLog] = await Promise.all([
+  const [rSol, rPue, rMan, cuartelHtml, totalesCia, rCias, nLog, nMsg, gsHtml, nSug, nAyudaS, nFurryLog, nMandosLog, mandosHtml] = await Promise.all([
     sb.from('admin_solicitudes').select('*').eq('estado','pendiente').order('creado_en'),
     sb.from('pernocta_puentes').select('*').order('semana_inicio'),
     sb.from('maniobras').select('*').order('fecha_inicio'),
@@ -5601,7 +5677,8 @@ async function renderSuperadmin(){
       return { c:cc, total:t.count||0, registrados:r.count||0 };
     })),
     sb.from('companias').select('numero,total_efectivos'),
-    pLog, pMsg, gsCalendarioHtml(), pSug, pAyuda, pFurryLog
+    pLog, pMsg, gsCalendarioHtml(), pSug, pAyuda, pFurryLog, pMandosLog,
+    cuartelSuperCuerpo('mandos').then(h=>`<div id="super-mandos-cont">${h}</div>`, ()=>'')
   ]);
   const solicitudes = rSol.data, puentes = rPue.data, errPuentes = rPue.error, maniAcad = rMan.data, errManiAcad = rMan.error, companiasInfo = rCias.data;
   const efectivosReales = {}; (companiasInfo||[]).forEach(r=>{ efectivosReales[r.numero] = r.total_efectivos; });
@@ -5659,7 +5736,10 @@ async function renderSuperadmin(){
       { id:'mensajes', icono:'💬', titulo:'Mensajes de usuarios', sub: nMsg ? `${nMsg} sin leer` : 'Ninguno nuevo', badge:(nMsg||''), tituloPanel:'Mensajes que te envían desde la app', alAbrir:'cargarMensajesSuper()', cuerpo:'<div id="super-mensajes-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'ayuda', icono:'🆘', titulo:'Peticiones de ayuda', sub: nAyudaS ? `${nAyudaS} sin atender` : 'De todas las compañías', badge:(nAyudaS||''), tituloPanel:'Peticiones de ayuda', alAbrir:'cargarAyudaFurry()', cuerpo:'<div id="super-ayuda-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'sugerencias', icono:'💡', titulo:'Sugerencias', sub: nSug ? `${nSug} sin leer` : 'Ideas de los usuarios', badge:(nSug||''), tituloPanel:'Sugerencias para la app', alAbrir:'cargarSugerenciasSuper()', cuerpo:'<div id="super-sugerencias-cont"><p class="small-note">Cargando…</p></div>' },
-      { id:'cuartel-log', icono:'🔎', titulo:'Registro del cuartel', sub: nLog ? `${nLog} movimiento${nLog===1?'':'s'} nuevo${nLog===1?'':'s'}` : 'Quién entra, a quién contacta y qué descarga', badge:(nLog||''), tituloPanel:'Registro del servicio de cuartel (solo lo ves tú)', alAbrir:'cargarCuartelEventosSuper(true)', cuerpo:'<div id="super-cuartel-log-cont"><p class="small-note">Cargando…</p></div>' },
+      { id:'cuartel-log', icono:'🔎', titulo:'Registro del cuartel', sub: nLog ? `${nLog} movimiento${nLog===1?'':'s'} nuevo${nLog===1?'':'s'}` : 'Quién entra, a quién contacta y qué descarga', badge:(nLog||''), tituloPanel:'Registro del servicio de cuartel (solo lo ves tú)', alAbrir:"cargarCuartelEventosSuper(true,'cuartel')", cuerpo:'<div id="super-cuartel-log-cont"><p class="small-note">Cargando…</p></div>' },
+      { id:'mandos-log', icono:'🎖️', titulo:'Registro de mandos', sub: nMandosLog ? `${nMandosLog} movimiento${nMandosLog===1?'':'s'} nuevo${nMandosLog===1?'':'s'}` : 'Capitán y comandantes: quién entra y qué hace', badge:(nMandosLog||''), tituloPanel:'Registro de mandos (solo lo ves tú)', alAbrir:"cargarCuartelEventosSuper(true,'mandos')",
+        cuerpo:`<div class="panel-row" style="flex-direction:column;align-items:stretch;"><div class="switch-label">Una cuenta de mandos por compañía<span class="sub2">Usuario mandos + número de compañía (p. ej. mandos11). Ven lo mismo que el servicio de cuartel y, en Servicios, pueden elegir la semana y ver el cuadrante. Sin límite de dispositivos. Solo tú puedes cambiar su contraseña.</span></div>${mandosHtml}</div>
+          <details class="caja-det" open><summary>🔎 Registro de movimientos</summary><div class="caja-sub-body"><div id="super-mandos-log-cont"><p class="small-note">Cargando…</p></div></div></details>` },
       { id:'furry-log', icono:'🧾', titulo:'Registro del Furry', sub: nFurryLog ? `${nFurryLog} movimiento${nFurryLog===1?'':'s'} nuevo${nFurryLog===1?'':'s'}` : 'Excel, PDF y cambios importantes', badge:(nFurryLog||''), tituloPanel:'Registro del Furry (solo lo ves tú)', alAbrir:'cargarFurryEventosSuper(true)', cuerpo:'<div id="super-furry-log-cont"><p class="small-note">Cargando…</p></div>' },
       { id:'registros', icono:'🗂️', titulo:'Registros', sub:'Conectados, historial, contraseñas y salud', tituloPanel:'Registros y salud de la app',
         cuerpo: `<details class="caja-det" ontoggle="if(this.open) cargarConectadosSuper()"><summary>🟢 Personas conectadas</summary><div class="caja-sub-body"><div id="super-conectados-cont"><p class="small-note">Cargando…</p></div></div></details>`
@@ -5669,7 +5749,8 @@ async function renderSuperadmin(){
     ]);
   avisoEsquemaSuper();
   const abierta = CAJAS_ABIERTA.super;
-  if(abierta==='cuartel-log') cargarCuartelEventosSuper();
+  if(abierta==='cuartel-log') cargarCuartelEventosSuper(false, 'cuartel');
+  else if(abierta==='mandos-log') cargarCuartelEventosSuper(false, 'mandos');
   else if(abierta==='furry-log') cargarFurryEventosSuper();
   else if(abierta==='mensajes') cargarMensajesSuper();
   else if(abierta==='personal') cargarGestionPersonal();
@@ -5900,7 +5981,16 @@ async function mensajeAppBorrar(id){
   await renderSuperadmin();
 }
 /* Registro de lo que hace el cuartel: entradas de personas de servicio, «Contactar» y PDF. Solo el superadmin puede leerlo (la base de datos lo impide a los demás). */
-const CUARTEL_LOG = { filas:null, nombres:{}, tipo:'todos', compania:null, empleo:null, nuevosDesde:null, error:null }; // empleo: null = todos los empleos // compania: null = el registro de todas las compañías en total
+const CUARTEL_LOG = { filas:null, nombres:{}, tipo:'todos', compania:null, empleo:null, nuevosDesde:null, error:null, cuenta:'cuartel' }; // cuenta: «cuartel» o «mandos» (parche 103: cada uno tiene su caja de registro)
+const logEsMandos = () => CUARTEL_LOG.cuenta==='mandos';
+const logCont = () => document.getElementById(logEsMandos() ? 'super-mandos-log-cont' : 'super-cuartel-log-cont');
+const logGrupos = () => logEsMandos() ? EMPLEO_GRUPOS_MANDOS : EMPLEO_GRUPOS;
+// Solo los movimientos de esa cuenta. Si todavía no se ha ejecutado el parche 103 (no existe la columna «cuenta»), el cuartel lo ve todo como antes
+async function logConsulta(armar){
+  let r = await armar(true);
+  if(r.error && /cuenta/i.test(r.error.message||'') && !logEsMandos()) r = await armar(false);
+  return r;
+} // empleo: null = todos los empleos // compania: null = el registro de todas las compañías en total
 function onCuartelLogCompania(v){ CUARTEL_LOG.compania = v ? parseInt(v,10) : null; cargarCuartelEventosSuper(); }
 async function borrarEventoCuartel(id){
   if(!await confirmarApp('¿Borrar este registro? No se puede deshacer.', { si:'Borrar', peligro:true })) return;
@@ -5912,17 +6002,23 @@ async function borrarEventoCuartel(id){
 // Borra TODO lo que cumple los filtros de arriba (compañía, empleo y tipo), no solo lo que se ve en pantalla
 async function borrarEventosFiltrados(){
   const f = { p_compania: CUARTEL_LOG.compania, p_empleo: CUARTEL_LOG.empleo, p_tipo: CUARTEL_LOG.tipo==='todos' ? null : CUARTEL_LOG.tipo };
-  let q = sb.from('cuartel_eventos').select('id', { count:'exact', head:true });
-  if(f.p_compania) q = q.eq('compania', f.p_compania);
-  if(f.p_empleo) q = q.filter('nombre', 'match', filtroEmpleoRegex(f.p_empleo));
-  if(f.p_tipo) q = q.eq('tipo', f.p_tipo);
-  const { count, error } = await q;
+  let conCuenta = true;
+  const { count, error } = await logConsulta(cc=>{
+    conCuenta = cc;
+    let q = sb.from('cuartel_eventos').select('id', { count:'exact', head:true });
+    if(cc) q = q.eq('cuenta', CUARTEL_LOG.cuenta);
+    if(f.p_compania) q = q.eq('compania', f.p_compania);
+    if(f.p_empleo) q = q.filter('nombre', 'match', filtroEmpleoRegex(f.p_empleo));
+    if(f.p_tipo) q = q.eq('tipo', f.p_tipo);
+    return q;
+  });
+  if(conCuenta) f.p_cuenta = CUARTEL_LOG.cuenta;
   if(error){ showToast('No se pudo contar: '+cuErrorParche(error, 70)); return; }
   if(!count){ showToast('No hay nada que borrar con esos filtros.'); return; }
-  const que = [f.p_compania ? `de la ${f.p_compania}ª Compañía` : 'de TODAS las compañías', f.p_empleo ? `solo de ${EMPLEO_GRUPOS[f.p_empleo].nombre}` : 'de todos los empleos', f.p_tipo ? ({ entrada:'solo entradas', contactar:'solo contactos', pdf:'solo descargas' })[f.p_tipo] : 'de todos los tipos'].join(', ');
+  const que = [f.p_compania ? `de la ${f.p_compania}ª Compañía` : 'de TODAS las compañías', f.p_empleo ? `solo de ${logGrupos()[f.p_empleo].nombre}` : 'de todos los empleos', f.p_tipo ? ({ entrada:'solo entradas', contactar:'solo contactos', pdf:'solo descargas', app:'solo app' })[f.p_tipo] : 'de todos los tipos'].join(', ');
   const todo = !f.p_compania && !f.p_empleo && !f.p_tipo;
   if(todo){
-    const txt = await preguntarApp(`Vas a BORRAR TODO el registro del cuartel: ${count} movimientos (todas las compañías, empleos y tipos). No se puede deshacer.\n\nEscribe BORRAR para confirmar:`, '', { si:'Borrar todo', peligro:true });
+    const txt = await preguntarApp(`Vas a BORRAR TODO el registro ${logEsMandos()?'de mandos':'del cuartel'}: ${count} movimientos (todas las compañías, empleos y tipos). No se puede deshacer.\n\nEscribe BORRAR para confirmar:`, '', { si:'Borrar todo', peligro:true });
     if((txt||'').trim() !== 'BORRAR'){ showToast('No se ha borrado nada.'); return; }
   } else if(!await confirmarApp(`Se van a borrar ${count} movimiento${count===1?'':'s'} (${que}). No se puede deshacer. ¿Seguro?`, { si:'Borrar', peligro:true })) return;
   const { data, error: e2 } = await sb.rpc('borrar_cuartel_eventos', { ...f, p_todo: todo });
@@ -5930,36 +6026,41 @@ async function borrarEventosFiltrados(){
   showToast(`Borrados ${data} movimientos.`);
   await cargarCuartelEventosSuper();
 }
-function onCuartelLogEmpleo(v){ CUARTEL_LOG.empleo = EMPLEO_GRUPOS[v] ? v : null; cargarCuartelEventosSuper(); }
-async function cargarCuartelEventosSuper(abriendo){
+function onCuartelLogEmpleo(v){ CUARTEL_LOG.empleo = logGrupos()[v] ? v : null; cargarCuartelEventosSuper(); }
+async function cargarCuartelEventosSuper(abriendo, cuenta){
+  if(cuenta && cuenta!==CUARTEL_LOG.cuenta){ CUARTEL_LOG.cuenta = cuenta; CUARTEL_LOG.empleo = null; CUARTEL_LOG.tipo = 'todos'; } // al pasar de la caja del cuartel a la de mandos (o al revés)
+  const claveVisto = logEsMandos() ? 'super|mandos-log' : 'super|cuartel-log';
   // Al ABRIR la caja: lo que llegó desde la última vez que la abriste lleva un puntito rojo (solo esta vez) y el numerito de la caja se quita en el acto.
   // Si cierras la caja y la vuelves a abrir, esos movimientos ya no llevan el puntito.
-  if(abriendo===true){ CUARTEL_LOG.nuevosDesde = disenoVisto('super|cuartel-log'); disenoMarcarVisto('super|cuartel-log'); }
-  const cont = document.getElementById('super-cuartel-log-cont'); if(cont) cont.innerHTML = '<p class="small-note">Cargando…</p>';
-  let q = sb.from('cuartel_eventos').select('*');
-  if(CUARTEL_LOG.compania) q = q.eq('compania', CUARTEL_LOG.compania); // si se elige una compañía, se piden solo los suyos (así los 300 últimos son de esa)
-  if(CUARTEL_LOG.empleo) q = q.filter('nombre', 'match', filtroEmpleoRegex(CUARTEL_LOG.empleo));  // y si se elige un empleo, solo los de ese empleo (caballeros y damas)
-  const { data, error } = await q.order('creado_en', { ascending:false }).limit(300);
-  CUARTEL_LOG.error = error ? cuErrorParche(error) : null; CUARTEL_LOG.filas = error ? null : (data||[]); CUARTEL_LOG.nombres = {};
+  if(abriendo===true){ CUARTEL_LOG.nuevosDesde = disenoVisto(claveVisto); disenoMarcarVisto(claveVisto); }
+  const cont = logCont(); if(cont) cont.innerHTML = '<p class="small-note">Cargando…</p>';
+  const { data, error } = await logConsulta(cc=>{
+    let q = sb.from('cuartel_eventos').select('*');
+    if(cc) q = q.eq('cuenta', CUARTEL_LOG.cuenta); // cuartel y mandos, cada uno en su caja
+    if(CUARTEL_LOG.compania) q = q.eq('compania', CUARTEL_LOG.compania); // si se elige una compañía, se piden solo los suyos (así los 300 últimos son de esa)
+    if(CUARTEL_LOG.empleo) q = q.filter('nombre', 'match', filtroEmpleoRegex(CUARTEL_LOG.empleo));  // y si se elige un empleo, solo los de ese empleo (caballeros y damas)
+    return q.order('creado_en', { ascending:false }).limit(300);
+  });
+  CUARTEL_LOG.error = error ? cuErrorParche(error, logEsMandos() ? 103 : undefined) : null; CUARTEL_LOG.filas = error ? null : (data||[]); CUARTEL_LOG.nombres = {};
   const ids = [...new Set((data||[]).map(e=>e.persona_id).filter(Boolean))];
   if(ids.length){ const r = await sb.from('personas').select('id,nombre,apellidos,compania,seccion').in('id', ids); (r.data||[]).forEach(p=>{ CUARTEL_LOG.nombres[p.id] = `${p.apellidos}, ${p.nombre} (Sec. ${p.compania}${p.seccion})`; }); }
   pintarCuartelEventosSuper();
 }
 function pintarCuartelEventosSuper(){
-  const cont = document.getElementById('super-cuartel-log-cont'); if(!cont) return;
+  const cont = logCont(); if(!cont) return;
   if(CUARTEL_LOG.error){ cont.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar: ${escHtml(CUARTEL_LOG.error)}</p><button class="small-btn" onclick="cargarCuartelEventosSuper()">↻ Reintentar</button>`; return; }
   const filas = (CUARTEL_LOG.filas||[]).filter(e=>CUARTEL_LOG.tipo==='todos' || e.tipo===CUARTEL_LOG.tipo);
-  const ICONO = { entrada:'🪖 Entrada', contactar:'📞 Contactar', pdf:'📥 Descarga', app:'📲 App' }; // «Descarga»: PDF o Excel; en el detalle sale de dónde (p. ej. «PDF de Servicios · …», «Excel de Pernoctas · …»)
+  const ICONO = { entrada: logEsMandos() ? '🎖️ Entrada' : '🪖 Entrada', contactar:'📞 Contactar', pdf:'📥 Descarga', app:'📲 App' }; // «Descarga»: PDF o Excel; en el detalle sale de dónde (p. ej. «PDF de Servicios · …», «Excel de Pernoctas · …»)
   const nuevo = e => !!(CUARTEL_LOG.nuevosDesde && new Date(e.creado_en) > new Date(CUARTEL_LOG.nuevosDesde));
   const fila = e => `<div class="history-row">${nuevo(e) ? '<span style="color:#d93025;font-weight:900;margin-right:4px;" title="Movimiento nuevo">●</span>' : ''}<span class="ts">${escHtml(new Date(e.creado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}))}</span> · <b>${e.tipo==='pdf' && e.detalle ? '📥 '+escHtml(/^(PDF|Excel) /.test(e.detalle) ? e.detalle : 'PDF de Servicios · '+e.detalle) : (ICONO[e.tipo]||escHtml(e.tipo))}</b> · ${e.compania}ª Cía · ${e.nombre ? nombreConIcono(e.nombre) : '(sin nombre)'} · IP ${escHtml(e.ip||'no disponible')} · ${escHtml(e.dispositivo||'')}${e.persona_id ? ' · a quién: <b>'+escHtml(CUARTEL_LOG.nombres[e.persona_id]||'(persona borrada)')+'</b>' : ''}${e.detalle && e.tipo!=='pdf' ? ' · '+escHtml(e.detalle) : ''} <button class="small-btn danger" style="padding:1px 8px;margin-left:6px;" title="Borrar este registro" onclick="borrarEventoCuartel(${e.id})">🗑</button></div>`;
   cont.innerHTML = `<div class="cuartel-bar" style="margin-top:0;">
       <div class="field"><label>Registro de</label><select onchange="onCuartelLogCompania(this.value)"><option value="">Todas las compañías (en total)</option>${companiasOptionsHtml(CUARTEL_LOG.compania)}</select></div>
-      <div class="field"><label>Empleo</label><select onchange="onCuartelLogEmpleo(this.value)"><option value="">Todos los empleos</option>${Object.keys(EMPLEO_GRUPOS).map(e=>`<option value="${e}" ${CUARTEL_LOG.empleo===e?'selected':''}>${EMPLEO_GRUPOS[e].nombre}</option>`).join('')}</select></div>
+      <div class="field"><label>Empleo</label><select onchange="onCuartelLogEmpleo(this.value)"><option value="">Todos los empleos</option>${Object.keys(logGrupos()).map(e=>`<option value="${e}" ${CUARTEL_LOG.empleo===e?'selected':''}>${logGrupos()[e].nombre}</option>`).join('')}</select></div>
       <button class="small-btn" onclick="cargarCuartelEventosSuper()">↻ Actualizar</button>
       <button class="small-btn danger" onclick="borrarEventosFiltrados()">🗑 Borrar lo filtrado…</button>
     </div>
     <div class="semanas-toggle" style="max-width:460px;margin-bottom:10px;">${[['todos','Todo'],['entrada','Entradas'],['contactar','Contactos'],['pdf','Descargas'],['app','App']].map(([v,n])=>`<button type="button" class="${CUARTEL_LOG.tipo===v?'active':''}" onclick="CUARTEL_LOG.tipo='${v}'; pintarCuartelEventosSuper()">${n}</button>`).join('')}</div>
-    <p class="small-note" style="margin-top:0;">Se muestran los últimos 300 movimientos ${CUARTEL_LOG.compania ? 'de la '+CUARTEL_LOG.compania+'ª Compañía' : 'de todas las compañías'}${CUARTEL_LOG.empleo ? ', solo de '+EMPLEO_GRUPOS[CUARTEL_LOG.empleo].nombre : ''}.</p>
+    <p class="small-note" style="margin-top:0;">Se muestran los últimos 300 movimientos ${CUARTEL_LOG.compania ? 'de la '+CUARTEL_LOG.compania+'ª Compañía' : 'de todas las compañías'}${CUARTEL_LOG.empleo ? ', solo de '+logGrupos()[CUARTEL_LOG.empleo].nombre : ''}.</p>
     ${filas.length ? filas.map(fila).join('') : '<p class="small-note">No hay movimientos de este tipo.</p>'}`;
 }
 /* ---- Registro del Furry (solo superadmin, parche SQL 101): Excel y PDF que exporta cada Furry y sus cambios importantes ---- */
@@ -9137,7 +9238,8 @@ async function cargarCuadranteAlumno(){
   CUADRANTE_AL = { roster: ordenado, servicios, dias, compania: c, fest: diasFestivosServicios(c) }; // puentes y maniobras, con los mismos colores que ve el Furry
 }
 function pintarCuadranteAlumno(){
-  const cont = document.getElementById('alumno-cuadrante-cont'), u = CUADRANTE_AL, yo = CURRENT.persona.id, hoyF = ymd(new Date());
+  const u = CUADRANTE_AL, cont = document.getElementById(u.contId || 'alumno-cuadrante-cont'), yo = (CURRENT.persona||{}).id || null, hoyF = ymd(new Date());
+  if(!cont) return;
   const LETRA = ['D','L','M','X','J','V','S'];
   const porPD = {}; u.servicios.forEach(s=>{ const k = s.persona_id+'|'+s.fecha; (porPD[k] = porPD[k] || []).push(s); });
   const fest = u.fest || {}, claseFest = f => fest[f] ? (fest[f].tipo==='mani' ? ' mani' : ' fes') : '', tituloFest = f => fest[f] ? ` title="${escHtml(fest[f].nombre)}"` : '';
@@ -9158,10 +9260,10 @@ function pintarCuadranteAlumno(){
     tbody += '</tr>';
   });
   tbody += '</tbody>';
-  cont.innerHTML = `<div class="serv-grid-wrap"><table class="serv-grid" id="alumno-cuadrante-tabla" style="min-width:${210+u.dias.length*36}px;">${thead+tbody}</table></div>
+  cont.innerHTML = `<div class="serv-grid-wrap"><table class="serv-grid" id="${u.contId ? 'mandos-cuadrante-tabla' : 'alumno-cuadrante-tabla'}" style="min-width:${210+u.dias.length*36}px;">${thead+tbody}</table></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:6px 0;font-size:.72rem;color:var(--ink-soft);"><span><span class="serv-leg fes">&nbsp;&nbsp;&nbsp;</span> Puente / fin de semana largo</span><span><span class="serv-leg mani">&nbsp;&nbsp;&nbsp;</span> Maniobras</span><span><span class="serv-leg fin">&nbsp;&nbsp;&nbsp;</span> Fin de semana</span><span><span class="serv-leg hoy">&nbsp;&nbsp;&nbsp;</span> Hoy</span></div>
-    <div class="small-note" style="margin:6px 0;">Es solo para consultar. Tu fila está marcada: toca uno de tus servicios para ver más. Los que llevan borde discontinuo son estimados y pueden cambiar.</div>
-    <div id="alumno-cuadrante-detalle"></div>`;
+    <div class="small-note" style="margin:6px 0;">${u.contId ? 'Es solo para consultar. Los que llevan borde discontinuo son estimados y pueden cambiar.' : 'Es solo para consultar. Tu fila está marcada: toca uno de tus servicios para ver más. Los que llevan borde discontinuo son estimados y pueden cambiar.'}</div>
+    ${u.contId ? '' : '<div id="alumno-cuadrante-detalle"></div>'}`;
   const wrap = cont.querySelector('.serv-grid-wrap'), th = cont.querySelector('th.hoy');
   if(wrap && th) wrap.scrollLeft = Math.max(0, th.offsetLeft - 230);
 }
