@@ -1342,7 +1342,7 @@ aplicarTema();
     <div id="cuartel-notice"></div>
     <div id="cuartel-controles"></div>
     <div id="cuartel-vista"></div>
-    <div class="contacto-app"><p class="small-note" style="margin:0 0 8px;">❓ ¿Algún problema con la app? Escribe a <b>Pablo</b> (Creador)<span id="cuartel-contacto"></span>.</p>
+    <div class="contacto-app"><p class="small-note" style="margin:0 0 8px;">❓ ¿Algún problema con la app? Escriba a <b>Pablo</b> (Creador)<span id="cuartel-contacto"></span>.</p>
       <div class="contacto-botones"><a class="small-btn" href="mailto:pablopuig86@gmail.com?subject=Problema%20con%20Portal%20AGM">📧 Correo</a><button class="small-btn" type="button" onclick="abrirMensajeCreador()">💬 Avisarme dentro de la app</button></div></div>
   </div>
 
@@ -1415,7 +1415,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-28T10:30:00";
+const APP_VERSION = "2026-10-28T10:19:16";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -3939,25 +3939,58 @@ const MANDOS_EMPLEOS = ['Capitán', 'Comandante'];
 EMPLEO_NOMBRE['Capitán'] = 'Capitán'; EMPLEO_NOMBRE['Comandante'] = 'Comandante';
 EMPLEO_IMG['Capitán'] = 'empleos/capitan.png'; EMPLEO_IMG['Comandante'] = 'empleos/comandante.png';
 const EMPLEO_GRUPOS_MANDOS = { 'Capitán':{ nombre:'Capitán', codigos:['Capitán'] }, 'Comandante':{ nombre:'Comandante', codigos:['Comandante'] } };
+// Los mandos que pueden entrar (no escriben nada: eligen su empleo y después su nombre). comp = compañía de esa persona (null = todas)
+const MANDOS_PERSONAS = [
+  { emp:'Comandante', nombre:'Antonio Manuel', ap1:'Polo', ap2:'González', comp:null, sec:null },
+  { emp:'Capitán', nombre:'Pedro', ap1:'Gómez-Guillamón', ap2:'Pérez', comp:11, sec:111 },
+  { emp:'Capitán', nombre:'Sergio', ap1:'Aznar', ap2:'Martín', comp:11, sec:112 },
+  { emp:'Capitán', nombre:'Emilio José', ap1:'Aznar', ap2:'Pitarch', comp:11, sec:113 },
+  { emp:'Capitán', nombre:'Arturo', ap1:'Hernández', ap2:'Pérez-Tomé', comp:11, sec:114 }
+];
+const esMandosActual = () => !!(CURRENT && CURRENT.mode==='cuartel' && CURRENT.mandos);
+const mandosDisponibles = emp => MANDOS_PERSONAS.filter(x=>x.emp===emp && (x.comp==null || x.comp===Number(CURRENT.compania)));
+const mandosEtiqueta = x => `${x.nombre} ${x.ap1} ${x.ap2}${x.sec ? ' · Sección '+x.sec : ''}`;
+// Al cambiar el empleo (mandos): se rellena la lista de nombres disponibles de ese empleo; con uno solo queda elegido. Si no hay ninguno listado, se escribe a mano.
+function mandosSync(pre, ult){
+  if(!esMandosActual()) return;
+  const emp = (document.getElementById(pre+'-empleo')||{}).value, sel = document.getElementById(pre+'-persona'), man = document.getElementById(pre+'-manual'); if(!sel || !man) return;
+  const lista = mandosDisponibles(emp);
+  const campo = id => document.getElementById(pre+'-'+id);
+  const ponerCampos = x => { campo('nombre').value = x ? x.nombre : ''; campo('ap1').value = x ? x.ap1 : ''; campo('ap2').value = x ? x.ap2 : ''; };
+  sel.parentElement.classList.toggle('hidden', !lista.length);
+  man.classList.toggle('hidden', !!lista.length || !emp);
+  if(!lista.length){ sel.innerHTML = ''; return; }
+  const previo = (ult && ult.empleo===emp) ? lista.findIndex(x=>x.nombre===ult.nombre && x.ap1===ult.ap1 && x.ap2===ult.ap2) : -1;
+  const elegido = lista.length===1 ? 0 : previo;
+  sel.innerHTML = (elegido<0 ? '<option value="" selected disabled>— Elija su nombre —</option>' : '') + lista.map((x,i)=>`<option value="${i}" ${i===elegido?'selected':''}>${escHtml(mandosEtiqueta(x))}</option>`).join('');
+  ponerCampos(elegido>=0 ? lista[elegido] : null);
+}
+function mandosElegirPersona(pre){
+  const emp = (document.getElementById(pre+'-empleo')||{}).value, v = (document.getElementById(pre+'-persona')||{}).value, x = mandosDisponibles(emp)[parseInt(v,10)];
+  ['nombre','ap1','ap2'].forEach(k=>{ const c = document.getElementById(pre+'-'+k); if(c) c.value = x ? x[k] : ''; });
+}
 const empleosActuales = () => (CURRENT && CURRENT.mode==='cuartel' && CURRENT.mandos) ? MANDOS_EMPLEOS : CUARTEL_EMPLEOS;
 const empleoDeNombre = n => [...CUARTEL_EMPLEOS, ...MANDOS_EMPLEOS].find(e=>String(n||'').startsWith(e+' ')) || null;
 const empleoImgHtml = emp => EMPLEO_IMG[emp] ? `<img class="empleo-ico" src="${EMPLEO_IMG[emp]}" alt="" onerror="this.remove()">` : '';
 const nombreConIcono = n => empleoImgHtml(empleoDeNombre(n)) + escHtml(n); // «🎖 CC Sgto García López, Juan», con la imagen de su empleo si existe
-function iconoEmpleoSel(pre){ const s = document.getElementById(pre+'-empleo'), i = document.getElementById(pre+'-ico'); if(s && i) i.innerHTML = empleoImgHtml(s.value); }
+function iconoEmpleoSel(pre, ult){ const s = document.getElementById(pre+'-empleo'), i = document.getElementById(pre+'-ico'); if(s && i) i.innerHTML = empleoImgHtml(s.value); mandosSync(pre, ult); }
 // Los datos de una persona: empleo + nombre + primer apellido + segundo apellido (los cuatro obligatorios). «pre» = prefijo de los id (cuartel, msg, vcc)
 const camposPersonaHtml = (pre, ult) => `
-    <div class="field"><label>Empleo</label><div style="display:flex;gap:8px;align-items:center;"><span id="${pre}-ico"></span><select id="${pre}-empleo" style="flex:1;" onchange="iconoEmpleoSel('${pre}')">${(ult&&empleosActuales().includes(ult.empleo)) ? '' : '<option value="" selected disabled>— Elige tu empleo —</option>'}${empleosActuales().map(e=>`<option value="${e}" ${(ult&&ult.empleo)===e?'selected':''}>${e} · ${EMPLEO_NOMBRE[e]}</option>`).join('')}</select></div></div>
+    <div class="field"><label>Empleo</label><div style="display:flex;gap:8px;align-items:center;"><span id="${pre}-ico"></span><select id="${pre}-empleo" style="flex:1;" onchange="iconoEmpleoSel('${pre}')">${(ult&&empleosActuales().includes(ult.empleo)) ? '' : '<option value="" selected disabled>— Elija su empleo —</option>'}${empleosActuales().map(e=>`<option value="${e}" ${(ult&&ult.empleo)===e?'selected':''}>${EMPLEO_NOMBRE[e]===e ? e : e+' · '+EMPLEO_NOMBRE[e]}</option>`).join('')}</select></div></div>
+    ${esMandosActual() ? `<div class="field hidden"><label>Su nombre</label><select id="${pre}-persona" onchange="mandosElegirPersona('${pre}')"></select></div>` : ''}
+    <div id="${pre}-manual" class="${esMandosActual() ? 'hidden' : ''}">
     <div class="field"><label>Nombre</label><input type="text" id="${pre}-nombre" value="${escHtml((ult&&ult.nombre)||'')}" placeholder="Ej.: Juan" autocomplete="given-name" maxlength="23"></div>
     <div class="field"><label>Primer apellido</label><input type="text" id="${pre}-ap1" value="${escHtml((ult&&ult.ap1)||'')}" placeholder="Ej.: García" autocomplete="family-name" maxlength="23"></div>
-    <div class="field"><label>Segundo apellido</label><input type="text" id="${pre}-ap2" value="${escHtml((ult&&ult.ap2)||'')}" placeholder="Ej.: López" autocomplete="off" maxlength="23"></div>`;
+    <div class="field"><label>Segundo apellido</label><input type="text" id="${pre}-ap2" value="${escHtml((ult&&ult.ap2)||'')}" placeholder="Ej.: López" autocomplete="off" maxlength="23"></div>
+    </div>`;
 // Lee y valida esos cuatro datos; si falta alguno avisa y devuelve null
 function leerPersonaCampos(pre){
   const v = id => ((document.getElementById(pre+'-'+id)||{}).value||'').trim().replace(/\s+/g,' ');
   const per = { empleo:v('empleo'), nombre:v('nombre'), ap1:v('ap1'), ap2:v('ap2') };
-  if(!empleosActuales().includes(per.empleo)){ showToast('Elige tu empleo.'); return null; }
-  if(per.nombre.length < 2){ showToast('Escribe tu nombre.'); return null; }
-  if(per.ap1.length < 2){ showToast('Escribe tu primer apellido.'); return null; }
-  if(per.ap2.length < 2){ showToast('Escribe tu segundo apellido.'); return null; }
+  if(!empleosActuales().includes(per.empleo)){ showToast('Elija su empleo.'); return null; }
+  if(per.nombre.length < 2){ showToast(esMandosActual() ? 'Elija su nombre.' : 'Escriba su nombre.'); return null; }
+  if(per.ap1.length < 2){ showToast('Escriba su primer apellido.'); return null; }
+  if(per.ap2.length < 2){ showToast('Escriba su segundo apellido.'); return null; }
   if(/[<>"]/.test(per.nombre+per.ap1+per.ap2)){ showToast('El nombre y los apellidos no pueden llevar los símbolos  <  >  " .'); return null; }
   return per;
 }
@@ -3975,14 +4008,14 @@ function pedirNombreCuartel(){
   document.getElementById('cuartel-vista').innerHTML = `
     <div class="login-card" style="max-width:420px;margin:24px auto;">
       ${CURRENT.mandos ? `<h3 style="margin-top:0;">🎖️ ¿Quién entra?</h3>
-      <p class="desc">Elige tu empleo y escribe tu nombre y tus dos apellidos (todo es obligatorio). Queda registrado quién usa la cuenta de mandos y desde qué dispositivo.</p>` : `<h3 style="margin-top:0;">🪖 ¿Quién está de servicio?</h3>
-      <p class="desc">Elige tu empleo y escribe tu nombre y tus dos apellidos (todo es obligatorio). Queda registrado quién usa la cuenta del servicio de cuartel y desde qué dispositivo. Máximo 3 dispositivos a la vez.</p>`}
+      <p class="desc">Elija su empleo y, después, su nombre en la lista. Queda registrado quién usa la cuenta de mandos y desde qué dispositivo.</p>` : `<h3 style="margin-top:0;">🪖 ¿Quién está de servicio?</h3>
+      <p class="desc">Elija su empleo y escriba su nombre y sus dos apellidos (todo es obligatorio). Queda registrado quién usa la cuenta del servicio de cuartel y desde qué dispositivo. Máximo 3 dispositivos a la vez.</p>`}
       <form onsubmit="event.preventDefault(); confirmarNombreCuartel();">
         ${camposPersonaHtml('cuartel', personaGuardada())}
         <button class="primary-btn" type="submit">Entrar</button>
       </form>
     </div>`;
-  iconoEmpleoSel('cuartel');
+  iconoEmpleoSel('cuartel', personaGuardada());
 }
 async function confirmarNombreCuartel(){
   const per = leerPersonaCampos('cuartel'); if(!per) return;
@@ -3996,11 +4029,11 @@ async function iniciarSesionCuartel(nombre){
     if(!error && data) r = data;
   }catch(e){}
   if(r===null){
-    await cerrarCuartelLocal('No se ha podido comprobar la sesión del servicio de cuartel (¿sin conexión?). Inténtalo de nuevo.');
+    await cerrarCuartelLocal('No se ha podido comprobar la sesión del servicio de cuartel (¿sin conexión?). Inténtelo de nuevo.');
     return;
   }
   if(r==='lleno'){
-    await cerrarCuartelLocal('Ya hay 3 dispositivos conectados con la cuenta del servicio de cuartel. Que alguien pulse "Salir" en otro dispositivo, o espera unos minutos.');
+    await cerrarCuartelLocal('Ya hay 3 dispositivos conectados con la cuenta del servicio de cuartel. Que alguien pulse "Salir" en otro dispositivo, o espere unos minutos.');
     return;
   }
   try{ sessionStorage.setItem('portalagm_cuartel_sesion', nombre); }catch(e){}
@@ -4108,16 +4141,16 @@ const cuErrorParche = (e, n) => /function|schema cache|does not exist/i.test(e &
 /* ---- «Avisar a Pablo»: el mensaje llega como aviso dentro de la app (lo ve solo el superadmin, en la caja «Mensajes de usuarios») ---- */
 function abrirMensajeCreador(){
   abrirModalGlobal(`<h3>💬 Avisar a Pablo</h3>
-    <p class="modal-nota" style="margin-top:0;">Cuéntale qué ha pasado. Tienes que decir quién eres (empleo, nombre y dos apellidos): sin eso no se envía. Le llega como un aviso dentro de la app, con tu nombre, tu compañía y desde qué conexión lo mandas. Si es urgente, escríbele también al correo.</p>
+    <p class="modal-nota" style="margin-top:0;">Cuéntele qué ha pasado. Tiene que decir quién es (empleo y nombre): sin eso no se envía. Le llega como un aviso dentro de la app, con su nombre, su compañía y desde qué conexión lo manda. Si es urgente, escríbale también al correo.</p>
     ${camposPersonaHtml('msg', personaGuardada())}
     <div class="field"><label>Mensaje</label><textarea id="msg-creador" rows="5" maxlength="1000" placeholder="Qué ha pasado y en qué pantalla…" style="width:100%;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;"></textarea></div>
     <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" id="msg-enviar" onclick="enviarMensajeCreador()">Enviar</button></div>`);
-  iconoEmpleoSel('msg');
+  iconoEmpleoSel('msg', personaGuardada());
 }
 async function enviarMensajeCreador(){
   const per = leerPersonaCampos('msg'); if(!per) return; // sin empleo, nombre y los dos apellidos no se envía
   const t = (document.getElementById('msg-creador').value||'').trim();
-  if(t.length < 5){ showToast('Escribe un mensaje un poco más largo.'); return; }
+  if(t.length < 5){ showToast('Escriba un mensaje un poco más largo.'); return; }
   if(/[<>]/.test(t)){ showToast('El mensaje no puede llevar los símbolos  <  > .'); return; }
   const btn = document.getElementById('msg-enviar'); if(btn) btn.disabled = true;
   const { error } = await sb.rpc('enviar_mensaje_app', { p_mensaje: t, p_empleo: per.empleo, p_nombre: per.nombre, p_apellido1: per.ap1, p_apellido2: per.ap2, p_dispositivo: describirDispositivo(), p_device_id: idDispositivo() });
@@ -4276,7 +4309,7 @@ function cuartelExportar(formato){
   const nDias = esCom ? 7 : CUARTEL.data.nDias;
   const diasOpts = Array.from({length:nDias},(_,i)=>`<option value="${i}" ${i===d?'selected':''}>${esCom ? '' : 'Noche del '}${DAY_NAMES_FULL[i%7]} ${fmt(diaPern(ACTIVE_WEEK,i))}</option>`).join('');
   abrirModalGlobal(`<h3>${formato==='pdf'?'📕 Exportar a PDF':'📄 Exportar a Excel'}</h3>
-    <p class="modal-nota" style="margin-top:0;">¿Qué quieres exportar?</p>
+    <p class="modal-nota" style="margin-top:0;">¿Qué desea exportar?</p>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
       <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="exp-alcance" value="dia" checked onchange="cuartelExpActualizar()"> ${esCom ? 'El día entero (desayuno, comida y cena)' : 'Una noche entera'}</label>
       ${esCom ? `<label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="exp-alcance" value="comida" onchange="cuartelExpActualizar()"> Una comida concreta</label>` : ''}
@@ -4461,7 +4494,7 @@ function pintarCuartel(){
   if(CUARTEL.vista==='buscar'){
     if(CUARTEL.seccion!=='todas' && !CUARTEL.data.secciones.some(s=>s.code===CUARTEL.seccion)) CUARTEL.seccion='todas';
     el.innerHTML = `<div class="cuartel-bar">${seccionSelectHtml(true)}
-        <div class="field" style="flex:1;min-width:200px;"><label>Nombre o apellidos</label><input type="search" placeholder="Escribe para buscar…" value="${escHtml(CUARTEL.busqueda)}" oninput="onCuartelBusqueda(this.value)"></div>
+        <div class="field" style="flex:1;min-width:200px;"><label>Nombre o apellidos</label><input type="search" placeholder="Escriba para buscar…" value="${escHtml(CUARTEL.busqueda)}" oninput="onCuartelBusqueda(this.value)"></div>
       </div><div id="cuartel-resultados"></div>`;
     pintarBusquedaCuartel();
     return;
@@ -4569,7 +4602,7 @@ function pintarBusquedaCuartel(){
   const secs = CUARTEL.data.secciones.filter(s=>CUARTEL.seccion==='todas' || s.code===CUARTEL.seccion);
   let gente = secs.flatMap(sec=>sec.people.map(p=>({p, sec})));
   if(q) gente = gente.filter(({p})=>{ const a=cuartelNorm(p.apellidos+' '+p.nombre), b=cuartelNorm(p.nombre+' '+p.apellidos); return q.split(' ').every(w=>a.includes(w)||b.includes(w)); });
-  if(!q && CUARTEL.seccion==='todas'){ el.innerHTML = '<p class="small-note">Escribe un nombre o elige una sección.</p>'; return; }
+  if(!q && CUARTEL.seccion==='todas'){ el.innerHTML = '<p class="small-note">Escriba un nombre o elija una sección.</p>'; return; }
   if(!gente.length){ el.innerHTML = '<p class="small-note">No hay nadie con ese nombre.</p>'; return; }
   const esCom = CUARTEL.modulo==='comidas';
   el.innerHTML = `<p class="small-note">${gente.length} persona${gente.length===1?'':'s'}</p>` + gente.slice(0,60).map(({p,sec})=>{
