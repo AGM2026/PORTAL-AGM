@@ -1337,6 +1337,7 @@ aplicarTema();
       <button class="module-btn" id="cuartel-mod-comidas-btn" onclick="setCuartelModulo('comidas')">🍽️ Comidas</button>
       <button class="module-btn" id="cuartel-mod-pernoctas-btn" onclick="setCuartelModulo('pernoctas')">🛏️ Pernoctas</button>
       <button class="module-btn" id="cuartel-mod-servicios-btn" onclick="setCuartelModulo('servicios')">📋 Servicios</button>
+      <button class="module-btn hidden" id="cuartel-mod-personal-btn" onclick="setCuartelModulo('personal')">👥 Personal</button>
     </div>
     <div id="cuartel-week-select"></div>
     <div id="cuartel-notice"></div>
@@ -1415,7 +1416,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-28T10:19:16";
+const APP_VERSION = "2026-10-28T10:28:33";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -3906,6 +3907,7 @@ async function enterCuartel(compania, opts){
   const { data: companiaInfo } = await sb.from('companias').select('*').eq('numero', compania).single();
   CURRENT = { mode:'cuartel', compania, companiaInfo, vistaPrevia, previo, pantallaPrevia, mandos: !!(opts && opts.mandos) }; // mandos: cuenta de capitán / comandantes (parche 103)
   document.querySelector('#screen-cuartel .mh-quien').textContent = CURRENT.mandos ? '🎖️ Mandos' : '🪖 Servicio de cuartel';
+  document.getElementById('cuartel-mod-personal-btn').classList.toggle('hidden', !CURRENT.mandos); // «Personal» (solo lectura): solo para mandos
   await Promise.all([ fetchCortesEspeciales(compania), fetchPernoctaForzarAgm(compania), fetchComidaDesbloqueoDias(compania) ]);
   setActiveWeek(semanaEnCursoIndex());
   document.getElementById('cuartel-subtitle').textContent = `${compania}ª Compañía`;
@@ -4008,8 +4010,8 @@ function pedirNombreCuartel(){
   document.getElementById('cuartel-vista').innerHTML = `
     <div class="login-card" style="max-width:420px;margin:24px auto;">
       ${CURRENT.mandos ? `<h3 style="margin-top:0;">🎖️ ¿Quién entra?</h3>
-      <p class="desc">Elija su empleo y, después, su nombre en la lista. Queda registrado quién usa la cuenta de mandos y desde qué dispositivo.</p>` : `<h3 style="margin-top:0;">🪖 ¿Quién está de servicio?</h3>
-      <p class="desc">Elija su empleo y escriba su nombre y sus dos apellidos (todo es obligatorio). Queda registrado quién usa la cuenta del servicio de cuartel y desde qué dispositivo. Máximo 3 dispositivos a la vez.</p>`}
+      <p class="desc">Elija su empleo y, después, su nombre en la lista.</p>` : `<h3 style="margin-top:0;">🪖 ¿Quién está de servicio?</h3>
+      <p class="desc">Elija su empleo y escriba su nombre y sus dos apellidos (todo es obligatorio). Máximo 3 dispositivos a la vez.</p>`}
       <form onsubmit="event.preventDefault(); confirmarNombreCuartel();">
         ${camposPersonaHtml('cuartel', personaGuardada())}
         <button class="primary-btn" type="submit">Entrar</button>
@@ -4076,6 +4078,8 @@ async function setCuartelModulo(m){
   document.getElementById('cuartel-mod-comidas-btn').classList.toggle('active', m==='comidas');
   document.getElementById('cuartel-mod-pernoctas-btn').classList.toggle('active', m==='pernoctas');
   document.getElementById('cuartel-mod-servicios-btn').classList.toggle('active', m==='servicios');
+  document.getElementById('cuartel-mod-personal-btn').classList.toggle('active', m==='personal');
+  if(m==='personal'){ if(CURRENT.mandos) await renderMandosPersonal(); return; }
   if(m==='servicios'){ await cargarCuartelServicios(); return; }
   await cargarCuartel();
 }
@@ -6838,14 +6842,17 @@ const PE = { personas:null, error:null, sols:[], q:'', sec:'', filtros:new Set()
   secAb:new Set(), secMax:{}, multi:false, sel:new Set(), soloSel:false, ocupado:false, conexAb:false, cuartelAb:false };
 const PE_TANDA = 40; // filas por tanda en cada sección («Ver más» enseña otras tantas)
 const PE_VF_TXT = { 0:'Ninguno', 2:'2 viernes al mes', 4:'4 viernes (todos)' }; // «2» = cuota de 2 viernes por mes natural (seguidos o no, sin acumular)
-const PE_FILTROS = [['arresto','🚨 Arrestados'],['externado','🎒 Externados'],['intol','🥗 Con intolerancia'],['viernes','📅 Con viernes'],['sinreg','⏳ Sin registrar']];
+const PE_FILTROS = [['arresto','🚨 Arrestados'],['externado','🎒 Externados'],['intol','🥗 Con intolerancia'],['viernes','📅 Con viernes'],['promo','🎓 Promoción interna'],['sinreg','⏳ Sin registrar']];
+const PE_FILTROS_RO = ['arresto','externado','viernes','promo']; // lo que ven los mandos
 const peSecs = () => Array.from({length:SECTIONS_PER_COMPANY}, (_,i)=>i+1);
 const peFC = f => parseInt(f.slice(8,10),10)+'/'+parseInt(f.slice(5,7),10); // 'YYYY-MM-DD' → 'd/m'
 const peOrden = (a,b) => (a.seccion-b.seccion) || String(a.apellidos).localeCompare(String(b.apellidos),'es') || String(a.nombre).localeCompare(String(b.nombre),'es');
 const pePersona = id => (PE.personas||[]).find(p=>String(p.id)===String(id));
 const peArrestosVivos = p => (ARRESTOS.get(p.id)||[]).filter(arrestoVigente); // el de ahora o los próximos
-const peCumple = (p, f) => f==='arresto' ? peArrestosVivos(p).length>0 : f==='externado' ? !!p.externado : f==='intol' ? !!String(p.intolerancias||'').trim() : f==='viernes' ? (p.viernes_fuera||0)>0 : f==='sinreg' ? !p.registrado : true;
-function pePonerHtml(id, html){ const el = document.getElementById(id); if(el) el.innerHTML = html; }
+const peCumple = (p, f) => f==='arresto' ? peArrestosVivos(p).length>0 : f==='externado' ? !!p.externado : f==='intol' ? !!String(p.intolerancias||'').trim() : f==='viernes' ? (p.viernes_fuera||0)>0 : f==='promo' ? !!p.promocion_interna : f==='sinreg' ? !p.registrado : true;
+// Solo lectura (mandos): misma lista que la del Furry, pero sin ningún botón de cambio, sin servicios hechos, sin contraseñas ni conexión ni altas
+const peRO = () => !!(CURRENT && CURRENT.mode==='cuartel');
+function pePonerHtml(id, html){ const el = document.getElementById(peRO() ? id.replace(/^admin-pe-/, 'mandos-pe-') : id); if(el) el.innerHTML = html; }
 function pePintarBadge(n){ const b = document.getElementById('admin-pe-badge'); if(!b) return; b.textContent = n ? String(n) : ''; b.classList.toggle('hidden', !n); }
 // Consulta ligera (solo el número) para el numerito de la pestaña al entrar en el panel Furry
 async function peContarSolicitudes(){
@@ -6915,12 +6922,12 @@ function peBuscadorHtml(){
   return `<div class="cuartel-bar" style="margin-top:0;">
       <div class="field" style="flex:1 1 170px;min-width:0;"><label for="pe-q">Buscar por apellidos o nombre</label><input type="search" id="pe-q" value="${escHtml(PE.q)}" placeholder="Ej.: garcía juan" autocomplete="off" oninput="peBuscar(this.value)" style="width:100%;"></div>
       <div class="field" style="min-width:0;"><label for="pe-sec">Sección</label><select id="pe-sec" onchange="PE.sec=this.value; PE.secMax={}; pePintarLista()"><option value="">Todas</option>${peSecs().map(s=>`<option value="${s}" ${String(PE.sec)===String(s)?'selected':''}>${c}${s}</option>`).join('')}</select></div>
-      <button type="button" id="pe-multi-btn" class="small-btn${PE.multi?' active':''}" aria-pressed="${PE.multi}" onclick="peMulti()" style="padding:9px 10px;">☑ Selección múltiple</button>
+      ${peRO() ? '' : `<button type="button" id="pe-multi-btn" class="small-btn${PE.multi?' active':''}" aria-pressed="${PE.multi}" onclick="peMulti()" style="padding:9px 10px;">☑ Selección múltiple</button>`}
     </div><div class="pe-chips" id="pe-chips">${peChipsHtml()}</div>`;
 }
 function peChipsHtml(){
   const ps = PE.personas || [];
-  return PE_FILTROS.map(([f,t])=>`<button type="button" class="small-btn${PE.filtros.has(f)?' active':''}" aria-pressed="${PE.filtros.has(f)}" onclick="peFiltro('${f}')">${t} <span style="opacity:.7;">${ps.filter(p=>peCumple(p,f)).length}</span></button>`).join('');
+  return PE_FILTROS.filter(([f])=>!peRO() || PE_FILTROS_RO.includes(f)).map(([f,t])=>`<button type="button" class="small-btn${PE.filtros.has(f)?' active':''}" aria-pressed="${PE.filtros.has(f)}" onclick="peFiltro('${f}')">${t} <span style="opacity:.7;">${ps.filter(p=>peCumple(p,f)).length}</span></button>`).join('');
 }
 function pePintarChips(){ pePonerHtml('pe-chips', peChipsHtml()); peRefrescarSecciones(); }
 function peBuscar(v){ PE.q = v; clearTimeout(PE.t); PE.t = setTimeout(()=>{ PE.secMax = {}; pePintarLista(); }, 200); }
@@ -6935,7 +6942,7 @@ const peCuentaTxt = n => `${n} persona${n===1?'':'s'}`;
 // Cabecera de cada sección: nombre, nº de personas y un resumen (arrestados, externados…); con selección múltiple, su casilla
 function peSecCabHtml(s, ps){
   const n = f => ps.filter(p=>peCumple(p,f)).length, r = [];
-  [['arresto','🚨'],['externado','🎒'],['intol','🥗'],['viernes','📅'],['sinreg','⏳']].forEach(([f,ic])=>{ const k = n(f); if(k) r.push(`<span class="pe-t${f==='arresto'?' rojo':''}" title="${escHtml(PE_FILTROS.find(x=>x[0]===f)[1].slice(2))}">${ic} ${k}</span>`); });
+  [['arresto','🚨'],['externado','🎒'],['intol','🥗'],['viernes','📅'],['promo','🎓'],['sinreg','⏳']].filter(([f])=>!peRO() || PE_FILTROS_RO.includes(f)).forEach(([f,ic])=>{ const k = n(f); if(k) r.push(`<span class="pe-t${f==='arresto'?' rojo':''}" title="${escHtml(PE_FILTROS.find(x=>x[0]===f)[1].slice(2))}">${ic} ${k}</span>`); });
   const todas = ps.length>0 && ps.every(p=>PE.sel.has(String(p.id)));
   return (PE.multi ? `<input type="checkbox" class="pe-chk" aria-label="Seleccionar la sección ${CURRENT.compania}${s}" ${todas?'checked':''} onclick="event.stopPropagation()" onchange="peSelSeccion(${s}, this.checked)">` : '')
     + `<b>Sección ${CURRENT.compania}${s}</b> <span class="gp-cuenta" style="margin-left:0;">${peCuentaTxt(ps.length)}</span>${r.join('')}`;
@@ -6947,7 +6954,7 @@ function peSecBodyHtml(s, ps){
 }
 function pePintarLista(){
   const c = CURRENT.compania, tit = `<h3 class="section-title">👥 Personal de la ${c}ª Compañía</h3>`;
-  if(PE.error){ pePonerHtml('admin-pe-lista', tit + `<p class="small-note" style="color:var(--danger);">No se pudo cargar el personal: ${escHtml(PE.error)}</p><button type="button" class="small-btn" onclick="renderAdminPersonal()">↻ Reintentar</button>`); return; }
+  if(PE.error){ pePonerHtml('admin-pe-lista', tit + `<p class="small-note" style="color:var(--danger);">No se pudo cargar el personal: ${escHtml(PE.error)}</p><button type="button" class="small-btn" onclick="${peRO() ? 'renderMandosPersonal()' : 'renderAdminPersonal()'}">↻ Reintentar</button>`); return; }
   if(!PE.personas){ pePonerHtml('admin-pe-lista', tit + '<p class="small-note">Cargando…</p>'); return; }
   const ls = peFiltradas(), activo = peActivo();
   let html = `<div class="pe-cuenta" id="pe-cuenta">${peCuentaTxt(ls.length)}</div>` + (PE.multi ? `<div class="pe-chips" id="pe-selbar">${peSelBarHtml(ls.length)}</div>` : '');
@@ -6961,12 +6968,12 @@ function pePintarLista(){
   if(!ls.length) html += `<p class="small-note">${PE.personas.length ? (PE.soloSel && !PE.sel.size ? 'No hay nadie seleccionado.' : 'Nadie coincide con la búsqueda o los filtros.') : 'Todavía no hay nadie en la compañía.'}</p>`;
   if(PE.multi) html += `<div class="pe-barra" id="pe-barra">${peBarraHtml()}</div>`;
   pePonerHtml('admin-pe-lista', tit + html);
-  PE.abiertos.forEach(id=>{ if(document.getElementById('pe-f-'+id)) peCargarServicios(id); }); // fichas que siguen abiertas
+  if(!peRO()) PE.abiertos.forEach(id=>{ if(document.getElementById('pe-f-'+id)) peCargarServicios(id); }); // fichas que siguen abiertas
 }
 function peSecToggle(s, det){
   if(!peActivo()){ if(det.open) PE.secAb.add(s); else PE.secAb.delete(s); } // lo que abre una búsqueda no se recuerda
   const b = document.getElementById('pe-secb-'+s);
-  if(det.open && b && !b.innerHTML.trim()){ b.innerHTML = peSecBodyHtml(s, peFiltradas().filter(p=>p.seccion===s)); PE.abiertos.forEach(id=>{ if(b.querySelector('#pe-f-'+CSS.escape(id))) peCargarServicios(id); }); }
+  if(det.open && b && !b.innerHTML.trim()){ b.innerHTML = peSecBodyHtml(s, peFiltradas().filter(p=>p.seccion===s)); if(!peRO()) PE.abiertos.forEach(id=>{ if(b.querySelector('#pe-f-'+CSS.escape(id))) peCargarServicios(id); }); }
 }
 function peVerMas(s){ PE.secMax[s] = (PE.secMax[s] || PE_TANDA) + PE_TANDA; const b = document.getElementById('pe-secb-'+s); if(b) b.innerHTML = peSecBodyHtml(s, peFiltradas().filter(p=>p.seccion===s)); }
 // Repinta solo las cabeceras de sección (números y casillas), sin tocar las filas
@@ -6993,10 +7000,10 @@ function peCabHtml(p){
   const hoy = ymd(new Date()), a = peArrestosVivos(p)[0], t = [];
   if(a) t.push(`<span class="pe-t rojo" title="${escHtml(arrestoTxt(a))}">🚨 ${a.desde<=hoy ? 'hasta '+peFC(a.hasta) : peFC(a.desde)+'–'+peFC(a.hasta)}</span>`);
   if(p.externado) t.push(`<span class="pe-t">🎒 ${p.externado_total ? 'Total' : 'Findes'}</span>`);
-  if(String(p.intolerancias||'').trim()) t.push(`<span class="pe-t" title="${escHtml(p.intolerancias)}">🥗 Intolerancia</span>`);
+  if(!peRO() && String(p.intolerancias||'').trim()) t.push(`<span class="pe-t" title="${escHtml(p.intolerancias)}">🥗 Intolerancia</span>`);
   if((p.viernes_fuera||0)>0) t.push(`<span class="pe-t">📅 ${p.viernes_fuera>=4 ? 'Todos los viernes' : '2 viernes al mes'}</span>`);
   if(p.promocion_interna) t.push('<span class="pe-t">🎓 Promoción interna</span>');
-  if(!p.registrado) t.push('<span class="pe-t">⚠ Sin registrar</span>');
+  if(!peRO() && !p.registrado) t.push('<span class="pe-t">⚠ Sin registrar</span>');
   return `<span class="pe-nom"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)}</span><span class="pe-sec">${CURRENT.compania}${escHtml(p.seccion)}</span>${t.join('')}`;
 }
 function peFilaHtml(p){
@@ -7009,9 +7016,22 @@ function peRefrescarCab(pid){ const el = document.getElementById('pe-f-'+pid), p
 function peToggle(pid){
   if(PE.abiertos.has(pid)) PE.abiertos.delete(pid); else PE.abiertos.add(pid);
   peRefrescarFila(pid);
-  if(PE.abiertos.has(pid)) peCargarServicios(pid);
+  if(PE.abiertos.has(pid) && !peRO()) peCargarServicios(pid);
+}
+// Ficha de solo lectura (mandos): arrestos, externado, viernes libres y promoción interna. Nada más.
+function peDetalleRoHtml(p){
+  const hoy = ymd(new Date()), arrs = (ARRESTOS.get(p.id)||[]).slice().reverse(), ext = valorExternado(p);
+  const arrHtml = ARRESTOS_FALTA ? '<p class="small-note" style="margin:0;">Todavía no se pueden consultar los arrestos.</p>'
+    : (arrs.length ? arrs.map(a=>`<div class="pe-it${arrestoVigente(a)?'':' pasado'}"><span>${a.desde<=hoy && hoy<=a.hasta ? '🚨 <b>Ahora</b> · ' : a.desde>hoy ? '⏳ Próximo · ' : ''}${escHtml(arrestoTxt(a))}</span></div>`).join('') : '<p class="small-note" style="margin:0;">Sin arrestos.</p>');
+  return `<h4>🚨 Arrestos</h4>${arrHtml}
+    <h4>🎒 Externado y viernes libres</h4>
+    <div class="pe-it"><span>${ext==='total' ? 'Externado total' : ext==='findes' ? 'Externado de fin de semana' : 'No externado'}</span></div>
+    <div class="pe-it"><span>${(p.viernes_fuera||0)>=4 ? 'Viernes libres: todos' : (p.viernes_fuera||0)>=2 ? 'Viernes libres: 2 al mes' : 'Sin viernes libres'}</span></div>
+    <h4>🎓 Promoción interna</h4>
+    <div class="pe-it"><span>${p.promocion_interna ? 'Sí, promoción interna' : 'No'}</span></div>`;
 }
 function peDetalleHtml(p){
+  if(peRO()) return peDetalleRoHtml(p);
   const id = escHtml(p.id), c = CURRENT.compania, hoy = ymd(new Date()), ext = valorExternado(p), vf = String(p.viernes_fuera>=4 ? 4 : (p.viernes_fuera||0));
   const op = (v, t, sel) => `<option value="${v}" ${v===sel?'selected':''}>${t}</option>`;
   const arrs = (ARRESTOS.get(p.id)||[]).slice().reverse(); // el más reciente primero
@@ -7035,6 +7055,21 @@ function peDetalleHtml(p){
     <div class="pe-btns"><select aria-label="Mover de sección" onchange="peMover('${id}', this)"><option value="">Mover de sección…</option>${peSecs().filter(s=>s!==p.seccion).map(s=>`<option value="${s}">A la ${c}${s}</option>`).join('')}</select>
       ${p.registrado ? `<button type="button" class="small-btn" onclick="peReset('${id}')">🔑 Reiniciar acceso</button>` : '<span class="pe-t">⚠ Aún no se ha registrado</span>'}
       <button type="button" class="small-btn danger" onclick="peBaja('${id}')">Dar de baja</button></div>`;
+}
+/* ---- Pestaña «Personal» de los mandos (solo lectura): la misma lista del Furry, con buscador y desplegables por sección y por persona ---- */
+async function renderMandosPersonal(){
+  const c = CURRENT.compania;
+  ['cuartel-week-select','cuartel-controles'].forEach(id=>{ const e = document.getElementById(id); if(e) e.innerHTML = ''; });
+  document.getElementById('cuartel-notice').innerHTML = '<div class="notice"><span>🔒 Solo consulta</span></div>';
+  document.getElementById('cuartel-vista').innerHTML = '<div id="mandos-pe-buscar"></div><div id="mandos-pe-lista"><p class="small-note">Cargando…</p></div>';
+  PE.multi = false; PE.soloSel = false; PE.sel.clear();
+  try{
+    const secciones = await fetchCompanySections(c);
+    PE.personas = secciones.flatMap(s=>s.people).map(p=>Object.assign(p, { _n: cuartelNorm(p.apellidos+' '+p.nombre) })).sort(peOrden);
+    PE.error = null;
+  }catch(e){ PE.error = (e && e.message) || String(e); }
+  pePonerHtml('admin-pe-buscar', peBuscadorHtml());
+  pePintarLista();
 }
 /* ---- Servicios de la persona: se piden al abrir su ficha (una sola consulta) ---- */
 function peServHtml(pid){
