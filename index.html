@@ -391,6 +391,9 @@ table.serv-grid tr.exento td.nc{color:var(--danger);background:rgba(160,63,44,.1
 .serv-cod.gs.est{color:#c0392b;}
 .serv-cod.igs{background:rgba(192,57,43,.16);color:#8e2a1f;border:1px solid rgba(192,57,43,.45);font-size:.82em;padding:0 3px;}
 .serv-cod.pq{background:rgba(111,66,151,.28);color:#3f1f5c;}
+.serv-cod.pers{cursor:pointer;} /* servicios personalizados: el color de cada uno se genera en «servPersEstilos» (clase sp-ID) */
+.pers-col{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0;} .pers-col.on{outline:2px solid var(--ink);outline-offset:1px;}
+.pers-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;} .pers-chips .small-btn{display:inline-flex;gap:6px;align-items:center;}
 .serv-cod.ipq{background:rgba(111,66,151,.10);color:#4b2a6b;border:1px solid rgba(111,66,151,.45);font-size:.82em;padding:0 3px;}
 table.serv-grid th.rsf{background:#f39c12 !important;color:#1b1b1b !important;font-weight:800;box-shadow:inset 0 -3px 0 #b86e00;}
 .serv-cod.rsx{position:relative;z-index:2;background:#ffeb3b !important;color:#000 !important;font-weight:900;outline:3px solid #ff9800;outline-offset:1px;transform:scale(1.55);box-shadow:0 0 0 4px rgba(255,152,0,.6),0 0 14px 5px rgba(255,193,7,.95);animation:rsxPulse 1.1s ease-in-out infinite;}
@@ -1221,6 +1224,23 @@ aplicarTema();
           <button class="small-btn danger" id="serv-btn-quitar" onclick="quitarServicioManual()">Quitar ese servicio</button>
         </div>
         <div id="serv-sugerencia" class="small-note"></div>
+        <div style="margin-top:12px;padding:10px 12px;border:1px dashed var(--brass);border-radius:10px;">
+          <div style="font-weight:700;font-size:.85rem;" id="serv-pers-tit">✨ Otro servicio (con su nombre, siglas y color)</div>
+          <div class="sub2" style="margin:2px 0 8px;">Para un servicio que no está en la lista de arriba (por ejemplo «Biblioteca»). Escribe cómo se llama: las siglas salen solas (puedes cambiarlas) y eliges el color. Usa la fecha y la persona de arriba.</div>
+          <div id="serv-pers-guardados" class="pers-chips" style="margin-bottom:8px;"></div>
+          <div class="serv-ctrl">
+            <input type="text" id="serv-pers-nombre" maxlength="40" placeholder="Nombre del servicio" autocomplete="off" oninput="persNombreInput()" style="flex:1 1 200px;">
+            <input type="text" id="serv-pers-siglas" maxlength="6" placeholder="Siglas" autocomplete="off" oninput="persSiglasInput()" style="width:88px;text-transform:uppercase;">
+            <input type="color" id="serv-pers-color" value="#2e7d6b" aria-label="Color" oninput="persColorInput()" style="width:46px;height:36px;padding:2px;">
+          </div>
+          <div id="serv-pers-paleta" class="pers-chips" style="margin:0 0 8px;"></div>
+          <div class="serv-ctrl" style="align-items:center;">
+            <span id="serv-pers-prev" style="min-width:60px;"></span>
+            <button type="button" class="small-btn" id="serv-pers-guardar" onclick="guardarServicioPersonalizado()">➕ Añadir este servicio</button>
+            <button type="button" class="small-btn danger hidden" id="serv-pers-quitar" onclick="quitarServicioPersonalizado()">Quitar ese servicio</button>
+            <button type="button" class="small-btn danger hidden" id="serv-pers-borrar" onclick="borrarDeListaPersonalizado()" title="Quita este nombre de la lista de servicios guardados (los ya puestos se quedan, sin color)">🗑 Borrar de la lista</button>
+          </div>
+        </div>
         <div style="margin-top:14px;padding:10px 12px;border:1px dashed var(--danger);border-radius:10px;">
           <div style="font-weight:700;font-size:.85rem;">🗑 Borrar servicios de un tramo</div>
           <div class="sub2" style="margin:2px 0 8px;">Quita del cuadrante todos los servicios de ese tipo entre las dos fechas (incluidas). Antes te dice cuántos son.</div>
@@ -1344,12 +1364,13 @@ aplicarTema();
       <button class="module-btn" id="cuartel-mod-comidas-btn" onclick="setCuartelModulo('comidas')">🍽️ Comidas</button>
       <button class="module-btn" id="cuartel-mod-pernoctas-btn" onclick="setCuartelModulo('pernoctas')">🛏️ Pernoctas</button>
       <button class="module-btn" id="cuartel-mod-servicios-btn" onclick="setCuartelModulo('servicios')">📋 Servicios</button>
+      <button class="module-btn hidden" id="cuartel-mod-personal-btn" onclick="setCuartelModulo('personal')">👥 Personal</button>
     </div>
     <div id="cuartel-week-select"></div>
     <div id="cuartel-notice"></div>
     <div id="cuartel-controles"></div>
     <div id="cuartel-vista"></div>
-    <div class="contacto-app"><p class="small-note" style="margin:0 0 8px;">❓ ¿Algún problema con la app? Escribe a <b>Pablo</b> (Creador)<span id="cuartel-contacto"></span>.</p>
+    <div class="contacto-app"><p class="small-note" style="margin:0 0 8px;">❓ ¿Algún problema con la app? Escriba a <b>Pablo</b> (Creador)<span id="cuartel-contacto"></span>.</p>
       <div class="contacto-botones"><a class="small-btn" href="mailto:pablopuig86@gmail.com?subject=Problema%20con%20Portal%20AGM">📧 Correo</a><button class="small-btn" type="button" onclick="abrirMensajeCreador()">💬 Avisarme dentro de la app</button></div></div>
   </div>
 
@@ -1422,7 +1443,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-29T13:00:00";
+const APP_VERSION = "2026-10-29T14:10:39";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -3043,6 +3064,7 @@ function pintarConfig(){
     if(CURRENT.isSuperadmin){
       if(!enSuper) modos.push(['enterSuperadmin()', '👑 Modo superadmin']);
       modos.push(['abrirVerComoCuartel()', '🪖 Ver como cuartel']);
+      modos.push(['abrirVerComoMando()', '🎖️ Ver como mando']);
     }
   }
   el.innerHTML = `<h4>⚙️ Ajustes</h4>
@@ -3892,6 +3914,20 @@ async function confirmarVerComoCuartel(){
   cerrarModalGlobal();
   if(c) await enterCuartel(c, { vistaPrevia:true, nombre });
 }
+/* ---- "Ver como mando" (solo superadmin): lo mismo que ve la cuenta de mandos de una compañía. No queda NADA registrado (ni entrada, ni descargas, ni contactos) ---- */
+const mandosSinRegistro = () => !!(CURRENT && CURRENT.vistaPrevia && CURRENT.mandos);
+function abrirVerComoMando(){
+  if(!(CURRENT && CURRENT.isSuperadmin)) return;
+  abrirModalGlobal(`<h3>🎖️ Ver como mando</h3>
+    <p class="modal-nota" style="margin-top:0;">Elige la compañía. Verás lo mismo que ve su cuenta de mandos (solo consulta). No queda nada registrado: ni la entrada, ni las descargas. Los teléfonos no se enseñan en esta vista, porque pedirlos quedaría apuntado.</p>
+    <div class="field"><label>Compañía</label><select id="vcm-compania">${companiasOptionsHtml()}</select></div>
+    <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" onclick="confirmarVerComoMando()">Ver</button></div>`);
+}
+async function confirmarVerComoMando(){
+  const c = parseInt((document.getElementById('vcm-compania')||{}).value, 10);
+  cerrarModalGlobal();
+  if(c) await enterCuartel(c, { vistaPrevia:true, mandos:true, nombre:'Vista previa (superadmin)' });
+}
 // "Salir" del cuartel: en la vista previa del superadmin vuelve a su pantalla; en la cuenta real cierra la sesión
 async function salirCuartel(){
   if(CURRENT && CURRENT.vistaPrevia){
@@ -3911,18 +3947,20 @@ async function enterCuartel(compania, opts){
   const previo = vistaPrevia ? CURRENT : null;
   const pantallaPrevia = vistaPrevia ? (['screen-alumno','screen-admin','screen-superadmin'].find(id=>!document.getElementById(id).classList.contains('hidden')) || 'screen-admin') : null;
   const { data: companiaInfo } = await sb.from('companias').select('*').eq('numero', compania).single();
+  CUARTEL.semanaKey = null; // los mandos empiezan en la semana en curso y luego eligen en el calendario
   CURRENT = { mode:'cuartel', compania, companiaInfo, vistaPrevia, previo, pantallaPrevia, mandos: !!(opts && opts.mandos) }; // mandos: cuenta de capitán / comandantes (parche 103)
   document.querySelector('#screen-cuartel .mh-quien').textContent = CURRENT.mandos ? '🎖️ Mandos' : '🪖 Servicio de cuartel';
+  document.getElementById('cuartel-mod-personal-btn').classList.toggle('hidden', !CURRENT.mandos); // «Personal» (solo lectura): solo para mandos
   await Promise.all([ fetchCortesEspeciales(compania), fetchPernoctaForzarAgm(compania), fetchComidaDesbloqueoDias(compania) ]);
   setActiveWeek(semanaEnCursoIndex());
   document.getElementById('cuartel-subtitle').textContent = `${compania}ª Compañía`;
   document.getElementById('cuartel-contacto').textContent = CONTACTO_CUARTEL ? ' ('+CONTACTO_CUARTEL+')' : '';
   document.getElementById('cuartel-salir-btn').textContent = vistaPrevia ? '◀ Volver' : 'Salir';
-  pintarModo('cuartel', vistaPrevia ? [['cuartel','🪖 VISTA PREVIA CUARTEL']] : []);
+  pintarModo('cuartel', vistaPrevia ? [['cuartel', CURRENT.mandos ? '🎖️ VISTA PREVIA MANDOS' : '🪖 VISTA PREVIA CUARTEL']] : []);
   showScreen('screen-cuartel');
   if(vistaPrevia){ // vista previa del superadmin: sin pedir nombre, sin registrar dispositivo y sin "latido"
     CUARTEL.nombre = (opts && opts.nombre) || 'Vista previa (superadmin)';
-    document.getElementById('cuartel-subtitle').innerHTML = `${compania}ª Compañía · 👁 vista previa · de servicio: ${nombreConIcono(CUARTEL.nombre)}`;
+    document.getElementById('cuartel-subtitle').innerHTML = CURRENT.mandos ? `${compania}ª Compañía · 👁 vista previa de mandos` : `${compania}ª Compañía · 👁 vista previa · de servicio: ${nombreConIcono(CUARTEL.nombre)}`;
     document.querySelector('#screen-cuartel .module-switch').classList.remove('hidden');
     await setCuartelModulo('comidas');
     return;
@@ -3946,25 +3984,58 @@ const MANDOS_EMPLEOS = ['Capitán', 'Comandante'];
 EMPLEO_NOMBRE['Capitán'] = 'Capitán'; EMPLEO_NOMBRE['Comandante'] = 'Comandante';
 EMPLEO_IMG['Capitán'] = 'empleos/capitan.png'; EMPLEO_IMG['Comandante'] = 'empleos/comandante.png';
 const EMPLEO_GRUPOS_MANDOS = { 'Capitán':{ nombre:'Capitán', codigos:['Capitán'] }, 'Comandante':{ nombre:'Comandante', codigos:['Comandante'] } };
+// Los mandos que pueden entrar (no escriben nada: eligen su empleo y después su nombre). comp = compañía de esa persona (null = todas)
+const MANDOS_PERSONAS = [
+  { emp:'Comandante', nombre:'Antonio Manuel', ap1:'Polo', ap2:'González', comp:null, sec:null },
+  { emp:'Capitán', nombre:'Pedro', ap1:'Gómez-Guillamón', ap2:'Pérez', comp:11, sec:111 },
+  { emp:'Capitán', nombre:'Sergio', ap1:'Aznar', ap2:'Martín', comp:11, sec:112 },
+  { emp:'Capitán', nombre:'Emilio José', ap1:'Aznar', ap2:'Pitarch', comp:11, sec:113 },
+  { emp:'Capitán', nombre:'Arturo', ap1:'Hernández', ap2:'Pérez-Tomé', comp:11, sec:114 }
+];
+const esMandosActual = () => !!(CURRENT && CURRENT.mode==='cuartel' && CURRENT.mandos);
+const mandosDisponibles = emp => MANDOS_PERSONAS.filter(x=>x.emp===emp && (x.comp==null || x.comp===Number(CURRENT.compania)));
+const mandosEtiqueta = x => `${x.nombre} ${x.ap1} ${x.ap2}${x.sec ? ' · Sección '+x.sec : ''}`;
+// Al cambiar el empleo (mandos): se rellena la lista de nombres disponibles de ese empleo; con uno solo queda elegido. Si no hay ninguno listado, se escribe a mano.
+function mandosSync(pre, ult){
+  if(!esMandosActual()) return;
+  const emp = (document.getElementById(pre+'-empleo')||{}).value, sel = document.getElementById(pre+'-persona'), man = document.getElementById(pre+'-manual'); if(!sel || !man) return;
+  const lista = mandosDisponibles(emp);
+  const campo = id => document.getElementById(pre+'-'+id);
+  const ponerCampos = x => { campo('nombre').value = x ? x.nombre : ''; campo('ap1').value = x ? x.ap1 : ''; campo('ap2').value = x ? x.ap2 : ''; };
+  sel.parentElement.classList.toggle('hidden', !lista.length);
+  man.classList.toggle('hidden', !!lista.length || !emp);
+  if(!lista.length){ sel.innerHTML = ''; return; }
+  const previo = (ult && ult.empleo===emp) ? lista.findIndex(x=>x.nombre===ult.nombre && x.ap1===ult.ap1 && x.ap2===ult.ap2) : -1;
+  const elegido = lista.length===1 ? 0 : previo;
+  sel.innerHTML = (elegido<0 ? '<option value="" selected disabled>— Elija su nombre —</option>' : '') + lista.map((x,i)=>`<option value="${i}" ${i===elegido?'selected':''}>${escHtml(mandosEtiqueta(x))}</option>`).join('');
+  ponerCampos(elegido>=0 ? lista[elegido] : null);
+}
+function mandosElegirPersona(pre){
+  const emp = (document.getElementById(pre+'-empleo')||{}).value, v = (document.getElementById(pre+'-persona')||{}).value, x = mandosDisponibles(emp)[parseInt(v,10)];
+  ['nombre','ap1','ap2'].forEach(k=>{ const c = document.getElementById(pre+'-'+k); if(c) c.value = x ? x[k] : ''; });
+}
 const empleosActuales = () => (CURRENT && CURRENT.mode==='cuartel' && CURRENT.mandos) ? MANDOS_EMPLEOS : CUARTEL_EMPLEOS;
 const empleoDeNombre = n => [...CUARTEL_EMPLEOS, ...MANDOS_EMPLEOS].find(e=>String(n||'').startsWith(e+' ')) || null;
 const empleoImgHtml = emp => EMPLEO_IMG[emp] ? `<img class="empleo-ico" src="${EMPLEO_IMG[emp]}" alt="" onerror="this.remove()">` : '';
 const nombreConIcono = n => empleoImgHtml(empleoDeNombre(n)) + escHtml(n); // «🎖 CC Sgto García López, Juan», con la imagen de su empleo si existe
-function iconoEmpleoSel(pre){ const s = document.getElementById(pre+'-empleo'), i = document.getElementById(pre+'-ico'); if(s && i) i.innerHTML = empleoImgHtml(s.value); }
+function iconoEmpleoSel(pre, ult){ const s = document.getElementById(pre+'-empleo'), i = document.getElementById(pre+'-ico'); if(s && i) i.innerHTML = empleoImgHtml(s.value); mandosSync(pre, ult); }
 // Los datos de una persona: empleo + nombre + primer apellido + segundo apellido (los cuatro obligatorios). «pre» = prefijo de los id (cuartel, msg, vcc)
 const camposPersonaHtml = (pre, ult) => `
-    <div class="field"><label>Empleo</label><div style="display:flex;gap:8px;align-items:center;"><span id="${pre}-ico"></span><select id="${pre}-empleo" style="flex:1;" onchange="iconoEmpleoSel('${pre}')">${(ult&&empleosActuales().includes(ult.empleo)) ? '' : '<option value="" selected disabled>— Elige tu empleo —</option>'}${empleosActuales().map(e=>`<option value="${e}" ${(ult&&ult.empleo)===e?'selected':''}>${e}${EMPLEO_NOMBRE[e] && EMPLEO_NOMBRE[e]!==e ? ' · '+EMPLEO_NOMBRE[e] : ''}</option>`).join('')}</select></div></div>
+    <div class="field"><label>Empleo</label><div style="display:flex;gap:8px;align-items:center;"><span id="${pre}-ico"></span><select id="${pre}-empleo" style="flex:1;" onchange="iconoEmpleoSel('${pre}')">${(ult&&empleosActuales().includes(ult.empleo)) ? '' : '<option value="" selected disabled>— Elija su empleo —</option>'}${empleosActuales().map(e=>`<option value="${e}" ${(ult&&ult.empleo)===e?'selected':''}>${EMPLEO_NOMBRE[e]===e ? e : e+' · '+EMPLEO_NOMBRE[e]}</option>`).join('')}</select></div></div>
+    ${esMandosActual() ? `<div class="field hidden"><label>Su nombre</label><select id="${pre}-persona" onchange="mandosElegirPersona('${pre}')"></select></div>` : ''}
+    <div id="${pre}-manual" class="${esMandosActual() ? 'hidden' : ''}">
     <div class="field"><label>Nombre</label><input type="text" id="${pre}-nombre" value="${escHtml((ult&&ult.nombre)||'')}" placeholder="Ej.: Juan" autocomplete="given-name" maxlength="23"></div>
     <div class="field"><label>Primer apellido</label><input type="text" id="${pre}-ap1" value="${escHtml((ult&&ult.ap1)||'')}" placeholder="Ej.: García" autocomplete="family-name" maxlength="23"></div>
-    <div class="field"><label>Segundo apellido</label><input type="text" id="${pre}-ap2" value="${escHtml((ult&&ult.ap2)||'')}" placeholder="Ej.: López" autocomplete="off" maxlength="23"></div>`;
+    <div class="field"><label>Segundo apellido</label><input type="text" id="${pre}-ap2" value="${escHtml((ult&&ult.ap2)||'')}" placeholder="Ej.: López" autocomplete="off" maxlength="23"></div>
+    </div>`;
 // Lee y valida esos cuatro datos; si falta alguno avisa y devuelve null
 function leerPersonaCampos(pre){
   const v = id => ((document.getElementById(pre+'-'+id)||{}).value||'').trim().replace(/\s+/g,' ');
   const per = { empleo:v('empleo'), nombre:v('nombre'), ap1:v('ap1'), ap2:v('ap2') };
-  if(!empleosActuales().includes(per.empleo)){ showToast('Elige tu empleo.'); return null; }
-  if(per.nombre.length < 2){ showToast('Escribe tu nombre.'); return null; }
-  if(per.ap1.length < 2){ showToast('Escribe tu primer apellido.'); return null; }
-  if(per.ap2.length < 2){ showToast('Escribe tu segundo apellido.'); return null; }
+  if(!empleosActuales().includes(per.empleo)){ showToast('Elija su empleo.'); return null; }
+  if(per.nombre.length < 2){ showToast(esMandosActual() ? 'Elija su nombre.' : 'Escriba su nombre.'); return null; }
+  if(per.ap1.length < 2){ showToast('Escriba su primer apellido.'); return null; }
+  if(per.ap2.length < 2){ showToast('Escriba su segundo apellido.'); return null; }
   if(/[<>"]/.test(per.nombre+per.ap1+per.ap2)){ showToast('El nombre y los apellidos no pueden llevar los símbolos  <  >  " .'); return null; }
   return per;
 }
@@ -3982,14 +4053,14 @@ function pedirNombreCuartel(){
   document.getElementById('cuartel-vista').innerHTML = `
     <div class="login-card" style="max-width:420px;margin:24px auto;">
       ${CURRENT.mandos ? `<h3 style="margin-top:0;">🎖️ ¿Quién entra?</h3>
-      <p class="desc">Elige tu empleo y escribe tu nombre y tus dos apellidos (todo es obligatorio). Queda registrado quién usa la cuenta de mandos y desde qué dispositivo.</p>` : `<h3 style="margin-top:0;">🪖 ¿Quién está de servicio?</h3>
-      <p class="desc">Elige tu empleo y escribe tu nombre y tus dos apellidos (todo es obligatorio). Queda registrado quién usa la cuenta del servicio de cuartel y desde qué dispositivo. Máximo 3 dispositivos a la vez.</p>`}
+      <p class="desc">Elija su empleo y, después, su nombre en la lista.</p>` : `<h3 style="margin-top:0;">🪖 ¿Quién está de servicio?</h3>
+      <p class="desc">Elija su empleo y escriba su nombre y sus dos apellidos (todo es obligatorio). Máximo 3 dispositivos a la vez.</p>`}
       <form onsubmit="event.preventDefault(); confirmarNombreCuartel();">
         ${camposPersonaHtml('cuartel', personaGuardada())}
         <button class="primary-btn" type="submit">Entrar</button>
       </form>
     </div>`;
-  iconoEmpleoSel('cuartel');
+  iconoEmpleoSel('cuartel', personaGuardada());
 }
 async function confirmarNombreCuartel(){
   const per = leerPersonaCampos('cuartel'); if(!per) return;
@@ -4003,11 +4074,11 @@ async function iniciarSesionCuartel(nombre){
     if(!error && data) r = data;
   }catch(e){}
   if(r===null){
-    await cerrarCuartelLocal('No se ha podido comprobar la sesión del servicio de cuartel (¿sin conexión?). Inténtalo de nuevo.');
+    await cerrarCuartelLocal('No se ha podido comprobar la sesión del servicio de cuartel (¿sin conexión?). Inténtelo de nuevo.');
     return;
   }
   if(r==='lleno'){
-    await cerrarCuartelLocal('Ya hay 3 dispositivos conectados con la cuenta del servicio de cuartel. Que alguien pulse "Salir" en otro dispositivo, o espera unos minutos.');
+    await cerrarCuartelLocal('Ya hay 3 dispositivos conectados con la cuenta del servicio de cuartel. Que alguien pulse "Salir" en otro dispositivo, o espere unos minutos.');
     return;
   }
   try{ sessionStorage.setItem('portalagm_cuartel_sesion', nombre); }catch(e){}
@@ -4050,6 +4121,8 @@ async function setCuartelModulo(m){
   document.getElementById('cuartel-mod-comidas-btn').classList.toggle('active', m==='comidas');
   document.getElementById('cuartel-mod-pernoctas-btn').classList.toggle('active', m==='pernoctas');
   document.getElementById('cuartel-mod-servicios-btn').classList.toggle('active', m==='servicios');
+  document.getElementById('cuartel-mod-personal-btn').classList.toggle('active', m==='personal');
+  if(m==='personal'){ if(CURRENT.mandos) await renderMandosPersonal(); return; }
   if(m==='servicios'){ await cargarCuartelServicios(); return; }
   await cargarCuartel();
 }
@@ -4059,21 +4132,32 @@ function semanaEnCursoIndex(){
   const i = WEEKS.findIndex(w=>w.days.some(d=>ymd(d)===hoy));
   return i>=0 ? i : defaultWeekIndex();
 }
+// Mandos: tocar una semana en el calendario (o en el desplegable) de Comidas / Pernoctas
+async function mandosElegirSemanaCuartel(k){
+  const w = WEEKS[parseInt(k, 10)]; if(!w || !CURRENT || !CURRENT.mandos) return;
+  CUARTEL.semanaKey = w.key; CUARTEL.dia = null;
+  await cargarCuartel();
+}
 async function cargarCuartel(){
   const c = CURRENT.compania;
   const hora = CURRENT.companiaInfo ? CURRENT.companiaInfo.hora_corte : '10:00:00';
   const esCom = CUARTEL.modulo==='comidas';
-  setActiveWeek(semanaEnCursoIndex());
-  if(!esCom){
+  // Mandos: eligen la semana en el calendario (comidas y pernoctas, también pasadas y futuras); el servicio de cuartel solo ve la semana en curso
+  const iElegida = (CURRENT.mandos && CUARTEL.semanaKey) ? WEEKS.findIndex(w=>w.key===CUARTEL.semanaKey) : -1;
+  setActiveWeek(iElegida>=0 ? iElegida : semanaEnCursoIndex());
+  if(!esCom && iElegida<0){
     irASemanaPernoctaReal();
     // Pernoctas: si las noches de ese fin de semana (o puente) ya han pasado, se ve el PRÓXIMO fin de semana (no el anterior)
     const hoy0 = new Date(); hoy0.setHours(0,0,0,0);
     if(hoy0 > diaPern(ACTIVE_WEEK, pernoctaDiasCount()-1)){ setActiveWeek(defaultWeekIndex()); irASemanaPernoctaReal(); }
   }
   const nP = pernoctaDiasCount();
-  document.getElementById('cuartel-week-select').innerHTML = `<h3 class="section-title" style="margin-top:14px;">${esCom
+  if(CURRENT.mandos) pintarSelectorSemanas(esCom ? 'comidas' : 'pernoctas', 'cuartel', 'mandosElegirSemanaCuartel', hora, false);
+  const semTit = `<h3 class="section-title" style="margin-top:14px;">${esCom
     ? `Comidas del viernes ${fmt(ACTIVE_WEEK.days[0])} al jueves ${fmt(ACTIVE_WEEK.days[6])}`
     : `${PERNOCTA_SEMANAS_ESPECIALES[ACTIVE_WEEK.key] ? '⭐ '+PERNOCTA_SEMANAS_ESPECIALES[ACTIVE_WEEK.key].nombre : 'Pernoctas del fin de semana'}: noches del ${DAY_NAMES_FULL[0]} ${fmt(ACTIVE_WEEK.days[0])} al ${DAY_NAMES_FULL[(nP-1)%7]} ${fmt(diaPern(ACTIVE_WEEK,nP-1))}`}</h3>`;
+  const selSem = document.getElementById('cuartel-week-select');
+  if(CURRENT.mandos) selSem.insertAdjacentHTML('beforeend', semTit); else selSem.innerHTML = semTit;
   const abierta = weekIsOpen(ACTIVE_WEEK, hora);
   document.getElementById('cuartel-notice').innerHTML = `<div class="notice"><span>🔒 Solo consulta · ${abierta ? `los alumnos aún pueden cambiar sus ${esCom?'comidas':'pernoctas'} hasta el <b>${fmtCutoff(ACTIVE_WEEK, hora)}</b>` : 'plazo cerrado: estos datos ya son los definitivos (salvo cambios del Furry)'}</span></div>` + maniobrasBannerHtml(ACTIVE_WEEK, !esCom);
   document.getElementById('cuartel-vista').innerHTML = '<p class="small-note">Cargando…</p>';
@@ -4115,16 +4199,16 @@ const cuErrorParche = (e, n) => /function|schema cache|does not exist/i.test(e &
 /* ---- «Avisar a Pablo»: el mensaje llega como aviso dentro de la app (lo ve solo el superadmin, en la caja «Mensajes de usuarios») ---- */
 function abrirMensajeCreador(){
   abrirModalGlobal(`<h3>💬 Avisar a Pablo</h3>
-    <p class="modal-nota" style="margin-top:0;">Cuéntale qué ha pasado. Tienes que decir quién eres (empleo, nombre y dos apellidos): sin eso no se envía. Le llega como un aviso dentro de la app, con tu nombre, tu compañía y desde qué conexión lo mandas. Si es urgente, escríbele también al correo.</p>
+    <p class="modal-nota" style="margin-top:0;">Cuéntele qué ha pasado. Tiene que decir quién es (empleo y nombre): sin eso no se envía. Le llega como un aviso dentro de la app, con su nombre, su compañía y desde qué conexión lo manda. Si es urgente, escríbale también al correo.</p>
     ${camposPersonaHtml('msg', personaGuardada())}
     <div class="field"><label>Mensaje</label><textarea id="msg-creador" rows="5" maxlength="1000" placeholder="Qué ha pasado y en qué pantalla…" style="width:100%;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;"></textarea></div>
     <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" id="msg-enviar" onclick="enviarMensajeCreador()">Enviar</button></div>`);
-  iconoEmpleoSel('msg');
+  iconoEmpleoSel('msg', personaGuardada());
 }
 async function enviarMensajeCreador(){
   const per = leerPersonaCampos('msg'); if(!per) return; // sin empleo, nombre y los dos apellidos no se envía
   const t = (document.getElementById('msg-creador').value||'').trim();
-  if(t.length < 5){ showToast('Escribe un mensaje un poco más largo.'); return; }
+  if(t.length < 5){ showToast('Escriba un mensaje un poco más largo.'); return; }
   if(/[<>]/.test(t)){ showToast('El mensaje no puede llevar los símbolos  <  > .'); return; }
   const btn = document.getElementById('msg-enviar'); if(btn) btn.disabled = true;
   const { error } = await sb.rpc('enviar_mensaje_app', { p_mensaje: t, p_empleo: per.empleo, p_nombre: per.nombre, p_apellido1: per.ap1, p_apellido2: per.ap2, p_dispositivo: describirDispositivo(), p_device_id: idDispositivo() });
@@ -4134,6 +4218,7 @@ async function enviarMensajeCreador(){
 }
 async function cargarCuartelServicios(){
   const c = CURRENT.compania, mandos = !!CURRENT.mandos;
+  await cargarServPers(c);
   const lunesHoy = lunesDe(new Date());
   CUARTEL_SERV.lunes = (mandos && CUARTEL_SERV.lunesSel) ? new Date(CUARTEL_SERV.lunesSel) : lunesHoy; // los mandos eligen la semana; el cuartel, siempre la actual
   CUARTEL_SERV.dia = ymd(CUARTEL_SERV.lunes)===ymd(lunesHoy) ? (new Date().getDay()+6)%7 : 0; // hoy (o el lunes, si es otra semana)
@@ -4170,6 +4255,7 @@ function mandosControlesServiciosHtml(){
 async function mandosElegirSemana(v){ CUARTEL_SERV.lunesSel = v ? new Date(v+'T00:00:00') : null; await cargarCuartelServicios(); if(CUADRANTE_AL && CUADRANTE_AL.contId==='mandos-cuadrante-cont' && CUADRANTE_AL.abierto) pintarCuadranteAlumno(); }
 async function mandosCambiarSemana(d){ const l = CUARTEL_SERV.lunes; await mandosElegirSemana(ymd(new Date(l.getFullYear(), l.getMonth(), l.getDate()+7*d))); }
 async function cargarCuadranteMandos(){
+  await cargarServPers(CURRENT.compania);
   const c = CURRENT.compania, hoy = new Date(), ini = ymd(lunesDe(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-28)));
   const fin0 = sumarDia(ini, 186);
   const [rRoster, rServ] = await Promise.all([
@@ -4226,6 +4312,7 @@ function cuartelServDetalle(dia, k){
 }
 async function cuartelContactar(personaId){
   const btn = document.getElementById('cu-contactar-btn'), res = document.getElementById('cu-tel-res'); if(!res) return;
+  if(mandosSinRegistro()){ res.innerHTML = '<p class="small-note">En «Ver como mando» no se enseñan teléfonos: pedirlos quedaría registrado.</p>'; return; }
   if(btn) btn.disabled = true;
   const { data, error } = await sb.rpc('cuartel_contactar', { p_persona: personaId, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania, ...cuNombreRpc() });
   if(btn) btn.disabled = false;
@@ -4283,7 +4370,7 @@ function cuartelExportar(formato){
   const nDias = esCom ? 7 : CUARTEL.data.nDias;
   const diasOpts = Array.from({length:nDias},(_,i)=>`<option value="${i}" ${i===d?'selected':''}>${esCom ? '' : 'Noche del '}${DAY_NAMES_FULL[i%7]} ${fmt(diaPern(ACTIVE_WEEK,i))}</option>`).join('');
   abrirModalGlobal(`<h3>${formato==='pdf'?'📕 Exportar a PDF':'📄 Exportar a Excel'}</h3>
-    <p class="modal-nota" style="margin-top:0;">¿Qué quieres exportar?</p>
+    <p class="modal-nota" style="margin-top:0;">¿Qué desea exportar?</p>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
       <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="exp-alcance" value="dia" checked onchange="cuartelExpActualizar()"> ${esCom ? 'El día entero (desayuno, comida y cena)' : 'Una noche entera'}</label>
       ${esCom ? `<label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="exp-alcance" value="comida" onchange="cuartelExpActualizar()"> Una comida concreta</label>` : ''}
@@ -4304,10 +4391,12 @@ function cuartelExpActualizar(){
 }
 // Si alguien del servicio de cuartel instala la app o entra desde ella, también queda en el «Registro del cuartel» (parche SQL 76). Si el parche no está, no pasa nada.
 async function cuartelLogApp(detalle){
+  if(mandosSinRegistro()) return;
   try{ await sb.rpc('cuartel_log_app', { p_detalle: detalle, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania, ...cuNombreRpc() }); }catch(e){}
 }
 // Toda descarga del cuartel queda apuntada (con de dónde se ha sacado) en el «Registro del cuartel», que solo ve el superadmin. Si no se puede apuntar, no se descarga.
 async function cuartelLogDescarga(origen){
+  if(mandosSinRegistro()) return true; // «Ver como mando»: no se apunta nada
   const { error } = await sb.rpc('cuartel_log_pdf', { p_alcance: origen, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania, ...cuNombreRpc() });
   if(error){ showToast('No se pudo registrar la descarga, así que no se hace: '+cuErrorParche(error, 71)); return false; }
   return true;
@@ -4424,6 +4513,7 @@ async function cuartelContactarPernocta(personaId){
     <div class="servicio-card"><div class="titulo">${per ? escHtml(per.apellidos+', '+per.nombre) : ''}</div><div class="meta">Duerme fuera de la AGM esta semana</div></div>
     <div id="cu-pern-res"><p class="small-note">Cargando…</p></div>
     <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cerrar</button></div>`);
+  if(mandosSinRegistro()){ const r0 = document.getElementById('cu-pern-res'); if(r0) r0.innerHTML = '<p class="small-note">En «Ver como mando» no se enseñan teléfonos: pedirlos quedaría registrado.</p>'; return; }
   const { data, error } = await sb.rpc('cuartel_contactar_pernocta', { p_persona: personaId, p_semana: ACTIVE_WEEK.key, p_device_id: idDispositivo(), p_dispositivo: describirDispositivo(), p_compania: CURRENT.compania, ...cuNombreRpc() });
   const res = document.getElementById('cu-pern-res'); if(!res) return;
   if(error){ res.innerHTML = `<div class="notice closed"><span>No se pudo obtener: ${escHtml(cuErrorParche(error, 71))}</span></div>`; return; }
@@ -4468,7 +4558,7 @@ function pintarCuartel(){
   if(CUARTEL.vista==='buscar'){
     if(CUARTEL.seccion!=='todas' && !CUARTEL.data.secciones.some(s=>s.code===CUARTEL.seccion)) CUARTEL.seccion='todas';
     el.innerHTML = `<div class="cuartel-bar">${seccionSelectHtml(true)}
-        <div class="field" style="flex:1;min-width:200px;"><label>Nombre o apellidos</label><input type="search" placeholder="Escribe para buscar…" value="${escHtml(CUARTEL.busqueda)}" oninput="onCuartelBusqueda(this.value)"></div>
+        <div class="field" style="flex:1;min-width:200px;"><label>Nombre o apellidos</label><input type="search" placeholder="Escriba para buscar…" value="${escHtml(CUARTEL.busqueda)}" oninput="onCuartelBusqueda(this.value)"></div>
       </div><div id="cuartel-resultados"></div>`;
     pintarBusquedaCuartel();
     return;
@@ -4576,7 +4666,7 @@ function pintarBusquedaCuartel(){
   const secs = CUARTEL.data.secciones.filter(s=>CUARTEL.seccion==='todas' || s.code===CUARTEL.seccion);
   let gente = secs.flatMap(sec=>sec.people.map(p=>({p, sec})));
   if(q) gente = gente.filter(({p})=>{ const a=cuartelNorm(p.apellidos+' '+p.nombre), b=cuartelNorm(p.nombre+' '+p.apellidos); return q.split(' ').every(w=>a.includes(w)||b.includes(w)); });
-  if(!q && CUARTEL.seccion==='todas'){ el.innerHTML = '<p class="small-note">Escribe un nombre o elige una sección.</p>'; return; }
+  if(!q && CUARTEL.seccion==='todas'){ el.innerHTML = '<p class="small-note">Escriba un nombre o elija una sección.</p>'; return; }
   if(!gente.length){ el.innerHTML = '<p class="small-note">No hay nadie con ese nombre.</p>'; return; }
   const esCom = CUARTEL.modulo==='comidas';
   el.innerHTML = `<p class="small-note">${gente.length} persona${gente.length===1?'':'s'}</p>` + gente.slice(0,60).map(({p,sec})=>{
@@ -6812,14 +6902,18 @@ const PE = { personas:null, error:null, sols:[], q:'', sec:'', filtros:new Set()
   secAb:new Set(), secMax:{}, multi:false, sel:new Set(), soloSel:false, ocupado:false, conexAb:false, cuartelAb:false };
 const PE_TANDA = 40; // filas por tanda en cada sección («Ver más» enseña otras tantas)
 const PE_VF_TXT = { 0:'Ninguno', 2:'2 viernes al mes', 4:'4 viernes (todos)' }; // «2» = cuota de 2 viernes por mes natural (seguidos o no, sin acumular)
-const PE_FILTROS = [['arresto','🚨 Arrestados'],['externado','🎒 Externados'],['intol','🥗 Con intolerancia'],['viernes','📅 Con viernes'],['sinreg','⏳ Sin registrar']];
+const PE_FILTROS = [['arresto','🚨 Arrestados'],['externado','🎒 Externados'],['intol','🥗 Con intolerancia'],['viernes','📅 Con viernes'],['promo','🎓 Promoción interna'],['sinreg','⏳ Sin registrar']];
+const PE_FILTROS_RO = ['arresto','externado','viernes','promo']; // lo que ven los mandos
 const peSecs = () => Array.from({length:SECTIONS_PER_COMPANY}, (_,i)=>i+1);
+const peViernes = p => p.externado ? 4 : (p.viernes_fuera||0); // los externados (findes o total) tienen siempre todos los viernes libres
 const peFC = f => parseInt(f.slice(8,10),10)+'/'+parseInt(f.slice(5,7),10); // 'YYYY-MM-DD' → 'd/m'
 const peOrden = (a,b) => (a.seccion-b.seccion) || String(a.apellidos).localeCompare(String(b.apellidos),'es') || String(a.nombre).localeCompare(String(b.nombre),'es');
 const pePersona = id => (PE.personas||[]).find(p=>String(p.id)===String(id));
 const peArrestosVivos = p => (ARRESTOS.get(p.id)||[]).filter(arrestoVigente); // el de ahora o los próximos
-const peCumple = (p, f) => f==='arresto' ? peArrestosVivos(p).length>0 : f==='externado' ? !!p.externado : f==='intol' ? !!String(p.intolerancias||'').trim() : f==='viernes' ? (p.viernes_fuera||0)>0 : f==='sinreg' ? !p.registrado : true;
-function pePonerHtml(id, html){ const el = document.getElementById(id); if(el) el.innerHTML = html; }
+const peCumple = (p, f) => f==='arresto' ? peArrestosVivos(p).length>0 : f==='externado' ? !!p.externado : f==='intol' ? !!String(p.intolerancias||'').trim() : f==='viernes' ? peViernes(p)>0 : f==='promo' ? !!p.promocion_interna : f==='sinreg' ? !p.registrado : true;
+// Solo lectura (mandos): misma lista que la del Furry, pero sin ningún botón de cambio, sin servicios hechos, sin contraseñas ni conexión ni altas
+const peRO = () => !!(CURRENT && CURRENT.mode==='cuartel');
+function pePonerHtml(id, html){ const el = document.getElementById(peRO() ? id.replace(/^admin-pe-/, 'mandos-pe-') : id); if(el) el.innerHTML = html; }
 function pePintarBadge(n){ const b = document.getElementById('admin-pe-badge'); if(!b) return; b.textContent = n ? String(n) : ''; b.classList.toggle('hidden', !n); }
 // Consulta ligera (solo el número) para el numerito de la pestaña al entrar en el panel Furry
 async function peContarSolicitudes(){
@@ -6832,6 +6926,7 @@ async function peContarSolicitudes(){
 const renderAdminPersonal = serializarRender(()=>_renderAdminPersonalImpl());
 async function _renderAdminPersonalImpl(){
   const c = CURRENT.compania;
+  cargarServPers(c); // para que sus servicios salgan con su nombre
   pePonerHtml('admin-week-select', ''); pePonerHtml('admin-notice', ''); // esta pestaña no va por semanas
   if(!PE.personas) pePonerHtml('admin-pe-lista', '<p class="small-note">Cargando…</p>');
   PE.serv = new Map(); // los servicios se vuelven a pedir al abrir cada ficha
@@ -6889,12 +6984,12 @@ function peBuscadorHtml(){
   return `<div class="cuartel-bar" style="margin-top:0;">
       <div class="field" style="flex:1 1 170px;min-width:0;"><label for="pe-q">Buscar por apellidos o nombre</label><input type="search" id="pe-q" value="${escHtml(PE.q)}" placeholder="Ej.: garcía juan" autocomplete="off" oninput="peBuscar(this.value)" style="width:100%;"></div>
       <div class="field" style="min-width:0;"><label for="pe-sec">Sección</label><select id="pe-sec" onchange="PE.sec=this.value; PE.secMax={}; pePintarLista()"><option value="">Todas</option>${peSecs().map(s=>`<option value="${s}" ${String(PE.sec)===String(s)?'selected':''}>${c}${s}</option>`).join('')}</select></div>
-      <button type="button" id="pe-multi-btn" class="small-btn${PE.multi?' active':''}" aria-pressed="${PE.multi}" onclick="peMulti()" style="padding:9px 10px;">☑ Selección múltiple</button>
+      ${peRO() ? '' : `<button type="button" id="pe-multi-btn" class="small-btn${PE.multi?' active':''}" aria-pressed="${PE.multi}" onclick="peMulti()" style="padding:9px 10px;">☑ Selección múltiple</button>`}
     </div><div class="pe-chips" id="pe-chips">${peChipsHtml()}</div>`;
 }
 function peChipsHtml(){
   const ps = PE.personas || [];
-  return PE_FILTROS.map(([f,t])=>`<button type="button" class="small-btn${PE.filtros.has(f)?' active':''}" aria-pressed="${PE.filtros.has(f)}" onclick="peFiltro('${f}')">${t} <span style="opacity:.7;">${ps.filter(p=>peCumple(p,f)).length}</span></button>`).join('');
+  return PE_FILTROS.filter(([f])=>!peRO() || PE_FILTROS_RO.includes(f)).map(([f,t])=>`<button type="button" class="small-btn${PE.filtros.has(f)?' active':''}" aria-pressed="${PE.filtros.has(f)}" onclick="peFiltro('${f}')">${t} <span style="opacity:.7;">${ps.filter(p=>peCumple(p,f)).length}</span></button>`).join('');
 }
 function pePintarChips(){ pePonerHtml('pe-chips', peChipsHtml()); peRefrescarSecciones(); }
 function peBuscar(v){ PE.q = v; clearTimeout(PE.t); PE.t = setTimeout(()=>{ PE.secMax = {}; pePintarLista(); }, 200); }
@@ -6909,7 +7004,7 @@ const peCuentaTxt = n => `${n} persona${n===1?'':'s'}`;
 // Cabecera de cada sección: nombre, nº de personas y un resumen (arrestados, externados…); con selección múltiple, su casilla
 function peSecCabHtml(s, ps){
   const n = f => ps.filter(p=>peCumple(p,f)).length, r = [];
-  [['arresto','🚨'],['externado','🎒'],['intol','🥗'],['viernes','📅'],['sinreg','⏳']].forEach(([f,ic])=>{ const k = n(f); if(k) r.push(`<span class="pe-t${f==='arresto'?' rojo':''}" title="${escHtml(PE_FILTROS.find(x=>x[0]===f)[1].slice(2))}">${ic} ${k}</span>`); });
+  [['arresto','🚨'],['externado','🎒'],['intol','🥗'],['viernes','📅'],['promo','🎓'],['sinreg','⏳']].filter(([f])=>!peRO() || PE_FILTROS_RO.includes(f)).forEach(([f,ic])=>{ const k = n(f); if(k) r.push(`<span class="pe-t${f==='arresto'?' rojo':''}" title="${escHtml(PE_FILTROS.find(x=>x[0]===f)[1].slice(2))}">${ic} ${k}</span>`); });
   const todas = ps.length>0 && ps.every(p=>PE.sel.has(String(p.id)));
   return (PE.multi ? `<input type="checkbox" class="pe-chk" aria-label="Seleccionar la sección ${CURRENT.compania}${s}" ${todas?'checked':''} onclick="event.stopPropagation()" onchange="peSelSeccion(${s}, this.checked)">` : '')
     + `<b>Sección ${CURRENT.compania}${s}</b> <span class="gp-cuenta" style="margin-left:0;">${peCuentaTxt(ps.length)}</span>${r.join('')}`;
@@ -6921,7 +7016,7 @@ function peSecBodyHtml(s, ps){
 }
 function pePintarLista(){
   const c = CURRENT.compania, tit = `<h3 class="section-title">👥 Personal de la ${c}ª Compañía</h3>`;
-  if(PE.error){ pePonerHtml('admin-pe-lista', tit + `<p class="small-note" style="color:var(--danger);">No se pudo cargar el personal: ${escHtml(PE.error)}</p><button type="button" class="small-btn" onclick="renderAdminPersonal()">↻ Reintentar</button>`); return; }
+  if(PE.error){ pePonerHtml('admin-pe-lista', tit + `<p class="small-note" style="color:var(--danger);">No se pudo cargar el personal: ${escHtml(PE.error)}</p><button type="button" class="small-btn" onclick="${peRO() ? 'renderMandosPersonal()' : 'renderAdminPersonal()'}">↻ Reintentar</button>`); return; }
   if(!PE.personas){ pePonerHtml('admin-pe-lista', tit + '<p class="small-note">Cargando…</p>'); return; }
   const ls = peFiltradas(), activo = peActivo();
   let html = `<div class="pe-cuenta" id="pe-cuenta">${peCuentaTxt(ls.length)}</div>` + (PE.multi ? `<div class="pe-chips" id="pe-selbar">${peSelBarHtml(ls.length)}</div>` : '');
@@ -6935,12 +7030,12 @@ function pePintarLista(){
   if(!ls.length) html += `<p class="small-note">${PE.personas.length ? (PE.soloSel && !PE.sel.size ? 'No hay nadie seleccionado.' : 'Nadie coincide con la búsqueda o los filtros.') : 'Todavía no hay nadie en la compañía.'}</p>`;
   if(PE.multi) html += `<div class="pe-barra" id="pe-barra">${peBarraHtml()}</div>`;
   pePonerHtml('admin-pe-lista', tit + html);
-  PE.abiertos.forEach(id=>{ if(document.getElementById('pe-f-'+id)) peCargarServicios(id); }); // fichas que siguen abiertas
+  if(!peRO()) PE.abiertos.forEach(id=>{ if(document.getElementById('pe-f-'+id)) peCargarServicios(id); }); // fichas que siguen abiertas
 }
 function peSecToggle(s, det){
   if(!peActivo()){ if(det.open) PE.secAb.add(s); else PE.secAb.delete(s); } // lo que abre una búsqueda no se recuerda
   const b = document.getElementById('pe-secb-'+s);
-  if(det.open && b && !b.innerHTML.trim()){ b.innerHTML = peSecBodyHtml(s, peFiltradas().filter(p=>p.seccion===s)); PE.abiertos.forEach(id=>{ if(b.querySelector('#pe-f-'+CSS.escape(id))) peCargarServicios(id); }); }
+  if(det.open && b && !b.innerHTML.trim()){ b.innerHTML = peSecBodyHtml(s, peFiltradas().filter(p=>p.seccion===s)); if(!peRO()) PE.abiertos.forEach(id=>{ if(b.querySelector('#pe-f-'+CSS.escape(id))) peCargarServicios(id); }); }
 }
 function peVerMas(s){ PE.secMax[s] = (PE.secMax[s] || PE_TANDA) + PE_TANDA; const b = document.getElementById('pe-secb-'+s); if(b) b.innerHTML = peSecBodyHtml(s, peFiltradas().filter(p=>p.seccion===s)); }
 // Repinta solo las cabeceras de sección (números y casillas), sin tocar las filas
@@ -6967,10 +7062,10 @@ function peCabHtml(p){
   const hoy = ymd(new Date()), a = peArrestosVivos(p)[0], t = [];
   if(a) t.push(`<span class="pe-t rojo" title="${escHtml(arrestoTxt(a))}">🚨 ${a.desde<=hoy ? 'hasta '+peFC(a.hasta) : peFC(a.desde)+'–'+peFC(a.hasta)}</span>`);
   if(p.externado) t.push(`<span class="pe-t">🎒 ${p.externado_total ? 'Total' : 'Findes'}</span>`);
-  if(String(p.intolerancias||'').trim()) t.push(`<span class="pe-t" title="${escHtml(p.intolerancias)}">🥗 Intolerancia</span>`);
-  if((p.viernes_fuera||0)>0) t.push(`<span class="pe-t">📅 ${p.viernes_fuera>=4 ? 'Todos los viernes' : '2 viernes al mes'}</span>`);
+  if(!peRO() && String(p.intolerancias||'').trim()) t.push(`<span class="pe-t" title="${escHtml(p.intolerancias)}">🥗 Intolerancia</span>`);
+  if(peViernes(p)>0) t.push(`<span class="pe-t">📅 ${peViernes(p)>=4 ? 'Todos los viernes' : '2 viernes al mes'}</span>`);
   if(p.promocion_interna) t.push('<span class="pe-t">🎓 Promoción interna</span>');
-  if(!p.registrado) t.push('<span class="pe-t">⚠ Sin registrar</span>');
+  if(!peRO() && !p.registrado) t.push('<span class="pe-t">⚠ Sin registrar</span>');
   return `<span class="pe-nom"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)}</span><span class="pe-sec">${CURRENT.compania}${escHtml(p.seccion)}</span>${t.join('')}`;
 }
 function peFilaHtml(p){
@@ -6983,9 +7078,22 @@ function peRefrescarCab(pid){ const el = document.getElementById('pe-f-'+pid), p
 function peToggle(pid){
   if(PE.abiertos.has(pid)) PE.abiertos.delete(pid); else PE.abiertos.add(pid);
   peRefrescarFila(pid);
-  if(PE.abiertos.has(pid)) peCargarServicios(pid);
+  if(PE.abiertos.has(pid) && !peRO()) peCargarServicios(pid);
+}
+// Ficha de solo lectura (mandos): arrestos, externado, viernes libres y promoción interna. Nada más.
+function peDetalleRoHtml(p){
+  const hoy = ymd(new Date()), arrs = (ARRESTOS.get(p.id)||[]).slice().reverse(), ext = valorExternado(p);
+  const arrHtml = ARRESTOS_FALTA ? '<p class="small-note" style="margin:0;">Todavía no se pueden consultar los arrestos.</p>'
+    : (arrs.length ? arrs.map(a=>`<div class="pe-it${arrestoVigente(a)?'':' pasado'}"><span>${a.desde<=hoy && hoy<=a.hasta ? '🚨 <b>Ahora</b> · ' : a.desde>hoy ? '⏳ Próximo · ' : ''}${escHtml(arrestoTxt(a))}</span></div>`).join('') : '<p class="small-note" style="margin:0;">Sin arrestos.</p>');
+  return `<h4>🚨 Arrestos</h4>${arrHtml}
+    <h4>🎒 Externado y viernes libres</h4>
+    <div class="pe-it"><span>${ext==='total' ? 'Externado total' : ext==='findes' ? 'Externado de fin de semana' : 'No externado'}</span></div>
+    <div class="pe-it"><span>${peViernes(p)>=4 ? 'Viernes libres: todos' : peViernes(p)>=2 ? 'Viernes libres: 2 al mes' : 'Sin viernes libres'}</span></div>
+    <h4>🎓 Promoción interna</h4>
+    <div class="pe-it"><span>${p.promocion_interna ? 'Sí, promoción interna' : 'No'}</span></div>`;
 }
 function peDetalleHtml(p){
+  if(peRO()) return peDetalleRoHtml(p);
   const id = escHtml(p.id), c = CURRENT.compania, hoy = ymd(new Date()), ext = valorExternado(p), vf = String(p.viernes_fuera>=4 ? 4 : (p.viernes_fuera||0));
   const op = (v, t, sel) => `<option value="${v}" ${v===sel?'selected':''}>${t}</option>`;
   const arrs = (ARRESTOS.get(p.id)||[]).slice().reverse(); // el más reciente primero
@@ -7009,6 +7117,21 @@ function peDetalleHtml(p){
     <div class="pe-btns"><select aria-label="Mover de sección" onchange="peMover('${id}', this)"><option value="">Mover de sección…</option>${peSecs().filter(s=>s!==p.seccion).map(s=>`<option value="${s}">A la ${c}${s}</option>`).join('')}</select>
       ${p.registrado ? `<button type="button" class="small-btn" onclick="peReset('${id}')">🔑 Reiniciar acceso</button>` : '<span class="pe-t">⚠ Aún no se ha registrado</span>'}
       <button type="button" class="small-btn danger" onclick="peBaja('${id}')">Dar de baja</button></div>`;
+}
+/* ---- Pestaña «Personal» de los mandos (solo lectura): la misma lista del Furry, con buscador y desplegables por sección y por persona ---- */
+async function renderMandosPersonal(){
+  const c = CURRENT.compania;
+  ['cuartel-week-select','cuartel-controles'].forEach(id=>{ const e = document.getElementById(id); if(e) e.innerHTML = ''; });
+  document.getElementById('cuartel-notice').innerHTML = '<div class="notice"><span>🔒 Solo consulta</span></div>';
+  document.getElementById('cuartel-vista').innerHTML = '<div id="mandos-pe-buscar"></div><div id="mandos-pe-lista"><p class="small-note">Cargando…</p></div>';
+  PE.multi = false; PE.soloSel = false; PE.sel.clear();
+  try{
+    const secciones = await fetchCompanySections(c);
+    PE.personas = secciones.flatMap(s=>s.people).map(p=>Object.assign(p, { _n: cuartelNorm(p.apellidos+' '+p.nombre) })).sort(peOrden);
+    PE.error = null;
+  }catch(e){ PE.error = (e && e.message) || String(e); }
+  pePonerHtml('admin-pe-buscar', peBuscadorHtml());
+  pePintarLista();
 }
 /* ---- Servicios de la persona: se piden al abrir su ficha (una sola consulta) ---- */
 function peServHtml(pid){
@@ -9206,6 +9329,7 @@ const TIPO_LABEL = { cuartelero:'Cuartelero', imaginaria:'Imaginaria', imaginari
 const esGS = s => !!s && (s.tipo==='guardia_seguridad' || (s.tipo==='otro' && /^GS$/i.test(String(s.codigo||'').trim())));
 function servicioLabel(s){
   if(esGS(s)) return 'Guardia de seguridad';
+  const pz = servPersDe(s); if(pz) return pz.nombre;
   if(s.tipo==='otro') return 'Servicio ' + (s.codigo || '');
   return TIPO_LABEL[s.tipo] + ((s.tipo==='imaginaria' || s.tipo==='imaginaria_gs') && s.turno ? ` (${s.tipo==='imaginaria_gs'?'reserva':'turno'} ${s.turno})` : '') + (s.tipo==='imaginaria_piquete' && s.turno ? ` ${s.turno}` : '');
 }
@@ -9215,7 +9339,7 @@ function servCorto(s){
   if(s.tipo==='imaginaria') return s.turno+' I';
   return ({cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'I I', guardia_seguridad:'GS', imaginaria_gs:'IGS', piquete:'P', imaginaria_piquete:'IP'})[s.tipo] || '?';
 }
-function servClase(s){ return esGS(s) ? 'gs' : (({cuartelero:'c', imaginaria_cuartelero:'ic', imaginaria:'i', imaginaria_imaginaria:'ii', imaginaria_gs:'igs', piquete:'pq', imaginaria_piquete:'ipq'})[s.tipo] || 'otro'); }
+function servClase(s){ const pz = servPersDe(s); if(pz) return 'pers sp-'+pz.id; return esGS(s) ? 'gs' : (({cuartelero:'c', imaginaria_cuartelero:'ic', imaginaria:'i', imaginaria_imaginaria:'ii', imaginaria_gs:'igs', piquete:'pq', imaginaria_piquete:'ipq'})[s.tipo] || 'otro'); }
 function fmtFecha(fechaStr){
   const d = new Date(fechaStr+'T00:00:00');
   return d.toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'2-digit'});
@@ -9225,6 +9349,7 @@ function fmtFecha(fechaStr){
 /* ---- Cuadrante de servicios para los alumnos: SOLO se ve (como el Excel). Tu fila sale marcada; al tocar uno de tus servicios se abre su ficha ---- */
 let CUADRANTE_AL = null; // { roster, servicios, dias, compania }
 async function cargarCuadranteAlumno(){
+  await cargarServPers(CURRENT.persona.compania);
   const c = CURRENT.persona.compania, hoy = new Date(), ini = ymd(lunesDe(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-14)));
   const rosterP = (async ()=>{
     let r = await sb.from('personas').select('id,nombre,apellidos,seccion,orden_servicio,sin_servicios').eq('compania', c).order('apellidos');
@@ -9301,6 +9426,7 @@ function abrirServicioCuadrante(fecha){
   box.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 async function renderAlumnoServicios(){
+  cargarServPers(CURRENT.persona.compania); // en segundo plano: el nombre y el color de los servicios propios de la compañía
   try{ sb.rpc('marcar_servicios_vistos').then(()=>{}, ()=>{}); }catch(e){} // se anota cuándo mira cada persona sus servicios (para el aviso de «llevas días sin mirarlos»)
   document.getElementById('alumno-week-select').innerHTML = '';
   document.getElementById('alumno-notice').innerHTML = '';
@@ -9425,6 +9551,133 @@ async function enviarSolicitudCambio(servicioId){
   await renderAlumnoServicios();
 }
 
+/* ---- Servicios personalizados (parche SQL 107): el Furry escribe el nombre, elige el color y las siglas salen solas.
+   Se guardan como servicios de tipo «otro» (código = siglas) y el catálogo (nombre + color) vive en la tabla servicios_personalizados ---- */
+let SERV_PERS = [], SERV_PERS_FALTA = false, SERV_PERS_EDITADAS = false;
+const SERV_PERS_PALETA = ['#2e7d6b','#b8860b','#1f6fb2','#8e44ad','#c0392b','#d35400','#16a085','#7f8c8d','#e91e63','#3f51b5'];
+const SERV_PERS_RESERVADAS = ['C','IC','I I','GS','IGS','P','IP'];
+const servPersDe = s => { if(!s || s.tipo!=='otro' || !SERV_PERS.length) return null; const k = String(s.codigo||'').trim().toUpperCase(); return SERV_PERS.find(p=>p.siglas===k) || null; };
+const hexRgb = h => { const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(h||''); return m ? [parseInt(m[1],16), parseInt(m[2],16), parseInt(m[3],16)] : [120,120,120]; };
+function servPersEstilos(){
+  let st = document.getElementById('serv-pers-css'); if(!st){ st = document.createElement('style'); st.id = 'serv-pers-css'; document.head.appendChild(st); }
+  st.textContent = SERV_PERS.map(p=>{ const [r,g,b] = hexRgb(p.color); return `.serv-cod.sp-${p.id}{background:rgba(${r},${g},${b},.36);border:1px solid rgba(${r},${g},${b},.8);}`; }).join('\n');
+}
+// Lee el catálogo de la compañía (si el parche no está o falla, no se rompe nada: todo sigue como «Servicio XX»)
+async function cargarServPers(c){
+  c = c || (CURRENT && (CURRENT.compania || (CURRENT.persona && CURRENT.persona.compania))); if(!c) return;
+  try{
+    const { data, error } = await sb.from('servicios_personalizados').select('id,nombre,siglas,color').eq('compania', c).order('nombre').limit(200);
+    SERV_PERS = error ? [] : (data||[]);
+    SERV_PERS_FALTA = !!error && /relation|does not exist|schema cache/i.test(error.message||'');
+  }catch(e){ SERV_PERS = []; }
+  servPersEstilos();
+}
+const PERS_CONECTORES = new Set(['de','del','la','las','el','los','y','e','en','a','al','con','para','por','un','una']);
+const sinAcentos = t => String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'');
+// Siglas por defecto según lo que se escribe: varias palabras → sus iniciales («Guardia de puerta» → GP); una palabra → sus 3 primeras letras («Biblioteca» → BIB)
+function persSiglasDe(nombre){
+  const pal = sinAcentos(nombre).toUpperCase().replace(/[^A-Z0-9 ]/g,' ').split(/\s+/).filter(Boolean);
+  const utiles = pal.filter(w=>!PERS_CONECTORES.has(w.toLowerCase()));
+  let sg = utiles.length>=2 ? utiles.slice(0,4).map(w=>w[0]).join('') : ((utiles[0]||pal[0]||'').slice(0,3));
+  if(SERV_PERS_RESERVADAS.includes(sg) || /^\d I$/.test(sg)) sg = (utiles[0]||pal[0]||sg).slice(0,4); // no pisar un código de siempre
+  return sg;
+}
+const persEsc = t => String(t||'').toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ0-9 .\-]/g,'').slice(0,6);
+const persGuardadoPorSiglas = sg => SERV_PERS.find(p=>p.siglas===sg) || null;
+function persLeer(){
+  return { nombre:(document.getElementById('serv-pers-nombre').value||'').trim().replace(/\s+/g,' '), siglas:persEsc(document.getElementById('serv-pers-siglas').value).trim(), color:document.getElementById('serv-pers-color').value || '#2e7d6b' };
+}
+function persVistaPrevia(){
+  const d = persLeer(), [r,g,b] = hexRgb(d.color), el = document.getElementById('serv-pers-prev'); if(!el) return;
+  el.innerHTML = d.siglas ? `<span class="serv-cod" style="cursor:default;background:rgba(${r},${g},${b},.36);border:1px solid rgba(${r},${g},${b},.8);">${escHtml(d.siglas)}</span> <small>${escHtml(d.nombre)}</small>` : '';
+  const pal = document.getElementById('serv-pers-paleta');
+  if(pal) pal.innerHTML = SERV_PERS_PALETA.map(c=>`<button type="button" class="pers-col${c.toLowerCase()===d.color.toLowerCase()?' on':''}" style="background:${c};" aria-label="Color ${c}" onclick="persElegirColor('${c}')"></button>`).join('');
+  const gd = persGuardadoPorSiglas(d.siglas), bor = document.getElementById('serv-pers-borrar'); if(bor) bor.classList.toggle('hidden', !gd);
+}
+function persPintar(){
+  const box = document.getElementById('serv-pers-guardados'); if(!box) return;
+  box.innerHTML = SERV_PERS.length ? '<span class="small-note" style="margin:0;">Ya creados:</span> ' + SERV_PERS.map(p=>{ const [r,g,b] = hexRgb(p.color); return `<button type="button" class="small-btn" onclick="persUsar(${p.id})"><span class="serv-cod" style="cursor:pointer;background:rgba(${r},${g},${b},.36);border:1px solid rgba(${r},${g},${b},.8);">${escHtml(p.siglas)}</span>${escHtml(p.nombre)}</button>`; }).join('')
+    : (SERV_PERS_FALTA ? '<span class="small-note" style="margin:0;color:var(--danger);">Falta ejecutar el parche SQL 107 para poder crear servicios propios.</span>' : '');
+  const tur = window._servPersTurno != null;
+  const g = document.getElementById('serv-pers-guardar'); if(g) g.textContent = tur ? '💾 Guardar cambio' : '➕ Añadir este servicio';
+  const q = document.getElementById('serv-pers-quitar'); if(q) q.classList.toggle('hidden', !tur);
+  if(!tur){ SERV_PERS_EDITADAS = false; }
+  persVistaPrevia();
+}
+function persNombreInput(){
+  const n = document.getElementById('serv-pers-nombre'), s = document.getElementById('serv-pers-siglas');
+  if(!SERV_PERS_EDITADAS) s.value = persSiglasDe(n.value);
+  const gd = SERV_PERS.find(p=>p.nombre.toLowerCase()===n.value.trim().toLowerCase()); // si ya existe uno con ese nombre, se usan sus siglas y su color
+  if(gd){ s.value = gd.siglas; document.getElementById('serv-pers-color').value = gd.color; }
+  persVistaPrevia();
+}
+function persSiglasInput(){ const s = document.getElementById('serv-pers-siglas'); s.value = persEsc(s.value); SERV_PERS_EDITADAS = !!s.value; persVistaPrevia(); }
+function persColorInput(){ persVistaPrevia(); }
+function persElegirColor(c){ document.getElementById('serv-pers-color').value = c; persVistaPrevia(); }
+function persUsar(id){
+  const p = SERV_PERS.find(x=>x.id===id); if(!p) return;
+  document.getElementById('serv-pers-nombre').value = p.nombre; document.getElementById('serv-pers-siglas').value = p.siglas; document.getElementById('serv-pers-color').value = p.color;
+  SERV_PERS_EDITADAS = true; persVistaPrevia();
+}
+// Toca un servicio personalizado de la tabla: se rellena la caja para cambiar a quién se lo ponen o quitarlo
+function prellenarPersonalizado(fecha, siglas, turno, personaId){
+  const p = persGuardadoPorSiglas(String(siglas||'').toUpperCase()); if(!p) return;
+  abrirCajaSi('serv', 'manual');
+  document.getElementById('serv-fecha').value = fecha;
+  if(personaId) servElegirPersona(personaId);
+  window._servPersTurno = turno; window._servModo = 'añadir';
+  persUsar(p.id); persPintar();
+  document.getElementById('serv-manual-titulo').textContent = `✏️ Cambiar ${p.nombre} del ${fmtFecha(fecha)}`;
+  showToast('Elige arriba quién lo hace y pulsa «Guardar cambio» en la caja «Otro servicio» (o «Quitar ese servicio»).');
+  document.getElementById('serv-pers-nombre').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+async function guardarServicioPersonalizado(){
+  if(window._servGuardando) return;
+  const fecha = document.getElementById('serv-fecha').value, persona_id = document.getElementById('serv-persona').value, d = persLeer();
+  if(!fecha || !persona_id){ showToast('Elige fecha y persona.'); return; }
+  if(d.nombre.length < 2){ showToast('Escribe el nombre del servicio.'); return; }
+  if(/[<>"']/.test(d.nombre)){ showToast('El nombre no puede llevar los símbolos  <  > " \' .'); return; }
+  if(!d.siglas){ showToast('Pon unas siglas.'); return; }
+  if(SERV_PERS_RESERVADAS.includes(d.siglas) || /^\d I$/.test(d.siglas)){ showToast(`«${d.siglas}» ya es un servicio de siempre: elige otras siglas.`); return; }
+  const otro = persGuardadoPorSiglas(d.siglas);
+  if(otro && otro.nombre.toLowerCase()!==d.nombre.toLowerCase() && !await confirmarApp(`Las siglas «${d.siglas}» ya son de «${otro.nombre}». ¿Cambiarlas para que sean de «${d.nombre}»? (Los servicios ya puestos con esas siglas pasarán a llamarse así.)`, { si:'Cambiar' })) return;
+  window._servGuardando = true;
+  const btn = document.getElementById('serv-pers-guardar'), txt = btn ? btn.textContent : '';
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Guardando…'; }
+  try{
+    const c = CURRENT.compania;
+    const { error: e1 } = await sb.from('servicios_personalizados').upsert({ compania:c, nombre:d.nombre, siglas:d.siglas, color:d.color }, { onConflict:'compania,siglas' });
+    if(e1){ showToast('No se pudo guardar el servicio: '+e1.message+(/relation|does not exist|schema cache/i.test(e1.message||'') ? ' — ¿has ejecutado el parche SQL 107?' : '')); return; }
+    let turno = window._servPersTurno;
+    if(turno == null){ turno = await siguienteTurnoGS(fecha, 'otro'); } // varios «otros» el mismo día: cada uno con su número
+    const { error: e2 } = await sb.from('servicios').upsert({ compania:c, fecha, tipo:'otro', turno, persona_id, codigo:d.siglas, estimado:false }, { onConflict:'compania,fecha,tipo,turno' });
+    if(e2){ showToast('No se pudo asignar: '+e2.message); return; }
+    const selP = document.getElementById('serv-persona'), nomP = selP && selP.selectedOptions[0] ? selP.selectedOptions[0].textContent.replace(/\s*\(\d+\)\s*$/, '') : '';
+    showToast(`✅ Servicio guardado: ${d.nombre} (${d.siglas}) · ${nomP} · ${fmtFecha(fecha)}`);
+    window._servPersTurno = null;
+    await cargarServPers(c);
+    await renderAdminServicios();
+    persPintar();
+  } finally { window._servGuardando = false; if(btn){ btn.disabled = false; btn.textContent = txt; } }
+}
+async function quitarServicioPersonalizado(){
+  const fecha = document.getElementById('serv-fecha').value, d = persLeer(), turno = window._servPersTurno;
+  if(!fecha || turno == null){ showToast('Toca primero su código en la tabla.'); return; }
+  if(!await confirmarApp(`¿Quitar ${d.nombre || 'este servicio'} del ${fmtFecha(fecha)} del cuadrante?`, { si:'Quitar', peligro:true })) return;
+  const { error } = await sb.from('servicios').delete().eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo', 'otro').eq('turno', turno).eq('codigo', d.siglas);
+  if(error){ showToast('No se pudo quitar: '+error.message); return; }
+  showToast('✅ Servicio quitado.');
+  window._servPersTurno = null;
+  await renderAdminServicios(); persPintar();
+}
+async function borrarDeListaPersonalizado(){
+  const p = persGuardadoPorSiglas(persLeer().siglas); if(!p) return;
+  if(!await confirmarApp(`¿Borrar «${p.nombre}» (${p.siglas}) de la lista de servicios guardados? Los que ya están puestos en el cuadrante no se tocan, pero dejarán de verse con su nombre y su color.`, { si:'Borrar', peligro:true })) return;
+  const { error } = await sb.from('servicios_personalizados').delete().eq('id', p.id);
+  if(error){ showToast('No se pudo borrar: '+error.message); return; }
+  showToast('Borrado de la lista.');
+  await cargarServPers(CURRENT.compania); await renderAdminServicios(); persPintar();
+}
 /* ---- Admin ---- */
 function onServTipoChange(){
   const tipo = document.getElementById('serv-tipo').value;
@@ -9539,6 +9792,7 @@ function servElegirPersona(personaId){
   poner(); setTimeout(()=>{ if(sel.value!==String(personaId)){ poner(); actualizarDeudasPersonaServ(); } }, 300);
 }
 function abrirAsignarRapido(personaId, fecha){
+  window._servPersTurno = null; persPintar();
   document.getElementById('serv-fecha').value = fecha;
   servElegirPersona(personaId);
   window._servGsTurno = null;
@@ -9548,6 +9802,7 @@ function abrirAsignarRapido(personaId, fecha){
   document.getElementById('serv-tipo').scrollIntoView({behavior:'smooth', block:'center'});
 }
 function prellenarSustitucion(fecha, tipo, turno, personaId){
+  window._servPersTurno = null; persPintar();
   document.getElementById('serv-fecha').value = fecha;
   if(personaId) servElegirPersona(personaId); // al cambiar un servicio ya puesto, sale elegido quien lo hace ahora
   document.getElementById('serv-tipo').value = tipo;
@@ -10245,7 +10500,8 @@ function pintarServGrid(){
       const f = ymd(d), finde = d.getDay()===0 || d.getDay()===6;
       const lista = porPD[p.id+'|'+f] || [];
       const cont = lista.map(s=> s.tipo==='otro'
-        ? `<span class="serv-cod ${esGS(s)?'gs':'otro'}" title="${escHtml(s.codigo||'')} (código del Excel)">${escHtml(servCorto(s))}</span>`
+        ? (servPersDe(s) ? `<span class="serv-cod ${servClase(s)}" title="${escHtml(servicioLabel(s))} — toca para cambiar" onclick="prellenarPersonalizado('${s.fecha}','${escHtml(s.codigo)}',${s.turno},'${s.persona_id}')">${escHtml(servCorto(s))}</span>`
+          : `<span class="serv-cod ${esGS(s)?'gs':'otro'}" title="${escHtml(s.codigo||'')} (código del Excel)">${escHtml(servCorto(s))}</span>`)
         : `<span class="serv-cod ${servClase(s)}${s.estimado?' est':''}${s.deuda_id?' deu':''}${esResalte(s)?' rs':''}${esResalteServ(s)?' rsx':''}" title="${escHtml(servicioLabel(s)+(s.estimado?' (ESTIMADO)':'')+(s.deuda_id?' · '+textoSaldarCorto(s):'')+' — toca para cambiar')}" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno},'${s.persona_id}')">${escHtml(servCorto(s))}</span>`).join(' ');
       const gh = lista.length ? null : fantasma[p.id+'|'+f];
       const sk = (lista.length || gh) ? null : (window._servSaltos||{})[p.id+'|'+f]; // se le saltó por haberlo hecho ya
@@ -10546,13 +10802,15 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
     const M = lista.length, enLista = new Set(lista.map(p=>p.id));
     const hechoP = new Set();
     const marcaP = id => { if(!enLista.has(id)) return; hechoP.add(id); if(hechoP.size>=M) hechoP.clear(); };
+    // Un piquete hecho para saldar una deuda cuenta como hecho por quien se lo debía: esa persona también se salta en la ronda (como pasa con el cuartelero y las imaginarias)
+    const marcaPiquete = x => { marcaP(x.persona_id); if(x.deuda_id){ const ac = (op.acreedorDeuda && op.acreedorDeuda.get(x.deuda_id)) || ((deudas||[]).find(d=>d.id===x.deuda_id) || {}).acreedor_id; if(ac && ac!==x.persona_id) marcaP(ac); } };
     const pqPorFecha = {};
     existentes.filter(x=>x.tipo==='piquete' || x.tipo==='imaginaria_piquete').forEach(x=>{ (pqPorFecha[x.fecha] = pqPorFecha[x.fecha] || []).push(x); });
-    Object.keys(pqPorFecha).filter(f=>f<op.desde).sort().forEach(f=>pqPorFecha[f].filter(x=>x.tipo==='piquete').forEach(x=>marcaP(x.persona_id)));
+    Object.keys(pqPorFecha).filter(f=>f<op.desde).sort().forEach(f=>pqPorFecha[f].filter(x=>x.tipo==='piquete').forEach(marcaPiquete));
     const diaPiquete = f => { const dw = new Date(f+'T00:00:00').getDay(); return dw>=1 && dw<=4 && !esFinde(f) && !puenteDia[f] && !op.sinServicio.has(f); };
     for(let f = op.desde; f <= op.hasta; f = sumarDia(f,1)){
       const ya = (pqPorFecha[f]||[]).filter(x=>x.tipo==='piquete'), yaIP = (pqPorFecha[f]||[]).filter(x=>x.tipo==='imaginaria_piquete');
-      ya.forEach(x=>marcaP(x.persona_id));
+      ya.forEach(marcaPiquete);
       if(!diaPiquete(f)) continue;
       const choca = new Set([...existentes, ...filas].filter(x=>x.fecha===f && (x.tipo==='cuartelero' || esGS(x) || x.tipo==='imaginaria_gs')).map(x=>x.persona_id));
       const enDia = new Set([...ya, ...yaIP].map(x=>x.persona_id));
@@ -10704,7 +10962,11 @@ async function previsualizarEstimacion(paso){
     const existentes = todasExistentes.filter(x=>!idsViejas.has(x.id));
     const rd = await sb.from('deudas_servicio').select('id,deudor_id,acreedor_id,tipo,turno,entre_semana,fecha_origen').eq('compania', CURRENT.compania).eq('saldada', false);
     const rg = await sb.from('gs_dias').select('*').order('fecha'); // calendario de guardias de seguridad (patch 61)
-    const r = generarEstimacion({ ...op, compania: CURRENT.compania, gsDias: rg.error ? [] : (rg.data||[]) }, roster, existentes, rd.error ? [] : (rd.data||[]));
+    // Piquetes hechos para saldar una deuda (aunque ya esté saldada): se mira a quién se debían, porque ese turno ya está cumplido y se le salta
+    const idsDeudaPq = [...new Set(existentes.filter(x=>x.tipo==='piquete' && x.deuda_id).map(x=>x.deuda_id))];
+    let acreedorDeuda = new Map();
+    if(idsDeudaPq.length){ try{ const ra = await sb.from('deudas_servicio').select('id,acreedor_id').in('id', idsDeudaPq); (ra.data||[]).forEach(d=>acreedorDeuda.set(d.id, d.acreedor_id)); }catch(e){} }
+    const r = generarEstimacion({ ...op, compania: CURRENT.compania, gsDias: rg.error ? [] : (rg.data||[]), acreedorDeuda }, roster, existentes, rd.error ? [] : (rd.data||[]));
     if(rg.error && (op.que==='todos' || op.que==='gs')) r.gsInfo.avisos.push('No se pudo leer el calendario de guardias de seguridad (¿has ejecutado el patch 61?)');
     EST_PREVIA = { op, filas: r.filas, saltos: r.saltos, reemplazar: [...idsViejas] };
     const sinImagPrev = [...(op.sinImag || [])].filter(f=>f>=op.desde && f<=op.hasta).sort();
@@ -11105,6 +11367,7 @@ async function toggleDamaServ(id){
   pintarServGrid();
 }
 async function renderAdminServicios(){
+  await cargarServPers(CURRENT.compania); persPintar();
   try{ await DISENO_PROMESA; }catch(e){} // lo que ya has visto de la bandeja se guarda en tu cuenta
   if(servOrdenando){ servOrdenando = false; servOrdenAntes = null; }
   document.getElementById('admin-week-select').innerHTML = '';
