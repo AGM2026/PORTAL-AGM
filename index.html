@@ -392,6 +392,10 @@ table.serv-grid tr.exento td.nc{color:var(--danger);background:rgba(160,63,44,.1
 .serv-cod.igs{background:rgba(192,57,43,.16);color:#8e2a1f;border:1px solid rgba(192,57,43,.45);font-size:.82em;padding:0 3px;}
 .serv-cod.pq{background:rgba(111,66,151,.28);color:#3f1f5c;}
 .serv-cod.pers{cursor:pointer;} /* servicios personalizados: el color de cada uno se genera en «servPersEstilos» (clase sp-ID) */
+.rt-flash{animation:rtflash 2.6s ease-out;} @keyframes rtflash{0%{box-shadow:inset 0 0 0 3px #f39c12;background:rgba(243,156,18,.45);}100%{box-shadow:inset 0 0 0 0 transparent;}}
+td.rt-edit{outline:2px dashed #8e44ad;outline-offset:-2px;background:rgba(142,68,173,.14);} tr.rt-edit-fila td.nc{box-shadow:inset 4px 0 0 #8e44ad;}
+#serv-rt-barra{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.78rem;margin:0 0 8px;} #serv-rt-barra:empty{display:none;}
+.rt-chip{padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:var(--paper);} .rt-chip.edit{border-color:#8e44ad;color:#8e44ad;font-weight:700;} .rt-estado{opacity:.6;font-size:.72rem;}
 .pers-col{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0;} .pers-col.on{outline:2px solid var(--ink);outline-offset:1px;}
 .pers-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;} .pers-chips .small-btn{display:inline-flex;gap:6px;align-items:center;}
 .serv-cod.ipq{background:rgba(111,66,151,.10);color:#4b2a6b;border:1px solid rgba(111,66,151,.45);font-size:.82em;padding:0 3px;}
@@ -1343,7 +1347,7 @@ aplicarTema();
         </div>
       </div></div>
       <div class="blq" data-blq="a-s-info"><div id="serv-infografia" class="admin-panel hidden"><div id="admin-servicios-leyenda"></div></div></div>
-      <div class="blq" data-blq="a-s-filtros"><div id="serv-grid-controles"></div>
+      <div class="blq" data-blq="a-s-filtros"><div id="serv-rt-barra"></div><div id="serv-grid-controles"></div>
       <div id="serv-grid-nav"></div></div>
 
       <div class="blq" data-blq="a-s-tabla"><div class="serv-grid-wrap"><table class="serv-grid" id="admin-servicios-tabla"></table></div></div>
@@ -1444,7 +1448,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-29T15:09:33";
+const APP_VERSION = "2026-10-29T15:16:14";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -3223,6 +3227,7 @@ function showScreen(id){
 let currentModule = 'comidas';
 async function setModule(mod){
   currentModule = mod;
+  if(mod!=='servicios' && typeof servRtParar==='function') servRtParar(); // el tiempo real solo está activo en la pestaña Servicios
   guardarEstado();
   if(mod!=='comidas'){ const db = document.getElementById('alumno-desbloqueo'); if(db) db.innerHTML = ''; } // el aviso del desbloqueo solo vale en Comidas
   if(mod==='servicios') pintarBarraPendiente('comidas', false); // la barra de "sin confirmar" solo vale en Comidas y Pernoctas
@@ -3531,6 +3536,7 @@ async function doLogin(){
 }
 async function doLogout(){
   try{ blqSalirEdicion(); }catch(e){}
+  try{ servRtParar(); }catch(e){}
   EN_RECUPERACION = false; marcarRecuperacion(false);
   if(CURRENT && CURRENT.mode==='cuartel'){
     try{ await sb.rpc('cuartel_salir', { p_device_id: idDispositivo() }); }catch(e){}
@@ -9625,6 +9631,7 @@ function persUsar(id){
 // Toca un servicio personalizado de la tabla: se rellena la caja para cambiar a quién se lo ponen o quitarlo
 function prellenarPersonalizado(fecha, siglas, turno, personaId){
   const p = persGuardadoPorSiglas(String(siglas||'').toUpperCase()); if(!p) return;
+  { const pe = SERV_GRID && SERV_GRID.roster.find(x=>x.id===personaId); servRtEditando(personaId, fecha, `a ${pe ? pe.apellidos : ''} el ${fmtFecha(fecha)}`); }
   abrirCajaSi('serv', 'manual');
   document.getElementById('serv-fecha').value = fecha;
   if(personaId) servElegirPersona(personaId);
@@ -9661,6 +9668,7 @@ async function guardarServicioPersonalizado(){
     if(e2){ showToast('No se pudo asignar: '+e2.message); return; }
     const selP = document.getElementById('serv-persona'), nomP = selP && selP.selectedOptions[0] ? selP.selectedOptions[0].textContent.replace(/\s*\(\d+\)\s*$/, '') : '';
     showToast(`✅ Servicio guardado: ${d.nombre} (${d.siglas}) · ${nomP} · ${fmtFecha(fecha)}`);
+    servAvisarCambio(`ha puesto ${d.nombre} a ${nomP} el ${fmtFecha(fecha)}`);
     window._servPersTurno = null;
     await cargarServPers(c);
     await renderAdminServicios();
@@ -9674,6 +9682,7 @@ async function quitarServicioPersonalizado(){
   const { error } = await sb.from('servicios').delete().eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo', 'otro').eq('turno', turno).eq('codigo', d.siglas);
   if(error){ showToast('No se pudo quitar: '+error.message); return; }
   showToast('✅ Servicio quitado.');
+  servAvisarCambio(`ha quitado ${d.nombre || 'un servicio'} del ${fmtFecha(fecha)}`);
   window._servPersTurno = null;
   await renderAdminServicios(); persPintar();
 }
@@ -9684,6 +9693,92 @@ async function borrarDeListaPersonalizado(){
   if(error){ showToast('No se pudo borrar: '+error.message); return; }
   showToast('Borrado de la lista.');
   await cargarServPers(CURRENT.compania); await renderAdminServicios(); persPintar();
+}
+/* ================= TIEMPO REAL en Servicios (parche SQL 109) =================
+   Dos canales de Supabase Realtime por compañía:
+   · «serv-datos-N»: avisa de cualquier cambio en la tabla servicios (lo cuenta la base, así que vale también para la estimación, el Excel, etc.). Se repinta la tabla sola.
+   · «serv:N» (privado, solo admins de esa compañía y superadmin): quién está dentro (presencia), qué casilla está editando y avisos de «ha cambiado X».
+   Si el parche no está ejecutado, nada de esto se rompe: simplemente no hay tiempo real. */
+const SERV_RT = { c:null, datos:null, pres:null, id:(window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)), otros:[], mio:0, bc:0, buf:[], timer:null, editTimer:null, yo:null, estado:'' };
+const servRtNombre = () => CURRENT && CURRENT.isSuperadmin ? '👑 Superadmin' : '🧑‍✈️ Furry';
+function servRtIniciar(c){
+  if(!c || !CURRENT || CURRENT.mode!=='admin') return;
+  if(SERV_RT.c===c && SERV_RT.datos) return;
+  servRtParar();
+  SERV_RT.c = c; SERV_RT.yo = { nombre: servRtNombre(), editando: null };
+  try{
+    SERV_RT.datos = sb.channel('serv-datos-'+c)
+      .on('postgres_changes', { event:'*', schema:'public', table:'servicios', filter:'compania=eq.'+c }, servRtCambio)
+      .subscribe(st=>{ SERV_RT.estado = st==='SUBSCRIBED' ? 'en vivo' : (st==='CHANNEL_ERROR' || st==='TIMED_OUT' ? 'sin tiempo real' : SERV_RT.estado); servRtPintarBarra(); });
+    SERV_RT.pres = sb.channel('serv:'+c, { config:{ private:true, presence:{ key:SERV_RT.id }, broadcast:{ self:false } } })
+      .on('presence', { event:'sync' }, ()=>{
+        const st = SERV_RT.pres.presenceState();
+        SERV_RT.otros = Object.entries(st).filter(([k])=>k!==SERV_RT.id).map(([k,v])=>v[v.length-1]).filter(Boolean);
+        servRtPintarBarra(); servRtMarcar();
+      })
+      .on('broadcast', { event:'cambio' }, m=>{ const x = m && m.payload; if(!x) return; SERV_RT.bc = Date.now(); showToast(String(x.quien||'Alguien')+': '+String(x.texto||'ha cambiado un servicio')); })
+      .subscribe(async st=>{ if(st==='SUBSCRIBED'){ try{ await SERV_RT.pres.track(SERV_RT.yo); }catch(e){} } });
+  }catch(e){ SERV_RT.estado = 'sin tiempo real'; }
+}
+function servRtParar(){
+  try{ if(SERV_RT.datos) sb.removeChannel(SERV_RT.datos); if(SERV_RT.pres) sb.removeChannel(SERV_RT.pres); }catch(e){}
+  clearTimeout(SERV_RT.timer); clearTimeout(SERV_RT.editTimer);
+  Object.assign(SERV_RT, { c:null, datos:null, pres:null, otros:[], buf:[], estado:'' });
+}
+// Cualquier cambio en la tabla (llega de la base de datos): se junta lo que llegue en 1 s y se repinta una vez
+function servRtCambio(pl){
+  const antes = pl.old || {}, nuevo = pl.new || {}, id = nuevo.id != null ? nuevo.id : antes.id;
+  if(pl.eventType==='DELETE' && !(window._servTodos||[]).some(x=>x.id===id)) return; // un borrado de otra compañía: solo trae el id y no está en nuestra tabla
+  SERV_RT.buf.push({ tipo:pl.eventType, s:(pl.eventType==='DELETE' ? ((window._servTodos||[]).find(x=>x.id===id) || antes) : nuevo) });
+  clearTimeout(SERV_RT.timer);
+  SERV_RT.timer = setTimeout(servRtRefrescar, 1000);
+}
+async function servRtRefrescar(){
+  const buf = SERV_RT.buf.splice(0); if(!buf.length || !SERV_RT.c || typeof SERV_GRID==='undefined' || !SERV_GRID) return;
+  if(servOrdenando){ SERV_RT.buf = buf.concat(SERV_RT.buf); SERV_RT.timer = setTimeout(servRtRefrescar, 4000); return; } // mientras se reordena la lista no se toca la tabla
+  const c = SERV_RT.c;
+  try{
+    const todos = await traerTodoServ(()=>sb.from('servicios').select('*').eq('compania', c).order('fecha').order('id'));
+    const desde = ymd(SERV_GRID.dias[0]), hasta = ymd(SERV_GRID.dias[SERV_GRID.dias.length-1]);
+    window._servTodos = todos; window._servCuentas = calcularCuentasServ(todos);
+    SERV_GRID.servicios = todos.filter(s=>s.fecha>=desde && s.fecha<=hasta);
+    pintarServGrid();
+  }catch(e){ return; }
+  // aviso: lo que hace uno mismo no se avisa; lo de otro, con quién y qué si lo ha contado él, o resumido si viene de una estimación, el Excel…
+  const propio = Date.now() - SERV_RT.mio < 6000, conAviso = Date.now() - SERV_RT.bc < 5000;
+  buf.forEach(b=>{ const td = document.querySelector(`#admin-servicios-tabla td[data-p="${b.s.persona_id}"][data-f="${b.s.fecha}"]`); if(td){ td.classList.remove('rt-flash'); void td.offsetWidth; td.classList.add('rt-flash'); } });
+  if(propio || conAviso) return;
+  const nom = id => { const p = (SERV_GRID.roster||[]).find(x=>x.id===id); return p ? p.apellidos+', '+p.nombre : ''; };
+  const txt = b => `${b.tipo==='DELETE' ? 'quitado' : (b.tipo==='INSERT' ? 'puesto' : 'cambiado')}: ${servicioLabel(b.s)} · ${nom(b.s.persona_id)} · ${fmtFecha(b.s.fecha)}`;
+  showToast('🔄 ' + (buf.length===1 ? 'Otra persona ha '+txt(buf[0]).replace(':', '') : `Otra persona ha cambiado ${buf.length} servicios`));
+}
+// Lo que cambias tú: lo cuenta al resto y no te avisa a ti de tu propio cambio
+function servAvisarCambio(texto){
+  SERV_RT.mio = Date.now();
+  try{ if(SERV_RT.pres) SERV_RT.pres.send({ type:'broadcast', event:'cambio', payload:{ quien: servRtNombre(), texto: String(texto||'').slice(0,160) } }); }catch(e){}
+  servRtEditando(null);
+}
+// «Estoy editando a esta persona este día»: se ve en la pantalla del otro; se borra solo a los 4 minutos
+function servRtEditando(pid, fecha, texto){
+  if(!SERV_RT.pres || !SERV_RT.yo) return;
+  SERV_RT.yo.editando = pid ? { pid, fecha, texto:String(texto||'').slice(0,80) } : null;
+  clearTimeout(SERV_RT.editTimer);
+  if(pid) SERV_RT.editTimer = setTimeout(()=>servRtEditando(null), 240000);
+  try{ SERV_RT.pres.track(SERV_RT.yo); }catch(e){}
+}
+function servRtPintarBarra(){
+  const el = document.getElementById('serv-rt-barra'); if(!el) return;
+  if(!SERV_RT.c){ el.innerHTML = ''; return; }
+  const chips = SERV_RT.otros.map(o=>`<span class="rt-chip${o.editando?' edit':''}">${escHtml(o.nombre||'Alguien')} está en Servicios${o.editando ? ' · ✏️ editando '+escHtml(o.editando.texto||'') : ''}</span>`).join('');
+  el.innerHTML = (SERV_RT.otros.length ? chips : '') + (SERV_RT.estado ? `<span class="rt-estado">${SERV_RT.estado==='en vivo' ? '🟢' : '⚪'} ${escHtml(SERV_RT.estado)}</span>` : '');
+}
+// Marca en la tabla la casilla (y la fila) que está editando otra persona
+function servRtMarcar(){
+  document.querySelectorAll('#admin-servicios-tabla .rt-edit, #admin-servicios-tabla .rt-edit-fila').forEach(e=>e.classList.remove('rt-edit','rt-edit-fila'));
+  SERV_RT.otros.forEach(o=>{ if(!o.editando) return;
+    const td = document.querySelector(`#admin-servicios-tabla td[data-p="${CSS.escape(String(o.editando.pid))}"][data-f="${CSS.escape(String(o.editando.fecha))}"]`); if(td) td.classList.add('rt-edit');
+    const tr = document.querySelector(`#admin-servicios-tabla tr[data-pid="${CSS.escape(String(o.editando.pid))}"]`); if(tr) tr.classList.add('rt-edit-fila');
+  });
 }
 /* ---- Admin ---- */
 function onServTipoChange(){
@@ -9731,6 +9826,7 @@ async function _asignarServicioImpl(){
   window._servGsTurno = null;
   const selP = document.getElementById('serv-persona'), nomP = selP && selP.selectedOptions[0] ? selP.selectedOptions[0].textContent.replace(/\s*\(\d+\)\s*$/, '') : '';
   showToast(`✅ Servicio guardado: ${servicioLabel({tipo,turno})} · ${nomP} · ${fmtFecha(fecha)}`); // solo este servicio: no se toca ninguna imaginaria de otro día
+  servAvisarCambio(`ha puesto ${servicioLabel({tipo,turno})} a ${nomP} el ${fmtFecha(fecha)}`);
   await renderAdminServicios();
 }
 async function quitarServicioManual(){
@@ -9744,6 +9840,7 @@ async function quitarServicioManual(){
   const { error } = await sb.from('servicios').delete().eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo', tipo).eq('turno', turno);
   if(error){ showToast('No se pudo quitar: '+error.message); return; }
   showToast('✅ Servicio quitado.');
+  servAvisarCambio(`ha quitado ${servicioLabel({tipo,turno})} del ${fmtFecha(fecha)}`);
   await renderAdminServicios();
 }
 async function borrarServiciosTramo(){
@@ -9766,6 +9863,7 @@ async function borrarServiciosTramo(){
   const { error: e2 } = await filtro(sb.from('servicios').delete());
   if(e2){ showToast('No se pudo borrar: '+e2.message); return; }
   showToast(`Borrados ${count} servicio${count===1?'':'s'}.`);
+  servAvisarCambio(`ha borrado ${count} servicio${count===1?'':'s'} (${nombreTipo}) del ${fmtFecha(desde)} al ${fmtFecha(hasta)}`);
   await renderAdminServicios();
 }
 async function eliminarServicio(id){
@@ -9799,6 +9897,7 @@ function servElegirPersona(personaId){
   poner(); setTimeout(()=>{ if(sel.value!==String(personaId)){ poner(); actualizarDeudasPersonaServ(); } }, 300);
 }
 function abrirAsignarRapido(personaId, fecha){
+  { const pe = SERV_GRID && SERV_GRID.roster.find(x=>x.id===personaId); servRtEditando(personaId, fecha, `a ${pe ? pe.apellidos : ''} el ${fmtFecha(fecha)}`); }
   window._servPersTurno = null; persPintar();
   document.getElementById('serv-fecha').value = fecha;
   servElegirPersona(personaId);
@@ -9809,6 +9908,7 @@ function abrirAsignarRapido(personaId, fecha){
   document.getElementById('serv-tipo').scrollIntoView({behavior:'smooth', block:'center'});
 }
 function prellenarSustitucion(fecha, tipo, turno, personaId){
+  { const pe = SERV_GRID && SERV_GRID.roster.find(x=>x.id===personaId); servRtEditando(personaId, fecha, `a ${pe ? pe.apellidos : ''} el ${fmtFecha(fecha)}`); }
   window._servPersTurno = null; persPintar();
   document.getElementById('serv-fecha').value = fecha;
   if(personaId) servElegirPersona(personaId); // al cambiar un servicio ya puesto, sale elegido quien lo hace ahora
@@ -9828,6 +9928,7 @@ async function desplazarTurno(){
   const { data, error } = await sb.rpc('desplazar_turno', { p_compania: CURRENT.compania, p_desde: fecha, p_tipo: tipo });
   if(error){ showToast('No se pudo desplazar: '+error.message); return; }
   showToast(`Desplazado — ${data} días actualizados desde esa fecha.`);
+  servAvisarCambio(`ha desplazado el turno desde el ${fmtFecha(fecha)}`);
   await renderAdminServicios();
 }
 /* La «Bandeja»: cada apartado enseña entre paréntesis cuántas hay SIN resolver y una marca roja «N nuevas» con las que aún no has visto.
@@ -10501,7 +10602,7 @@ function pintarServGrid(){
     const nombreCelda = `${escHtml(p.apellidos)}, ${escHtml(p.nombre)} <span style="color:var(--ink-soft);">${c}${p.seccion}</span>${p.sin_gs?' <span class="serv-casco" title="Promoción interna: de momento no hace guardia de seguridad (la estimación se lo salta; a mano sí se le puede poner)">🪖</span>':''}${p.sin_servicios?' <span style="font-size:.6rem;">· no hace servicios</span>':''}`;
     tbody += servOrdenando
       ? `<tr data-id="${p.id}" class="${p.sin_servicios?'exento':''}" ondragover="event.preventDefault()" ondrop="soltarFilaServ(event,'${p.id}')"><td class="nc" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" style="cursor:grab;"><span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',-1)">▲</span> <span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',1)">▼</span> <span style="cursor:pointer;" title="Marcar / desmarcar que no hace servicios" onclick="toggleExentoServ('${p.id}')">🚫</span> <span style="cursor:pointer;" title="Marcar / desmarcar promoción interna: no hace guardia de seguridad" onclick="toggleSinGsServ('${p.id}')">🪖</span> <span style="cursor:pointer;${p.dama?'':'opacity:.35;'}" title="${p.dama?'Dama cadete — toca para cambiar a Caballero':'Caballero cadete — toca para cambiar a Dama'}" onclick="toggleDamaServ('${p.id}')">♀</span> ⠿ ${nombreCelda}</td>`
-      : `<tr class="${p.sin_servicios?'exento':''}${p.id===servFichaId?' sel':''}"><td class="nc" style="cursor:pointer;" onclick="abrirFichaServ('${p.id}')" title="Toca para ver sus servicios y deudas — ${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})${p.sin_servicios?' — no hace servicios':''}">${nombreCelda}</td>`;
+      : `<tr data-pid="${p.id}" class="${p.sin_servicios?'exento':''}${p.id===servFichaId?' sel':''}"><td class="nc" style="cursor:pointer;" onclick="abrirFichaServ('${p.id}')" title="Toca para ver sus servicios y deudas — ${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})${p.sin_servicios?' — no hace servicios':''}">${nombreCelda}</td>`;
     tbody += `<td class="cnt"><span class="cnt-n" onclick="abrirFichaServ('${p.id}')" title="${escHtml('Ver sus servicios, fechas y deudas — '+cuentaServTitulo(serviciosDePersona(p.id)))}">${((window._servCuentas||{})[p.id]||{}).total||0}</span></td>`;
     dias.forEach(d=>{
       const f = ymd(d), finde = d.getDay()===0 || d.getDay()===6;
@@ -10512,9 +10613,9 @@ function pintarServGrid(){
         : `<span class="serv-cod ${servClase(s)}${s.estimado?' est':''}${s.deuda_id?' deu':''}${esResalte(s)?' rs':''}${esResalteServ(s)?' rsx':''}" title="${escHtml(servicioLabel(s)+(s.estimado?' (ESTIMADO)':'')+(s.deuda_id?' · '+textoSaldarCorto(s):'')+' — toca para cambiar')}" onclick="prellenarSustitucion('${s.fecha}','${s.tipo}',${s.turno},'${s.persona_id}')">${escHtml(servCorto(s))}</span>`).join(' ');
       const gh = lista.length ? null : fantasma[p.id+'|'+f];
       const sk = (lista.length || gh) ? null : (window._servSaltos||{})[p.id+'|'+f]; // se le saltó por haberlo hecho ya
-      tbody += lista.length ? `<td class="${finde?'fin':''}${claseFest(f)} ${f===hoy?'hoy':''}">${cont}</td>`
-        : gh ? `<td class="${finde?'fin':''}${claseFest(f)} ${f===hoy?'hoy':''}" style="cursor:help;text-align:center;" title="${escHtml(textoFantasma(gh))}" onclick="verFantasmaDeuda('${p.id}','${f}')">💸</td>`
-        : `<td class="vacia ${finde?'fin':''}${claseFest(f)} ${f===hoy?'hoy':''}" title="${sk ? escHtml(textoSalto(sk)) : 'Añadir un servicio a '+escHtml(p.apellidos)+' el '+fmt(d)}" onclick="abrirAsignarRapido('${p.id}','${f}')">${sk ? '<span style="color:var(--ink-soft);opacity:.6;font-size:.7rem;">↷</span>' : ''}</td>`;
+      tbody += lista.length ? `<td data-f="${f}" data-p="${p.id}" class="${finde?'fin':''}${claseFest(f)} ${f===hoy?'hoy':''}">${cont}</td>`
+        : gh ? `<td data-f="${f}" data-p="${p.id}" class="${finde?'fin':''}${claseFest(f)} ${f===hoy?'hoy':''}" style="cursor:help;text-align:center;" title="${escHtml(textoFantasma(gh))}" onclick="verFantasmaDeuda('${p.id}','${f}')">💸</td>`
+        : `<td data-f="${f}" data-p="${p.id}" class="vacia ${finde?'fin':''}${claseFest(f)} ${f===hoy?'hoy':''}" title="${sk ? escHtml(textoSalto(sk)) : 'Añadir un servicio a '+escHtml(p.apellidos)+' el '+fmt(d)}" onclick="abrirAsignarRapido('${p.id}','${f}')">${sk ? '<span style="color:var(--ink-soft);opacity:.6;font-size:.7rem;">↷</span>' : ''}</td>`;
     });
     tbody += '</tr>';
   });
@@ -10524,6 +10625,7 @@ function pintarServGrid(){
   const wrapSG = document.querySelector('.serv-grid-wrap'), slSG = wrapSG ? wrapSG.scrollLeft : 0; // se conserva por dónde ibas deslizando
   tabla.innerHTML = gente.length ? thead + tbody : '<tbody><tr><td class="small-note">Nadie con ese filtro.</td></tr></tbody>';
   if(wrapSG) wrapSG.scrollLeft = slSG;
+  try{ servRtMarcar(); }catch(e){}
 }
 /* ================= Estimación de servicios ================= */
 let EST_PREVIA = null;
@@ -11413,6 +11515,7 @@ async function renderAdminServicios(){
   document.getElementById('admin-notice').innerHTML = '';
   document.getElementById('admin-serv-week-select').innerHTML = '';
   const c = CURRENT.compania;
+  servRtIniciar(c); // tiempo real: cambios y quién está dentro
   // Todo lo que no depende de nada más se pide A LA VEZ (antes eran unas 12 consultas una detrás de otra y la pestaña tardaba en abrir).
   // Los servicios de la compañía se piden UNA sola vez: de ahí salen la tabla, las cuentas, la ficha y el primer/último día.
   const seguro = p => Promise.resolve(p).then(r=>r, e=>({ data:null, error:e }));
