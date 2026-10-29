@@ -1234,6 +1234,7 @@ aplicarTema();
             <input type="color" id="serv-pers-color" value="#2e7d6b" aria-label="Color" oninput="persColorInput()" style="width:46px;height:36px;padding:2px;">
           </div>
           <div id="serv-pers-paleta" class="pers-chips" style="margin:0 0 8px;"></div>
+          <label style="display:flex;gap:8px;align-items:flex-start;font-size:.82rem;margin:0 0 8px;"><input type="checkbox" id="serv-pers-conv" style="margin-top:3px;" onchange="persVistaPrevia()"><span><b>Convalida un cuartelero</b> (sargento, alférez o cabo de cuartel): a quien lo haga se le convalida un cuartelero de entre semana y, si ya lo ha hecho, el de fin de semana. Al estimar servicios, la app preguntará si se le mete igualmente o se le salta.</span></label>
           <div class="serv-ctrl" style="align-items:center;">
             <span id="serv-pers-prev" style="min-width:60px;"></span>
             <button type="button" class="small-btn" id="serv-pers-guardar" onclick="guardarServicioPersonalizado()">➕ Añadir este servicio</button>
@@ -1443,7 +1444,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-29T14:10:39";
+const APP_VERSION = "2026-10-29T15:09:33";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -9566,7 +9567,8 @@ function servPersEstilos(){
 async function cargarServPers(c){
   c = c || (CURRENT && (CURRENT.compania || (CURRENT.persona && CURRENT.persona.compania))); if(!c) return;
   try{
-    const { data, error } = await sb.from('servicios_personalizados').select('id,nombre,siglas,color').eq('compania', c).order('nombre').limit(200);
+    let { data, error } = await sb.from('servicios_personalizados').select('id,nombre,siglas,color,convalida_cuartelero').eq('compania', c).order('nombre').limit(200);
+    if(error && /convalida/i.test(error.message||'')) ({ data, error } = await sb.from('servicios_personalizados').select('id,nombre,siglas,color').eq('compania', c).order('nombre').limit(200)); // sin el parche 108 todavía
     SERV_PERS = error ? [] : (data||[]);
     SERV_PERS_FALTA = !!error && /relation|does not exist|schema cache/i.test(error.message||'');
   }catch(e){ SERV_PERS = []; }
@@ -9585,7 +9587,7 @@ function persSiglasDe(nombre){
 const persEsc = t => String(t||'').toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ0-9 .\-]/g,'').slice(0,6);
 const persGuardadoPorSiglas = sg => SERV_PERS.find(p=>p.siglas===sg) || null;
 function persLeer(){
-  return { nombre:(document.getElementById('serv-pers-nombre').value||'').trim().replace(/\s+/g,' '), siglas:persEsc(document.getElementById('serv-pers-siglas').value).trim(), color:document.getElementById('serv-pers-color').value || '#2e7d6b' };
+  return { nombre:(document.getElementById('serv-pers-nombre').value||'').trim().replace(/\s+/g,' '), siglas:persEsc(document.getElementById('serv-pers-siglas').value).trim(), color:document.getElementById('serv-pers-color').value || '#2e7d6b', conv:!!(document.getElementById('serv-pers-conv')||{}).checked };
 }
 function persVistaPrevia(){
   const d = persLeer(), [r,g,b] = hexRgb(d.color), el = document.getElementById('serv-pers-prev'); if(!el) return;
@@ -9608,7 +9610,8 @@ function persNombreInput(){
   const n = document.getElementById('serv-pers-nombre'), s = document.getElementById('serv-pers-siglas');
   if(!SERV_PERS_EDITADAS) s.value = persSiglasDe(n.value);
   const gd = SERV_PERS.find(p=>p.nombre.toLowerCase()===n.value.trim().toLowerCase()); // si ya existe uno con ese nombre, se usan sus siglas y su color
-  if(gd){ s.value = gd.siglas; document.getElementById('serv-pers-color').value = gd.color; }
+  if(gd){ s.value = gd.siglas; document.getElementById('serv-pers-color').value = gd.color; document.getElementById('serv-pers-conv').checked = !!gd.convalida_cuartelero; }
+  else if(!SERV_PERS_EDITADAS){ document.getElementById('serv-pers-conv').checked = /(sargento|alf[eé]rez|cabo)\s+(de\s+)?cuartel/i.test(n.value); } // «Sargento de cuartel»… se marca solo
   persVistaPrevia();
 }
 function persSiglasInput(){ const s = document.getElementById('serv-pers-siglas'); s.value = persEsc(s.value); SERV_PERS_EDITADAS = !!s.value; persVistaPrevia(); }
@@ -9616,7 +9619,7 @@ function persColorInput(){ persVistaPrevia(); }
 function persElegirColor(c){ document.getElementById('serv-pers-color').value = c; persVistaPrevia(); }
 function persUsar(id){
   const p = SERV_PERS.find(x=>x.id===id); if(!p) return;
-  document.getElementById('serv-pers-nombre').value = p.nombre; document.getElementById('serv-pers-siglas').value = p.siglas; document.getElementById('serv-pers-color').value = p.color;
+  document.getElementById('serv-pers-nombre').value = p.nombre; document.getElementById('serv-pers-siglas').value = p.siglas; document.getElementById('serv-pers-color').value = p.color; document.getElementById('serv-pers-conv').checked = !!p.convalida_cuartelero;
   SERV_PERS_EDITADAS = true; persVistaPrevia();
 }
 // Toca un servicio personalizado de la tabla: se rellena la caja para cambiar a quién se lo ponen o quitarlo
@@ -9646,7 +9649,11 @@ async function guardarServicioPersonalizado(){
   if(btn){ btn.disabled = true; btn.textContent = '⏳ Guardando…'; }
   try{
     const c = CURRENT.compania;
-    const { error: e1 } = await sb.from('servicios_personalizados').upsert({ compania:c, nombre:d.nombre, siglas:d.siglas, color:d.color }, { onConflict:'compania,siglas' });
+    let { error: e1 } = await sb.from('servicios_personalizados').upsert({ compania:c, nombre:d.nombre, siglas:d.siglas, color:d.color, convalida_cuartelero:d.conv }, { onConflict:'compania,siglas' });
+    if(e1 && /convalida/i.test(e1.message||'')){ // sin el parche 108: se guarda igual, pero sin lo de convalidar
+      ({ error: e1 } = await sb.from('servicios_personalizados').upsert({ compania:c, nombre:d.nombre, siglas:d.siglas, color:d.color }, { onConflict:'compania,siglas' }));
+      if(!e1 && d.conv) showToast('Falta ejecutar el parche SQL 108 para que «convalida un cuartelero» se guarde.');
+    }
     if(e1){ showToast('No se pudo guardar el servicio: '+e1.message+(/relation|does not exist|schema cache/i.test(e1.message||'') ? ' — ¿has ejecutado el parche SQL 107?' : '')); return; }
     let turno = window._servPersTurno;
     if(turno == null){ turno = await siguienteTurnoGS(fecha, 'otro'); } // varios «otros» el mismo día: cada uno con su número
@@ -10570,12 +10577,33 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
   const implicitas = [];
   const deudasAplicadas = [];
   const saltos = []; // a quién se ha saltado por ya haber hecho el servicio en la ronda sin que nadie se lo deba (para explicarlo en la casilla vacía)
+  /* Servicio de cuartel (sargento / alférez / cabo de cuartel): convalida UN cuartelero a quien lo hace — primero el de entre semana y, si ese ya lo ha hecho en la ronda, el de fin de semana.
+     Cuando la cola llega a esa persona en la cola que le convalida, la estimación no decide sola: lo apunta en convalPendientes y quien llama le pregunta al Furry («meter» el servicio igualmente o «saltar»).
+     Sin respuesta se le salta por defecto. Cada servicio de cuartel convalida una sola vez. */
+  const convalEv = {}; // persona → fechas de sus servicios de cuartel ya hechos (los estimados no cuentan)
+  if(op.convalSiglas && op.convalSiglas.size) existentes.filter(s=>s.tipo==='otro' && !s.estimado && op.convalSiglas.has(String(s.codigo||'').trim().toUpperCase())).forEach(s=>{ (convalEv[s.persona_id] = convalEv[s.persona_id] || []).push(s.fecha); });
+  Object.values(convalEv).forEach(l=>l.sort());
+  const convalUsadas = {}, convalPend = [], convalInfo = [];
+  const convalida = (k, q, id, f, consumir) => { // true = a esta persona se le salta por tener un cuartelero convalidado
+    if(k!=='C') return false;
+    const ev = (convalEv[id] || []).filter(e=>e<f), n = convalUsadas[id] || 0;
+    if(ev.length <= n) return false;
+    const objetivo = hecho.C.semana.has(id) ? 'finde' : 'semana';
+    if(objetivo !== q) return false;
+    const clave = id+'|'+n, dec = op.convalDec && op.convalDec.get(clave);
+    if(dec==='meter'){ if(consumir){ convalUsadas[id] = n+1; convalInfo.push({ persona_id:id, fecha:f, q, evento:ev[n], decision:'meter' }); } return false; }
+    if(dec==='saltar'){ if(consumir){ convalUsadas[id] = n+1; marca('C', q, id); convalInfo.push({ persona_id:id, fecha:f, q, evento:ev[n], decision:'saltar' }); } return true; }
+    if(consumir && !convalPend.some(x=>x.clave===clave)) convalPend.push({ clave, persona_id:id, fecha:f, q, evento:ev[n] });
+    return true; // sin respuesta todavía: se le salta mientras tanto
+  };
   const deudaPara =(acreedorId, tipo, entre, f) => pend.find(x=>!x._u && x.acreedor_id===acreedorId && x.tipo===tipo && !!x.entre_semana===entre && !ocupado.has(x.deudor_id+'|'+f) && (!x.implicita || x.fecha_origen<f));
   // A quién le toca el siguiente servicio de una cola. Si por el camino se salta a alguien que YA lo hizo en la ronda (A) y alguien le DEBE ese servicio a A,
   // lo hace el que se lo debe (y la cola sigue por la persona de después de A, que no pierde su turno).
   const elegir = (k, q, idx, f, tipo, finde, consumir) => {
     const s = hecho[k][q]; let i = Math.min(idx, N-1);
-    while(i>=0 && s.has(roster[i].id)){
+    while(i>=0){
+      const yaHecho = s.has(roster[i].id);
+      if(!yaHecho){ if(convalida(k, q, roster[i].id, f, consumir)){ i--; continue; } break; } // servicio de cuartel: se le salta (o se le mete, según lo que diga el Furry)
       const d = deudaPara(roster[i].id, tipo, !finde, f);
       if(d){ if(consumir) d._u = true; return { quien:d.deudor_id, sig:i-1, deuda:d, saltado:roster[i].id }; }
       if(consumir) saltos.push({ fecha:f, tipo, persona_id:roster[i].id });
@@ -10858,7 +10886,7 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
     deudasAplicadas.push({ fecha:r.fecha, tipo:r.tipo, de:antes, a:d.deudor_id, deuda:d });
   });
   const aId = v => (v===null || v<0) ? null : idAt(v);
-  return { filas, porDia, faltan, deudasAplicadas, implicitas, saltos, gsInfo, pqInfo, finCola: [...finCola], arranque: { C:{ semana:aId(arranque.C.semana), finde:aId(arranque.C.finde) }, I:{ semana:aId(arranque.I.semana), finde:aId(arranque.I.finde) } } };
+  return { filas, porDia, faltan, deudasAplicadas, implicitas, saltos, gsInfo, pqInfo, convalPendientes: convalPend, convalInfo, finCola: [...finCola], arranque: { C:{ semana:aId(arranque.C.semana), finde:aId(arranque.C.finde) }, I:{ semana:aId(arranque.I.semana), finde:aId(arranque.I.finde) } } };
 }
 async function cargarDatosEstimacion(){
   const c = CURRENT.compania;
@@ -10966,7 +10994,17 @@ async function previsualizarEstimacion(paso){
     const idsDeudaPq = [...new Set(existentes.filter(x=>x.tipo==='piquete' && x.deuda_id).map(x=>x.deuda_id))];
     let acreedorDeuda = new Map();
     if(idsDeudaPq.length){ try{ const ra = await sb.from('deudas_servicio').select('id,acreedor_id').in('id', idsDeudaPq); (ra.data||[]).forEach(d=>acreedorDeuda.set(d.id, d.acreedor_id)); }catch(e){} }
-    const r = generarEstimacion({ ...op, compania: CURRENT.compania, gsDias: rg.error ? [] : (rg.data||[]), acreedorDeuda }, roster, existentes, rd.error ? [] : (rd.data||[]));
+    await cargarServPers(CURRENT.compania);
+    const convalSiglas = new Set(SERV_PERS.filter(x=>x.convalida_cuartelero).map(x=>x.siglas));
+    const convalDec = new Map(); // «persona|n» → 'meter' | 'saltar' (lo que contesta el Furry)
+    let r = null;
+    for(let vuelta=0; vuelta<60; vuelta++){
+      r = generarEstimacion({ ...op, compania: CURRENT.compania, gsDias: rg.error ? [] : (rg.data||[]), acreedorDeuda, convalSiglas, convalDec }, roster, existentes, rd.error ? [] : (rd.data||[]));
+      const x = (r.convalPendientes||[]).find(y=>!convalDec.has(y.clave)); if(!x) break;
+      const pe = roster.find(z=>z.id===x.persona_id), quien = pe ? pe.apellidos+', '+pe.nombre : 'Esta persona';
+      const ok = await confirmarApp(`${quien} hizo el servicio de cuartel el ${fmtFecha(x.evento)}, que le convalida un cuartelero ${x.q==='semana' ? 'de entre semana' : 'de fin de semana'}. Ahora le tocaría el cuartelero del ${fmtFecha(x.fecha)}.\n\n¿Qué hago?`, { si:'Meterle el servicio igualmente', no:'Saltarle' });
+      convalDec.set(x.clave, ok ? 'meter' : 'saltar');
+    }
     if(rg.error && (op.que==='todos' || op.que==='gs')) r.gsInfo.avisos.push('No se pudo leer el calendario de guardias de seguridad (¿has ejecutado el patch 61?)');
     EST_PREVIA = { op, filas: r.filas, saltos: r.saltos, reemplazar: [...idsViejas] };
     const sinImagPrev = [...(op.sinImag || [])].filter(f=>f>=op.desde && f<=op.hasta).sort();
@@ -10990,6 +11028,7 @@ async function previsualizarEstimacion(paso){
         ${r.gsInfo && r.gsInfo.avisos.length ? `<div class="notice closed" style="display:block;margin-top:8px;"><span>⚠️ <b>Guardias de seguridad:</b><br>${r.gsInfo.avisos.map(escHtml).join('<br>')}</span></div>` : ''}
         ${r.gsInfo && r.gsInfo.restantes!==null ? `<div class="notice" style="display:block;border-color:#c0392b;margin-top:8px;"><b>🛡️ Guardias de seguridad:</b> ${r.gsInfo.dias.length ? r.gsInfo.dias.map(g=>`${fmtFecha(g.fecha)}: ${g.n} persona${g.n===1?'':'s'} nueva${g.n===1?'':'s'}${g.yaHay?` (ya había ${g.yaHay} puesta${g.yaHay===1?'':'s'} a mano o del Excel)`:''}${g.n+(g.yaHay||0)<g.cupo?` (faltan ${g.cupo-g.n-(g.yaHay||0)}: no quedan más en la lista)`:''}`).join(' · ') : 'ningún día de GS de tu compañía entre esas fechas.'}<br>Después de los días del calendario quedan <b>${r.gsInfo.restantes}</b> persona${r.gsInfo.restantes===1?'':'s'} de tu compañía sin hacer GS (sin contar a la promoción interna 🪖).</div>` : ''}
         ${r.deudasAplicadas.length ? `<div class="notice" style="display:block;border-color:#8e44ad;margin-top:8px;"><b>💸 ${r.deudasAplicadas.length} deuda${r.deudasAplicadas.length===1?'':'s'} se saldarían con esta estimación:</b><br>${r.deudasAplicadas.map(x=>`${nm(x.a)} hace el ${escHtml(servicioLabel({tipo:x.tipo}))} del ${fmtFecha(x.fecha)} ${x.saltado ? 'en lugar de quien tocaba por turno, porque '+nm(x.de)+' ya lo había hecho y se lo debía' : 'que le tocaba a '+nm(x.de)} (${x.deuda.implicita ? 'cambio hecho a mano el ' : 'deuda del '}${x.deuda.fecha_origen?fmtFecha(x.deuda.fecha_origen):'—'})`).join('<br>')}</div>` : ''}
+        ${(r.convalInfo||[]).length ? `<div class="notice" style="display:block;border-color:#b8860b;margin-top:8px;"><b>🎖️ Servicio de cuartel (convalida un cuartelero):</b><br>${r.convalInfo.map(x=>`${nm(x.persona_id)}: ${x.decision==='saltar' ? 'se le salta' : 'se le mete igualmente'} el cuartelero ${x.q==='semana' ? 'de entre semana' : 'de fin de semana'} del ${fmtFecha(x.fecha)} (hizo el servicio de cuartel el ${fmtFecha(x.evento)}).`).join('<br>')}</div>` : ''}
         ${(r.implicitas||[]).length ? `<div class="notice" style="display:block;border-color:#8e44ad;margin-top:8px;"><b>↩️ Cambios hechos a mano que quedan por devolver:</b><br>${r.implicitas.map(x=>`${nm(x.deudor_id)} le debe a ${nm(x.acreedor_id)} el cuartelero del ${fmtFecha(x.fecha_origen)} (lo hizo ${nm(x.acreedor_id)} en su turno); lo paga cuando le toque a ${nm(x.acreedor_id)}.`).join('<br>')}</div>` : ''}
         ${r.gsInfo && r.gsInfo.choques && r.gsInfo.choques.length ? `<div class="notice closed" style="display:block;margin-top:8px;"><span>⚠️ <b>Choques con la guardia de seguridad:</b> la estimación pone otro servicio el mismo día a quien ya tiene GS o IGS. Cámbialos a mano después de añadirla:<br>${r.gsInfo.choques.map(x=>`${fmtFecha(x.fecha)} · ${escHtml(servicioLabel({tipo:x.tipo,turno:x.turno}))} → ${nm(x.persona_id)}`).join('<br>')}</span></div>` : ''}
         ${r.gsInfo && r.gsInfo.dias.length ? r.gsInfo.dias.map(g=>{ const gs = r.filas.filter(f=>f.fecha===g.fecha && f.tipo==='guardia_seguridad').sort((a,b)=>a.turno-b.turno), igs = r.filas.filter(f=>f.fecha===g.fecha && f.tipo==='imaginaria_gs').sort((a,b)=>a.turno-b.turno);
