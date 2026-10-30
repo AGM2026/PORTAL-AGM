@@ -1212,7 +1212,7 @@ aplicarTema();
           <span class="sub2" id="serv-manual-sub">Toca un código del cuadrante para cambiarlo, o una casilla vacía para añadir un servicio. Lo normal es corregir el Excel y volver a subirlo (al subirlo se sustituye todo).</span>
         </div>
         <div class="serv-ctrl">
-          <input type="date" id="serv-fecha">
+          <input type="date" id="serv-fecha" onchange="servDeudasAviso()">
           <select id="serv-tipo" onchange="onServTipoChange()">
             <option value="cuartelero">Cuartelero (C)</option>
             <option value="imaginaria">Imaginaria (turno)</option>
@@ -1228,7 +1228,9 @@ aplicarTema();
           <select id="serv-deuda" class="hidden" title="Si este servicio sirve para saldar una deuda, elígela"></select>
           <button class="small-btn" id="serv-btn-guardar" onclick="asignarServicio()">💾 Guardar</button>
           <button class="small-btn danger" id="serv-btn-quitar" onclick="quitarServicioManual()">Quitar ese servicio</button>
+          <span id="serv-deuda-btns" style="display:contents;"></span>
         </div>
+        <div id="serv-deudas-aviso" style="margin:2px 0 8px;"></div>
         <div id="serv-sugerencia" class="small-note"></div>
         <div style="margin-top:12px;padding:10px 12px;border:1px dashed var(--brass);border-radius:10px;">
           <div style="font-weight:700;font-size:.85rem;" id="serv-pers-tit">✨ Otro servicio (con su nombre, siglas y color)</div>
@@ -1450,7 +1452,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-30T08:06:17";
+const APP_VERSION = "2026-10-30T08:14:02";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -9817,26 +9819,11 @@ async function _asignarServicioImpl(){
   const fecha = document.getElementById('serv-fecha').value;
   const tipo = document.getElementById('serv-tipo').value;
   let turno = TIPOS_CON_TURNO.includes(tipo) ? parseInt(document.getElementById('serv-turno').value,10) : 0;
-  let persona_id = document.getElementById('serv-persona').value;
+  const persona_id = document.getElementById('serv-persona').value;
   if(tipo==='imaginaria_piquete' && turno > 2){ showToast('La imaginaria de piquete es la 1 o la 2.'); return; }
   if(!fecha || !persona_id){ showToast('Elige fecha y persona.'); return; }
   // La guardia de seguridad la hacen varias personas el mismo día: cada una es un "turno" (1, 2, 3…). Al cambiar una existente se mantiene su turno
   if(TIPOS_VARIOS.includes(tipo)) turno = (window._servGsTurno!=null) ? window._servGsTurno : await siguienteTurnoGS(fecha, tipo);
-  // Deudas: al añadir un servicio a alguien, se mira si hay quien se lo debe (la deuda se salda si lo hace el deudor) y si no, se avisa de que no tiene deudas
-  let deudaSaldar = null, nombreDeudor = '';
-  if(window._servModo==='añadir' && window._servTieneDeudaId && tipo!=='otro'){
-    const pers = id => { const q = (SERV_GRID && SERV_GRID.roster || []).find(x=>x.id===id); return q ? q.apellidos+', '+q.nombre : 'esa persona'; };
-    const entre = !esFindeServ(fecha);
-    const mias = (window._servDeudasPend||[]).filter(d=>!d._programada && d.acreedor_id===persona_id);
-    const coinciden = mias.filter(d=>d.tipo===tipo && !!d.entre_semana===entre);
-    if(coinciden.length){
-      const d = coinciden[0];
-      const saldar = await confirmarApp(`A ${pers(persona_id)} le debe este servicio (${servicioLabel({tipo,turno})}) ${pers(d.deudor_id)}${d.fecha_origen ? ' (deuda del '+fmtFecha(d.fecha_origen)+')' : ''}${coinciden.length>1 ? ` y ${coinciden.length-1} más` : ''}.\n\n¿Salda la deuda (lo hace ${pers(d.deudor_id)} en su lugar) o sigo (se lo pongo a ${pers(persona_id)})?`, { si:'Saldar deuda', no:'Seguir' });
-      if(saldar){ deudaSaldar = d.id; nombreDeudor = pers(d.deudor_id); persona_id = d.deudor_id; }
-    } else {
-      showToast(mias.length ? 'Le deben otro servicio, pero no este.' : 'No tiene deudas.');
-    }
-  }
   if(window._servModo==='añadir'){
     const { data: ocupado } = await sb.from('servicios').select('persona_id, personas(nombre,apellidos)').eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo', tipo).eq('turno', turno).maybeSingle();
     if(ocupado && ocupado.persona_id!==persona_id && !await confirmarApp(`Ese día ${servicioLabel({tipo,turno})} ya lo tiene ${ocupado.personas.apellidos}, ${ocupado.personas.nombre}. ¿Se lo quitas a esa persona y se lo pones a la nueva?`, { si:'Cambiar' })) return;
@@ -9844,11 +9831,10 @@ async function _asignarServicioImpl(){
   const codigo = tipo==='imaginaria' ? turno+' I' : ({cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'I I', guardia_seguridad:'GS', imaginaria_gs:'IGS', piquete:'P', imaginaria_piquete:'IP'})[tipo];
   const fila = { compania: CURRENT.compania, fecha, tipo, turno, persona_id, codigo, estimado: false };
   if(window._servTieneDeudaId){ const dsel = document.getElementById('serv-deuda'); fila.deuda_id = (dsel && dsel.value) ? parseInt(dsel.value,10) : null; }
-  if(deudaSaldar) fila.deuda_id = deudaSaldar; // lo hace quien debía el servicio: queda marcado como pago de esa deuda
   const { error } = await sb.from('servicios').upsert(fila, { onConflict: 'compania,fecha,tipo,turno' });
   if(error){ showToast('No se pudo asignar: '+error.message+(/tipo|check|constraint/i.test(error.message) ? ' — ¿has ejecutado el patch 60' + (tipo==='imaginaria_gs' ? ' y el 98' : '') + (/piquete/.test(tipo) ? ' y el 104' : '') + '?' : '')); return; }
   window._servGsTurno = null;
-  const selP = document.getElementById('serv-persona'), nomP = deudaSaldar ? nombreDeudor + ' (salda su deuda)' : (selP && selP.selectedOptions[0] ? selP.selectedOptions[0].textContent.replace(/\s*\(\d+\)\s*$/, '') : '');
+  const selP = document.getElementById('serv-persona'), nomP = selP && selP.selectedOptions[0] ? selP.selectedOptions[0].textContent.replace(/\s*\(\d+\)\s*$/, '') : '';
   showToast(`✅ Servicio guardado: ${servicioLabel({tipo,turno})} · ${nomP} · ${fmtFecha(fecha)}`); // solo este servicio: no se toca ninguna imaginaria de otro día
   servAvisarCambio(`ha puesto ${servicioLabel({tipo,turno})} a ${nomP} el ${fmtFecha(fecha)}`);
   await renderAdminServicios();
@@ -9907,6 +9893,7 @@ function servModoManual(modo, texto){
     : 'Elige quién lo hace ahora y pulsa "Guardar cambio", o quítalo.';
   document.getElementById('serv-btn-guardar').textContent = modo==='añadir' ? '➕ Añadir servicio' : '💾 Guardar cambio';
   document.getElementById('serv-btn-quitar').classList.toggle('hidden', modo==='añadir');
+  servDeudasAviso(); // las deudas de la persona elegida (solo al añadir)
 }
 // Deja elegida a esa persona en el desplegable del formulario (si por lo que sea no está en la lista, se añade) y lo vuelve a comprobar un momento después, por si se repinta
 function servElegirPersona(personaId){
@@ -10042,6 +10029,43 @@ function actualizarDeudasPersonaServ(){
   const mias = (window._servDeudasPend||[]).filter(d=>d.deudor_id===pid && d.tipo!=='nota' && !d._programada);
   sel.classList.toggle('hidden', !(window._servTieneDeudaId && mias.length));
   sel.innerHTML = '<option value="">— no es para saldar una deuda —</option>' + mias.map(d=>`<option value="${d.id}">Saldar: ${escHtml(textoDeudaPlano(d))} con ${escHtml(d.acreedor?d.acreedor.apellidos:'?')}</option>`).join('');
+  servDeudasAviso();
+}
+/* Debajo del formulario de «Añadir servicio»: qué le deben a la persona elegida. Si se lo añades a ella, la deuda NO se salda; al lado del botón de guardar sale
+   «Añadir servicio a <el que se lo debe>» para ponérselo a él y que quede saldada. Solo cuentan las deudas pendientes (también las apuntadas a mano como nota). */
+function servDeudasAviso(){
+  const aviso = document.getElementById('serv-deudas-aviso'), btns = document.getElementById('serv-deuda-btns'); if(!aviso || !btns) return;
+  btns.innerHTML = '';
+  const pid = (document.getElementById('serv-persona')||{}).value, fecha = (document.getElementById('serv-fecha')||{}).value;
+  if(window._servModo!=='añadir' || !pid || !fecha){ aviso.innerHTML = ''; return; }
+  const nom = id => { const q = (SERV_GRID && SERV_GRID.roster || []).find(x=>x.id===id); return q ? q.apellidos+', '+q.nombre : 'esa persona'; };
+  const nomDeudor = d => d.deudor ? d.deudor.apellidos+', '+d.deudor.nombre : nom(d.deudor_id);
+  const entre = !esFindeServ(fecha);
+  const mias = (window._servDeudasPend||[]).filter(d=>d.acreedor_id===pid && !d._programada);
+  if(!mias.length){ aviso.innerHTML = '<div class="small-note" style="margin:0;">💸 No tiene deudas.</div>'; return; }
+  const lineas = mias.map(d=>{
+    const quien = escHtml(nomDeudor(d));
+    if(d.tipo==='nota') return `<div>• <b>${quien}</b> le debe: ${escHtml(d.motivo||'(sin detalle)')}${d.fecha_origen ? ' <span style="opacity:.7;">(del '+escHtml(fmtFecha(d.fecha_origen))+')</span>' : ''}</div>`;
+    const coincide = !!d.entre_semana===entre;
+    return `<div>• <b>${quien}</b> le debe <b>${escHtml(textoDeudaPlano(d))}</b>${d.fecha_origen ? ' <span style="opacity:.7;">(del '+escHtml(fmtFecha(d.fecha_origen))+')</span>' : ''}${coincide ? '' : ' <span style="opacity:.7;">— este día es '+(entre ? 'entre semana' : 'de fin de semana/festivo')+', no coincide</span>'}</div>`;
+  });
+  aviso.innerHTML = `<div class="notice" style="display:block;border-color:#8e44ad;"><b>💸 Le deben (a ${escHtml(nom(pid))}):</b>${lineas.join('')}<div style="margin-top:4px;opacity:.85;">Si le añades el servicio a ${escHtml(nom(pid))}, <b>no se salda</b> la deuda. Para saldarla, ponlo a quien se lo debe (botón de al lado de «Añadir servicio»).</div></div>`;
+  btns.innerHTML = mias.filter(d=>d.tipo!=='nota' && !!d.entre_semana===entre && window._servTieneDeudaId).slice(0,4).map(d=>`<button type="button" class="small-btn" style="border-color:#8e44ad;" onclick="servAnadirADeudor(${d.id})">➕ Añadir servicio a ${escHtml(nomDeudor(d))}</button>`).join('');
+}
+// Pone el servicio de la deuda a quien se lo debe (con la deuda marcada, así queda saldada). Pide confirmación antes
+async function servAnadirADeudor(did){
+  const d = (window._servDeudasPend||[]).find(x=>x.id===did); if(!d) return;
+  const fecha = document.getElementById('serv-fecha').value, nomD = d.deudor ? d.deudor.apellidos+', '+d.deudor.nombre : '', nomA = d.acreedor ? d.acreedor.apellidos+', '+d.acreedor.nombre : '';
+  if(!await confirmarApp(`¿Añadir ${TIPO_LABEL[d.tipo]||d.tipo} el ${fmtFecha(fecha)} a ${nomD} para saldar su deuda con ${nomA}?`, { si:'Añadir y saldar', no:'Cancelar' })) return;
+  const selP = document.getElementById('serv-persona');
+  if(![...selP.options].some(o=>o.value===d.deudor_id)) return showToast('No encuentro a esa persona en la lista.');
+  selP.value = d.deudor_id;
+  document.getElementById('serv-tipo').value = d.tipo; onServTipoChange();
+  if(TIPOS_CON_TURNO.includes(d.tipo)) document.getElementById('serv-turno').value = String(d.turno || 1);
+  window._servGsTurno = null; window._servModo = 'añadir';
+  actualizarDeudasPersonaServ(); // rellena «Saldar: …» para quien se lo debe
+  const dsel = document.getElementById('serv-deuda'); if(dsel) dsel.value = String(d.id);
+  await asignarServicio();
 }
 function textoDeudaPlano(d){ return `${TIPO_LABEL[d.tipo]||d.tipo}${(d.tipo==='imaginaria' && d.turno)?' (turno '+d.turno+')':''} ${d.entre_semana?'entre semana':'de fin de semana/festivo'}`; }
 function toggleNuevaDeuda(){
@@ -10385,6 +10409,25 @@ function servTotCabecera(){
   if(servTotModoEfectivo()==='tipos') return servTotColsVisibles().map(([k,t,ti])=>`<th class="cnt2" title="${escHtml(ti)} — toca para ver solo el total" onclick="toggleTotalesServ()">${escHtml(t)}</th>`).join('');
   return `<th class="cnt" style="cursor:pointer;" title="Servicios totales de cada persona. Toca aquí para ver una columna por tipo de servicio; toca el número (o el nombre) para ver sus servicios, fechas y deudas" onclick="toggleTotalesServ()">Total</th>`;
 }
+// Las columnas por servicio se quedan fijas a la izquierda, una detrás de otra a continuación del nombre, igual que la columna «Total» (en pantalla ancha)
+function servTotFijar(){
+  const t = document.getElementById('admin-servicios-tabla'); if(!t) return;
+  const ths = [...t.querySelectorAll('thead th.cnt2')]; if(!ths.length) return;
+  const fijar = window.innerWidth >= 1024, nc = t.querySelector('thead th.nc');
+  let left = nc ? nc.getBoundingClientRect().width : 210;
+  const filas = [...t.querySelectorAll('tbody tr')];
+  ths.forEach((th, i)=>{
+    const w = th.getBoundingClientRect().width;
+    const celdas = [th, ...filas.map(tr=>tr.querySelectorAll('td.cnt2')[i]).filter(Boolean)];
+    celdas.forEach(c=>{
+      c.style.position = fijar ? 'sticky' : ''; c.style.left = fijar ? left+'px' : '';
+      c.style.zIndex = fijar ? (c===th ? '3' : '1') : '';
+      c.style.boxShadow = (fijar && i===ths.length-1) ? 'inset -2px 0 0 var(--line)' : ''; // raya a la derecha de la última, para ver dónde acaban las fijas
+    });
+    left += w;
+  });
+}
+window.addEventListener('resize', ()=>{ clearTimeout(window._totFijarT); window._totFijarT = setTimeout(()=>{ try{ servTotFijar(); }catch(e){} }, 200); });
 function toggleTotalesServ(){
   servTotModo = servTotModo==='tipos' ? 'total' : 'tipos';
   try{ localStorage.setItem('portalagm_serv_tot', servTotModo); }catch(e){}
@@ -10696,6 +10739,7 @@ function pintarServGrid(){
   const wrapSG = document.querySelector('.serv-grid-wrap'), slSG = wrapSG ? wrapSG.scrollLeft : 0; // se conserva por dónde ibas deslizando
   tabla.innerHTML = gente.length ? thead + tbody : '<tbody><tr><td class="small-note">Nadie con ese filtro.</td></tr></tbody>';
   if(wrapSG) wrapSG.scrollLeft = slSG;
+  try{ servTotFijar(); }catch(e){}
   try{ servRtMarcar(); }catch(e){}
 }
 /* ================= Estimación de servicios ================= */
