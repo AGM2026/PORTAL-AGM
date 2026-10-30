@@ -415,6 +415,8 @@ table.serv-grid tr.sel td{background:rgba(184,134,11,.16);}
 .ficha-serv .history-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.76rem;}
 table.serv-grid thead th.cnt{background:var(--paper-alt);}
 table.serv-grid td.cnt .serv-cod{margin-right:1px;}
+table.serv-grid th.cnt2,table.serv-grid td.cnt2{width:34px;min-width:30px;max-width:42px;text-align:center;font-size:.68rem;white-space:nowrap;background:var(--card);cursor:pointer;padding-left:2px;padding-right:2px;}
+table.serv-grid thead th.cnt2{background:var(--paper-alt);}
 @media(min-width:1024px){
   .serv-grid-wrap{max-height:calc(100vh - 20px);} /* la tabla se desplaza dentro de su caja: así la fila de los días se queda fija arriba al bajar */
   table.serv-grid th.cnt,table.serv-grid td.cnt{position:sticky;left:210px;z-index:1;}
@@ -1291,7 +1293,7 @@ aplicarTema();
                 <option value="cuartel">Solo cuarteleros (C + Imaginaria de Cuartelero)</option>
                 <option value="imag">Solo imaginarias de noche (1 I–4 I + I I)</option>
                 <option value="gs">Solo guardias de seguridad (GS + imaginarias de GS)</option>
-                <option value="piquete">Solo piquete (P + imaginarias de piquete, lunes a jueves)</option>
+                <option value="piquete">Solo piquete (P + imaginarias de piquete; te pregunta si de lunes a jueves o a viernes)</option>
               </select></div>
             <div class="field"><label>Qué días</label>
               <select id="est-dias">
@@ -1448,7 +1450,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-10-29T15:16:14";
+const APP_VERSION = "2026-10-30T08:06:17";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -1798,27 +1800,33 @@ function pintarModo(prefix, chips){
     : `<span class="modo-chip ${c}">${t}</span>`).join('');
   el.classList.toggle('hidden', !(chips && chips.length));
 }
-// Modos entre los que puede cambiar quien está dentro, en este orden: alumno → admin → superadmin (solo los que le corresponden)
+// Modos entre los que rota el botón ⇄ de la cabecera: alumno ↔ admin (solo los que le corresponden). El modo superadmin NO está en la rotación: se entra desde el menú ⚙️ (arriba a la derecha)
 function modosDisponibles(){
   if(!CURRENT || CURRENT.mode==='cuartel') return [];
   const m = [];
   if((CURRENT.mode==='alumno' && CURRENT.persona) || (CURRENT.mode==='admin' && CURRENT.linkedPersona)) m.push('alumno');
   if((CURRENT.mode==='admin' && CURRENT.compania) || (CURRENT.mode==='alumno' && CURRENT.adminCompania)) m.push('admin');
-  if(CURRENT.isSuperadmin) m.push('super');
   return m;
 }
 function modoActual(){ return !document.getElementById('screen-superadmin').classList.contains('hidden') ? 'super' : (CURRENT ? CURRENT.mode : null); }
 // El botón del modo (⇄) va rotando por los modos disponibles
 async function cambiarModo(){
   if(!CURRENT) return;
-  const lista = modosDisponibles(), i = lista.indexOf(modoActual());
+  const lista = modosDisponibles(), act = modoActual();
+  if(act==='super'){ // desde la pantalla de superadmin el botón ⇄ vuelve a Furry (o a alumno)
+    const dest = lista.includes('admin') ? 'admin' : (lista.includes('alumno') ? 'alumno' : null); if(!dest) return;
+    if(CURRENT.mode===dest){ showScreen(dest==='admin' ? 'screen-admin' : 'screen-alumno'); await rerenderActual(); return; }
+    if(dest==='alumno') switchToAlumno(); else switchToAdmin();
+    return;
+  }
+  const i = lista.indexOf(act);
   if(lista.length < 2 || i < 0) return;
   const siguiente = lista[(i+1) % lista.length];
   if(siguiente==='super'){ enterSuperadmin(); return; }
   if(CURRENT.mode===siguiente){ showScreen(siguiente==='admin' ? 'screen-admin' : 'screen-alumno'); await rerenderActual(); return; } // venía del superadmin: se vuelve a la pantalla que ya estaba
   if(siguiente==='alumno') switchToAlumno(); else switchToAdmin();
 }
-const modoAccion = () => modosDisponibles().length > 1 ? 'cambiarModo()' : null;
+const modoAccion = (desdeSuper) => (desdeSuper ? modosDisponibles().length >= 1 : modosDisponibles().length > 1) ? 'cambiarModo()' : null;
 function irAIntolerancias(){
   if(CAJAS_ABIERTA.alumno!=='intol') abrirCaja('alumno','intol');
   const g = document.getElementById('alumno-cajas'); if(g) g.scrollIntoView({ behavior:'smooth', block:'start' });
@@ -2796,7 +2804,7 @@ async function restaurarEstado(e){
   if(!e || !CURRENT) return;
   try{
     const lista = modosDisponibles();
-    if(e.modo && e.modo!==modoActual() && lista.includes(e.modo)){
+    if(e.modo && e.modo!==modoActual() && (lista.includes(e.modo) || (e.modo==='super' && CURRENT.isSuperadmin))){
       if(e.modo==='super') enterSuperadmin(); else if(e.modo==='alumno') await switchToAlumno(); else await switchToAdmin();
     }
     if(modoActual()==='super') return;
@@ -5368,7 +5376,7 @@ async function enterAdmin(compania, linkedPersona, isSuperadmin){
 /* ================= SUPERADMIN ================= */
 function enterSuperadmin(){
   registrarUsoApp();
-  pintarModo('super', [['super','👑 MODO SUPERADMIN', modoAccion()]]); // si hay más modos, el botón ⇄ sigue la rotación: alumno → admin → superadmin
+  pintarModo('super', [['super','👑 MODO SUPERADMIN', modoAccion(true)]]); // el botón ⇄ de aquí vuelve a Furry / alumno; al superadmin solo se entra desde el menú ⚙️
   showScreen('screen-superadmin');
   renderSuperadmin();
 }
@@ -9809,11 +9817,26 @@ async function _asignarServicioImpl(){
   const fecha = document.getElementById('serv-fecha').value;
   const tipo = document.getElementById('serv-tipo').value;
   let turno = TIPOS_CON_TURNO.includes(tipo) ? parseInt(document.getElementById('serv-turno').value,10) : 0;
-  const persona_id = document.getElementById('serv-persona').value;
+  let persona_id = document.getElementById('serv-persona').value;
   if(tipo==='imaginaria_piquete' && turno > 2){ showToast('La imaginaria de piquete es la 1 o la 2.'); return; }
   if(!fecha || !persona_id){ showToast('Elige fecha y persona.'); return; }
   // La guardia de seguridad la hacen varias personas el mismo día: cada una es un "turno" (1, 2, 3…). Al cambiar una existente se mantiene su turno
   if(TIPOS_VARIOS.includes(tipo)) turno = (window._servGsTurno!=null) ? window._servGsTurno : await siguienteTurnoGS(fecha, tipo);
+  // Deudas: al añadir un servicio a alguien, se mira si hay quien se lo debe (la deuda se salda si lo hace el deudor) y si no, se avisa de que no tiene deudas
+  let deudaSaldar = null, nombreDeudor = '';
+  if(window._servModo==='añadir' && window._servTieneDeudaId && tipo!=='otro'){
+    const pers = id => { const q = (SERV_GRID && SERV_GRID.roster || []).find(x=>x.id===id); return q ? q.apellidos+', '+q.nombre : 'esa persona'; };
+    const entre = !esFindeServ(fecha);
+    const mias = (window._servDeudasPend||[]).filter(d=>!d._programada && d.acreedor_id===persona_id);
+    const coinciden = mias.filter(d=>d.tipo===tipo && !!d.entre_semana===entre);
+    if(coinciden.length){
+      const d = coinciden[0];
+      const saldar = await confirmarApp(`A ${pers(persona_id)} le debe este servicio (${servicioLabel({tipo,turno})}) ${pers(d.deudor_id)}${d.fecha_origen ? ' (deuda del '+fmtFecha(d.fecha_origen)+')' : ''}${coinciden.length>1 ? ` y ${coinciden.length-1} más` : ''}.\n\n¿Salda la deuda (lo hace ${pers(d.deudor_id)} en su lugar) o sigo (se lo pongo a ${pers(persona_id)})?`, { si:'Saldar deuda', no:'Seguir' });
+      if(saldar){ deudaSaldar = d.id; nombreDeudor = pers(d.deudor_id); persona_id = d.deudor_id; }
+    } else {
+      showToast(mias.length ? 'Le deben otro servicio, pero no este.' : 'No tiene deudas.');
+    }
+  }
   if(window._servModo==='añadir'){
     const { data: ocupado } = await sb.from('servicios').select('persona_id, personas(nombre,apellidos)').eq('compania', CURRENT.compania).eq('fecha', fecha).eq('tipo', tipo).eq('turno', turno).maybeSingle();
     if(ocupado && ocupado.persona_id!==persona_id && !await confirmarApp(`Ese día ${servicioLabel({tipo,turno})} ya lo tiene ${ocupado.personas.apellidos}, ${ocupado.personas.nombre}. ¿Se lo quitas a esa persona y se lo pones a la nueva?`, { si:'Cambiar' })) return;
@@ -9821,10 +9844,11 @@ async function _asignarServicioImpl(){
   const codigo = tipo==='imaginaria' ? turno+' I' : ({cuartelero:'C', imaginaria_cuartelero:'IC', imaginaria_imaginaria:'I I', guardia_seguridad:'GS', imaginaria_gs:'IGS', piquete:'P', imaginaria_piquete:'IP'})[tipo];
   const fila = { compania: CURRENT.compania, fecha, tipo, turno, persona_id, codigo, estimado: false };
   if(window._servTieneDeudaId){ const dsel = document.getElementById('serv-deuda'); fila.deuda_id = (dsel && dsel.value) ? parseInt(dsel.value,10) : null; }
+  if(deudaSaldar) fila.deuda_id = deudaSaldar; // lo hace quien debía el servicio: queda marcado como pago de esa deuda
   const { error } = await sb.from('servicios').upsert(fila, { onConflict: 'compania,fecha,tipo,turno' });
   if(error){ showToast('No se pudo asignar: '+error.message+(/tipo|check|constraint/i.test(error.message) ? ' — ¿has ejecutado el patch 60' + (tipo==='imaginaria_gs' ? ' y el 98' : '') + (/piquete/.test(tipo) ? ' y el 104' : '') + '?' : '')); return; }
   window._servGsTurno = null;
-  const selP = document.getElementById('serv-persona'), nomP = selP && selP.selectedOptions[0] ? selP.selectedOptions[0].textContent.replace(/\s*\(\d+\)\s*$/, '') : '';
+  const selP = document.getElementById('serv-persona'), nomP = deudaSaldar ? nombreDeudor + ' (salda su deuda)' : (selP && selP.selectedOptions[0] ? selP.selectedOptions[0].textContent.replace(/\s*\(\d+\)\s*$/, '') : '');
   showToast(`✅ Servicio guardado: ${servicioLabel({tipo,turno})} · ${nomP} · ${fmtFecha(fecha)}`); // solo este servicio: no se toca ninguna imaginaria de otro día
   servAvisarCambio(`ha puesto ${servicioLabel({tipo,turno})} a ${nomP} el ${fmtFecha(fecha)}`);
   await renderAdminServicios();
@@ -10303,7 +10327,22 @@ async function cargarExcelServicios(){
   if(primera) servDesde = ymd(lunesDe(new Date()));
   await renderAdminServicios();
 }
+// Pregunta cómo quiere los totales en el Excel: devuelve 'total', 'tipos' o null (cancelar)
+function preguntarTotalesExcel(){
+  return new Promise(resolve=>{
+    window._servExpRes = v => { window._servExpRes = null; cerrarModalGlobal(); resolve(v); };
+    const actual = servTotModo==='tipos' ? 'tipos' : 'total';
+    abrirModalGlobal(`<h3>📄 Exportar servicios a Excel</h3>
+      <p class="modal-nota" style="margin-top:0;">El Excel lleva la lista de servicios y una hoja «Totales». ¿Cómo quieres los totales?</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+        <button type="button" class="${actual==='total' ? 'primary-btn' : 'small-btn'}" onclick="window._servExpRes('total')">Una columna de total</button>
+        <button type="button" class="${actual==='tipos' ? 'primary-btn' : 'small-btn'}" onclick="window._servExpRes('tipos')">Una columna por servicio (entre semana y fin de semana por separado)</button>
+      </div>
+      <div class="modal-botones"><button type="button" class="small-btn" onclick="window._servExpRes(null)">Cancelar</button></div>`);
+  });
+}
 async function exportServiciosExcel(){
+  const modoTot = await preguntarTotalesExcel(); if(!modoTot) return;
   const c = CURRENT.compania;
   const dias = diasServGrid();
   const desde = ymd(dias[0]), hasta = ymd(dias[dias.length-1]);
@@ -10320,7 +10359,38 @@ async function exportServiciosExcel(){
   xlsxHeaderOnly(ws, header.length);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Servicios');
+  // Hoja «Totales»: una columna con el total de cada persona, o una columna por servicio (entre semana y fin de semana por separado) y al final el total
+  try{
+    const cu = window._servCuentas || {}, cols = modoTot==='tipos' ? servTotColsVisibles() : [];
+    const th = ['Sección', 'Nombre y apellidos', ...(cols.length ? cols.map(([,t,ti])=>ti) : []), 'Total'];
+    const filas = [th];
+    (SERV_GRID && SERV_GRID.roster || []).forEach(pe=>{ const o = cu[pe.id] || {}; filas.push([`${c}${pe.seccion}`, `${pe.apellidos}, ${pe.nombre}`, ...cols.map(([k])=>o[k] || 0), o.total || 0]); });
+    const wt = XLSX.utils.aoa_to_sheet(filas);
+    wt['!cols'] = [{wch:9},{wch:30}, ...cols.map(()=>({wch:14})), {wch:9}];
+    xlsxHeaderOnly(wt, th.length);
+    XLSX.utils.book_append_sheet(wb, wt, 'Totales');
+  }catch(e){}
   xlsxGuardar(wb, `PortalAGM_Servicios_${c}Cia_${desde}_a_${hasta}.xlsx`);
+}
+/* Totales de la tabla de Servicios: «total» = una sola columna con el total de cada persona; «tipos» = una columna por servicio (entre semana y fin de semana / festivo cuentan como servicios distintos). Se recuerda en este dispositivo */
+let servTotModo = (()=>{ try{ return localStorage.getItem('portalagm_serv_tot')==='tipos' ? 'tipos' : 'total'; }catch(e){ return 'total'; } })();
+const SERV_TOT_COLS = [['C','C','Cuartelero · entre semana'],['C(F)','C F','Cuartelero · fin de semana / festivo'],['IC','IC','Imaginaria de cuartelero · entre semana'],['IC(F)','IC F','Imaginaria de cuartelero · fin de semana / festivo'],
+  ['I','I','Imaginaria · entre semana'],['I(F)','I F','Imaginaria · fin de semana / festivo'],['II','I I','Imaginaria de imaginaria · entre semana'],['II(F)','I I F','Imaginaria de imaginaria · fin de semana / festivo'],
+  ['GS','GS','Guardia de seguridad'],['IGS','IGS','Imaginaria de guardia de seguridad'],['P','P','Piquete'],['IP','IP','Imaginaria de piquete']];
+// Solo salen las columnas de servicios que alguien de la compañía ha hecho alguna vez (si no hay ninguna, se queda la columna «Total»)
+const servTotColsVisibles = () => { const cu = Object.values(window._servCuentas || {}); return SERV_TOT_COLS.filter(([k])=>cu.some(o=>o && o[k]>0)); };
+const servTotModoEfectivo = () => (servTotModo==='tipos' && servTotColsVisibles().length) ? 'tipos' : 'total';
+const servTotTexto = () => servTotModo==='tipos' ? '📊 Totales: por servicio' : '📊 Totales: en total';
+function servTotCabecera(){
+  if(servTotModoEfectivo()==='tipos') return servTotColsVisibles().map(([k,t,ti])=>`<th class="cnt2" title="${escHtml(ti)} — toca para ver solo el total" onclick="toggleTotalesServ()">${escHtml(t)}</th>`).join('');
+  return `<th class="cnt" style="cursor:pointer;" title="Servicios totales de cada persona. Toca aquí para ver una columna por tipo de servicio; toca el número (o el nombre) para ver sus servicios, fechas y deudas" onclick="toggleTotalesServ()">Total</th>`;
+}
+function toggleTotalesServ(){
+  servTotModo = servTotModo==='tipos' ? 'total' : 'tipos';
+  try{ localStorage.setItem('portalagm_serv_tot', servTotModo); }catch(e){}
+  const b = document.getElementById('serv-btn-totales'); if(b) b.textContent = servTotTexto();
+  if(servTotModo==='tipos' && !servTotColsVisibles().length) showToast('Todavía no hay servicios para separar por tipo.');
+  pintarServGrid();
 }
 let servFamilia = 'ambos', servDias = (window.innerWidth>1100 ? 'todo' : 60), servDesde = null, servSeccion = 'todas', servBuscar = '';
 let SERV_GRID = null;
@@ -10590,7 +10660,7 @@ function pintarServGrid(){
       <div style="margin-top:6px;display:flex;gap:6px;"><button class="small-btn" onclick="guardarOrdenServ()">💾 Guardar orden</button><button class="small-btn" onclick="cancelarOrdenServ()">Cancelar</button></div></div>` : '';
   const hoy = ymd(new Date());
   const LETRA = ['D','L','M','X','J','V','S'];
-  let thead = `<thead><tr><th class="nc">${gente.length===genteTodos.length ? gente.length+' personas' : gente.length+' de '+genteTodos.length+(servPag==='p2'?' (restantes)':' (primeros)')}</th><th class="cnt" title="Servicios totales de cada persona. Toca el número (o el nombre) para ver sus servicios, fechas y deudas">Total</th>`;
+  let thead = `<thead><tr><th class="nc">${gente.length===genteTodos.length ? gente.length+' personas' : gente.length+' de '+genteTodos.length+(servPag==='p2'?' (restantes)':' (primeros)')}</th>${servTotCabecera()}`;
   const fest = window._servFest || {}, claseFest = f => fest[f] ? (fest[f].tipo==='mani' ? ' mani' : ' fes') : '';
   dias.forEach(d=>{ const f = ymd(d), finde = d.getDay()===0 || d.getDay()===6; thead += `<th data-f="${f}" class="${finde?'fin':''}${claseFest(f)}${f===window._servResaltaFecha?' rsf':''} ${f===hoy?'hoy':''}"${fest[f]?` title="${escHtml(fest[f].nombre)}"`:''}>${LETRA[d.getDay()]}<br>${fmt(d)}${fest[f]?`<br><span style="font-size:.9em;">${fest[f].tipo==='mani'?'⛺':'🎌'}</span>`:''}</th>`; });
   thead += '</tr></thead>';
@@ -10603,7 +10673,8 @@ function pintarServGrid(){
     tbody += servOrdenando
       ? `<tr data-id="${p.id}" class="${p.sin_servicios?'exento':''}" ondragover="event.preventDefault()" ondrop="soltarFilaServ(event,'${p.id}')"><td class="nc" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" style="cursor:grab;"><span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',-1)">▲</span> <span style="cursor:pointer;" onclick="moverFilaServ('${p.id}',1)">▼</span> <span style="cursor:pointer;" title="Marcar / desmarcar que no hace servicios" onclick="toggleExentoServ('${p.id}')">🚫</span> <span style="cursor:pointer;" title="Marcar / desmarcar promoción interna: no hace guardia de seguridad" onclick="toggleSinGsServ('${p.id}')">🪖</span> <span style="cursor:pointer;${p.dama?'':'opacity:.35;'}" title="${p.dama?'Dama cadete — toca para cambiar a Caballero':'Caballero cadete — toca para cambiar a Dama'}" onclick="toggleDamaServ('${p.id}')">♀</span> ⠿ ${nombreCelda}</td>`
       : `<tr data-pid="${p.id}" class="${p.sin_servicios?'exento':''}${p.id===servFichaId?' sel':''}"><td class="nc" style="cursor:pointer;" onclick="abrirFichaServ('${p.id}')" title="Toca para ver sus servicios y deudas — ${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})${p.sin_servicios?' — no hace servicios':''}">${nombreCelda}</td>`;
-    tbody += `<td class="cnt"><span class="cnt-n" onclick="abrirFichaServ('${p.id}')" title="${escHtml('Ver sus servicios, fechas y deudas — '+cuentaServTitulo(serviciosDePersona(p.id)))}">${((window._servCuentas||{})[p.id]||{}).total||0}</span></td>`;
+    if(servTotModoEfectivo()==='tipos') tbody += servTotColsVisibles().map(([k])=>`<td class="cnt2" onclick="abrirFichaServ('${p.id}')">${((window._servCuentas||{})[p.id]||{})[k] || ''}</td>`).join('');
+    else tbody += `<td class="cnt"><span class="cnt-n" onclick="abrirFichaServ('${p.id}')" title="${escHtml('Ver sus servicios, fechas y deudas — '+cuentaServTitulo(serviciosDePersona(p.id)))}">${((window._servCuentas||{})[p.id]||{}).total||0}</span></td>`;
     dias.forEach(d=>{
       const f = ymd(d), finde = d.getDay()===0 || d.getDay()===6;
       const lista = porPD[p.id+'|'+f] || [];
@@ -10621,7 +10692,7 @@ function pintarServGrid(){
   });
   tbody += '</tbody>';
   const tabla = document.getElementById('admin-servicios-tabla');
-  tabla.style.minWidth = (210 + 64 + dias.length*36) + 'px';
+  tabla.style.minWidth = (210 + (servTotModoEfectivo()==='tipos' ? servTotColsVisibles().length*34 : 64) + dias.length*36) + 'px';
   const wrapSG = document.querySelector('.serv-grid-wrap'), slSG = wrapSG ? wrapSG.scrollLeft : 0; // se conserva por dónde ibas deslizando
   tabla.innerHTML = gente.length ? thead + tbody : '<tbody><tr><td class="small-note">Nadie con ese filtro.</td></tr></tbody>';
   if(wrapSG) wrapSG.scrollLeft = slSG;
@@ -10937,7 +11008,8 @@ function generarEstimacion(op, rosterCompleto, existentes, deudas){
     const pqPorFecha = {};
     existentes.filter(x=>x.tipo==='piquete' || x.tipo==='imaginaria_piquete').forEach(x=>{ (pqPorFecha[x.fecha] = pqPorFecha[x.fecha] || []).push(x); });
     Object.keys(pqPorFecha).filter(f=>f<op.desde).sort().forEach(f=>pqPorFecha[f].filter(x=>x.tipo==='piquete').forEach(marcaPiquete));
-    const diaPiquete = f => { const dw = new Date(f+'T00:00:00').getDay(); return dw>=1 && dw<=4 && !esFinde(f) && !puenteDia[f] && !op.sinServicio.has(f); };
+    const maxDw = op.piqueteDias==='lv' ? 5 : 4; // lunes a jueves (lo normal) o lunes a viernes (según se haya elegido al estimar)
+    const diaPiquete = f => { const dw = new Date(f+'T00:00:00').getDay(); return dw>=1 && dw<=maxDw && !esFinde(f) && !puenteDia[f] && !op.sinServicio.has(f) && !(op.piqueteSalta && op.piqueteSalta.has(f)); };
     for(let f = op.desde; f <= op.hasta; f = sumarDia(f,1)){
       const ya = (pqPorFecha[f]||[]).filter(x=>x.tipo==='piquete'), yaIP = (pqPorFecha[f]||[]).filter(x=>x.tipo==='imaginaria_piquete');
       ya.forEach(marcaPiquete);
@@ -11067,14 +11139,36 @@ function confirmarManiobrasEstimacion(){
   cerrarModalGlobal();
   previsualizarEstimacion('manis');
 }
+/* ---- Piquete: ¿de lunes a jueves, de lunes a viernes, o se salta algún día? (los festivos y puentes ya se saltan solos) ---- */
+function preguntarDiasPiquete(op){
+  const sty = 'width:100%;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;';
+  const ant = window._pqCfg || {};
+  abrirModalGlobal(`<h3>🟣 Piquete: ¿qué días?</h3>
+    <p class="modal-nota" style="margin-top:0;">Del ${fmtFecha(op.desde)} al ${fmtFecha(op.hasta)}. Los festivos y los puentes ya se saltan solos. Elige si el piquete es solo de lunes a jueves (lo normal) o también el viernes, y si hay algún día suelto que quieras saltar.</p>
+    <div class="field"><label><input type="radio" name="pq-dias" value="lj" ${ant.dias==='lv' ? '' : 'checked'}> Solo de <b>lunes a jueves</b></label></div>
+    <div class="field"><label><input type="radio" name="pq-dias" value="lv" ${ant.dias==='lv' ? 'checked' : ''}> De <b>lunes a viernes</b> (incluido el viernes)</label></div>
+    <div class="field"><label for="pq-salta">Días que se saltan (opcional, ej.: 2/11, 5/11)</label><input type="text" id="pq-salta" value="${escHtml(ant.saltaTxt||'')}" placeholder="Ninguno" autocomplete="off" style="${sty}"></div>
+    <div class="modal-botones"><button type="button" class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button type="button" class="primary-btn" onclick="confirmarDiasPiquete()">Continuar</button></div>`);
+}
+function confirmarDiasPiquete(){
+  const dias = (document.querySelector('input[name="pq-dias"]:checked')||{}).value === 'lv' ? 'lv' : 'lj';
+  const txt = (document.getElementById('pq-salta')||{}).value || '', desde = (document.getElementById('est-desde')||{}).value || ymd(new Date());
+  window._pqCfg = { dias, saltaTxt:txt, salta: fechasCortasConAnio(txt, desde) };
+  cerrarModalGlobal();
+  previsualizarEstimacion('piquete');
+}
 // «paso» dice qué preguntas ya se han respondido en esta previsualización: undefined (ninguna), 'puentes' (los puentes) o 'manis' (también las maniobras)
 async function previsualizarEstimacion(paso){
   const el = document.getElementById('est-resultado');
   const op = opcionesEstimacion(); if(!op) return;
+  if(paso===undefined) window._pqCfg = null; // una estimación nueva vuelve a preguntar los días de piquete
   const pus = (window._servPuentes||[]).filter(p=>p.fin>=op.desde && p.ini<=op.hasta);
-  if(pus.length && (op.que==='todos' || op.que==='cuartel') && paso!=='puentes' && paso!=='manis'){ preguntarPuentesEstimacion(pus); return; }
+  if(pus.length && (op.que==='todos' || op.que==='cuartel') && paso!=='puentes' && paso!=='manis' && paso!=='piquete'){ preguntarPuentesEstimacion(pus); return; }
   const mans = (window._servManiobras||[]).filter(m=>m.fin>=op.desde && m.fin<=op.hasta);
-  if(mans.length && (op.que==='todos' || op.que==='imag') && paso!=='manis'){ preguntarManiobrasEstimacion(mans); return; }
+  if(mans.length && (op.que==='todos' || op.que==='imag') && paso!=='manis' && paso!=='piquete'){ preguntarManiobrasEstimacion(mans); return; }
+  const quierePq = (op.que==='todos' || op.que==='piquete') && op.dias!=='finde';
+  if(quierePq && paso!=='piquete'){ preguntarDiasPiquete(op); return; }
+  if(quierePq){ const c = window._pqCfg || {}; op.piqueteDias = c.dias==='lv' ? 'lv' : 'lj'; op.piqueteSalta = c.salta || new Set(); }
   // Maniobras cuyo último día (la vuelta) sí lleva imaginarias
   op.maniImag = new Set((op.que==='todos' || op.que==='imag') ? mans.filter(m=>cfgManiobra(m).imag==='si').map(m=>m.fin) : []);  // Se pasan TODOS los puentes (también los de antes de "Desde"): hace falta para leer en qué cola cae cada día ya puesto de la tabla
   op.puentes = {}; (window._servPuentes||[]).forEach(p=>{ op.puentes[p.ini] = { ...p, ...cfgPuente(p.ini) }; });
@@ -11595,6 +11689,7 @@ async function renderAdminServicios(){
       </select>
       <input type="search" placeholder="Buscar nombre…" value="${escHtml(servBuscar)}" oninput="onServBuscar(this.value)">
       <button class="small-btn" id="serv-btn-ordenar" onclick="toggleOrdenarServ()">↕️ Ordenar nombres</button>
+      <button class="small-btn" id="serv-btn-totales" onclick="toggleTotalesServ()" title="Alterna entre el total de cada persona y una columna por tipo de servicio (entre semana y fin de semana por separado)">${servTotTexto()}</button>
     </div>
     <div id="serv-orden-barra"></div>`;
   // Barra de desplazamiento continua encima de la tabla: Hoy / ir a una fecha. No hay botones de semana: se desliza con el trackpad o con las flechas ← →
