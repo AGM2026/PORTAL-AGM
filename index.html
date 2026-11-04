@@ -869,6 +869,33 @@ body.blq-editando .toast{bottom:auto;top:12px;pointer-events:none;} /* que el av
 .cup-layout{display:flex;flex-direction:column;gap:12px;}
 .cup-box{border:1.5px solid var(--line);border-radius:14px;background:var(--card);padding:12px 14px;min-width:0;}
 .cup-box-t{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-weight:800;font-size:.95rem;margin:0 0 10px;}
+/* cajas del Personal que se pliegan y se despliegan (queda guardado cómo las dejó cada persona) */
+.pases-orden{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px;}
+.pases-orden .po-t{font-weight:800;font-size:.8rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-right:2px;}
+.po-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:700;font-size:.82rem;cursor:pointer;transition:background .15s,border-color .15s;}
+.pases-orden.compacto{gap:5px;margin-bottom:8px;} .pases-orden.compacto .po-t{display:none;}
+.pases-orden.compacto .po-btn{padding:4px 10px;font-size:.72rem;gap:4px;border-width:1px;}
+.pe-t.pase-hecho{opacity:.6;filter:grayscale(1);}
+.pe-pase.gris{filter:grayscale(1);opacity:.55;border-left-color:var(--ink-soft);}
+.cup-click{cursor:pointer;} .cup-click:hover{background:rgba(184,134,11,.10);border-radius:8px;}
+button.cup-fila{width:100%;background:none;border-left:0;border-right:0;border-top:0;color:inherit;font-family:inherit;text-align:left;}
+.po-btn:hover{border-color:var(--gold, #b8860b);}
+.po-btn.active{background:var(--gold, #b8860b);border-color:var(--gold, #b8860b);color:#fff;}
+.pe-orden-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;align-items:start;}
+.pe-orden-cols .pe-col{min-width:0;}
+.pe-orden-cols .pe-pases-grid{grid-template-columns:1fr;}
+.pp-quien{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;}
+.pp-quien:hover{color:var(--gold, #b8860b);}
+.cup-det>summary{list-style:none;cursor:pointer;display:block;}
+.cup-det>summary::-webkit-details-marker{display:none;}
+.cup-det>summary .cup-box-t{flex-wrap:nowrap;margin:0;padding:2px 0;}
+.cup-det[open]>summary .cup-box-t{margin-bottom:10px;}
+.cup-det>summary .cup-box-t::after{content:'▾';margin-left:auto;color:var(--ink-soft);font-size:1rem;padding-left:8px;}
+.cup-det[open]>summary .cup-box-t::after{content:'▴';}
+.pe-lista-det>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.pe-lista-det>summary::-webkit-details-marker{display:none;}
+.pe-lista-det>summary::after{content:'▾';color:var(--ink-soft);}
+.pe-lista-det[open]>summary::after{content:'▴';}
 .cup-scroll{max-height:340px;overflow:auto;}
 .cup-top,.cup-trio{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start;}
 .cup-srv{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:.84rem;} .cup-srv:last-child{border-bottom:none;}
@@ -1542,7 +1569,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-11-04T19:55:23";
+const APP_VERSION = "2026-11-04T23:03:09";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -4060,6 +4087,7 @@ async function confirmarVerComoMando(){
 }
 // "Salir" del cuartel: en la vista previa del superadmin vuelve a su pantalla; en la cuenta real cierra la sesión
 async function salirCuartel(){
+  { const v = document.getElementById('cuartel-vista'); if(v) v.innerHTML = ''; clearInterval(CUP.timer); }
   if(CURRENT && CURRENT.vistaPrevia){
     const { previo, pantallaPrevia } = CURRENT;
     CURRENT = previo;
@@ -7046,7 +7074,7 @@ const PASE_NOM = { pase:'Pase de horas', permiso:'Permiso extraordinario' }, PAS
 const hh = t => String(t||'').slice(0,5);
 const paseIni = x => x.fecha_inicio || x.fecha; // las filas de la tabla traen fecha_inicio; las de las funciones del cuartel, fecha
 function paseCuando(x){ const i = paseIni(x), f = x.fecha_fin || i; return x.tipo==='permiso' && f!==i ? `del ${fmtFecha(i)} (${hh(x.hora_inicio)}) al ${fmtFecha(f)} (${hh(x.hora_fin)})` : `${fmtFecha(i)} · de ${hh(x.hora_inicio)} a ${hh(x.hora_fin)}`; }
-const paseVigente = x => x.estado!=='rechazado' && x.fase!=='realizado' && (x.fecha_fin || paseIni(x)) >= ymd(new Date());
+const paseVigente = x => x.estado!=='rechazado' && x.estado!=='cancelado' && x.fase!=='realizado' && (x.fecha_fin || paseIni(x)) >= ymd(new Date());
 const pasesActivosDe = id => (PASES.lista||[]).filter(x=>x.persona_id===id && paseVigente(x)).sort((a,b)=>a.fecha_inicio<b.fecha_inicio ? -1 : a.fecha_inicio>b.fecha_inicio ? 1 : 0);
 const pasesPendientes = () => (PASES.lista||[]).filter(x=>x.estado==='solicitado').length;
 const paseErr = e => { const m = (e && e.message) || ''; return /relation|does not exist|schema cache/i.test(m) ? 'Falta ejecutar el parche SQL 110.' : m.replace(/^.*?:\s*/, '') || 'error'; };
@@ -7063,28 +7091,31 @@ async function cargarPases(){
 }
 function paseBadgesHtml(x){ // solo en el desplegable de cada pase: autorización del mando y aceptación del Furry
   const aut = x.autorizacion==='autorizado' ? '<span class="pe-t ok">✅ Autorizado por el mando</span>' : '<span class="pe-t aviso">⏳ Pendiente de autorización</span>';
-  const est = x.estado==='aceptado' ? '<span class="pe-t ok">🟢 Aceptado por el Furry</span>' : x.estado==='rechazado' ? '<span class="pe-t rojo">🔴 Rechazado</span>' : '<span class="pe-t">📨 Solicitado</span>';
+  const est = x.estado==='aceptado' ? '<span class="pe-t ok">🟢 Aceptado por el Furry</span>' : x.estado==='rechazado' ? '<span class="pe-t rojo">🔴 Rechazado</span>' : x.estado==='cancelado' ? '<span class="pe-t rojo">🚫 Cancelado</span>' : '<span class="pe-t">📨 Solicitado</span>';
   return aut + est;
 }
 // Tarjeta compacta (quién, cuándo y fase); al desplegarla salen el motivo, el mando, «autorizado» / «aceptado» y los botones secundarios. o = { furry, mando, alumno, nombre }
 function paseItemHtml(x, o){
   o = o || {};
-  const id = x.id, fase = paseTiempo(x, cupAhora());
-  const clase = x.estado==='rechazado' ? 'rech' : fase.k==='hecho' ? 'hecho' : fase.k==='curso' ? 'curso' : (x.estado==='aceptado' && x.autorizacion==='autorizado' ? 'futuro' : 'pend');
+  const id = x.id, canc = x.estado==='cancelado', fase = canc ? { k:'rojo', t:'🚫 Cancelado' } : paseTiempo(x, cupAhora());
+  const gris = peRO() && !canc && fase.k==='hecho' ? ' gris' : '';
+  const clase = gris + (x.estado==='rechazado' || canc ? 'rech' : fase.k==='hecho' ? 'hecho' : fase.k==='curso' ? 'curso' : (x.estado==='aceptado' && x.autorizacion==='autorizado' ? 'futuro' : 'pend'));
   let vis = '', mas = '';
-  if(o.furry){
+  if(canc){
+    mas = ((o.furry || o.mando) ? `<button type="button" class="small-btn active" onclick="paseCancelar(${id},'revertir')">↩ Revertir la cancelación</button>` : '') + (o.furry ? `<button type="button" class="small-btn danger" onclick="paseBorrar(${id})">🗑 Borrar del todo</button>` : '');
+  } else if(o.furry){
     if(x.estado==='solicitado') vis = `<button type="button" class="small-btn active" onclick="paseResolver(${id},'aceptado')">✅ Aceptar</button><button type="button" class="small-btn danger" onclick="paseResolver(${id},'rechazado')">✖ Rechazar</button>`;
     else mas += `${x.estado!=='aceptado' ? `<button type="button" class="small-btn active" onclick="paseResolver(${id},'aceptado')">✅ Aceptar</button>` : ''}${x.estado!=='rechazado' ? `<button type="button" class="small-btn danger" onclick="paseResolver(${id},'rechazado')">✖ Rechazar</button>` : ''}`;
-    mas += `<button type="button" class="small-btn" onclick="paseAutorizacion(${id},'${x.autorizacion==='autorizado' ? 'pendiente' : 'autorizado'}')">${x.autorizacion==='autorizado' ? '⏳ Marcar pendiente' : '✅ Marcar autorizado por el mando'}</button><button type="button" class="small-btn danger" onclick="paseBorrar(${id})">🗑</button>`;
+    mas += `<button type="button" class="small-btn" onclick="paseAutorizacion(${id},'${x.autorizacion==='autorizado' ? 'pendiente' : 'autorizado'}')">${x.autorizacion==='autorizado' ? '⏳ Marcar pendiente' : '✅ Marcar autorizado por el mando'}</button><button type="button" class="small-btn danger" onclick="paseCancelar(${id},'cancelar')">🚫 Cancelar</button>`;
   } else if(o.mando){
-    mas = `<button type="button" class="small-btn" onclick="mandoPaseAutorizacion('${escHtml(x.persona_id)}',${id},'${x.autorizacion==='autorizado' ? 'pendiente' : 'autorizado'}')">${x.autorizacion==='autorizado' ? '⏳ Marcar pendiente de autorización' : '✅ Marcar autorizado por el mando'}</button>`;
+    mas = `<button type="button" class="small-btn" onclick="mandoPaseAutorizacion('${escHtml(x.persona_id)}',${id},'${x.autorizacion==='autorizado' ? 'pendiente' : 'autorizado'}')">${x.autorizacion==='autorizado' ? '⏳ Marcar pendiente de autorización' : '✅ Marcar autorizado por el mando'}</button><button type="button" class="small-btn danger" onclick="paseCancelar(${id},'cancelar')">🚫 Cancelar</button>`;
   } else if(o.alumno && x.estado==='solicitado'){
     vis = `<button type="button" class="small-btn danger" onclick="paseBorrar(${id})">Cancelar solicitud</button>`;
   }
-  const selFase = o.furry ? `<div class="pe-btns" style="margin-top:6px;"><select aria-label="Fase del ${x.tipo==='pase' ? 'pase' : 'permiso'}" title="Fase: por defecto se calcula sola con la hora; aquí puedes forzarla" onchange="paseFase(${id}, this.value)"><option value="" ${x.fase ? '' : 'selected'}>Fase automática (según la hora)</option><option value="pendiente" ${x.fase==='pendiente' ? 'selected' : ''}>Pendiente</option><option value="en_curso" ${x.fase==='en_curso' ? 'selected' : ''}>En curso</option><option value="realizado" ${x.fase==='realizado' ? 'selected' : ''}>Realizado</option></select></div>` : '';
-  return `<div class="pe-pase ${clase}" id="pase-${id}"><details><summary><span class="pp-t">${PASE_ICO[x.tipo]||''} ${escHtml(PASE_NOM[x.tipo]||x.tipo)}${o.nombre ? ' · '+escHtml(paseQuien(x.persona_id)) : ''}</span><span class="pp-w">${escHtml(paseCuando(x))}</span><span class="pe-t ${fase.k}">${fase.t}</span></summary>
-    <div class="pp-m">Motivo: ${escHtml(x.motivo)}</div><div class="pp-m">Mando: ${escHtml(x.autoriza_nombre)}</div>
-    <div class="pe-btns" style="margin-top:4px;">${paseBadgesHtml(x)}</div>${mas ? `<div class="pe-btns" style="margin-top:6px;">${mas}</div>` : ''}${selFase}</details>${vis ? `<div class="pe-btns" style="margin-top:6px;">${vis}</div>` : ''}</div>`;
+  const selFase = o.furry && !canc ? `<div class="pe-btns" style="margin-top:6px;"><select aria-label="Fase del ${x.tipo==='pase' ? 'pase' : 'permiso'}" title="Fase: por defecto se calcula sola con la hora; aquí puedes forzarla" onchange="paseFase(${id}, this.value)"><option value="" ${x.fase ? '' : 'selected'}>Fase automática (según la hora)</option><option value="pendiente" ${x.fase==='pendiente' ? 'selected' : ''}>Pendiente</option><option value="en_curso" ${x.fase==='en_curso' ? 'selected' : ''}>En curso</option><option value="realizado" ${x.fase==='realizado' ? 'selected' : ''}>Realizado</option></select></div>` : '';
+  return `<div class="pe-pase ${clase}" id="pase-${id}"><details><summary><span class="pp-t">${PASE_ICO[x.tipo]||''} ${escHtml(PASE_NOM[x.tipo]||x.tipo)}${o.nombre ? ' · <a class="pp-quien" role="button" tabindex="0" title="Ver la ficha de esta persona" onclick="event.preventDefault();event.stopPropagation();paseVerPersona(\''+escHtml(x.persona_id)+'\')">'+escHtml(paseQuien(x.persona_id))+'</a>' : ''}</span><span class="pp-w">${escHtml(paseCuando(x))}</span><span class="pe-t ${fase.k}">${fase.t}</span></summary>
+    <div class="pp-m">Motivo: ${escHtml(x.motivo)}</div><div class="pp-m">Mando: ${escHtml(x.autoriza_nombre)}</div>${o.alumno ? '' : contactarHtml(x.persona_id)}
+    <div class="pe-btns" style="margin-top:4px;">${paseBadgesHtml(x)}</div>${canc && x.cancelado_por ? `<div class="pp-m">Cancelado por ${escHtml(x.cancelado_por)}${x.cancelado_en ? ' · '+escHtml(new Date(x.cancelado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})) : ''}</div>` : ''}${mas ? `<div class="pe-btns" style="margin-top:6px;">${mas}</div>` : ''}${selFase}</details>${vis ? `<div class="pe-btns" style="margin-top:6px;">${vis}</div>` : ''}</div>`;
 }
 // Tarjeta «Pases y permisos» de la ficha de una persona (Furry: con botones para apuntar uno; mandos: solo lectura)
 function pasesPersonaHtml(p, furry, mando){
@@ -7092,6 +7123,20 @@ function pasesPersonaHtml(p, furry, mando){
   const todos = (PASES.lista||[]).filter(x=>x.persona_id===p.id).slice().reverse().slice(0, 6);
   return (todos.length ? todos.map(x=>paseItemHtml(x, { furry, mando })).join('') : '<p class="small-note" style="margin:0 0 6px;">Sin pases ni permisos.</p>')
     + (furry ? `<div class="pe-btns"><button type="button" class="small-btn" onclick="abrirFormPase('pase','${escHtml(p.id)}')">➕ Pase de horas</button><button type="button" class="small-btn" onclick="abrirFormPase('permiso','${escHtml(p.id)}')">➕ Permiso extraordinario</button></div>` : '');
+}
+// Orden de la lista de pases del Furry (se recuerda en el dispositivo): 'estado' | 'tiempo' | 'creacion'
+function pasesOrden(){ const ro = peRO(); try{ const v = localStorage.getItem('pk_pases_orden'+(ro?'m':'f')); return v==='tiempo' || v==='creacion' || v==='estado' ? v : (ro ? 'tiempo' : 'estado'); }catch(e){ return ro ? 'tiempo' : 'estado'; } }
+function setPasesOrden(v){ try{ localStorage.setItem('pk_pases_orden'+(peRO()?'m':'f'), v); }catch(e){} pePintarPases(); }
+// Pulsar el nombre de una tarjeta: se abre la ficha de esa persona (la misma que en el buscador)
+function paseVerPersona(id){
+  if(CURRENT.mode==='cuartel' && !CURRENT.mandos){ cuartelPersonalVerPersona(id); return; }
+  const p = pePersona(id); if(!p) return;
+  PE.filtros.clear(); PE.sec = ''; PE.q = (p.apellidos+' '+p.nombre).replace(/[^\p{L}\p{N} ]+/gu, ' ').replace(/\s+/g, ' ').trim(); PE.secMax = {};
+  PE.abiertos.add(String(p.id));
+  const q = document.getElementById('pe-q'); if(q) q.value = PE.q;
+  pePonerHtml('pe-chips', peChipsHtml()); pePintarLista();
+  if(!peRO()) peCargarServicios(String(p.id));
+  const el = document.getElementById('pe-f-'+p.id); if(el) el.scrollIntoView({ behavior:'smooth', block:'center' });
 }
 // Panel de la pestaña Personal (Furry y mandos): pendientes de aceptar y en vigor
 function pePintarPases(){
@@ -7102,10 +7147,25 @@ function pePintarPases(){
   if(PASES.falta){ pePonerHtml('admin-pe-pases', html + `<p class="small-note">${ro ? 'Todavía no está disponible.' : 'Falta ejecutar el parche SQL 110 para usar los pases y permisos.'}</p>`); return; }
   if(PASES.error){ pePonerHtml('admin-pe-pases', html + `<p class="small-note" style="color:var(--danger);">No se pudieron cargar: ${escHtml(PASES.error)}</p>`); return; }
   if(!ro) html += `<div class="pases-btns"><button type="button" class="pases-btn" onclick="abrirFormPase('pase')"><span class="pb-ico">🕒</span><b>Pase de horas</b><small>Apuntar uno a una persona</small></button><button type="button" class="pases-btn" onclick="abrirFormPase('permiso')"><span class="pb-ico">🧳</span><b>Permiso extraordinario</b><small>Varios días</small></button></div>`;
-  html += pend.length ? `<div class="pe-card" style="margin-bottom:10px;"><h4>Pendientes de aceptar (${pend.length})</h4><div class="pe-pases-grid">${pend.map(x=>paseItemHtml(x, { furry:!ro, nombre:true })).join('')}</div></div>` : (ro ? '' : '<p class="small-note">No hay solicitudes pendientes.</p>');
-  html += vig.length ? `<details class="caja-det" ${ro || !pend.length ? 'open' : ''}><summary>En vigor y próximos (${vig.length})</summary><div class="caja-sub-body"><div class="pe-pases-grid">${vig.map(x=>paseItemHtml(x, { furry:!ro, nombre:true })).join('')}</div></div></details>` : (ro && !pend.length ? '<p class="small-note">No hay pases ni permisos en vigor.</p>' : '');
+  const orden = pasesOrden();
+  html += `<div class="pases-orden${ro ? ' compacto' : ''}" role="group" aria-label="Orden de los pases y permisos"><span class="po-t">Ordenar por</span>${[['tiempo','⏱','En curso, futuros y pasados'],['creacion','🆕','Más nuevos primero'],['estado','📥','Pendientes y realizados']].map(([v,i,t])=>`<button type="button" class="po-btn${orden===v ? ' active' : ''}" aria-pressed="${orden===v}" onclick="setPasesOrden('${v}')"><span>${i}</span>${t}</button>`).join('')}</div>`;
+  if(orden==='tiempo' || orden==='creacion'){
+    const todos = mios.filter(x=>x.estado==='solicitado' || x.estado==='aceptado'), ahora = cupAhora(), tarj = l => `<div class="pe-pases-grid">${l.map(x=>paseItemHtml(x, { furry:!ro, mando:ro && peMandoEdita(), nombre:true })).join('')}</div>`;
+    if(orden==='creacion') html += todos.length ? tarj(todos.slice().sort((a,b)=>String(b.creado_en||'').localeCompare(String(a.creado_en||'')) || (b.id - a.id))) : '<p class="small-note">No hay pases ni permisos.</p>';
+    else {
+      const gr = k => todos.filter(x=>paseTiempo(x, ahora).k===k).sort((a,b)=>(k==='hecho' ? -1 : 1) * (String(paseIni(a)+(a.hora_inicio||'')).localeCompare(String(paseIni(b)+(b.hora_inicio||'')))));
+      let cols = ''; [['curso','🟢 En curso'],['futuro','⏳ Futuros'],['hecho','✔ Pasados']].forEach(([k,t])=>{ const l = gr(k); if(l.length) cols += `<div class="pe-col"><div class="cup-grupo">${t} (${l.length})</div>${tarj(l)}</div>`; });
+      html += cols ? `<div class="pe-orden-cols">${cols}</div>` : '';
+      if(!todos.length) html += '<p class="small-note">No hay pases ni permisos.</p>';
+    }
+  } else {
+  html += pend.length ? `<div class="pe-card" style="margin-bottom:10px;"><h4>Pendientes de aceptar (${pend.length})</h4><div class="pe-pases-grid">${pend.map(x=>paseItemHtml(x, { furry:!ro, mando:ro && peMandoEdita(), nombre:true })).join('')}</div></div>` : (ro ? '' : '<p class="small-note">No hay solicitudes pendientes.</p>');
+  html += vig.length ? `<details class="caja-det" data-pk="pe-vig${ro?'m':'f'}" ${pkOpen('pe-vig'+(ro?'m':'f'), ro || !pend.length) ? 'open' : ''}><summary>En vigor y próximos (${vig.length})</summary><div class="caja-sub-body"><div class="pe-pases-grid">${vig.map(x=>paseItemHtml(x, { furry:!ro, mando:ro && peMandoEdita(), nombre:true })).join('')}</div></div></details>` : (ro && !pend.length ? '<p class="small-note">No hay pases ni permisos en vigor.</p>' : '');
   const hechos = mios.filter(x=>x.estado==='aceptado' && !paseVigente(x)).slice().sort((p,q)=>paseIni(p)<paseIni(q) ? 1 : -1).slice(0, 24);
-  if(hechos.length) html += `<details class="caja-det"><summary>Realizados / anteriores (${hechos.length})</summary><div class="caja-sub-body"><div class="pe-pases-grid">${hechos.map(x=>paseItemHtml(x, { furry:!ro, nombre:true })).join('')}</div></div></details>`;
+  if(hechos.length) html += `<details class="caja-det" data-pk="pe-hechos${ro?'m':'f'}" ${pkOpen('pe-hechos'+(ro?'m':'f'), false) ? 'open' : ''}><summary>Realizados / anteriores (${hechos.length})</summary><div class="caja-sub-body"><div class="pe-pases-grid">${hechos.map(x=>paseItemHtml(x, { furry:!ro, mando:ro && peMandoEdita(), nombre:true })).join('')}</div></div></details>`;
+  }
+  const canc = mios.filter(x=>x.estado==='cancelado').slice().sort((p,q)=>String(q.cancelado_en||'').localeCompare(String(p.cancelado_en||''))).slice(0, 30);
+  html += `<details class="caja-det" data-pk="pe-canc${ro?'m':'f'}" ${pkOpen('pe-canc'+(ro?'m':'f'), false) ? 'open' : ''}><summary>🚫 Cancelados (${canc.length})</summary><div class="caja-sub-body">${canc.length ? `<div class="pe-pases-grid">${canc.map(x=>paseItemHtml(x, { furry:!ro, mando:ro && peMandoEdita(), nombre:true })).join('')}</div>` : '<p class="small-note" style="margin:0;">No hay ninguno cancelado.</p>'}</div></details>`;
   pePonerHtml('admin-pe-pases', html);
 }
 // Formulario para pedir (alumno) o apuntar (Furry) un pase de horas o un permiso extraordinario
@@ -7118,7 +7178,7 @@ function abrirFormPase(tipo, personaId){
   window._pfTipo = tipo; window._pfPersona = alumno ? CURRENT.persona.id : (personaId || null);
   abrirModalGlobal(`<h3>${PASE_ICO[tipo]} ${PASE_NOM[tipo]}</h3>
     <p class="modal-nota" style="margin-top:0;">${esPase ? 'Un solo día: elige la hora de salida y la hora de vuelta.' : 'Puede ser de varios días: elige desde qué día y hora sales, y hasta qué día y hora vuelves.'} ${alumno ? 'Tu Furry lo tendrá que aceptar.' : ''}</p>
-    ${furry && !personaId ? `<div class="field"><label>Persona</label><select id="pf-persona" class="pf-in">${personas.map(q=>`<option value="${escHtml(q.id)}">${escHtml(q.apellidos)}, ${escHtml(q.nombre)} (${c}${q.seccion})</option>`).join('')}</select></div>` : (furry ? `<p class="modal-nota"><b>${escHtml(paseQuien(personaId))}</b></p>` : '')}
+    ${furry && !personaId ? `<div class="field"><label for="pf-q">Persona</label><input type="search" id="pf-q" class="pf-in" placeholder="Escribe el apellido o el nombre…" autocomplete="off" oninput="pfFiltrarPersonas()"><select id="pf-persona" class="pf-in" size="5" style="margin-top:6px;"></select></div>` : (furry ? `<p class="modal-nota"><b>${escHtml(paseQuien(personaId))}</b></p>` : '')}
     <div class="pf-fila"><div class="field"><label for="pf-fecha">${esPase ? 'Día' : 'Desde el día'}</label><input type="date" id="pf-fecha" class="pf-in" value="${hoy}" min="${sumarDia(hoy,-1)}"></div>
       ${esPase ? '' : `<div class="field"><label for="pf-hasta">Hasta el día</label><input type="date" id="pf-hasta" class="pf-in" value="${hoy}" min="${sumarDia(hoy,-1)}"></div>`}</div>
     <div class="pf-fila"><div class="field"><label for="pf-hini">Hora de salida</label><input type="time" id="pf-hini" class="pf-in" value="18:00"></div>
@@ -7128,6 +7188,15 @@ function abrirFormPase(tipo, personaId){
     <div class="field"><label for="pf-aut">Estado de la autorización</label><select id="pf-aut" class="pf-in"><option value="autorizado">✅ Autorizado por el mando</option><option value="pendiente">⏳ Pendiente de autorización</option></select></div>
     ${furry ? `<div class="field"><label for="pf-estado">Registro del Furry</label><select id="pf-estado" class="pf-in"><option value="aceptado">🟢 Aceptado</option><option value="solicitado">📨 Solicitado (sin aceptar aún)</option></select></div>` : ''}
     <div class="modal-botones"><button type="button" class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button type="button" class="primary-btn" id="pf-ok" onclick="guardarFormPase()">${alumno ? 'Enviar solicitud' : 'Guardar'}</button></div>`);
+  if(furry && !personaId){ window._pfPersonas = personas.slice().sort((a,b)=>String(a.apellidos).localeCompare(String(b.apellidos),'es') || String(a.nombre).localeCompare(String(b.nombre),'es')); pfFiltrarPersonas(); const q = document.getElementById('pf-q'); if(q) q.focus(); }
+}
+// Buscador de personas del formulario del Furry (por apellidos o nombre, sin tildes)
+function pfFiltrarPersonas(){
+  const sel = document.getElementById('pf-persona'); if(!sel) return;
+  const w = cuartelNorm((document.getElementById('pf-q')||{}).value||'').split(' ').filter(Boolean), c = CURRENT.compania;
+  const l = (window._pfPersonas||[]).filter(p=>w.every(x=>cuartelNorm(p.apellidos+' '+p.nombre).includes(x))).slice(0, 40);
+  sel.innerHTML = l.length ? l.map(p=>`<option value="${escHtml(p.id)}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)} (${c}${p.seccion})</option>`).join('') : '<option value="" disabled>Nadie coincide</option>';
+  if(l.length) sel.value = l[0].id;
 }
 async function guardarFormPase(){
   const tipo = window._pfTipo, v = id => ((document.getElementById(id)||{}).value||'').trim();
@@ -7178,9 +7247,32 @@ async function paseAutorizacion(id, autorizacion){
   if(error){ showToast('No se pudo guardar: '+paseErr(error)); return; }
   Object.assign(x, data); pePintarPases(); peRefrescarFila(x.persona_id);
 }
+// Cancelar un pase/permiso (Furry, servicio de cuartel y mandos) o revertir esa cancelación: no se borra nada, queda en «Cancelados»
+const cupPaseBuscar = id => ((CUP.base && CUP.base.pases) || []).find(y=>y.id===id) || (CUP.canc || []).find(y=>y.id===id) || (((CUP.res && CUP.res.resultados) || []).flatMap(r=>r.pases||[]).find(y=>y.id===id));
+async function paseCancelar(id, accion){
+  const x = (PASES.lista||[]).find(y=>y.id===id) || cupPaseBuscar(id); if(!x) return;
+  const rev = accion==='revertir', quien = x.apellidos ? `${x.apellidos}, ${x.nombre}` : (paseQuien(x.persona_id) || 'esta persona'), que = x.tipo==='permiso' ? 'el permiso extraordinario' : 'el pase de horas';
+  if(!await confirmarApp(rev ? `¿Revertir la cancelación ${x.tipo==='permiso' ? 'del permiso extraordinario' : 'del pase de horas'} de ${quien}? Volverá a estar como estaba.` : `¿Cancelar ${que} de ${quien}? Pasará a «Cancelados» y se podrá revertir.`, { si:rev ? 'Sí, revertir' : 'Sí, cancelar', no:'No', peligro:!rev })) return;
+  const cuartel = CURRENT.mode==='cuartel', args = { p_id:id, p_accion:rev ? 'revertir' : 'cancelar' };
+  if(cuartel) Object.assign(args, { p_device_id:idDispositivo(), p_dispositivo:describirDispositivo(), p_compania:CURRENT.compania, ...cuNombreRpc() });
+  else args.p_quien = CURRENT.isSuperadmin ? 'Superadmin' : 'Furry';
+  const { data, error } = await sb.rpc('pase_cancelar', args);
+  if(error){ showToast('No se pudo: '+cuErrorParche(error, 114)); return; }
+  showToast(rev ? '↩ Cancelación revertida.' : '🚫 Cancelado. Lo encontrará en «Cancelados».');
+  const nuevo = data || {}, campos = { estado:nuevo.estado, estado_previo:nuevo.estado_previo, cancelado_por:nuevo.cancelado_por, cancelado_en:nuevo.cancelado_en };
+  const act = l => (l||[]).forEach(y=>{ if(y.id===id) Object.assign(y, campos); });
+  act(PASES.lista); if(CUP.base) act(CUP.base.pases); ((CUP.res && CUP.res.resultados) || []).forEach(r=>act(r.pases));
+  if(CURRENT.mode==='admin'){ logFurry('otro', `${PASE_NOM[x.tipo]} de ${paseQuien(x.persona_id)} ${rev ? 'recuperado (cancelación revertida)' : 'cancelado'}: ${paseCuando(x)}`); pePintarPases(); peRefrescarFila(x.persona_id); pePintarChips(); peActualizarInsignia(); }
+  else if(cuartel && CURRENT.mandos){ pePintarPases(); peRefrescarFila(x.persona_id); pePintarChips(); }
+  else if(cuartel){
+    CUP.canc = (CUP.canc||[]).filter(y=>y.id!==id);
+    if(!rev) CUP.canc.unshift(Object.assign({}, x, nuevo, { fecha:nuevo.fecha_inicio || x.fecha, autoriza:nuevo.autoriza_nombre || x.autoriza }));
+    cuartelPersonalPintarBase(); if(CUP.res) cuartelPersonalPintarRes();
+  } else pintarPasesAlumno();
+}
 async function paseBorrar(id){
   const x = PASES.lista.find(y=>y.id===id); if(!x) return;
-  if(!await confirmarApp(CURRENT.mode==='alumno' ? '¿Cancelar esta solicitud?' : '¿Borrar este pase / permiso?', { si:CURRENT.mode==='alumno' ? 'Cancelar solicitud' : 'Borrar', no:'No', peligro:true })) return;
+  if(!await confirmarApp(CURRENT.mode==='alumno' ? '¿Cancelar esta solicitud?' : '¿Borrar del todo este pase / permiso? Ya no se podrá recuperar.', { si:CURRENT.mode==='alumno' ? 'Cancelar solicitud' : 'Borrar del todo', no:'No', peligro:true })) return;
   const { error } = await sb.from('pases_permisos').delete().eq('id', id);
   if(error){ showToast('No se pudo borrar: '+paseErr(error)); return; }
   PASES.lista = PASES.lista.filter(y=>y.id!==id);
@@ -7282,7 +7374,8 @@ function peDetalleMandoBase(p){
           <span class="pe-btns"><button type="button" class="small-btn" onclick="mandoArrestoModal('${id}','${aid}')">✏️ Fechas</button><button type="button" class="small-btn danger" onclick="mandoBorrarArresto('${id}','${aid}')">🗑 Borrar</button></span></div>`; }).join('')
       : '<p class="small-note" style="margin:0;">Sin arrestos.</p>'))
     + (ARRESTOS_FALTA ? '' : `<div class="pe-btns" style="margin-top:6px;"><button type="button" class="small-btn" onclick="mandoArrestoModal('${id}')">➕ Apuntar arresto</button></div>`);
-  return `<h4>🚨 Arrestos</h4>${arrHtml}
+  return `<h4>📞 Contacto</h4>${contactarHtml(p.id)}
+    <h4>🚨 Arrestos</h4>${arrHtml}
     <h4>🎒 Externado y viernes libres</h4>
     <div class="pe-btns"><select aria-label="Externado" onchange="mandoSelExternado('${id}', this)">${op('no','No externado',ext)}${op('findes','Externado findes',ext)}${op('total','Externado total',ext)}</select>
       <select aria-label="Viernes libres" onchange="mandoSelViernes('${id}', this)">${['0','2','4'].map(v=>op(v, (v==='0'?'Viernes libres: ':'')+PE_VF_TXT[v], vf)).join('')}</select></div>
@@ -7341,6 +7434,11 @@ async function marcarCambioVisto(id, origen){
    Arriba las solicitudes de viernes pendientes; luego buscador y filtros, la lista (cada fila se despliega con su ficha:
    arrestos, servicios, externado, viernes, intolerancias, sección, acceso y baja) y, al final, el alta. Cada cambio repinta SOLO esa fila. */
 // secAb: secciones desplegadas a mano · secMax: filas visibles por sección · multi/sel/soloSel: selección múltiple (la selección se conserva al buscar y filtrar)
+// Cajas plegables que recuerdan su estado en este dispositivo (pkOpen lee, pkSet guarda; los <details data-pk="…"> se guardan solos)
+function pkOpen(k, def){ try{ const v = localStorage.getItem('pk_'+k); return v===null ? !!def : v==='1'; }catch(e){ return !!def; } }
+function pkSet(k, abierta){ try{ localStorage.setItem('pk_'+k, abierta ? '1' : '0'); }catch(e){} }
+document.addEventListener('toggle', e=>{ const d = e.target; if(d && d.tagName==='DETAILS' && d.dataset && d.dataset.pk) pkSet(d.dataset.pk, d.open); }, true);
+const peSecKey = s => 'pesec' + (peRO() ? 'm' : 'f') + s;
 const PE = { personas:null, error:null, sols:[], q:'', sec:'', filtros:new Set(), abiertos:new Set(), serv:new Map(), altaAbierta:false, t:null,
   secAb:new Set(), secMax:{}, multi:false, sel:new Set(), soloSel:false, ocupado:false, conexAb:false, cuartelAb:false };
 const PE_TANDA = 40; // filas por tanda en cada sección («Ver más» enseña otras tantas)
@@ -7413,6 +7511,7 @@ async function peContarSolicitudes(){
 const renderAdminPersonal = serializarRender(()=>_renderAdminPersonalImpl());
 async function _renderAdminPersonalImpl(){
   const c = CURRENT.compania;
+  { const v = document.getElementById('cuartel-vista'); if(v && v.querySelector('#pe-chips')) v.innerHTML = ''; } // el Personal de «Ver como mando» usa los mismos id
   cargarServPers(c); // para que sus servicios salgan con su nombre
   pePonerHtml('admin-week-select', ''); pePonerHtml('admin-notice', ''); // esta pestaña no va por semanas
   if(!PE.personas) pePonerHtml('admin-pe-lista', '<p class="small-note">Cargando…</p>');
@@ -7438,7 +7537,7 @@ async function _renderAdminPersonalImpl(){
 function pePintarConexion(){
   if(!PE.personas) return;
   const c = CURRENT.compania, secciones = peSecs().map(s=>({ code:''+c+s, seccion:s, people:PE.personas.filter(p=>p.seccion===s) }));
-  pePonerHtml('admin-pe-conexion', `<details class="caja-det" ${PE.conexAb?'open':''} ontoggle="PE.conexAb=this.open"><summary>🟢 Conexión de los alumnos</summary><div class="caja-sub-body">${conexionAlumnosHtml(secciones)}<button type="button" class="small-btn" style="margin-top:8px;" onclick="renderAdminPersonal()">↻ Actualizar</button></div></details>`);
+  pePonerHtml('admin-pe-conexion', `<details class="caja-det" data-pk="pe-conex" ${pkOpen('pe-conex', PE.conexAb)?'open':''} ontoggle="PE.conexAb=this.open"><summary>🟢 Conexión de los alumnos</summary><div class="caja-sub-body">${conexionAlumnosHtml(secciones)}<button type="button" class="small-btn" style="margin-top:8px;" onclick="renderAdminPersonal()">↻ Actualizar</button></div></details>`);
 }
 /* ---- Solicitudes de viernes libres (solo se ve si hay pendientes) ---- */
 function pePintarSolicitudes(){
@@ -7513,16 +7612,17 @@ function pePintarLista(){
   if(PE.error){ pePonerHtml('admin-pe-lista', tit + `<p class="small-note" style="color:var(--danger);">No se pudo cargar el personal: ${escHtml(PE.error)}</p><button type="button" class="small-btn" onclick="${peRO() ? 'renderMandosPersonal()' : 'renderAdminPersonal()'}">↻ Reintentar</button>`); return; }
   if(!PE.personas){ pePonerHtml('admin-pe-lista', tit + '<p class="small-note">Cargando…</p>'); return; }
   const ls = peFiltradas(), activo = peActivo();
+  const lk = 'pelista' + (peRO() ? 'm' : 'f'), envolver = cuerpo => `<details class="pe-lista-det" ${activo || pkOpen(lk, true) ? 'open' : ''} ontoggle="if(!peActivo()) pkSet('${lk}', this.open)"><summary><h3 class="section-title" style="margin:0;">👥 Personal de la ${c}ª Compañía</h3></summary>${peRO() ? listadoToggleHtml() : ''}${cuerpo}</details>`;
   let html = `<div class="pe-cuenta" id="pe-cuenta">${peCuentaTxt(ls.length)}</div>` + (PE.multi ? `<div class="pe-chips" id="pe-selbar">${peSelBarHtml(ls.length)}</div>` : '');
   let tarjetas = '';
   if(peRO() && LISTADO_VISTA==='nominal'){ // listado nominal: todos juntos por orden alfabético (cada fila se despliega con su ficha)
     const orden = ls.slice().sort((x,y)=>String(x.apellidos).localeCompare(String(y.apellidos),'es') || String(x.nombre).localeCompare(String(y.nombre),'es'));
-    pePonerHtml('admin-pe-lista', tit + html + (orden.length ? `<div class="pe-nominal">${orden.map(peFilaHtml).join('')}</div>` : '<p class="small-note">Nadie coincide con la búsqueda o los filtros.</p>'));
+    pePonerHtml('admin-pe-lista', envolver(html + (orden.length ? `<div class="pe-nominal">${orden.map(peFilaHtml).join('')}</div>` : '<p class="small-note">Nadie coincide con la búsqueda o los filtros.</p>')));
     return;
   }
   peSecs().forEach(s=>{
     const ps = ls.filter(p=>p.seccion===s); if(activo && !ps.length) return;
-    const ab = activo || PE.secAb.has(s);
+    const ab = activo || pkOpen(peSecKey(s), false);
     tarjetas += `<details class="caja-det pe-secdet sec-${s}" data-pesec="${s}" ${ab?'open':''} ontoggle="peSecToggle(${s}, this)"><summary><span class="pe-sech" id="pe-sech-${s}">${peSecCabHtml(s, ps)}</span></summary><div class="caja-sub-body" id="pe-secb-${s}">${ab ? peSecBodyHtml(s, ps) : ''}</div></details>`;
   });
   html += `<div class="pe-grid">${tarjetas}</div>`;
@@ -7530,11 +7630,11 @@ function pePintarLista(){
   if(sueltos.length) html += `<div class="gp-mes">Sin sección válida</div>` + sueltos.map(peFilaHtml).join('');
   if(!ls.length) html += `<p class="small-note">${PE.personas.length ? (PE.soloSel && !PE.sel.size ? 'No hay nadie seleccionado.' : 'Nadie coincide con la búsqueda o los filtros.') : 'Todavía no hay nadie en la compañía.'}</p>`;
   if(PE.multi) html += `<div class="pe-barra" id="pe-barra">${peBarraHtml()}</div>`;
-  pePonerHtml('admin-pe-lista', tit + html);
+  pePonerHtml('admin-pe-lista', envolver(html));
   if(!peRO()) PE.abiertos.forEach(id=>{ if(document.getElementById('pe-f-'+id)) peCargarServicios(id); }); // fichas que siguen abiertas
 }
 function peSecToggle(s, det){
-  if(!peActivo()){ if(det.open) PE.secAb.add(s); else PE.secAb.delete(s); } // lo que abre una búsqueda no se recuerda
+  if(!peActivo()) pkSet(peSecKey(s), det.open); // lo que abre una búsqueda no se recuerda; lo demás queda guardado
   const b = document.getElementById('pe-secb-'+s);
   if(det.open && b && !b.innerHTML.trim()){ b.innerHTML = peSecBodyHtml(s, peFiltradas().filter(p=>p.seccion===s)); if(!peRO()) PE.abiertos.forEach(id=>{ if(b.querySelector('#pe-f-'+CSS.escape(id))) peCargarServicios(id); }); }
 }
@@ -7567,8 +7667,15 @@ function peCabHtml(p){
   if(peViernes(p)>0) t.push(`<span class="pe-t">📅 ${peViernes(p)>=4 ? 'Todos los viernes' : '2 viernes al mes'}</span>`);
   if(p.promocion_interna) t.push('<span class="pe-t">🪖 Promoción interna</span>');
   if(!peRO() && !p.registrado) t.push('<span class="pe-t">⚠ Sin registrar</span>');
-  const ps = pasesActivosDe(p.id)[0];
-  if(ps) t.push(`<span class="pe-t ${ps.autorizacion==='autorizado' ? 'ok' : 'aviso'}" title="${escHtml(PASE_NOM[ps.tipo]+': '+paseCuando(ps))}">${PASE_ICO[ps.tipo]} ${ps.tipo==='pase' ? 'Pase '+escHtml(peFC(ps.fecha_inicio)) : 'Permiso '+escHtml(peFC(ps.fecha_inicio)+'–'+peFC(ps.fecha_fin))}</span>`);
+  // Pase o permiso de la persona (el más relevante), diciendo CLARAMENTE si está en curso, es futuro o ya se ha realizado
+  { const ahora = cupAhora(), orden = { curso:0, futuro:1, hecho:2 };
+    const inf = (PASES.lista||[]).filter(x=>x.persona_id===p.id && x.estado!=='rechazado' && x.estado!=='cancelado' && (x.fecha_fin || paseIni(x)) >= hoy).map(x=>({ x, e:paseTiempo(x, ahora) }))
+      .sort((m,n)=>orden[m.e.k]-orden[n.e.k] || String(paseIni(m.x)).localeCompare(String(paseIni(n.x))))[0];
+    if(inf){
+      const x = inf.x, perm = x.tipo==='permiso', nom = perm ? 'Permiso' : 'Pase', f1 = escHtml(peFC(paseIni(x))), f2 = escHtml(peFC(x.fecha_fin || paseIni(x))), m = /sale en (\d+) min/.exec(inf.e.t);
+      const txt = inf.e.k==='hecho' ? `${nom} realizado` : inf.e.k==='curso' ? (m ? `${nom} · sale en ${m[1]} min` : `${nom} en curso${perm ? ' hasta '+f2 : ''}`) : `${nom} futuro ${f1}${perm ? '–'+f2 : ''}`;
+      t.push(`<span class="pe-t ${inf.e.k==='curso' ? 'curso' : inf.e.k==='hecho' ? 'pase-hecho' : (x.autorizacion==='autorizado' ? 'ok' : 'aviso')}" title="${escHtml(PASE_NOM[x.tipo]+': '+paseCuando(x))}">${PASE_ICO[x.tipo]} ${txt}</span>`);
+    } }
   const ini = ((p.nombre||'?').trim().charAt(0) + (p.apellidos||'?').trim().charAt(0)).toUpperCase();
   return `<span class="pe-av sec-${p.seccion}" aria-hidden="true">${escHtml(ini)}</span><span class="pe-nom"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)}</span><span class="pe-sec">${CURRENT.compania}${escHtml(p.seccion)}</span>${t.join('')}`;
 }
@@ -7584,13 +7691,29 @@ function peToggle(pid){
   peRefrescarFila(pid);
   if(PE.abiertos.has(pid) && !peRO()) peCargarServicios(pid);
 }
+// Botón «Contactar» (Furry, mandos y servicio de cuartel): pide el teléfono al servidor; en cuartel y mandos queda registrado (parche 114)
+const contactarHtml = id => `<div class="ct-res pe-btns" data-id="${escHtml(id)}"><button type="button" class="small-btn" onclick="personaContactar('${escHtml(id)}')">📞 Contactar</button></div>`;
+async function personaContactar(id){
+  const zonas = [...document.querySelectorAll('.ct-res')].filter(z=>z.dataset.id===id), poner = h => zonas.forEach(z=>{ z.innerHTML = h; });
+  const boton = `<button type="button" class="small-btn" onclick="personaContactar('${escHtml(id)}')">📞 Contactar</button>`;
+  if(mandosSinRegistro()){ poner(`<span class="small-note">En «Ver como mando» no se enseñan teléfonos: pedirlos quedaría registrado.</span>`); return; }
+  poner('<span class="small-note">Consultando…</span>');
+  const args = { p_persona:id };
+  if(CURRENT.mode==='cuartel') Object.assign(args, { p_device_id:idDispositivo(), p_dispositivo:describirDispositivo(), p_compania:CURRENT.compania, ...cuNombreRpc() });
+  let r; try{ r = await sb.rpc('personal_contactar', args); }catch(e){ r = { error:e }; }
+  if(r.error){ poner(`<span class="small-note" style="color:var(--danger);">No se pudo: ${escHtml(cuErrorParche(r.error, 114))}</span>${boton}`); return; }
+  if(!r.data){ poner(`<span class="small-note">Esta persona no tiene teléfono registrado todavía.</span>`); return; }
+  const tel = String(r.data), limpio = tel.replace(/[^0-9+]/g, '');
+  poner(`<span class="cu-tel">📞 <a href="tel:${escHtml(limpio)}">${escHtml(tel)}</a></span>`);
+}
 // Ficha de solo lectura (mandos): arrestos, externado, viernes libres y promoción interna. Nada más.
 function peDetalleRoHtml(p){ return peCartas(peDetalleRoBase(p)); }
 function peDetalleRoBase(p){
   const hoy = ymd(new Date()), arrs = (ARRESTOS.get(p.id)||[]).slice().reverse(), ext = valorExternado(p);
   const arrHtml = ARRESTOS_FALTA ? '<p class="small-note" style="margin:0;">Todavía no se pueden consultar los arrestos.</p>'
     : (arrs.length ? arrs.map(a=>`<div class="pe-it${arrestoVigente(a)?'':' pasado'}"><span>${a.desde<=hoy && hoy<=a.hasta ? '🚨 <b>Ahora</b> · ' : a.desde>hoy ? '⏳ Próximo · ' : ''}${escHtml(arrestoTxt(a))}</span></div>`).join('') : '<p class="small-note" style="margin:0;">Sin arrestos.</p>');
-  return `<h4>🚨 Arrestos</h4>${arrHtml}
+  return `<h4>📞 Contacto</h4>${contactarHtml(p.id)}
+    <h4>🚨 Arrestos</h4>${arrHtml}
     <h4>🎒 Externado y viernes libres</h4>
     <div class="pe-it"><span>${ext==='total' ? 'Externado total' : ext==='findes' ? 'Externado de fin de semana' : 'No externado'}</span></div>
     <div class="pe-it"><span>${peViernes(p)>=4 ? 'Viernes libres: todos' : peViernes(p)>=2 ? 'Viernes libres: 2 al mes' : 'Sin viernes libres'}</span></div>
@@ -7609,7 +7732,8 @@ function peDetalleBase(p){
           <span class="pe-btns"><button type="button" class="small-btn" onclick="peArrestoModal('${id}','${aid}')">✏️ Fechas</button><button type="button" class="small-btn danger" onclick="peBorrarArresto('${id}','${aid}')">🗑 Borrar</button></span></div>`; }).join('')
       : '<p class="small-note" style="margin:0;">Sin arrestos.</p>')
       + `<div class="pe-btns" style="margin-top:6px;"><button type="button" class="small-btn" onclick="peArrestoModal('${id}')">➕ Apuntar arresto</button></div>`;
-  return `<h4>🚨 Arrestos</h4>${arrHtml}
+  return `<h4>📞 Contacto</h4>${contactarHtml(p.id)}
+    <h4>🚨 Arrestos</h4>${arrHtml}
     <h4>📋 Servicios</h4><div id="pe-serv-${id}">${peServHtml(String(p.id))}</div>
     <h4>🎒 Externado y viernes libres</h4>
     <div class="pe-btns"><select aria-label="Externado" title="Findes: el sábado no es obligatorio. Total: sin desayunos, comidas ni cenas obligatorios (salvo maniobras)." onchange="peCambiarExternado('${id}', this)">${op('no','No externado',ext)}${op('findes','Externado findes',ext)}${op('total','Externado total',ext)}</select>
@@ -7656,10 +7780,10 @@ function paseTiempo(x, ahora){
   return { k:'futuro', t:'🔜 Pendiente' };
 }
 function cupPaseHtml(x, ahora, conNombre, conAcciones){
-  const e = paseTiempo(x, ahora), perm = x.tipo==='permiso';
-  const fin = conAcciones && e.k==='curso' ? `<div class="pe-btns" style="margin-top:6px;"><button type="button" class="small-btn active" onclick="cuartelFinalizarPase(${x.id})">✔ Dar por finalizado</button></div>` : '';
-  return `<div class="pe-pase ${e.k}"><details><summary><span class="pp-t">${perm ? '🧳' : '🕒'} ${conNombre ? escHtml(x.apellidos+', '+x.nombre)+' · '+escHtml(CURRENT.compania+''+x.seccion) : (perm ? 'Permiso extraordinario' : 'Pase de horas')}</span><span class="pp-w">${escHtml((perm && conNombre ? 'Permiso · ' : '')+paseCuando(x))}</span><span class="pe-t ${e.k}">${e.t}</span></summary>
-    <div class="pp-m">Motivo: ${escHtml(x.motivo)}</div><div class="pp-m">Mando: ${escHtml(x.autoriza)}</div>
+  const canc = x.estado==='cancelado', e = canc ? { k:'rech', t:'🚫 Cancelado' } : paseTiempo(x, ahora), perm = x.tipo==='permiso';
+  const fin = conAcciones ? `<div class="pe-btns" style="margin-top:6px;">${canc ? `<button type="button" class="small-btn active" onclick="paseCancelar(${x.id},'revertir')">↩ Revertir la cancelación</button>` : (e.k==='curso' ? `<button type="button" class="small-btn active" onclick="cuartelFinalizarPase(${x.id})">✔ Dar por finalizado</button>` : '') + `<button type="button" class="small-btn danger" onclick="paseCancelar(${x.id},'cancelar')">🚫 Cancelar</button>`}</div>` : '';
+  return `<div class="pe-pase ${e.k}"><details><summary><span class="pp-t">${perm ? '🧳' : '🕒'} ${conNombre ? '<a class="pp-quien" role="button" tabindex="0" title="Ver la ficha de esta persona" onclick="event.preventDefault();event.stopPropagation();paseVerPersona(\''+escHtml(x.persona_id)+'\')">'+escHtml(x.apellidos+', '+x.nombre)+'</a> · '+escHtml(CURRENT.compania+''+x.seccion) : (perm ? 'Permiso extraordinario' : 'Pase de horas')}</span><span class="pp-w">${escHtml((perm && conNombre ? 'Permiso · ' : '')+paseCuando(x))}</span><span class="pe-t ${e.k}">${e.t}</span></summary>
+    <div class="pp-m">Motivo: ${escHtml(x.motivo)}</div><div class="pp-m">Mando: ${escHtml(x.autoriza)}</div>${x.persona_id ? contactarHtml(x.persona_id) : ''}${canc && x.cancelado_por ? `<div class="pp-m">Cancelado por ${escHtml(x.cancelado_por)}${x.cancelado_en ? ' · '+escHtml(new Date(x.cancelado_en).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})) : ''}</div>` : ''}
     <div class="pe-btns" style="margin-top:4px;">${x.autorizacion==='autorizado' ? '<span class="pe-t ok">✅ Autorizado por el mando</span>' : '<span class="pe-t aviso">⏳ Pendiente de autorización</span>'}</div></details>${fin}</div>`;
 }
 // El servicio de cuartel da por finalizado un pase o un permiso (los mandos no pueden)
@@ -7694,26 +7818,32 @@ async function cuartelPersonalCargarBase(){
   if(error){ el.innerHTML = `<div class="notice closed"><span>${escHtml(cuErrorParche(error, 111))}</span></div>`; return; }
   CUP.base = data; CUP.base._t = Date.now();
   cuartelPersonalPintarBase();
-  cuartelServicioCargar(); cuartelPersonalListaRespaldo();
+  cuartelServicioCargar(); cuartelPersonalListaRespaldo(); cuartelCanceladosCargar();
 }
-function cuartelSecToggle(sn, det){ CUP.secAb = CUP.secAb || new Set(); if(det.open) CUP.secAb.add(sn); else CUP.secAb.delete(sn); }
+// Pases y permisos cancelados de los últimos 30 días (parche 114)
+async function cuartelCanceladosCargar(){
+  try{ const { data, error } = await sb.rpc('cuartel_pases_cancelados', { p_device_id:idDispositivo(), p_dispositivo:describirDispositivo(), p_compania:CURRENT.compania, ...cuNombreRpc() }); CUP.canc = error ? [] : (data || []); }
+  catch(e){ CUP.canc = []; }
+  if(document.getElementById('cup-base') && CUP.base) cuartelPersonalPintarBase();
+}
+function cuartelSecToggle(sn, det){ pkSet('cusec'+sn, det.open); }
 const cupAvatar = x => `<span class="pe-av sec-${x.seccion}" aria-hidden="true">${escHtml(((x.nombre||'?').trim().charAt(0)+(x.apellidos||'?').trim().charAt(0)).toUpperCase())}</span>`;
 // «Listado de la compañía» del servicio de cuartel
 function cupListadoHtml(b){
   const l = (b.personal && b.personal.length ? b.personal : (CUP.personas || [])), c = CURRENT.compania, n = b.total!=null ? b.total : l.length;
-  const cab = `<div class="cup-box-t">📋 Listado de la compañía <span class="gp-cuenta" style="margin-left:0;">${n} persona${n===1 ? '' : 's'}</span></div>${listadoToggleHtml()}`;
-  if(!l.length) return `<div class="cup-box">${cab}<p class="small-note" style="margin:0;">Cargando el listado…</p></div>`;
+  const cab = `<details class="cup-box cup-det" data-pk="cu-listado" ${pkOpen('cu-listado', true) ? 'open' : ''}><summary><div class="cup-box-t">📋 Listado de la compañía <span class="gp-cuenta" style="margin-left:0;">${n} persona${n===1 ? '' : 's'}</span></div></summary>${listadoToggleHtml()}`;
+  if(!l.length) return `${cab}<p class="small-note" style="margin:0;">Cargando el listado…</p></details>`;
   const fila = p => `<button type="button" class="cup-fila${CUP.verId===p.id ? ' sel' : ''}" aria-pressed="${CUP.verId===p.id}" onclick="cuartelPersonalVerPersona('${escHtml(p.id)}')">${cupAvatar(p)}<span class="cup-n">${escHtml(p.apellidos)}, ${escHtml(p.nombre)}</span><span class="pe-sec">${c}${escHtml(p.seccion)}</span></button>`;
   if(LISTADO_VISTA==='nominal'){
     const orden = l.slice().sort((x,y)=>String(x.apellidos).localeCompare(String(y.apellidos),'es') || String(x.nombre).localeCompare(String(y.nombre),'es'));
-    return `<div class="cup-box">${cab}<div class="cup-lista-sec cup-scroll" style="max-height:520px;">${orden.map(fila).join('')}</div></div>`;
+    return `${cab}<div class="cup-lista-sec cup-scroll" style="max-height:520px;">${orden.map(fila).join('')}</div></details>`;
   }
   const secs = [1,2,3,4].map(sn=>{
-    const ps = l.filter(p=>p.seccion===sn), ab = CUP.secAb && CUP.secAb.has(sn);
+    const ps = l.filter(p=>p.seccion===sn), ab = pkOpen('cusec'+sn, false);
     return `<details class="caja-det pe-secdet sec-${sn} cup-lista-sec" ${ab ? 'open' : ''} ontoggle="cuartelSecToggle(${sn}, this)"><summary><span class="pe-sech"><span class="pe-secnum">${c}${sn}</span><b>Sección ${c}${sn}</b> <span class="gp-cuenta" style="margin-left:0;">${ps.length} persona${ps.length===1 ? '' : 's'}</span></span></summary>
       <div class="caja-sub-body cup-scroll">${ps.length ? ps.map(fila).join('') : '<p class="small-note" style="margin:0;">Sin nadie en esta sección.</p>'}</div></details>`;
   }).join('');
-  return `<div class="cup-box">${cab}<div class="pe-grid">${secs}</div></div>`;
+  return `${cab}<div class="pe-grid">${secs}</div></details>`;
 }
 // «De servicio»: quién está de cuartelero y de imaginaria de cuartelero, y los servicios especiales (sargento / cabo de cuartel…), hoy o mañana
 async function cuartelServicioCargar(){
@@ -7727,18 +7857,20 @@ function cuartelServTab(t){ CUP.servTab = t==='manana' ? 'manana' : 'hoy'; const
 function cupServHtml(){
   const hoy = ymd(new Date()), man = ymd(new Date(Date.now()+864e5)), fecha = CUP.servTab==='manana' ? man : hoy, c = CURRENT.compania;
   const tabs = `<div class="semanas-toggle" style="max-width:260px;margin:0 0 10px;"><button type="button" class="${CUP.servTab==='hoy' ? 'active' : ''}" onclick="cuartelServTab('hoy')">Hoy</button><button type="button" class="${CUP.servTab==='manana' ? 'active' : ''}" onclick="cuartelServTab('manana')">Mañana</button></div>`;
-  const cab = `<div class="cup-box-t">🪖 De servicio <span class="gp-cuenta" style="margin-left:0;">${escHtml(fmtFecha(fecha))}</span></div>${tabs}`;
+  const cab = `<summary><div class="cup-box-t">🪖 De servicio <span class="gp-cuenta" style="margin-left:0;">${escHtml(fmtFecha(fecha))}</span></div></summary>${tabs}`;
   if(CUP.serv===null) return cab + `<p class="small-note" style="margin:0;">${CUP.servError ? 'No se pudieron cargar los servicios.' : 'Cargando…'}</p>`;
   const especial = x => { const pz = servPersDe(x); return !!pz && (pz.convalida_cuartelero || /cuartel/i.test(pz.nombre)); };
   const orden = x => x.tipo==='cuartelero' ? 1 : x.tipo==='imaginaria_cuartelero' ? 2 : 3;
   const l = CUP.serv.filter(x=>x.fecha===fecha && (x.tipo==='cuartelero' || x.tipo==='imaginaria_cuartelero' || (x.tipo==='otro' && especial(x)))).sort((a,b)=>orden(a)-orden(b) || String(a.apellidos).localeCompare(String(b.apellidos),'es'));
   if(!l.length) return cab + `<p class="small-note" style="margin:0;">${CUP.servTab==='manana' && fecha > ymd(new Date(CUP.serv.reduce((m,x)=>x.fecha>m?x.fecha:m,'0000-00-00')+'T00:00:00')) ? 'Mañana aún no está en el cuadrante de esta semana.' : 'Nadie nombrado ese día.'}</p>`;
-  return cab + l.map(x=>`<div class="cup-srv"><span class="serv-cod ${servClase(x)}${x.estimado?' est':''}" style="cursor:default;">${escHtml(servCorto(x))}</span><span><b>${escHtml(servicioLabel(x))}</b><br>${escHtml(x.apellidos+', '+x.nombre)} <span class="pe-sec">${c}${escHtml(x.seccion)}</span>${x.estimado ? ' <i>(estimado)</i>' : ''}</span></div>`).join('');
+  return cab + l.map(x=>{ cupReg(x.persona_id, x); return `<div class="cup-srv cup-click" role="button" tabindex="0" title="Ver la ficha de esta persona" onclick="cuartelPersonalVerPersona('${escHtml(x.persona_id)}')"><span class="serv-cod ${servClase(x)}${x.estimado?' est':''}" style="cursor:default;">${escHtml(servCorto(x))}</span><span><b>${escHtml(servicioLabel(x))}</b><br>${escHtml(x.apellidos+', '+x.nombre)} <span class="pe-sec">${c}${escHtml(x.seccion)}</span>${x.estimado ? ' <i>(estimado)</i>' : ''}</span></div>`; }).join('');
 }
 // Pulsar a alguien de la lista: se busca por su nombre y sale su ficha (queda registrado como una búsqueda)
+// Nombres de quienes salen en las cajas (arrestados, externados, intolerancias, de servicio): así se puede abrir su ficha aunque el listado completo no esté cargado
+function cupReg(id, x){ if(id==null || !x) return; (CUP.nom = CUP.nom || {})[id] = { id, nombre:x.nombre, apellidos:x.apellidos, seccion:x.seccion }; }
 function cuartelPersonalVerPersona(id){
   if(CUP.verId===id && CUP.res){ cuartelCerrarResultados(); return; } // volver a pulsar a la misma persona cierra su ficha
-  const p = ((CUP.base && CUP.base.personal) || []).find(x=>x.id===id) || (CUP.personas || []).find(x=>x.id===id); if(!p) return;
+  const p = ((CUP.base && CUP.base.personal) || []).find(x=>x.id===id) || (CUP.personas || []).find(x=>x.id===id) || (CUP.nom && CUP.nom[id]); if(!p) return;
   CUP.verId = id; setTimeout(()=>{ if(CUP.base) cuartelPersonalPintarBase(); }, 0);
   const t = (p.apellidos+' '+p.nombre).replace(/[^\p{L}\p{N} ]+/gu, ' ').replace(/\s+/g, ' ').trim();
   const i = document.getElementById('cup-q'); if(i) i.value = t;
@@ -7748,17 +7880,21 @@ function cuartelPersonalVerPersona(id){
 function cuartelPersonalPintarBase(){
   const el = document.getElementById('cup-base'), b = CUP.base; if(!el || !b) return;
   const ahora = cupAhora(), c = CURRENT.compania;
-  const fila = (x, extra) => `<div class="cup-fila">${cupAvatar(x)}<span class="cup-n">${escHtml(x.apellidos)}, ${escHtml(x.nombre)} <span class="pe-sec">${c}${escHtml(x.seccion)}</span></span>${extra||''}</div>`;
-  const pases = (b.pases||[]).map(x=>({ x, e:paseTiempo(x, ahora) }));
-  const grupo = (k, tit) => { const l = pases.filter(y=>y.e.k===k); return l.length ? `<div class="cup-grupo">${tit} (${l.length})</div><div class="pe-pases-grid">${l.map(y=>cupPaseHtml(y.x, ahora, true, true)).join('')}</div>` : ''; };
+  const fila = (x, extra) => { cupReg(x.id, x); return `<button type="button" class="cup-fila cup-click" title="Ver la ficha de esta persona" onclick="cuartelPersonalVerPersona('${escHtml(x.id)}')">${cupAvatar(x)}<span class="cup-n">${escHtml(x.apellidos)}, ${escHtml(x.nombre)} <span class="pe-sec">${c}${escHtml(x.seccion)}</span></span>${extra||''}</button>`; };
+  const pases = (b.pases||[]).filter(x=>x.estado!=='cancelado').map(x=>({ x, e:paseTiempo(x, ahora) }));
+  const grupo = (k, tit) => { const l = pases.filter(y=>y.e.k===k); return l.length ? `<div class="pe-col"><div class="cup-grupo">${tit} (${l.length})</div><div class="pe-pases-grid">${l.map(y=>cupPaseHtml(y.x, ahora, true, true)).join('')}</div></div>` : ''; };
   const cabPases = pases.filter(y=>y.e.k==='curso').length;
-  const bPases = `<div class="cup-box"><div class="cup-box-t">📝 Pases de hora y permisos <span class="gp-cuenta" style="margin-left:0;">${pases.length}</span>${cabPases ? ` <span class="pe-t curso">🟢 ${cabPases} en curso</span>` : ''}</div>${pases.length ? grupo('curso','En curso') + grupo('futuro','Pendientes') + grupo('hecho','Realizados') : '<p class="small-note" style="margin:0;">No hay pases ni permisos (de ayer a dentro de 7 días).</p>'}</div>`;
+  const abre = k => pkOpen(k, true) ? 'open' : '';
+  const bPases = `<details class="cup-box cup-det" data-pk="cu-pases" ${abre('cu-pases')}><summary><div class="cup-box-t">📝 Pases de hora y permisos <span class="gp-cuenta" style="margin-left:0;">${pases.length}</span>${cabPases ? ` <span class="pe-t curso">🟢 ${cabPases} en curso</span>` : ''}</div></summary>${pases.length ? '<div class="pe-orden-cols">' + grupo('curso','En curso') + grupo('futuro','Futuros') + grupo('hecho','Pasados') + '</div>' : '<p class="small-note" style="margin:0;">No hay pases ni permisos (de ayer a dentro de 7 días).</p>'}</details>`;
+  const mc = new Map(); (b.pases||[]).filter(x=>x.estado==='cancelado').forEach(x=>mc.set(x.id, x)); (CUP.canc||[]).forEach(x=>mc.set(x.id, x));
+  const cancs = [...mc.values()].sort((p,q)=>String(q.cancelado_en||'').localeCompare(String(p.cancelado_en||'')));
+  const bCanc = `<details class="cup-box cup-det" data-pk="cu-canc" ${pkOpen('cu-canc', false) ? 'open' : ''}><summary><div class="cup-box-t">🚫 Cancelados <span class="gp-cuenta" style="margin-left:0;">${cancs.length}</span></div></summary>${cancs.length ? `<div class="pe-pases-grid">${cancs.map(x=>cupPaseHtml(x, ahora, true, true)).join('')}</div>` : '<p class="small-note" style="margin:0;">No hay ningún pase ni permiso cancelado (últimos 30 días).</p>'}</details>`;
   const arr = b.arrestados||[], ext = b.externados||[], intl = b.intolerancias||[];
-  const caja = (tit, n, cuerpo) => `<div class="cup-box"><div class="cup-box-t">${tit} <span class="gp-cuenta" style="margin-left:0;">${n}</span></div><div class="cup-scroll">${cuerpo}</div></div>`;
-  const bArr = caja('🚨 Arrestados esta semana', arr.length, arr.length ? arr.map(x=>fila(x, `<span class="pe-t rojo">🚨 ${x.ahora ? 'Ahora · ' : ''}${escHtml(peFC(x.desde)+' → '+peFC(x.hasta))}</span>`)).join('') : '<p class="small-note" style="margin:0;">Nadie arrestado esta semana.</p>');
-  const bExt = caja('🎒 Externados', ext.length, ext.length ? ext.map(x=>fila(x, `<span class="pe-t">🎒 ${x.total ? 'Total' : 'Findes'}</span>`)).join('') : '<p class="small-note" style="margin:0;">No hay externados.</p>');
-  const bInt = caja('🥗 Intolerancias', intl.length, intl.length ? intl.map(x=>fila(x, `<span class="pe-t">🥗 ${escHtml(x.intolerancias)}</span>`)).join('') : '<p class="small-note" style="margin:0;">Nadie tiene intolerancias apuntadas.</p>');
-  el.innerHTML = `<div class="cup-layout"><div class="cup-top">${cupListadoHtml(b)}<div class="cup-box" id="cup-serv">${cupServHtml()}</div></div>${bPases}<div class="cup-trio">${bArr}${bExt}${bInt}</div>
+  const caja = (tit, n, cuerpo, k) => `<details class="cup-box cup-det" data-pk="cu-${k}" ${abre('cu-'+k)}><summary><div class="cup-box-t">${tit} <span class="gp-cuenta" style="margin-left:0;">${n}</span></div></summary><div class="cup-scroll">${cuerpo}</div></details>`;
+  const bArr = caja('🚨 Arrestados esta semana', arr.length, arr.length ? arr.map(x=>fila(x, `<span class="pe-t rojo">🚨 ${x.ahora ? 'Ahora · ' : ''}${escHtml(peFC(x.desde)+' → '+peFC(x.hasta))}</span>`)).join('') : '<p class="small-note" style="margin:0;">Nadie arrestado esta semana.</p>', 'arr');
+  const bExt = caja('🎒 Externados', ext.length, ext.length ? ext.map(x=>fila(x, `<span class="pe-t">🎒 ${x.total ? 'Total' : 'Findes'}</span>`)).join('') : '<p class="small-note" style="margin:0;">No hay externados.</p>', 'ext');
+  const bInt = caja('🥗 Intolerancias', intl.length, intl.length ? intl.map(x=>fila(x, `<span class="pe-t">🥗 ${escHtml(x.intolerancias)}</span>`)).join('') : '<p class="small-note" style="margin:0;">Nadie tiene intolerancias apuntadas.</p>', 'int');
+  el.innerHTML = `<div class="cup-layout"><div class="cup-top">${cupListadoHtml(b)}<details class="cup-box cup-det" id="cup-serv" data-pk="cu-serv" ${abre('cu-serv')}>${cupServHtml()}</details></div>${bPases}${bCanc}<div class="cup-trio">${bArr}${bExt}${bInt}</div>
     <p class="small-note" style="margin:0;">Semana del ${escHtml(fmtFecha(b.desde))} al ${escHtml(fmtFecha(b.hasta))}</p></div>`;
 }
 // Si la función del servidor todavía no manda la lista de todo el personal (falta el parche 113), se lee directamente
@@ -7806,11 +7942,12 @@ function cuartelPersonaCardHtml(r){
   if(r.externado) tags.push(`<span class="pe-t">🎒 Externado ${r.externado_total ? 'total' : 'de fin de semana'}</span>`);
   const arr = (r.arrestos||[]).map(a=>`<div class="cup-arresto">🚨 Arrestado esta semana: del ${escHtml(fmtFecha(a.desde))} al ${escHtml(fmtFecha(a.hasta))}</div>`).join('');
   const serv = (r.servicios||[]).length ? r.servicios.map(x=>`<div class="cup-serv"><span class="serv-cod ${servClase(x)}${x.estimado?' est':''}" style="cursor:default;">${escHtml(servCorto(x))}</span><span>${escHtml(fmtFecha(x.fecha))} · ${escHtml(servicioLabel(x))}${x.estimado ? ' <i>(estimado)</i>' : ''}</span></div>`).join('') : '<p class="small-note" style="margin:0;">Sin servicios esta semana.</p>';
-  const pas = (r.pases||[]).length ? `<div class="pe-pases-grid">${(r.pases||[]).map(x=>cupPaseHtml(Object.assign({ nombre:r.nombre, apellidos:r.apellidos, seccion:r.seccion }, x), ahora, false, true)).join('')}</div>` : '';
+  const pas = (r.pases||[]).filter(x=>x.estado!=='cancelado').length ? `<div class="pe-pases-grid">${(r.pases||[]).filter(x=>x.estado!=='cancelado').map(x=>cupPaseHtml(Object.assign({ persona_id:r.id, nombre:r.nombre, apellidos:r.apellidos, seccion:r.seccion }, x), ahora, false, true)).join('')}</div>` : '';
   const ini = ((r.nombre||'?').trim().charAt(0) + (r.apellidos||'?').trim().charAt(0)).toUpperCase();
   return `<div class="cup-card sec-${r.seccion}">
     <div class="cup-cab"><span class="pe-av sec-${r.seccion}" aria-hidden="true">${escHtml(ini)}</span><span class="cup-nom">${escHtml(r.apellidos)}, ${escHtml(r.nombre)}</span><span class="pe-secnum">${c}${escHtml(r.seccion)}</span><button type="button" class="small-btn cup-cerrar" aria-label="Cerrar la ficha" onclick="cuartelCerrarFicha('${escHtml(r.id)}')">✕ Cerrar</button></div>
     <div class="pe-btns" style="margin-bottom:4px;">${tags.join('')}</div>
+    ${contactarHtml(r.id)}
     ${arr}
     ${r.intolerancias ? `<h4>🥗 Intolerancias</h4><div>${escHtml(r.intolerancias)}</div>` : ''}
     <h4>📋 Servicios de esta semana</h4>${serv}
@@ -7875,8 +8012,11 @@ async function guardarPaseCuartel(){
 /* ---- Pestaña «Personal» de los mandos (solo lectura): la misma lista del Furry, con buscador y desplegables por sección y por persona ---- */
 async function renderMandosPersonal(){
   const c = CURRENT.compania;
+  // El Personal del Furry (si el superadmin lo tenía abierto en «Ver como mando») usa los mismos id: se vacía para que filtros, buscador y fichas funcionen en esta pantalla
+  ['admin-pe-solicitudes','admin-pe-cambios','admin-pe-pases','admin-pe-buscar','admin-pe-lista','admin-pe-alta','admin-pe-conexion','admin-pe-cuartel'].forEach(id=>{ const e = document.getElementById(id); if(e) e.innerHTML = ''; });
+  PE.filtros.clear(); PE.q = ''; PE.sec = ''; PE.abiertos.clear(); PE.secAb.clear(); PE.secMax = {};
   ['cuartel-week-select','cuartel-controles'].forEach(id=>{ const e = document.getElementById(id); if(e) e.innerHTML = ''; });
-  document.getElementById('cuartel-notice').innerHTML = peMandoEdita() ? '<div class="notice"><span>✏️ Puede cambiar datos del <b>personal</b> (no servicios, comidas ni pernoctas). Cada cambio pide dos confirmaciones y lo verán el Furry y el superadmin, que pueden revertirlo.</span></div>' : '<div class="notice"><span>🔒 Solo consulta</span></div>';
+  document.getElementById('cuartel-notice').innerHTML = peMandoEdita() ? '<div class="notice"><span>✏️ Puede cambiar datos del <b>personal</b>. Cada cambio pide dos confirmaciones y lo verán el Furry y el superadmin, que pueden revertirlo.</span></div>' : '<div class="notice"><span>🔒 Solo consulta</span></div>';
   document.getElementById('cuartel-vista').innerHTML = '<div class="pe-scope pe-layout"><div class="pe-main"><div id="mandos-pe-buscar"></div><div id="mandos-pe-lista"><p class="small-note">Cargando…</p></div></div><div class="pe-side"><div id="mandos-pe-pases"></div></div></div>';
   PE.multi = false; PE.soloSel = false; PE.sel.clear();
   try{
@@ -8005,7 +8145,7 @@ async function peCambiarIntol(pid, inp){
 }
 async function peMover(pid, sel){
   const p = pePersona(pid); if(!p || !sel.value) return; const s = sel.value; sel.disabled = true;
-  if(await moverSeccion(p.id, s)){ p.seccion = parseInt(s,10); PE.personas.sort(peOrden); PE.secAb.add(p.seccion); pePintarLista(); } // pasa a la caja de su nueva sección
+  if(await moverSeccion(p.id, s)){ p.seccion = parseInt(s,10); PE.personas.sort(peOrden); pkSet(peSecKey(p.seccion), true); pePintarLista(); } // pasa a la caja de su nueva sección
   else { sel.value = ''; sel.disabled = false; }
 }
 async function peReset(pid){
@@ -8137,7 +8277,7 @@ async function peLote(acc, val){
   peSyncMapas();
   PE.ocupado = false;
   if(ok.length) logFurry(tipoLog, `En lote (${ok.length} persona${ok.length===1?'':'s'}): ${txt}${err.length ? ` · ${err.length} error${err.length===1?'':'es'}` : ''}`);
-  if(acc==='mover' || acc==='baja'){ PE.personas.sort(peOrden); if(acc==='mover') PE.secAb.add(parseInt(val,10)); pePintarLista(); pePonerHtml('pe-chips', peChipsHtml()); }
+  if(acc==='mover' || acc==='baja'){ PE.personas.sort(peOrden); if(acc==='mover') pkSet(peSecKey(parseInt(val,10)), true); pePintarLista(); pePonerHtml('pe-chips', peChipsHtml()); }
   else { okPs.forEach(p=>peRefrescarFila(String(p.id))); pePintarChips(); peSelPintar(); }
   const fallos = err.length ? ` · ${err.length} fallo${err.length===1?'':'s'}: ${err.slice(0,3).join(' | ')}${err.length>3?' …':''}` : '';
   showToast((ok.length ? `Hecho en ${ok.length} persona${ok.length===1?'':'s'}.` : 'No se pudo aplicar.') + fallos);
@@ -8145,7 +8285,7 @@ async function peLote(acc, val){
 /* ---- Alta de alumnos, por sección (plegado) ---- */
 function peAltaHtml(){
   const c = CURRENT.compania;
-  return `<details class="caja-det" ${PE.altaAbierta?'open':''} ontoggle="PE.altaAbierta=this.open"><summary>➕ Añadir alumno</summary><div class="caja-sub-body">
+  return `<details class="caja-det" data-pk="pe-alta" ${pkOpen('pe-alta', PE.altaAbierta)?'open':''} ontoggle="PE.altaAbierta=this.open"><summary>➕ Añadir alumno</summary><div class="caja-sub-body">
     ${peSecs().map(s=>{ const code = ''+c+s; return `<div class="gp-mes">Sección ${code}</div><div class="add-student-row" style="margin-top:4px;"><input type="text" id="add-nombre-${code}" placeholder="Nombre" maxlength="60" aria-label="Nombre (${code})"><input type="text" id="add-apellidos-${code}" placeholder="Apellidos" maxlength="80" aria-label="Apellidos (${code})"><button type="button" class="small-btn" onclick="peAlta('${code}', ${s})">+ Añadir</button></div>`; }).join('')}
   </div></details>`;
 }
