@@ -859,9 +859,25 @@ body.blq-editando .toast{bottom:auto;top:12px;pointer-events:none;} /* que el av
 .cup-arresto{border:1.5px solid var(--danger);color:var(--danger);border-radius:10px;padding:6px 10px;font-weight:700;font-size:.84rem;background:rgba(192,57,43,.08);}
 .cup-card.sec-1{--sc:#3D6B28;} .cup-card.sec-2{--sc:#204A73;} .cup-card.sec-3{--sc:#B8860B;} .cup-card.sec-4{--sc:#8e44ad;}
 .cup-serv{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:3px 0;font-size:.84rem;}
-@media (min-width:1024px) and (hover:hover) and (pointer:fine){ #cup-res{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;align-items:start;} #cup-res > .small-note,#cup-res > .notice{grid-column:1/-1;} }
+
 .pe-pase{border:1px solid var(--line);border-left:4px solid var(--olive);border-radius:10px;padding:8px 10px;margin:0 0 8px;background:var(--card);font-size:.8rem;}
 .pe-pase.pend{border-left-color:var(--brass);} .pe-pase.rech{border-left-color:var(--danger);opacity:.7;}
+.pe-pase select{padding:6px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.78rem;border-radius:10px;max-width:100%;min-width:0;}
+.pe-pase > details > summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;gap:3px 8px;align-items:center;} .pe-pase > details > summary::-webkit-details-marker{display:none;}
+.pe-pase > details > summary .pp-t{flex:1 1 100%;} .pe-pase > details > summary .pp-w{flex:1 1 100%;font-weight:600;} .pe-pase > details > summary::after{content:'▾ más';font-size:.68rem;color:var(--ink-soft);margin-left:auto;} .pe-pase > details[open] > summary::after{content:'▴ menos';}
+.pe-pase > details[open] > summary{margin-bottom:6px;}
+.cup-layout{display:flex;flex-direction:column;gap:12px;}
+.cup-box{border:1.5px solid var(--line);border-radius:14px;background:var(--card);padding:12px 14px;min-width:0;}
+.cup-box-t{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-weight:800;font-size:.95rem;margin:0 0 10px;}
+.cup-scroll{max-height:340px;overflow:auto;}
+.cup-top,.cup-trio{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start;}
+.cup-srv{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:.84rem;} .cup-srv:last-child{border-bottom:none;}
+.cup-fila.sel{background:rgba(184,134,11,.20);border-radius:8px;} .cup-cerrar{margin-left:auto;}
+.cup-vista{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px;}
+.pe-nominal{border:1.5px solid var(--line);border-radius:14px;background:var(--card);padding:4px 10px;}
+@media (min-width:1024px) and (hover:hover) and (pointer:fine){ .cup-top{grid-template-columns:minmax(0,2fr) minmax(280px,1fr);} .cup-trio{grid-template-columns:repeat(3,minmax(0,1fr));} }
+.pe-pases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),300px));gap:10px;align-items:start;margin:0 0 8px;} .pe-pases-grid .pe-pase{margin:0;}
+.cup-total{width:100%;max-width:340px;} .cup-lista-sec .cup-fila{cursor:pointer;background:none;border:none;border-bottom:1px solid var(--line);width:100%;text-align:left;color:var(--ink);font-family:inherit;} .cup-lista-sec .cup-fila:hover{background:rgba(184,134,11,.10);}
 .pe-pase.curso{border-left-color:#2e9d4f;box-shadow:0 0 0 2px rgba(46,157,79,.22);} .pe-pase.futuro{border-left-color:var(--slate);} .pe-pase.hecho{border-left-color:var(--ink-soft);opacity:.72;}
 .pe-t.curso{border-color:#2e9d4f;color:#2e9d4f;font-weight:800;} .pe-t.futuro{border-color:var(--slate);color:var(--slate);font-weight:700;} .pe-t.hecho{opacity:.8;}
 .cup-fila{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:7px 2px;border-bottom:1px solid var(--line);font-size:.84rem;} .cup-fila:last-child{border-bottom:none;} .cup-fila .cup-n{flex:1 1 150px;min-width:0;overflow-wrap:anywhere;font-weight:700;}
@@ -1230,10 +1246,11 @@ aplicarTema();
     </div>
 
     <div id="admin-personal-mod" class="hidden blq-mod pe-scope">
-      <div class="blq" data-blq="a-pe-solicitudes"><div id="admin-pe-solicitudes"></div></div>
-      <div class="blq" data-blq="a-pe-pases"><div id="admin-pe-pases"></div></div>
       <div class="blq" data-blq="a-pe-buscar"><div id="admin-pe-buscar"></div></div>
       <div class="blq" data-blq="a-pe-lista"><div id="admin-pe-lista"></div></div>
+      <div class="blq" data-blq="a-pe-solicitudes"><div id="admin-pe-solicitudes"></div></div>
+      <div class="blq" data-blq="a-pe-cambios"><div id="admin-pe-cambios"></div></div>
+      <div class="blq" data-blq="a-pe-pases"><div id="admin-pe-pases"></div></div>
       <div class="blq" data-blq="a-pe-alta"><div id="admin-pe-alta"></div></div>
       <div class="blq" data-blq="a-pe-conexion"><div id="admin-pe-conexion"></div></div>
       <div class="blq" data-blq="a-pe-cuartel"><div id="admin-pe-cuartel"></div></div>
@@ -1525,7 +1542,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-11-04T19:02:50";
+const APP_VERSION = "2026-11-04T19:55:23";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -2086,10 +2103,11 @@ const BLQ_DEF = {
     { id:'a-s-ficha',   nom:'👤 Ficha de la persona (cuando la abres)', fijoOcultar:true }
   ],
   'admin-personal':[
-    { id:'a-pe-solicitudes', nom:'📅 Solicitudes de viernes libres', fijoOcultar:true },
-    { id:'a-pe-pases', nom:'📝 Pases de horas y permisos', fijoOcultar:true },
     { id:'a-pe-buscar', nom:'🔎 Buscador y filtros',              fijoOcultar:true },
     { id:'a-pe-lista',  nom:'👥 Lista del personal',             fijoOcultar:true },
+    { id:'a-pe-solicitudes', nom:'📅 Solicitudes de viernes libres', fijoOcultar:true },
+    { id:'a-pe-cambios', nom:'🎖️ Cambios de los mandos', fijoOcultar:true },
+    { id:'a-pe-pases', nom:'📝 Pases de horas y permisos', fijoOcultar:true },
     { id:'a-pe-alta',   nom:'➕ Añadir alumno' },
     { id:'a-pe-conexion', nom:'🟢 Conexión de los alumnos' },
     { id:'a-pe-cuartel', nom:'🪖 Contraseña del servicio de cuartel' }
@@ -2390,9 +2408,12 @@ const ACTUALIZACIONES = [
         'Filtros en forma de botones grandes con su número, secciones en tarjetas de colores, avatar con iniciales y ficha de cada persona en tarjetas. En ordenador, las secciones van en dos columnas.',
         'La promoción interna pasa a llevar un casco militar 🪖, que también ven los alumnos en el cuadrante.' ] },
       { ico:'🎖️', t:'Mandos', puntos:[
-        'Cada capitán ve por defecto solo su sección; si quiere ver otras, puede durante 10 minutos y queda registrado. El comandante ve todas.' ] },
+        'Cada capitán ve por defecto solo su sección; si quiere ver otras, puede durante 10 minutos y queda registrado. El comandante ve todas.',
+        'Los mandos ahora pueden cambiar datos del personal (externado, viernes libres, promoción interna, intolerancias, arrestos y marcar pases como autorizados; nada de servicios, comidas ni pernoctas). Cada cambio les pide dos confirmaciones.',
+        'Tú los ves en Personal, en «Cambios de los mandos» (quién, a quién, qué y cuándo), con un botón para REVERTIR el cambio y otro de «Visto»; el superadmin los ve en la caja de Mandos. Hace falta el parche SQL 112.' ] },
       { ico:'🪖', t:'Servicio de cuartel', puntos:[
-        'Nueva pestaña Personal: al abrirla ven los arrestados de esta semana, los externados, las intolerancias y los pases de hora (realizados, en curso —si salen en menos de una hora— y futuros), y pueden apuntar pases de hora. Además hay un buscador (sección, externado, intolerancias, promoción interna, arrestos y servicios de esta semana). Todo queda en el registro del superadmin (parche SQL 111).',
+        'Nueva pestaña Personal: al abrirla ven los arrestados de esta semana, los externados, las intolerancias y los pases de hora y permisos extraordinarios (realizados, en curso —si salen en menos de una hora— y pendientes); pueden apuntar pases y permisos y darlos por finalizados (los mandos no), y hay un recuadro «Personal de la compañía» que despliega las 4 secciones con toda la gente. Además hay un buscador (sección, externado, intolerancias, promoción interna, arrestos y servicios de esta semana). Todo queda en el registro del superadmin (parche SQL 111).',
+        'Orden nuevo: buscador, «Listado de la compañía» (por secciones o nominal, también para los mandos) con un recuadro «De servicio» (cuartelero, imaginaria de cuartelero y servicios especiales, hoy o mañana), pases y permisos, y recuadros de arrestados, externados e intolerancias. Cada pase es una tarjeta compacta que se despliega para ver motivo, mando y estado.',
         'En el lector de comidas, la siguiente comida sale rodeada de un rectángulo dorado.' ] }
     ] },
   { id:'2026-10-27-personal', fecha:'2026-10-27T16:30', titulo:'Personal, arrestos y viernes libres', especial:false,
@@ -5708,6 +5729,12 @@ async function cuartelSuperCuerpo(kind){
   const avisoLectura = sinLectura ? `<p class="small-note" style="color:var(--danger);">⚠️ No puedo leer la lista de cuentas de cuartel${errCuentas ? ' ('+escHtml(errCuentas.message||'')+')' : ' (sale vacía)'}. Eso NO significa que no existan: ejecuta el parche SQL 59 para que el superadmin pueda verlas.</p>` : '';
   const c = ST.compania || COMPANIES[0];   // un selector de compañía y se ve solo lo de esa compañía
   const mias = filas.filter(r=>r.compania===c), act = mias.filter(activa), cu = cuentaDe(c);
+  let cambiosHtml = '';
+  if(esM){ // lo que han cambiado los mandos de esa compañía, con botón para revertirlo (parche SQL 112)
+    const rc = await sb.from('cambios_mandos').select('*').eq('compania', c).order('creado_en', { ascending:false }).limit(40);
+    window._cambiosMSuper = rc.error ? [] : (rc.data||[]);
+    if(!rc.error) cambiosHtml = `<div style="font-weight:700;margin:14px 0 4px;">↩ Cambios de los mandos (últimos ${window._cambiosMSuper.length})</div>` + (window._cambiosMSuper.length ? window._cambiosMSuper.map(x=>cambioMandoHtml(x,'super')).join('') : '<p class="small-note">Los mandos todavía no han cambiado nada.</p>');
+  }
   const cuentaTxt = cu ? `✅ cuenta vinculada${cu.usuario ? ` · usuario <b class="mono">${escHtml(cu.usuario)}</b>` : ''}` : (sinLectura ? '❔ No se puede comprobar (falta el permiso de lectura: parche SQL 59)' : (esM ? '⚠️ Esta compañía aún no tiene cuenta de mandos (se crea con el parche SQL 103)' : '⚠️ Esta compañía aún no tiene cuenta de cuartel (se crea con el parche SQL 53)'));
   const conectados = act.length ? act.map(r=>`
     <div class="manage-row">
@@ -5722,6 +5749,7 @@ async function cuartelSuperCuerpo(kind){
     <div class="panel-row" style="flex-direction:column;align-items:stretch;">
       <div class="switch-label">Cuenta de ${esM?'mandos':'cuartel'} de la ${c}ª<span class="sub2">${cuentaTxt}</span></div>
       <div style="margin-top:8px;"><button class="small-btn" onclick="cambiarPasswordCuartel(${c}${esM?",'mandos'":''})">🔑 Cambiar contraseña</button></div>
+      ${cambiosHtml}
       <div style="font-weight:700;margin:12px 0 4px;">Conectados ahora: ${act.length}${esM?'':'/3'}</div>
       ${conectados}
       <div style="font-weight:700;margin:14px 0 4px;">Historial de accesos (últimos ${Math.min(mias.length,40)})</div>
@@ -7016,8 +7044,9 @@ async function moverSeccion(personaId, nuevaSeccion){
 const PASES = { lista:[], falta:false, error:null };
 const PASE_NOM = { pase:'Pase de horas', permiso:'Permiso extraordinario' }, PASE_ICO = { pase:'🕒', permiso:'🧳' };
 const hh = t => String(t||'').slice(0,5);
-function paseCuando(x){ return x.tipo==='pase' ? `${fmtFecha(x.fecha_inicio)} · de ${hh(x.hora_inicio)} a ${hh(x.hora_fin)}` : `del ${fmtFecha(x.fecha_inicio)} (${hh(x.hora_inicio)}) al ${fmtFecha(x.fecha_fin)} (${hh(x.hora_fin)})`; }
-const paseVigente = x => x.estado!=='rechazado' && x.fecha_fin >= ymd(new Date());
+const paseIni = x => x.fecha_inicio || x.fecha; // las filas de la tabla traen fecha_inicio; las de las funciones del cuartel, fecha
+function paseCuando(x){ const i = paseIni(x), f = x.fecha_fin || i; return x.tipo==='permiso' && f!==i ? `del ${fmtFecha(i)} (${hh(x.hora_inicio)}) al ${fmtFecha(f)} (${hh(x.hora_fin)})` : `${fmtFecha(i)} · de ${hh(x.hora_inicio)} a ${hh(x.hora_fin)}`; }
+const paseVigente = x => x.estado!=='rechazado' && x.fase!=='realizado' && (x.fecha_fin || paseIni(x)) >= ymd(new Date());
 const pasesActivosDe = id => (PASES.lista||[]).filter(x=>x.persona_id===id && paseVigente(x)).sort((a,b)=>a.fecha_inicio<b.fecha_inicio ? -1 : a.fecha_inicio>b.fecha_inicio ? 1 : 0);
 const pasesPendientes = () => (PASES.lista||[]).filter(x=>x.estado==='solicitado').length;
 const paseErr = e => { const m = (e && e.message) || ''; return /relation|does not exist|schema cache/i.test(m) ? 'Falta ejecutar el parche SQL 110.' : m.replace(/^.*?:\s*/, '') || 'error'; };
@@ -7032,30 +7061,36 @@ async function cargarPases(){
     PASES.lista = error ? [] : (data||[]);
   }catch(e){ PASES.lista = []; PASES.error = String(e && e.message || e); }
 }
-function paseBadgesHtml(x){
+function paseBadgesHtml(x){ // solo en el desplegable de cada pase: autorización del mando y aceptación del Furry
   const aut = x.autorizacion==='autorizado' ? '<span class="pe-t ok">✅ Autorizado por el mando</span>' : '<span class="pe-t aviso">⏳ Pendiente de autorización</span>';
   const est = x.estado==='aceptado' ? '<span class="pe-t ok">🟢 Aceptado por el Furry</span>' : x.estado==='rechazado' ? '<span class="pe-t rojo">🔴 Rechazado</span>' : '<span class="pe-t">📨 Solicitado</span>';
   return aut + est;
 }
-// o = { furry, alumno, nombre }
+// Tarjeta compacta (quién, cuándo y fase); al desplegarla salen el motivo, el mando, «autorizado» / «aceptado» y los botones secundarios. o = { furry, mando, alumno, nombre }
 function paseItemHtml(x, o){
   o = o || {};
-  const id = x.id, clase = x.estado==='rechazado' ? 'rech' : (x.estado==='aceptado' && x.autorizacion==='autorizado' ? '' : 'pend');
-  let acc = '';
+  const id = x.id, fase = paseTiempo(x, cupAhora());
+  const clase = x.estado==='rechazado' ? 'rech' : fase.k==='hecho' ? 'hecho' : fase.k==='curso' ? 'curso' : (x.estado==='aceptado' && x.autorizacion==='autorizado' ? 'futuro' : 'pend');
+  let vis = '', mas = '';
   if(o.furry){
-    acc = `<div class="pe-btns" style="margin-top:6px;">${x.estado!=='aceptado' ? `<button type="button" class="small-btn active" onclick="paseResolver(${id},'aceptado')">✅ Aceptar</button>` : ''}${x.estado!=='rechazado' ? `<button type="button" class="small-btn danger" onclick="paseResolver(${id},'rechazado')">✖ Rechazar</button>` : ''}<button type="button" class="small-btn" onclick="paseAutorizacion(${id},'${x.autorizacion==='autorizado' ? 'pendiente' : 'autorizado'}')">${x.autorizacion==='autorizado' ? '⏳ Marcar pendiente' : '✅ Marcar autorizado por el mando'}</button><button type="button" class="small-btn danger" onclick="paseBorrar(${id})">🗑</button></div>`;
+    if(x.estado==='solicitado') vis = `<button type="button" class="small-btn active" onclick="paseResolver(${id},'aceptado')">✅ Aceptar</button><button type="button" class="small-btn danger" onclick="paseResolver(${id},'rechazado')">✖ Rechazar</button>`;
+    else mas += `${x.estado!=='aceptado' ? `<button type="button" class="small-btn active" onclick="paseResolver(${id},'aceptado')">✅ Aceptar</button>` : ''}${x.estado!=='rechazado' ? `<button type="button" class="small-btn danger" onclick="paseResolver(${id},'rechazado')">✖ Rechazar</button>` : ''}`;
+    mas += `<button type="button" class="small-btn" onclick="paseAutorizacion(${id},'${x.autorizacion==='autorizado' ? 'pendiente' : 'autorizado'}')">${x.autorizacion==='autorizado' ? '⏳ Marcar pendiente' : '✅ Marcar autorizado por el mando'}</button><button type="button" class="small-btn danger" onclick="paseBorrar(${id})">🗑</button>`;
+  } else if(o.mando){
+    mas = `<button type="button" class="small-btn" onclick="mandoPaseAutorizacion('${escHtml(x.persona_id)}',${id},'${x.autorizacion==='autorizado' ? 'pendiente' : 'autorizado'}')">${x.autorizacion==='autorizado' ? '⏳ Marcar pendiente de autorización' : '✅ Marcar autorizado por el mando'}</button>`;
   } else if(o.alumno && x.estado==='solicitado'){
-    acc = `<div class="pe-btns" style="margin-top:6px;"><button type="button" class="small-btn danger" onclick="paseBorrar(${id})">Cancelar solicitud</button></div>`;
+    vis = `<button type="button" class="small-btn danger" onclick="paseBorrar(${id})">Cancelar solicitud</button>`;
   }
-  return `<div class="pe-pase ${clase}" id="pase-${id}"><div class="pp-t">${PASE_ICO[x.tipo]||''} ${escHtml(PASE_NOM[x.tipo]||x.tipo)}${o.nombre ? ' · '+escHtml(paseQuien(x.persona_id)) : ''}</div>
-    <div>${escHtml(paseCuando(x))}</div><div class="pp-m">Motivo: ${escHtml(x.motivo)}</div><div class="pp-m">Mando: ${escHtml(x.autoriza_nombre)}</div>
-    <div class="pe-btns" style="margin-top:4px;">${paseBadgesHtml(x)}</div>${acc}</div>`;
+  const selFase = o.furry ? `<div class="pe-btns" style="margin-top:6px;"><select aria-label="Fase del ${x.tipo==='pase' ? 'pase' : 'permiso'}" title="Fase: por defecto se calcula sola con la hora; aquí puedes forzarla" onchange="paseFase(${id}, this.value)"><option value="" ${x.fase ? '' : 'selected'}>Fase automática (según la hora)</option><option value="pendiente" ${x.fase==='pendiente' ? 'selected' : ''}>Pendiente</option><option value="en_curso" ${x.fase==='en_curso' ? 'selected' : ''}>En curso</option><option value="realizado" ${x.fase==='realizado' ? 'selected' : ''}>Realizado</option></select></div>` : '';
+  return `<div class="pe-pase ${clase}" id="pase-${id}"><details><summary><span class="pp-t">${PASE_ICO[x.tipo]||''} ${escHtml(PASE_NOM[x.tipo]||x.tipo)}${o.nombre ? ' · '+escHtml(paseQuien(x.persona_id)) : ''}</span><span class="pp-w">${escHtml(paseCuando(x))}</span><span class="pe-t ${fase.k}">${fase.t}</span></summary>
+    <div class="pp-m">Motivo: ${escHtml(x.motivo)}</div><div class="pp-m">Mando: ${escHtml(x.autoriza_nombre)}</div>
+    <div class="pe-btns" style="margin-top:4px;">${paseBadgesHtml(x)}</div>${mas ? `<div class="pe-btns" style="margin-top:6px;">${mas}</div>` : ''}${selFase}</details>${vis ? `<div class="pe-btns" style="margin-top:6px;">${vis}</div>` : ''}</div>`;
 }
 // Tarjeta «Pases y permisos» de la ficha de una persona (Furry: con botones para apuntar uno; mandos: solo lectura)
-function pasesPersonaHtml(p, furry){
+function pasesPersonaHtml(p, furry, mando){
   if(PASES.falta) return `<p class="small-note" style="margin:0;">${furry ? 'Falta ejecutar el parche SQL 110.' : 'Todavía no está disponible.'}</p>`;
   const todos = (PASES.lista||[]).filter(x=>x.persona_id===p.id).slice().reverse().slice(0, 6);
-  return (todos.length ? todos.map(x=>paseItemHtml(x, { furry })).join('') : '<p class="small-note" style="margin:0 0 6px;">Sin pases ni permisos.</p>')
+  return (todos.length ? todos.map(x=>paseItemHtml(x, { furry, mando })).join('') : '<p class="small-note" style="margin:0 0 6px;">Sin pases ni permisos.</p>')
     + (furry ? `<div class="pe-btns"><button type="button" class="small-btn" onclick="abrirFormPase('pase','${escHtml(p.id)}')">➕ Pase de horas</button><button type="button" class="small-btn" onclick="abrirFormPase('permiso','${escHtml(p.id)}')">➕ Permiso extraordinario</button></div>` : '');
 }
 // Panel de la pestaña Personal (Furry y mandos): pendientes de aceptar y en vigor
@@ -7067,8 +7102,10 @@ function pePintarPases(){
   if(PASES.falta){ pePonerHtml('admin-pe-pases', html + `<p class="small-note">${ro ? 'Todavía no está disponible.' : 'Falta ejecutar el parche SQL 110 para usar los pases y permisos.'}</p>`); return; }
   if(PASES.error){ pePonerHtml('admin-pe-pases', html + `<p class="small-note" style="color:var(--danger);">No se pudieron cargar: ${escHtml(PASES.error)}</p>`); return; }
   if(!ro) html += `<div class="pases-btns"><button type="button" class="pases-btn" onclick="abrirFormPase('pase')"><span class="pb-ico">🕒</span><b>Pase de horas</b><small>Apuntar uno a una persona</small></button><button type="button" class="pases-btn" onclick="abrirFormPase('permiso')"><span class="pb-ico">🧳</span><b>Permiso extraordinario</b><small>Varios días</small></button></div>`;
-  html += pend.length ? `<div class="pe-card" style="margin-bottom:10px;"><h4>Pendientes de aceptar (${pend.length})</h4>${pend.map(x=>paseItemHtml(x, { furry:!ro, nombre:true })).join('')}</div>` : (ro ? '' : '<p class="small-note">No hay solicitudes pendientes.</p>');
-  html += vig.length ? `<details class="caja-det" ${ro || !pend.length ? 'open' : ''}><summary>En vigor y próximos (${vig.length})</summary><div class="caja-sub-body">${vig.map(x=>paseItemHtml(x, { furry:!ro, nombre:true })).join('')}</div></details>` : (ro && !pend.length ? '<p class="small-note">No hay pases ni permisos en vigor.</p>' : '');
+  html += pend.length ? `<div class="pe-card" style="margin-bottom:10px;"><h4>Pendientes de aceptar (${pend.length})</h4><div class="pe-pases-grid">${pend.map(x=>paseItemHtml(x, { furry:!ro, nombre:true })).join('')}</div></div>` : (ro ? '' : '<p class="small-note">No hay solicitudes pendientes.</p>');
+  html += vig.length ? `<details class="caja-det" ${ro || !pend.length ? 'open' : ''}><summary>En vigor y próximos (${vig.length})</summary><div class="caja-sub-body"><div class="pe-pases-grid">${vig.map(x=>paseItemHtml(x, { furry:!ro, nombre:true })).join('')}</div></div></details>` : (ro && !pend.length ? '<p class="small-note">No hay pases ni permisos en vigor.</p>' : '');
+  const hechos = mios.filter(x=>x.estado==='aceptado' && !paseVigente(x)).slice().sort((p,q)=>paseIni(p)<paseIni(q) ? 1 : -1).slice(0, 24);
+  if(hechos.length) html += `<details class="caja-det"><summary>Realizados / anteriores (${hechos.length})</summary><div class="caja-sub-body"><div class="pe-pases-grid">${hechos.map(x=>paseItemHtml(x, { furry:!ro, nombre:true })).join('')}</div></div></details>`;
   pePonerHtml('admin-pe-pases', html);
 }
 // Formulario para pedir (alumno) o apuntar (Furry) un pase de horas o un permiso extraordinario
@@ -7125,6 +7162,16 @@ async function paseResolver(id, estado){
   logFurry('otro', `${PASE_NOM[x.tipo]} de ${paseQuien(x.persona_id)} ${estado==='aceptado' ? 'aceptado' : 'rechazado'}: ${paseCuando(x)}`);
   pePintarPases(); peRefrescarFila(x.persona_id); pePintarChips(); peActualizarInsignia();
 }
+// El Furry fuerza la fase a mano (pendiente / en curso / realizado) o la deja automática (según la hora)
+async function paseFase(id, valor){
+  const x = PASES.lista.find(y=>y.id===id); if(!x) return;
+  const { data, error } = await sb.from('pases_permisos').update({ fase: valor || null, fase_por: valor ? (CURRENT.isSuperadmin ? 'Superadmin' : 'Furry') : null, fase_en: valor ? new Date().toISOString() : null }).eq('id', id).select().single();
+  if(error){ showToast('No se pudo guardar: '+(/fase/.test(error.message||'') ? 'falta ejecutar el parche SQL 113.' : paseErr(error))); pePintarPases(); return; }
+  Object.assign(x, data);
+  showToast(valor ? `Fase: ${({ pendiente:'pendiente', en_curso:'en curso', realizado:'realizado' })[valor]}.` : 'Fase automática (según la hora).');
+  logFurry('otro', `${PASE_NOM[x.tipo]} de ${paseQuien(x.persona_id)}: fase ${valor || 'automática'}`);
+  pePintarPases(); peRefrescarFila(x.persona_id); pePintarChips();
+}
 async function paseAutorizacion(id, autorizacion){
   const x = PASES.lista.find(y=>y.id===id); if(!x) return;
   const { data, error } = await sb.from('pases_permisos').update({ autorizacion }).eq('id', id).select().single();
@@ -7141,7 +7188,7 @@ async function paseBorrar(id){
   if(CURRENT.mode==='admin'){ pePintarPases(); peRefrescarFila(x.persona_id); pePintarChips(); peActualizarInsignia(); } else pintarPasesAlumno();
 }
 // El numerito de la pestaña Personal = solicitudes de viernes + pases/permisos sin aceptar
-function peActualizarInsignia(){ pePintarBadge((PE.sols||[]).length + pasesPendientes()); }
+function peActualizarInsignia(){ pePintarBadge((PE.sols||[]).length + pasesPendientes() + cambiosSinVer().length); }
 // Alumno: dos botones grandes y sus solicitudes (en la pestaña Pernoctas)
 async function pintarPasesAlumno(){
   const el = document.getElementById('alumno-pases'); if(!el || !CURRENT || CURRENT.mode!=='alumno') return;
@@ -7153,6 +7200,141 @@ async function pintarPasesAlumno(){
     <div class="pases-btns"><button type="button" class="pases-btn" onclick="abrirFormPase('pase')"><span class="pb-ico">🕒</span><b>Pase de horas</b><small>Un día: hora de salida y de vuelta</small></button><button type="button" class="pases-btn" onclick="abrirFormPase('permiso')"><span class="pb-ico">🧳</span><b>Permiso extraordinario</b><small>Varios días</small></button></div>
     ${vig.length ? vig.map(x=>paseItemHtml(x, { alumno:true })).join('') : '<p class="small-note">No tienes pases ni permisos en vigor.</p>'}
     ${pas.length ? `<details class="caja-det"><summary>Anteriores</summary><div class="caja-sub-body">${pas.map(x=>paseItemHtml(x, {})).join('')}</div></details>` : ''}</div>`;
+}
+
+/* ================= Mandos: pueden cambiar datos del PERSONAL (parche SQL 112) =================
+   Solo: externado, viernes libres, promoción interna, intolerancias, arrestos y marcar un pase/permiso como autorizado. Cada cambio pide DOS confirmaciones, se hace con
+   una función del servidor (que comprueba que es la cuenta de mandos) y queda guardado para que el Furry y el superadmin lo vean y puedan REVERTIRLO. */
+const peMandoEdita = () => !!(CURRENT && CURRENT.mode==='cuartel' && CURRENT.mandos && !CURRENT.vistaPrevia);
+const mandoErr = e => { const m = (e && e.message) || ''; return /function|schema cache|does not exist/i.test(m) ? 'Falta ejecutar el parche SQL 112.' : m.replace(/^.*?:\s*/, '') || 'error'; };
+async function mandoCambio(pid, campo, valor, descripcion, alAplicar, alCancelar){
+  const p = pePersona(pid), quien = p ? `${p.nombre} ${p.apellidos}` : 'esta persona';
+  const cancelar = () => { try{ if(alCancelar) alCancelar(); }catch(e){} return false; };
+  if(!await confirmarApp(`Va a cambiar a ${quien}:\n\n${descripcion}\n\n¿Confirma el cambio?`, { si:'Sí, continuar', no:'Cancelar' })) return cancelar();
+  if(!await confirmarApp(`SEGUNDA CONFIRMACIÓN\n\n${quien}: ${descripcion}\n\nQuedará registrado a su nombre; el Furry y el superadmin lo verán y podrán revertirlo. ¿Está seguro?`, { si:'Sí, hacer el cambio', no:'No, cancelar', peligro:true })) return cancelar();
+  const { data, error } = await sb.rpc('mandos_cambiar_persona', { p_persona:pid, p_campo:campo, p_valor:valor, p_confirmado:true, p_device_id:idDispositivo(), p_dispositivo:describirDispositivo(), p_compania:CURRENT.compania });
+  if(error){ cancelar(); showToast('No se pudo hacer el cambio: '+mandoErr(error)); return false; }
+  showToast('✅ Cambio hecho. Queda registrado.');
+  try{ await alAplicar(data); }catch(e){}
+  return true;
+}
+const MANDO_EXT_TXT = { no:'No externado', findes:'Externado de fin de semana', total:'Externado total' };
+function mandoSelExternado(pid, sel){
+  const p = pePersona(pid); if(!p) return; const v = sel.value, antes = valorExternado(p);
+  mandoCambio(pid, 'externado', { modo:v }, `Externado: ${MANDO_EXT_TXT[antes]} → ${MANDO_EXT_TXT[v]}`, ()=>{
+    p.externado = v!=='no'; p.externado_total = v==='total'; if(v!=='no') p.viernes_fuera = 4;
+    peSyncMapas(); peRefrescarFila(pid); pePintarChips();
+  }, ()=>{ sel.value = antes; });
+}
+function mandoSelViernes(pid, sel){
+  const p = pePersona(pid); if(!p) return; const v = parseInt(sel.value, 10) || 0, antes = String(p.viernes_fuera>=4 ? 4 : (p.viernes_fuera||0));
+  mandoCambio(pid, 'viernes_fuera', { n:v }, `Viernes libres: ${PE_VF_TXT[parseInt(antes,10)]} → ${PE_VF_TXT[v]}`, ()=>{ p.viernes_fuera = v; peSyncMapas(); peRefrescarFila(pid); pePintarChips(); }, ()=>{ sel.value = antes; });
+}
+function mandoSelPromo(pid, sel){
+  const p = pePersona(pid); if(!p) return; const v = sel.value==='si', antes = p.promocion_interna ? 'si' : 'no';
+  mandoCambio(pid, 'promocion_interna', { v }, `Promoción interna: ${p.promocion_interna ? 'sí' : 'no'} → ${v ? 'sí' : 'no'}`, ()=>{ p.promocion_interna = v; peRefrescarFila(pid); pePintarChips(); }, ()=>{ sel.value = antes; });
+}
+function mandoInpIntol(pid, inp){
+  const p = pePersona(pid); if(!p) return; const v = inp.value.trim().replace(/\s+/g,' '), antes = p.intolerancias || '';
+  if(v === antes.trim()) return;
+  mandoCambio(pid, 'intolerancias', { texto:v }, `Intolerancias: «${antes || 'ninguna'}» → «${v || 'ninguna'}»`, ()=>{ p.intolerancias = v || null; peRefrescarFila(pid); pePintarChips(); }, ()=>{ inp.value = antes; });
+}
+function mandoPaseAutorizacion(pid, paseId, valor){
+  const x = PASES.lista.find(y=>y.id===paseId); if(!x) return;
+  mandoCambio(pid, 'pase_autorizacion', { id:paseId, valor }, `${PASE_NOM[x.tipo]} del ${fmtFecha(x.fecha_inicio)}: ${x.autorizacion==='autorizado' ? 'autorizado por el mando' : 'pendiente de autorización'} → ${valor==='autorizado' ? 'autorizado por el mando' : 'pendiente de autorización'}`, ()=>{ x.autorizacion = valor; peRefrescarFila(pid); pePintarPases(); });
+}
+function mandoArrestoModal(pid, aid){
+  const p = pePersona(pid); if(!p) return;
+  const a = aid!=null ? (ARRESTOS.get(p.id)||[]).find(x=>String(x.id)===String(aid)) : null;
+  const desde = a ? a.desde : ymd(new Date()), hasta = a ? a.hasta : desde;
+  const sty = 'width:100%;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;';
+  abrirModalGlobal(`<h3>🚨 ${a ? 'Cambiar las fechas del arresto' : 'Apuntar arresto'}</h3>
+    <p class="modal-nota" style="margin-top:0;"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)}. Mientras dure, tiene obligatorias en la AGM la pernocta y todas las comidas. Le pedirá dos confirmaciones.</p>
+    <div class="field"><label for="pe-arr-desde">Empieza el</label><input type="date" id="pe-arr-desde" value="${desde}" oninput="peArrCalc('dias')" style="${sty}"></div>
+    <div class="field"><label for="pe-arr-dias">Número de días</label><input type="number" id="pe-arr-dias" min="1" max="121" value="${diasEntre(desde, hasta)+1}" oninput="peArrCalc('dias')" style="${sty}"></div>
+    <div class="field"><label for="pe-arr-hasta">Hasta el (incluido)</label><input type="date" id="pe-arr-hasta" value="${hasta}" oninput="peArrCalc('hasta')" style="${sty}"></div>
+    <div class="modal-botones"><button type="button" class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button type="button" class="primary-btn" id="pe-arr-ok" onclick="mandoGuardarArresto('${escHtml(p.id)}', ${a ? `'${escHtml(String(a.id))}'` : 'null'})">${a ? 'Guardar' : 'Apuntar'}</button></div>`);
+}
+async function mandoGuardarArresto(pid, aid){
+  const p = pePersona(pid); if(!p) return;
+  const desde = (document.getElementById('pe-arr-desde')||{}).value || '', hasta = (document.getElementById('pe-arr-hasta')||{}).value || '';
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(desde) || !/^\d{4}-\d{2}-\d{2}$/.test(hasta)){ showToast('Elija las fechas.'); return; }
+  if(hasta < desde){ showToast('La fecha final no puede ser anterior a la de inicio.'); return; }
+  if(diasEntre(desde, hasta) > 120){ showToast('Un arresto no puede durar más de 120 días.'); return; }
+  const a = aid!=null ? (ARRESTOS.get(p.id)||[]).find(x=>String(x.id)===String(aid)) : null;
+  if(aid!=null && !a){ showToast('Ese arresto ya no existe.'); cerrarModalGlobal(); return; }
+  await mandoCambio(pid, a ? 'arresto_cambiar' : 'arresto_nuevo', a ? { id:a.id, desde, hasta } : { desde, hasta },
+    a ? `Arresto: ${peFC(a.desde)} → ${peFC(a.hasta)} pasa a ${peFC(desde)} → ${peFC(hasta)}` : `Apuntar un arresto del ${peFC(desde)} al ${peFC(hasta)}`,
+    async ()=>{ cerrarModalGlobal(); await fetchArrestos({ compania:CURRENT.compania }); peRefrescarFila(pid); pePintarChips(); });
+}
+function mandoBorrarArresto(pid, aid){
+  const p = pePersona(pid), a = p && (ARRESTOS.get(p.id)||[]).find(x=>String(x.id)===String(aid)); if(!a) return;
+  mandoCambio(pid, 'arresto_borrar', { id:a.id }, `Borrar el arresto del ${peFC(a.desde)} al ${peFC(a.hasta)}`, async ()=>{ await fetchArrestos({ compania:CURRENT.compania }); peRefrescarFila(pid); pePintarChips(); });
+}
+// Ficha de la persona para los mandos: lo que pueden cambiar (nada de servicios, sección, acceso ni baja)
+function peDetalleMandoBase(p){
+  const id = escHtml(p.id), hoy = ymd(new Date()), ext = valorExternado(p), vf = String(p.viernes_fuera>=4 ? 4 : (p.viernes_fuera||0));
+  const op = (v, t, sel) => `<option value="${v}" ${v===sel?'selected':''}>${t}</option>`;
+  const arrs = (ARRESTOS.get(p.id)||[]).slice().reverse();
+  const arrHtml = (ARRESTOS_FALTA ? '<p class="small-note" style="margin:0;">Todavía no se pueden consultar los arrestos.</p>'
+    : (arrs.length ? arrs.map(a=>{ const aid = escHtml(String(a.id));
+        return `<div class="pe-it${arrestoVigente(a)?'':' pasado'}"><span>${a.desde<=hoy && hoy<=a.hasta ? '🚨 <b>Ahora</b> · ' : a.desde>hoy ? '⏳ Próximo · ' : ''}${escHtml(arrestoTxt(a))}</span>
+          <span class="pe-btns"><button type="button" class="small-btn" onclick="mandoArrestoModal('${id}','${aid}')">✏️ Fechas</button><button type="button" class="small-btn danger" onclick="mandoBorrarArresto('${id}','${aid}')">🗑 Borrar</button></span></div>`; }).join('')
+      : '<p class="small-note" style="margin:0;">Sin arrestos.</p>'))
+    + (ARRESTOS_FALTA ? '' : `<div class="pe-btns" style="margin-top:6px;"><button type="button" class="small-btn" onclick="mandoArrestoModal('${id}')">➕ Apuntar arresto</button></div>`);
+  return `<h4>🚨 Arrestos</h4>${arrHtml}
+    <h4>🎒 Externado y viernes libres</h4>
+    <div class="pe-btns"><select aria-label="Externado" onchange="mandoSelExternado('${id}', this)">${op('no','No externado',ext)}${op('findes','Externado findes',ext)}${op('total','Externado total',ext)}</select>
+      <select aria-label="Viernes libres" onchange="mandoSelViernes('${id}', this)">${['0','2','4'].map(v=>op(v, (v==='0'?'Viernes libres: ':'')+PE_VF_TXT[v], vf)).join('')}</select></div>
+    <h4>🪖 Promoción interna</h4>
+    <div class="pe-btns"><select aria-label="Promoción interna" onchange="mandoSelPromo('${id}', this)">${op('no','No',p.promocion_interna?'si':'no')}${op('si','Sí, promoción interna',p.promocion_interna?'si':'no')}</select></div>
+    <h4>🥗 Intolerancias</h4>
+    <div class="pe-btns"><input type="text" aria-label="Intolerancias" maxlength="200" value="${escHtml(p.intolerancias||'')}" placeholder="Ninguna" onchange="mandoInpIntol('${id}', this)"></div>
+    <h4>📝 Pases y permisos</h4>${pasesPersonaHtml(p, false, true)}`;
+}
+
+/* ---- Cambios de los mandos, para el Furry (en Personal) y el superadmin (en la caja «Mandos»): quién, a quién, qué y cuándo, con botón para REVERTIR ---- */
+const CAMBIOS_M = { lista:[] };
+const cambiosSinVer = () => (CAMBIOS_M.lista||[]).filter(x=>!x.revisado && !x.revertido);
+async function cargarCambiosMandos(){
+  try{
+    const { data, error } = await sb.from('cambios_mandos').select('*').eq('compania', CURRENT.compania).gte('creado_en', new Date(Date.now()-30*864e5).toISOString()).order('creado_en', { ascending:false }).limit(100);
+    CAMBIOS_M.lista = error ? [] : (data||[]);
+  }catch(e){ CAMBIOS_M.lista = []; }
+}
+function cambioMandoHtml(x, origen){
+  const cuando = new Date(x.creado_en).toLocaleString('es-ES', { weekday:'short', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  return `<div class="pe-pase ${x.revertido ? 'hecho' : (x.revisado ? '' : 'pend')}"><div class="pp-t">🎖️ ${escHtml(x.mando_nombre || 'Mandos')}</div>
+    <div><b>${escHtml(x.persona_nombre)}</b>: ${escHtml(x.resumen)}</div>
+    <div class="pp-m">${escHtml(cuando)} (${escHtml(formatRelativeTime(x.creado_en))})${x.revertido ? ' · ↩ revertido por '+escHtml(x.revertido_por||'') : ''}</div>
+    ${x.revertido ? '' : `<div class="pe-btns" style="margin-top:6px;"><button type="button" class="small-btn danger" onclick="revertirCambioMando(${x.id},'${origen}')">↩ Revertir el cambio</button>${x.revisado ? '' : `<button type="button" class="small-btn" onclick="marcarCambioVisto(${x.id},'${origen}')">✔ Visto</button>`}</div>`}</div>`;
+}
+function peCambiosPintar(){
+  const l = CAMBIOS_M.lista || [], nuevos = l.filter(x=>!x.revisado && !x.revertido), antes = l.filter(x=>x.revisado || x.revertido);
+  if(!l.length){ pePonerHtml('admin-pe-cambios', ''); return; }
+  pePonerHtml('admin-pe-cambios', `<h3 class="section-title">🎖️ Cambios de los mandos${nuevos.length ? ` <span class="mod-badge">${nuevos.length}</span>` : ''}</h3>`
+    + (nuevos.length ? nuevos.map(x=>cambioMandoHtml(x,'furry')).join('') : '<p class="small-note">No hay cambios nuevos de los mandos.</p>')
+    + (antes.length ? `<details class="caja-det"><summary>Anteriores (${antes.length})</summary><div class="caja-sub-body">${antes.map(x=>cambioMandoHtml(x,'furry')).join('')}</div></details>` : ''));
+}
+async function revertirCambioMando(id, origen){
+  const x = (CAMBIOS_M.lista||[]).find(y=>y.id===id) || (window._cambiosMSuper||[]).find(y=>y.id===id); if(!x) return;
+  if(!await confirmarApp(`¿Revertir este cambio?\n\n${x.persona_nombre}: ${x.resumen}\n\nSe volverá a como estaba antes.`, { si:'Revertir', no:'No', peligro:true })) return;
+  let { error } = await sb.rpc('mandos_revertir_cambio', { p_id:id, p_forzar:false });
+  if(error && /CAMBIADO_DESPUES/.test(error.message||'')){
+    if(!await confirmarApp('Ese dato ya ha cambiado DESPUÉS de lo que hizo el mando. ¿Revertir igualmente (se pisará el valor actual)?', { si:'Revertir igualmente', no:'No', peligro:true })) return;
+    ({ error } = await sb.rpc('mandos_revertir_cambio', { p_id:id, p_forzar:true }));
+  }
+  if(error){ showToast('No se pudo revertir: '+mandoErr(error)); return; }
+  showToast('↩ Cambio revertido.');
+  if(origen==='super'){ const c = parseInt(x.compania,10); const el = document.getElementById('super-mandos-cont'); if(el){ MANDOS_SUP.compania = c; el.innerHTML = await cuartelSuperCuerpo('mandos'); } }
+  else { logFurry('otro', `Revierte un cambio de mandos: ${x.persona_nombre}: ${x.resumen}`); await renderAdminPersonal(); }
+}
+async function marcarCambioVisto(id, origen){
+  const { error } = await sb.rpc('mandos_marcar_vistos', { p_ids:[id] });
+  if(error){ showToast('No se pudo marcar: '+mandoErr(error)); return; }
+  const x = (CAMBIOS_M.lista||[]).find(y=>y.id===id) || (window._cambiosMSuper||[]).find(y=>y.id===id); if(x) x.revisado = true;
+  if(origen==='super'){ const el = document.getElementById('super-mandos-cont'); if(el) el.innerHTML = await cuartelSuperCuerpo('mandos'); }
+  else { peCambiosPintar(); peActualizarInsignia(); }
 }
 
 /* ================= Pestaña «Personal» del Furry: todo lo de la gente de su compañía =================
@@ -7224,7 +7406,8 @@ async function peContarSolicitudes(){
     if(!CURRENT || CURRENT.mode!=='admin') return;
     const { count, error } = await sb.from('solicitudes_viernes').select('id', { count:'exact', head:true }).eq('compania', CURRENT.compania).eq('estado', 'pendiente');
     const r2 = await sb.from('pases_permisos').select('id', { count:'exact', head:true }).eq('compania', CURRENT.compania).eq('estado', 'solicitado');
-    pePintarBadge((error ? 0 : (count||0)) + (r2.error ? 0 : (r2.count||0)));
+    const r3 = await sb.from('cambios_mandos').select('id', { count:'exact', head:true }).eq('compania', CURRENT.compania).eq('revisado', false).eq('revertido', false);
+    pePintarBadge((error ? 0 : (count||0)) + (r2.error ? 0 : (r2.count||0)) + (r3.error ? 0 : (r3.count||0)));
   }catch(e){}
 }
 const renderAdminPersonal = serializarRender(()=>_renderAdminPersonalImpl());
@@ -7235,7 +7418,7 @@ async function _renderAdminPersonalImpl(){
   if(!PE.personas) pePonerHtml('admin-pe-lista', '<p class="small-note">Cargando…</p>');
   PE.serv = new Map(); // los servicios se vuelven a pedir al abrir cada ficha
   try{
-    const [secciones, sols] = await Promise.all([ fetchCompanySections(c), fetchSolicitudesViernes({ compania:c, soloPendientes:true }), cargarPases() ]);
+    const [secciones, sols] = await Promise.all([ fetchCompanySections(c), fetchSolicitudesViernes({ compania:c, soloPendientes:true }), cargarPases(), cargarCambiosMandos() ]);
     PE.personas = secciones.flatMap(s=>s.people).map(p=>Object.assign(p, { _n: cuartelNorm(p.apellidos+' '+p.nombre) })).sort(peOrden);
     PE.sols = sols || []; PE.error = null;
     if(typeof cargarViernesUsadosActual==='function'){ try{ await cargarViernesUsadosActual(); }catch(e){} } // «Este mes ha usado X de 2» (usa los VIERNES_FUERA recién cargados)
@@ -7243,6 +7426,7 @@ async function _renderAdminPersonalImpl(){
   }catch(e){ PE.error = (e && e.message) || String(e); }
   peActualizarInsignia();
   pePintarSolicitudes();
+  peCambiosPintar();
   pePintarPases();
   pePonerHtml('admin-pe-buscar', peBuscadorHtml());
   pePintarLista();
@@ -7325,12 +7509,17 @@ function peSecBodyHtml(s, ps){
     + (ps.length ? '' : '<p class="small-note" style="margin:4px 0;">Sin nadie en esta sección.</p>');
 }
 function pePintarLista(){
-  const c = CURRENT.compania, tit = `<h3 class="section-title">👥 Personal de la ${c}ª Compañía</h3>`;
+  const c = CURRENT.compania, tit = `<h3 class="section-title">👥 Personal de la ${c}ª Compañía</h3>` + (peRO() ? listadoToggleHtml() : '');
   if(PE.error){ pePonerHtml('admin-pe-lista', tit + `<p class="small-note" style="color:var(--danger);">No se pudo cargar el personal: ${escHtml(PE.error)}</p><button type="button" class="small-btn" onclick="${peRO() ? 'renderMandosPersonal()' : 'renderAdminPersonal()'}">↻ Reintentar</button>`); return; }
   if(!PE.personas){ pePonerHtml('admin-pe-lista', tit + '<p class="small-note">Cargando…</p>'); return; }
   const ls = peFiltradas(), activo = peActivo();
   let html = `<div class="pe-cuenta" id="pe-cuenta">${peCuentaTxt(ls.length)}</div>` + (PE.multi ? `<div class="pe-chips" id="pe-selbar">${peSelBarHtml(ls.length)}</div>` : '');
   let tarjetas = '';
+  if(peRO() && LISTADO_VISTA==='nominal'){ // listado nominal: todos juntos por orden alfabético (cada fila se despliega con su ficha)
+    const orden = ls.slice().sort((x,y)=>String(x.apellidos).localeCompare(String(y.apellidos),'es') || String(x.nombre).localeCompare(String(y.nombre),'es'));
+    pePonerHtml('admin-pe-lista', tit + html + (orden.length ? `<div class="pe-nominal">${orden.map(peFilaHtml).join('')}</div>` : '<p class="small-note">Nadie coincide con la búsqueda o los filtros.</p>'));
+    return;
+  }
   peSecs().forEach(s=>{
     const ps = ls.filter(p=>p.seccion===s); if(activo && !ps.length) return;
     const ab = activo || PE.secAb.has(s);
@@ -7409,7 +7598,7 @@ function peDetalleRoBase(p){
     <div class="pe-it"><span>${p.promocion_interna ? 'Sí, promoción interna' : 'No'}</span></div>
     <h4>📝 Pases y permisos</h4>${pasesPersonaHtml(p, false)}`;
 }
-function peDetalleHtml(p){ return peRO() ? peDetalleRoHtml(p) : peCartas(peDetalleBase(p)); }
+function peDetalleHtml(p){ return peRO() ? (peMandoEdita() ? peCartas(peDetalleMandoBase(p)) : peDetalleRoHtml(p)) : peCartas(peDetalleBase(p)); }
 function peDetalleBase(p){
   const id = escHtml(p.id), c = CURRENT.compania, hoy = ymd(new Date()), ext = valorExternado(p), vf = String(p.viernes_fuera>=4 ? 4 : (p.viernes_fuera||0));
   const op = (v, t, sel) => `<option value="${v}" ${v===sel?'selected':''}>${t}</option>`;
@@ -7439,26 +7628,53 @@ function peDetalleBase(p){
 /* ---- «Personal» del servicio de cuartel (parche SQL 111): al abrir se ve lo básico (arrestados de esta semana, externados, intolerancias y pases de horas) y hay un buscador.
    Cada búsqueda y cada pase apuntado queda en el «Registro del cuartel» (lo ve el superadmin). Solo se enseña lo imprescindible y los arrestos son los DE ESTA SEMANA.
    El servicio de cuartel puede leer y apuntar pases de horas (estados: realizado / en curso (si está cerca de salir) / futuro) ---- */
-const CUP = { t:null, ultima:'', base:null, res:null, personas:null, timer:null };
+const CUP = { t:null, ultima:'', base:null, res:null, personas:null, timer:null, serv:null, servTab:'hoy', secAb:new Set() };
+// «Listado de la compañía»: por defecto en los cuatro recuadros de sección; o en listado nominal (todos juntos por orden alfabético). Se recuerda en el dispositivo
+let LISTADO_VISTA = (()=>{ try{ return localStorage.getItem('portalagm_listado_vista')==='nominal' ? 'nominal' : 'secciones'; }catch(e){ return 'secciones'; } })();
+function setListadoVista(v){
+  LISTADO_VISTA = v==='nominal' ? 'nominal' : 'secciones';
+  try{ localStorage.setItem('portalagm_listado_vista', LISTADO_VISTA); }catch(e){}
+  if(document.getElementById('cup-base')) cuartelPersonalPintarBase(); else if(document.getElementById('mandos-pe-lista')) pePintarLista();
+}
+const listadoToggleHtml = () => `<div class="semanas-toggle" style="max-width:360px;margin:0 0 10px;"><button type="button" class="${LISTADO_VISTA==='secciones' ? 'active' : ''}" onclick="setListadoVista('secciones')">🗂 Por secciones</button><button type="button" class="${LISTADO_VISTA==='nominal' ? 'active' : ''}" onclick="setListadoVista('nominal')">🔤 Listado nominal</button></div>`;
 // Hora de España que dio el servidor al cargar (si no, la del dispositivo), avanzada con el reloj; se compara con fechas «locales» construidas igual
 function cupAhora(){
   const b = CUP.base && CUP.base.ahora ? new Date(CUP.base.ahora) : null;
   return b ? new Date(b.getTime() + (Date.now() - CUP.base._t)) : new Date();
 }
-// Estado de un pase de horas según la hora: realizado, en curso (ya ha salido o sale en menos de una hora) o futuro
+// Fase de un pase de horas o de un permiso: la que haya forzado el Furry o el cuartel (campo «fase») o, si no, la que sale sola con la hora
+// (pendiente · en curso —ya ha salido o sale en menos de una hora— · realizado)
 function paseTiempo(x, ahora){
-  const ini = new Date(x.fecha+'T'+x.hora_inicio+':00'), fin = new Date(x.fecha+'T'+x.hora_fin+':00');
+  if(x.fase==='realizado') return { k:'hecho', t:'✔ Realizado' };
+  if(x.fase==='en_curso') return { k:'curso', t:'🟢 En curso' };
+  if(x.fase==='pendiente') return { k:'futuro', t:'🔜 Pendiente' };
+  const i = paseIni(x), ini = new Date(i+'T'+hh(x.hora_inicio)+':00'), fin = new Date((x.fecha_fin||i)+'T'+hh(x.hora_fin)+':00');
   if(ahora > fin) return { k:'hecho', t:'✔ Realizado' };
   if(ahora >= ini) return { k:'curso', t:'🟢 En curso' };
   const min = Math.max(1, Math.round((ini - ahora)/60000));
   if(min <= 60) return { k:'curso', t:`🟢 En curso · sale en ${min} min` };
-  return { k:'futuro', t:'🔜 Futuro' };
+  return { k:'futuro', t:'🔜 Pendiente' };
 }
-function cupPaseHtml(x, ahora, conNombre){
-  const e = paseTiempo(x, ahora);
-  return `<div class="pe-pase ${e.k}"><div class="pp-t">🕒 ${conNombre ? escHtml(x.apellidos+', '+x.nombre)+' · '+escHtml(CURRENT.compania+''+x.seccion) : 'Pase de horas'}</div>
-    <div>${escHtml(fmtFecha(x.fecha))} · de ${escHtml(x.hora_inicio)} a ${escHtml(x.hora_fin)}</div><div class="pp-m">Motivo: ${escHtml(x.motivo)}</div><div class="pp-m">Mando: ${escHtml(x.autoriza)}</div>
-    <div class="pe-btns" style="margin-top:4px;"><span class="pe-t ${e.k}">${e.t}</span>${x.autorizacion==='autorizado' ? '<span class="pe-t ok">✅ Autorizado por el mando</span>' : '<span class="pe-t aviso">⏳ Pendiente de autorización</span>'}</div></div>`;
+function cupPaseHtml(x, ahora, conNombre, conAcciones){
+  const e = paseTiempo(x, ahora), perm = x.tipo==='permiso';
+  const fin = conAcciones && e.k==='curso' ? `<div class="pe-btns" style="margin-top:6px;"><button type="button" class="small-btn active" onclick="cuartelFinalizarPase(${x.id})">✔ Dar por finalizado</button></div>` : '';
+  return `<div class="pe-pase ${e.k}"><details><summary><span class="pp-t">${perm ? '🧳' : '🕒'} ${conNombre ? escHtml(x.apellidos+', '+x.nombre)+' · '+escHtml(CURRENT.compania+''+x.seccion) : (perm ? 'Permiso extraordinario' : 'Pase de horas')}</span><span class="pp-w">${escHtml((perm && conNombre ? 'Permiso · ' : '')+paseCuando(x))}</span><span class="pe-t ${e.k}">${e.t}</span></summary>
+    <div class="pp-m">Motivo: ${escHtml(x.motivo)}</div><div class="pp-m">Mando: ${escHtml(x.autoriza)}</div>
+    <div class="pe-btns" style="margin-top:4px;">${x.autorizacion==='autorizado' ? '<span class="pe-t ok">✅ Autorizado por el mando</span>' : '<span class="pe-t aviso">⏳ Pendiente de autorización</span>'}</div></details>${fin}</div>`;
+}
+// El servicio de cuartel da por finalizado un pase o un permiso (los mandos no pueden)
+async function cuartelFinalizarPase(id){
+  const x = ((CUP.base && CUP.base.pases) || []).find(y=>y.id===id) || (((CUP.res && CUP.res.resultados) || []).flatMap(r=>r.pases||[]).find(y=>y.id===id));
+  if(!x) return;
+  const quien = x.apellidos ? `${x.apellidos}, ${x.nombre}` : 'esta persona';
+  if(!await confirmarApp(`¿Dar por finalizado ${x.tipo==='permiso' ? 'el permiso extraordinario' : 'el pase de horas'} de ${quien}?`, { si:'Sí, finalizado', no:'No' })) return;
+  const { error } = await sb.rpc('cuartel_cambiar_fase_pase', { p_id:id, p_device_id:idDispositivo(), p_dispositivo:describirDispositivo(), p_compania:CURRENT.compania, ...cuNombreRpc() });
+  if(error){ showToast('No se pudo: '+cuErrorParche(error, 113)); return; }
+  showToast('✔ Dado por finalizado.');
+  const marcar = l => (l||[]).forEach(y=>{ if(y.id===id) y.fase = 'realizado'; });
+  if(CUP.base) marcar(CUP.base.pases);
+  if(CUP.res) (CUP.res.resultados||[]).forEach(r=>marcar(r.pases));
+  cuartelPersonalPintarBase(); if(CUP.res) cuartelPersonalPintarRes();
 }
 async function renderCuartelPersonal(){
   ['cuartel-week-select','cuartel-controles'].forEach(id=>{ const e = document.getElementById(id); if(e) e.innerHTML = ''; });
@@ -7466,7 +7682,7 @@ async function renderCuartelPersonal(){
   try{ await cargarServPers(CURRENT.compania); }catch(e){}
   CUP.ultima = ''; CUP.res = null; clearInterval(CUP.timer);
   document.getElementById('cuartel-vista').innerHTML = `<div class="pe-scope"><div class="pe-barra-top"><div class="pe-search"><input type="search" id="cup-q" placeholder="Buscar a una persona por apellidos o nombre…" aria-label="Buscar a una persona" autocomplete="off" oninput="cuartelPersonalBuscar(this.value)"></div>
-    <button type="button" class="small-btn active" onclick="cuartelNuevoPase()">➕ Pase de hora</button></div>
+    <button type="button" class="small-btn active" onclick="cuartelNuevoPase(null,'pase')">➕ Pase de hora</button><button type="button" class="small-btn active" onclick="cuartelNuevoPase(null,'permiso')">➕ Permiso extraordinario</button></div>
     <div id="cup-res"></div><div id="cup-base"><p class="small-note">Cargando…</p></div></div>`;
   await cuartelPersonalCargarBase();
   CUP.timer = setInterval(()=>{ if(document.getElementById('cup-base')) { cuartelPersonalPintarBase(); if(CUP.res) cuartelPersonalPintarRes(); } else clearInterval(CUP.timer); }, 60000); // los estados de los pases se actualizan solos cada minuto
@@ -7478,24 +7694,93 @@ async function cuartelPersonalCargarBase(){
   if(error){ el.innerHTML = `<div class="notice closed"><span>${escHtml(cuErrorParche(error, 111))}</span></div>`; return; }
   CUP.base = data; CUP.base._t = Date.now();
   cuartelPersonalPintarBase();
+  cuartelServicioCargar(); cuartelPersonalListaRespaldo();
+}
+function cuartelSecToggle(sn, det){ CUP.secAb = CUP.secAb || new Set(); if(det.open) CUP.secAb.add(sn); else CUP.secAb.delete(sn); }
+const cupAvatar = x => `<span class="pe-av sec-${x.seccion}" aria-hidden="true">${escHtml(((x.nombre||'?').trim().charAt(0)+(x.apellidos||'?').trim().charAt(0)).toUpperCase())}</span>`;
+// «Listado de la compañía» del servicio de cuartel
+function cupListadoHtml(b){
+  const l = (b.personal && b.personal.length ? b.personal : (CUP.personas || [])), c = CURRENT.compania, n = b.total!=null ? b.total : l.length;
+  const cab = `<div class="cup-box-t">📋 Listado de la compañía <span class="gp-cuenta" style="margin-left:0;">${n} persona${n===1 ? '' : 's'}</span></div>${listadoToggleHtml()}`;
+  if(!l.length) return `<div class="cup-box">${cab}<p class="small-note" style="margin:0;">Cargando el listado…</p></div>`;
+  const fila = p => `<button type="button" class="cup-fila${CUP.verId===p.id ? ' sel' : ''}" aria-pressed="${CUP.verId===p.id}" onclick="cuartelPersonalVerPersona('${escHtml(p.id)}')">${cupAvatar(p)}<span class="cup-n">${escHtml(p.apellidos)}, ${escHtml(p.nombre)}</span><span class="pe-sec">${c}${escHtml(p.seccion)}</span></button>`;
+  if(LISTADO_VISTA==='nominal'){
+    const orden = l.slice().sort((x,y)=>String(x.apellidos).localeCompare(String(y.apellidos),'es') || String(x.nombre).localeCompare(String(y.nombre),'es'));
+    return `<div class="cup-box">${cab}<div class="cup-lista-sec cup-scroll" style="max-height:520px;">${orden.map(fila).join('')}</div></div>`;
+  }
+  const secs = [1,2,3,4].map(sn=>{
+    const ps = l.filter(p=>p.seccion===sn), ab = CUP.secAb && CUP.secAb.has(sn);
+    return `<details class="caja-det pe-secdet sec-${sn} cup-lista-sec" ${ab ? 'open' : ''} ontoggle="cuartelSecToggle(${sn}, this)"><summary><span class="pe-sech"><span class="pe-secnum">${c}${sn}</span><b>Sección ${c}${sn}</b> <span class="gp-cuenta" style="margin-left:0;">${ps.length} persona${ps.length===1 ? '' : 's'}</span></span></summary>
+      <div class="caja-sub-body cup-scroll">${ps.length ? ps.map(fila).join('') : '<p class="small-note" style="margin:0;">Sin nadie en esta sección.</p>'}</div></details>`;
+  }).join('');
+  return `<div class="cup-box">${cab}<div class="pe-grid">${secs}</div></div>`;
+}
+// «De servicio»: quién está de cuartelero y de imaginaria de cuartelero, y los servicios especiales (sargento / cabo de cuartel…), hoy o mañana
+async function cuartelServicioCargar(){
+  try{
+    const { data, error } = await sb.rpc('cuartel_servicios_semana', { p_compania:CURRENT.compania });
+    CUP.serv = error ? null : (data || []); CUP.servError = !!error;
+  }catch(e){ CUP.serv = null; CUP.servError = true; }
+  const el = document.getElementById('cup-serv'); if(el) el.innerHTML = cupServHtml();
+}
+function cuartelServTab(t){ CUP.servTab = t==='manana' ? 'manana' : 'hoy'; const el = document.getElementById('cup-serv'); if(el) el.innerHTML = cupServHtml(); }
+function cupServHtml(){
+  const hoy = ymd(new Date()), man = ymd(new Date(Date.now()+864e5)), fecha = CUP.servTab==='manana' ? man : hoy, c = CURRENT.compania;
+  const tabs = `<div class="semanas-toggle" style="max-width:260px;margin:0 0 10px;"><button type="button" class="${CUP.servTab==='hoy' ? 'active' : ''}" onclick="cuartelServTab('hoy')">Hoy</button><button type="button" class="${CUP.servTab==='manana' ? 'active' : ''}" onclick="cuartelServTab('manana')">Mañana</button></div>`;
+  const cab = `<div class="cup-box-t">🪖 De servicio <span class="gp-cuenta" style="margin-left:0;">${escHtml(fmtFecha(fecha))}</span></div>${tabs}`;
+  if(CUP.serv===null) return cab + `<p class="small-note" style="margin:0;">${CUP.servError ? 'No se pudieron cargar los servicios.' : 'Cargando…'}</p>`;
+  const especial = x => { const pz = servPersDe(x); return !!pz && (pz.convalida_cuartelero || /cuartel/i.test(pz.nombre)); };
+  const orden = x => x.tipo==='cuartelero' ? 1 : x.tipo==='imaginaria_cuartelero' ? 2 : 3;
+  const l = CUP.serv.filter(x=>x.fecha===fecha && (x.tipo==='cuartelero' || x.tipo==='imaginaria_cuartelero' || (x.tipo==='otro' && especial(x)))).sort((a,b)=>orden(a)-orden(b) || String(a.apellidos).localeCompare(String(b.apellidos),'es'));
+  if(!l.length) return cab + `<p class="small-note" style="margin:0;">${CUP.servTab==='manana' && fecha > ymd(new Date(CUP.serv.reduce((m,x)=>x.fecha>m?x.fecha:m,'0000-00-00')+'T00:00:00')) ? 'Mañana aún no está en el cuadrante de esta semana.' : 'Nadie nombrado ese día.'}</p>`;
+  return cab + l.map(x=>`<div class="cup-srv"><span class="serv-cod ${servClase(x)}${x.estimado?' est':''}" style="cursor:default;">${escHtml(servCorto(x))}</span><span><b>${escHtml(servicioLabel(x))}</b><br>${escHtml(x.apellidos+', '+x.nombre)} <span class="pe-sec">${c}${escHtml(x.seccion)}</span>${x.estimado ? ' <i>(estimado)</i>' : ''}</span></div>`).join('');
+}
+// Pulsar a alguien de la lista: se busca por su nombre y sale su ficha (queda registrado como una búsqueda)
+function cuartelPersonalVerPersona(id){
+  if(CUP.verId===id && CUP.res){ cuartelCerrarResultados(); return; } // volver a pulsar a la misma persona cierra su ficha
+  const p = ((CUP.base && CUP.base.personal) || []).find(x=>x.id===id) || (CUP.personas || []).find(x=>x.id===id); if(!p) return;
+  CUP.verId = id; setTimeout(()=>{ if(CUP.base) cuartelPersonalPintarBase(); }, 0);
+  const t = (p.apellidos+' '+p.nombre).replace(/[^\p{L}\p{N} ]+/gu, ' ').replace(/\s+/g, ' ').trim();
+  const i = document.getElementById('cup-q'); if(i) i.value = t;
+  CUP.ultima = ''; cuartelPersonalConsultar(t);
+  try{ window.scrollTo({ top:0, behavior:'smooth' }); }catch(e){}
 }
 function cuartelPersonalPintarBase(){
   const el = document.getElementById('cup-base'), b = CUP.base; if(!el || !b) return;
   const ahora = cupAhora(), c = CURRENT.compania;
-  const fila = (x, extra) => `<div class="cup-fila"><span class="pe-av sec-${x.seccion}" aria-hidden="true">${escHtml(((x.nombre||'?').trim().charAt(0)+(x.apellidos||'?').trim().charAt(0)).toUpperCase())}</span><span class="cup-n">${escHtml(x.apellidos)}, ${escHtml(x.nombre)} <span class="pe-sec">${c}${escHtml(x.seccion)}</span></span>${extra||''}</div>`;
+  const fila = (x, extra) => `<div class="cup-fila">${cupAvatar(x)}<span class="cup-n">${escHtml(x.apellidos)}, ${escHtml(x.nombre)} <span class="pe-sec">${c}${escHtml(x.seccion)}</span></span>${extra||''}</div>`;
   const pases = (b.pases||[]).map(x=>({ x, e:paseTiempo(x, ahora) }));
-  const grupo = (k, tit) => { const l = pases.filter(y=>y.e.k===k); return l.length ? `<div class="cup-grupo">${tit} (${l.length})</div>${l.map(y=>cupPaseHtml(y.x, ahora, true)).join('')}` : ''; };
+  const grupo = (k, tit) => { const l = pases.filter(y=>y.e.k===k); return l.length ? `<div class="cup-grupo">${tit} (${l.length})</div><div class="pe-pases-grid">${l.map(y=>cupPaseHtml(y.x, ahora, true, true)).join('')}</div>` : ''; };
   const cabPases = pases.filter(y=>y.e.k==='curso').length;
-  const tPases = `<details class="caja-det" open><summary><span>📝 <b>Pases de hora</b> (${pases.length})${cabPases ? ` <span class="pe-t curso">🟢 ${cabPases} en curso</span>` : ''}</span></summary><div class="caja-sub-body">${pases.length ? grupo('curso','En curso') + grupo('futuro','Futuros') + grupo('hecho','Realizados') : '<p class="small-note" style="margin:0;">No hay pases de hora (de ayer a dentro de 7 días).</p>'}</div></details>`;
-  const arr = b.arrestados||[];
-  const tArr = `<details class="caja-det" open><summary><span>🚨 <b>Arrestados esta semana</b> (${arr.length})</span></summary><div class="caja-sub-body">${arr.length ? arr.map(x=>fila(x, `<span class="pe-t rojo">🚨 ${x.ahora ? 'Ahora · ' : ''}${escHtml(peFC(x.desde)+' → '+peFC(x.hasta))}</span>`)).join('') : '<p class="small-note" style="margin:0;">Nadie arrestado esta semana.</p>'}</div></details>`;
-  const ext = b.externados||[];
-  const tExt = `<details class="caja-det" open><summary><span>🎒 <b>Externados</b> (${ext.length})</span></summary><div class="caja-sub-body">${ext.length ? ext.map(x=>fila(x, `<span class="pe-t">🎒 ${x.total ? 'Total' : 'Findes'}</span>`)).join('') : '<p class="small-note" style="margin:0;">No hay externados.</p>'}</div></details>`;
-  const intl = b.intolerancias||[];
-  const tInt = `<details class="caja-det" open><summary><span>🥗 <b>Intolerancias</b> (${intl.length})</span></summary><div class="caja-sub-body">${intl.length ? intl.map(x=>fila(x, `<span class="pe-t">🥗 ${escHtml(x.intolerancias)}</span>`)).join('') : '<p class="small-note" style="margin:0;">Nadie tiene intolerancias apuntadas.</p>'}</div></details>`;
-  el.innerHTML = `<p class="small-note" style="margin:0 0 8px;">Semana del ${escHtml(fmtFecha(b.desde))} al ${escHtml(fmtFecha(b.hasta))}</p><div class="pe-grid">${tPases}${tArr}${tExt}${tInt}</div>`;
+  const bPases = `<div class="cup-box"><div class="cup-box-t">📝 Pases de hora y permisos <span class="gp-cuenta" style="margin-left:0;">${pases.length}</span>${cabPases ? ` <span class="pe-t curso">🟢 ${cabPases} en curso</span>` : ''}</div>${pases.length ? grupo('curso','En curso') + grupo('futuro','Pendientes') + grupo('hecho','Realizados') : '<p class="small-note" style="margin:0;">No hay pases ni permisos (de ayer a dentro de 7 días).</p>'}</div>`;
+  const arr = b.arrestados||[], ext = b.externados||[], intl = b.intolerancias||[];
+  const caja = (tit, n, cuerpo) => `<div class="cup-box"><div class="cup-box-t">${tit} <span class="gp-cuenta" style="margin-left:0;">${n}</span></div><div class="cup-scroll">${cuerpo}</div></div>`;
+  const bArr = caja('🚨 Arrestados esta semana', arr.length, arr.length ? arr.map(x=>fila(x, `<span class="pe-t rojo">🚨 ${x.ahora ? 'Ahora · ' : ''}${escHtml(peFC(x.desde)+' → '+peFC(x.hasta))}</span>`)).join('') : '<p class="small-note" style="margin:0;">Nadie arrestado esta semana.</p>');
+  const bExt = caja('🎒 Externados', ext.length, ext.length ? ext.map(x=>fila(x, `<span class="pe-t">🎒 ${x.total ? 'Total' : 'Findes'}</span>`)).join('') : '<p class="small-note" style="margin:0;">No hay externados.</p>');
+  const bInt = caja('🥗 Intolerancias', intl.length, intl.length ? intl.map(x=>fila(x, `<span class="pe-t">🥗 ${escHtml(x.intolerancias)}</span>`)).join('') : '<p class="small-note" style="margin:0;">Nadie tiene intolerancias apuntadas.</p>');
+  el.innerHTML = `<div class="cup-layout"><div class="cup-top">${cupListadoHtml(b)}<div class="cup-box" id="cup-serv">${cupServHtml()}</div></div>${bPases}<div class="cup-trio">${bArr}${bExt}${bInt}</div>
+    <p class="small-note" style="margin:0;">Semana del ${escHtml(fmtFecha(b.desde))} al ${escHtml(fmtFecha(b.hasta))}</p></div>`;
+}
+// Si la función del servidor todavía no manda la lista de todo el personal (falta el parche 113), se lee directamente
+async function cuartelPersonalListaRespaldo(){
+  if(CUP.base && CUP.base.personal && CUP.base.personal.length) return;
+  if(!CUP.personas || !CUP.personas.length){ try{ const sec = await fetchCompanySections(CURRENT.compania); CUP.personas = sec.flatMap(x=>x.people).map(p=>({ id:p.id, nombre:p.nombre, apellidos:p.apellidos, seccion:p.seccion })); }catch(e){ CUP.personas = []; } }
+  cuartelPersonalPintarBase();
+}
+// Cerrar la ficha (o todas las del resultado) y dejar el buscador limpio
+function cuartelCerrarResultados(){
+  clearTimeout(CUP.t); CUP.res = null; CUP.ultima = ''; CUP.verId = null;
+  const el = document.getElementById('cup-res'); if(el) el.innerHTML = '';
+  const i = document.getElementById('cup-q'); if(i) i.value = '';
+  if(CUP.base) cuartelPersonalPintarBase();
+}
+function cuartelCerrarFicha(id){
+  if(!CUP.res) return;
+  CUP.res.resultados = (CUP.res.resultados||[]).filter(r=>r.id!==id);
+  if(!CUP.res.resultados.length) cuartelCerrarResultados(); else cuartelPersonalPintarRes();
 }
 function cuartelPersonalBuscar(v){
+  CUP.verId = null;
   clearTimeout(CUP.t);
   const t = String(v||'').trim(), el = document.getElementById('cup-res'); if(!el) return;
   if(t.length < 2){ CUP.ultima = ''; CUP.res = null; el.innerHTML = ''; return; }
@@ -7513,7 +7798,7 @@ function cuartelPersonalPintarRes(){
   const el = document.getElementById('cup-res'), data = CUP.res; if(!el || !data) return;
   const res = data.resultados || [];
   if(!res.length){ el.innerHTML = '<p class="small-note">No hay nadie con ese nombre en la compañía.</p>'; return; }
-  el.innerHTML = `<h3 class="section-title" style="margin-top:6px;">🔎 Resultado de la búsqueda</h3><p class="small-note" style="margin:0 0 8px;">Semana del ${escHtml(fmtFecha(data.desde))} al ${escHtml(fmtFecha(data.hasta))} · ${res.length} resultado${res.length===1 ? '' : 's'}${res.length>=8 ? ' (los 8 primeros: afine la búsqueda)' : ''}</p><div class="pe-grid">${res.map(cuartelPersonaCardHtml).join('')}</div>`;
+  el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;"><h3 class="section-title" style="margin:6px 0;flex:1 1 auto;">🔎 Resultado de la búsqueda</h3><button type="button" class="small-btn" onclick="cuartelCerrarResultados()">✕ Cerrar</button></div><p class="small-note" style="margin:0 0 8px;">Semana del ${escHtml(fmtFecha(data.desde))} al ${escHtml(fmtFecha(data.hasta))} · ${res.length} resultado${res.length===1 ? '' : 's'}${res.length>=8 ? ' (los 8 primeros: afine la búsqueda)' : ''}</p><div class="pe-grid">${res.map(cuartelPersonaCardHtml).join('')}</div>`;
 }
 function cuartelPersonaCardHtml(r){
   const c = CURRENT.compania, tags = [], ahora = cupAhora();
@@ -7521,35 +7806,42 @@ function cuartelPersonaCardHtml(r){
   if(r.externado) tags.push(`<span class="pe-t">🎒 Externado ${r.externado_total ? 'total' : 'de fin de semana'}</span>`);
   const arr = (r.arrestos||[]).map(a=>`<div class="cup-arresto">🚨 Arrestado esta semana: del ${escHtml(fmtFecha(a.desde))} al ${escHtml(fmtFecha(a.hasta))}</div>`).join('');
   const serv = (r.servicios||[]).length ? r.servicios.map(x=>`<div class="cup-serv"><span class="serv-cod ${servClase(x)}${x.estimado?' est':''}" style="cursor:default;">${escHtml(servCorto(x))}</span><span>${escHtml(fmtFecha(x.fecha))} · ${escHtml(servicioLabel(x))}${x.estimado ? ' <i>(estimado)</i>' : ''}</span></div>`).join('') : '<p class="small-note" style="margin:0;">Sin servicios esta semana.</p>';
-  const pas = (r.pases||[]).map(x=>cupPaseHtml(Object.assign({ nombre:r.nombre, apellidos:r.apellidos, seccion:r.seccion }, x), ahora, false)).join('');
+  const pas = (r.pases||[]).length ? `<div class="pe-pases-grid">${(r.pases||[]).map(x=>cupPaseHtml(Object.assign({ nombre:r.nombre, apellidos:r.apellidos, seccion:r.seccion }, x), ahora, false, true)).join('')}</div>` : '';
   const ini = ((r.nombre||'?').trim().charAt(0) + (r.apellidos||'?').trim().charAt(0)).toUpperCase();
   return `<div class="cup-card sec-${r.seccion}">
-    <div class="cup-cab"><span class="pe-av sec-${r.seccion}" aria-hidden="true">${escHtml(ini)}</span><span class="cup-nom">${escHtml(r.apellidos)}, ${escHtml(r.nombre)}</span><span class="pe-secnum">${c}${escHtml(r.seccion)}</span></div>
+    <div class="cup-cab"><span class="pe-av sec-${r.seccion}" aria-hidden="true">${escHtml(ini)}</span><span class="cup-nom">${escHtml(r.apellidos)}, ${escHtml(r.nombre)}</span><span class="pe-secnum">${c}${escHtml(r.seccion)}</span><button type="button" class="small-btn cup-cerrar" aria-label="Cerrar la ficha" onclick="cuartelCerrarFicha('${escHtml(r.id)}')">✕ Cerrar</button></div>
     <div class="pe-btns" style="margin-bottom:4px;">${tags.join('')}</div>
     ${arr}
     ${r.intolerancias ? `<h4>🥗 Intolerancias</h4><div>${escHtml(r.intolerancias)}</div>` : ''}
     <h4>📋 Servicios de esta semana</h4>${serv}
-    <h4>📝 Pases de hora</h4>${pas || '<p class="small-note" style="margin:0 0 6px;">Sin pases de hora.</p>'}
-    <div class="pe-btns"><button type="button" class="small-btn" onclick="cuartelNuevoPase('${escHtml(r.id)}')">➕ Pase de hora</button></div></div>`;
+    <h4>📝 Pases de hora y permisos</h4>${pas || '<p class="small-note" style="margin:0 0 6px;">Sin pases ni permisos.</p>'}
+    <div class="pe-btns"><button type="button" class="small-btn" onclick="cuartelNuevoPase('${escHtml(r.id)}','pase')">➕ Pase de hora</button><button type="button" class="small-btn" onclick="cuartelNuevoPase('${escHtml(r.id)}','permiso')">➕ Permiso extraordinario</button></div></div>`;
 }
-// ---- Apuntar un pase de horas ----
-async function cuartelNuevoPase(personaId){
-  const c = CURRENT.compania, hoy = ymd(new Date());
+// ---- Apuntar un pase de horas o un permiso extraordinario ----
+async function cuartelNuevoPase(personaId, tipo){
+  tipo = tipo==='permiso' ? 'permiso' : 'pase';
+  const c = CURRENT.compania, hoy = ymd(new Date()), esPase = tipo==='pase';
   const mandos = MANDOS_PERSONAS.filter(m=>m.comp==null || m.comp===Number(c));
-  window._cpPersona = personaId || null;
+  window._cpPersona = personaId || null; window._cpTipo = tipo;
   let nombreFijo = '';
-  if(personaId){ const r = ((CUP.res && CUP.res.resultados) || []).find(x=>x.id===personaId) || ((CUP.base && CUP.base.pases) || []).find(x=>x.persona_id===personaId); nombreFijo = r ? r.apellidos+', '+r.nombre : ''; }
-  else if(!CUP.personas){ try{ const sec = await fetchCompanySections(c); CUP.personas = sec.flatMap(x=>x.people).sort((a,b)=>String(a.apellidos).localeCompare(String(b.apellidos),'es')); }catch(e){ CUP.personas = []; } }
-  abrirModalGlobal(`<h3>🕒 Pase de hora</h3>
-    <p class="modal-nota" style="margin-top:0;">Un solo día: elija la hora de salida y la de vuelta. Queda registrado con su nombre.</p>
+  if(personaId){
+    const r = ((CUP.res && CUP.res.resultados) || []).find(x=>x.id===personaId) || ((CUP.base && CUP.base.pases) || []).find(x=>x.persona_id===personaId) || ((CUP.base && CUP.base.personal) || []).find(x=>x.id===personaId);
+    nombreFijo = r ? r.apellidos+', '+r.nombre : '';
+  } else if(!CUP.personas){
+    CUP.personas = ((CUP.base && CUP.base.personal) || CUP.personas || []).slice();
+    if(!CUP.personas.length){ try{ const sec = await fetchCompanySections(c); CUP.personas = sec.flatMap(x=>x.people).sort((a,b)=>String(a.apellidos).localeCompare(String(b.apellidos),'es')); }catch(e){ CUP.personas = []; } }
+  }
+  abrirModalGlobal(`<h3>${esPase ? '🕒 Pase de hora' : '🧳 Permiso extraordinario'}</h3>
+    <p class="modal-nota" style="margin-top:0;">${esPase ? 'Un solo día: elija la hora de salida y la de vuelta.' : 'Puede ser de varios días: elija desde qué día y hora sale, y hasta qué día y hora vuelve.'} Queda registrado con su nombre.</p>
     ${personaId ? `<p class="modal-nota"><b>${escHtml(nombreFijo)}</b></p>` : `<div class="field"><label for="cp-q">Persona</label><input type="search" id="cp-q" class="pf-in" placeholder="Escriba el apellido o el nombre…" autocomplete="off" oninput="cuartelFiltrarPersonasPase()"><select id="cp-persona" class="pf-in" size="5" style="margin-top:6px;"></select></div>`}
-    <div class="pf-fila"><div class="field"><label for="pf-fecha">Día</label><input type="date" id="pf-fecha" class="pf-in" value="${hoy}" min="${hoy}" max="${sumarDia(hoy,30)}"></div><div></div></div>
+    <div class="pf-fila"><div class="field"><label for="pf-fecha">${esPase ? 'Día' : 'Desde el día'}</label><input type="date" id="pf-fecha" class="pf-in" value="${hoy}" min="${hoy}" max="${sumarDia(hoy,30)}"></div>
+      ${esPase ? '<div></div>' : `<div class="field"><label for="pf-hasta">Hasta el día</label><input type="date" id="pf-hasta" class="pf-in" value="${hoy}" min="${hoy}" max="${sumarDia(hoy,90)}"></div>`}</div>
     <div class="pf-fila"><div class="field"><label for="pf-hini">Hora de salida</label><input type="time" id="pf-hini" class="pf-in" value="${new Date().toTimeString().slice(0,5)}"></div>
       <div class="field"><label for="pf-hfin">Hora de vuelta</label><input type="time" id="pf-hfin" class="pf-in" value="22:00"></div></div>
-    <div class="field"><label for="pf-motivo">Motivo del pase de horas</label><textarea id="pf-motivo" class="pf-in" rows="2" maxlength="300" placeholder="Escriba el motivo…"></textarea></div>
+    <div class="field"><label for="pf-motivo">Motivo ${esPase ? 'del pase de horas' : 'del permiso extraordinario'}</label><textarea id="pf-motivo" class="pf-in" rows="2" maxlength="300" placeholder="Escriba el motivo…"></textarea></div>
     <div class="field"><label for="pf-mando">¿Quién lo ha autorizado?</label>${mandos.length ? `<select id="pf-mando" class="pf-in"><option value="" disabled selected>— Elija al mando —</option>${mandos.map(m=>{ const v = nombreCompletoCuartel({ empleo:m.emp, nombre:m.nombre, ap1:m.ap1, ap2:m.ap2 }); return `<option value="${escHtml(v)}">${escHtml(m.emp+' '+m.nombre+' '+m.ap1+' '+m.ap2+(m.sec ? ' · Sección '+m.sec : ''))}</option>`; }).join('')}</select>` : '<input type="text" id="pf-mando" class="pf-in" maxlength="100" placeholder="Empleo y nombre del mando">'}</div>
     <div class="field"><label for="pf-aut">Estado de la autorización</label><select id="pf-aut" class="pf-in"><option value="autorizado">✅ Autorizado por el mando</option><option value="pendiente">⏳ Pendiente de autorización</option></select></div>
-    <div class="modal-botones"><button type="button" class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button type="button" class="primary-btn" id="pf-ok" onclick="guardarPaseCuartel()">Guardar pase</button></div>`);
+    <div class="modal-botones"><button type="button" class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button type="button" class="primary-btn" id="pf-ok" onclick="guardarPaseCuartel()">${esPase ? 'Guardar pase' : 'Guardar permiso'}</button></div>`);
   if(!personaId) cuartelFiltrarPersonasPase();
 }
 function cuartelFiltrarPersonasPase(){
@@ -7560,22 +7852,23 @@ function cuartelFiltrarPersonasPase(){
   if(l.length) sel.value = l[0].id;
 }
 async function guardarPaseCuartel(){
-  const v = id => ((document.getElementById(id)||{}).value||'').trim();
-  const persona = window._cpPersona || v('cp-persona'), fecha = v('pf-fecha'), hini = v('pf-hini'), hfin = v('pf-hfin');
+  const v = id => ((document.getElementById(id)||{}).value||'').trim(), tipo = window._cpTipo==='permiso' ? 'permiso' : 'pase';
+  const persona = window._cpPersona || v('cp-persona'), fecha = v('pf-fecha'), fin = tipo==='pase' ? fecha : v('pf-hasta'), hini = v('pf-hini'), hfin = v('pf-hfin');
   const motivo = v('pf-motivo').replace(/\s+/g,' '), mando = v('pf-mando'), aut = v('pf-aut') || 'autorizado';
   if(!persona){ showToast('Elija a la persona.'); return; }
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(fecha)){ showToast('Elija el día.'); return; }
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !/^\d{4}-\d{2}-\d{2}$/.test(fin)){ showToast('Elija el día.'); return; }
+  if(fin < fecha){ showToast('El último día no puede ser anterior al primero.'); return; }
   if(!hini || !hfin){ showToast('Ponga la hora de salida y la de vuelta.'); return; }
-  if(hfin <= hini){ showToast('La hora de vuelta tiene que ser posterior a la de salida.'); return; }
+  if(fecha===fin && hfin <= hini){ showToast('La hora de vuelta tiene que ser posterior a la de salida.'); return; }
   if(motivo.length < 3){ showToast('Escriba el motivo.'); return; }
   if(/[<>"]/.test(motivo+mando)){ showToast('El texto no puede llevar los símbolos  <  >  " .'); return; }
   if(mando.length < 2){ showToast('Elija quién lo ha autorizado.'); return; }
   const btn = document.getElementById('pf-ok'); if(btn) btn.disabled = true;
-  const { data, error } = await sb.rpc('cuartel_anadir_pase', { p_persona:persona, p_fecha:fecha, p_hora_inicio:hini, p_hora_fin:hfin, p_motivo:motivo, p_autoriza:mando, p_autorizacion:aut,
+  const { data, error } = await sb.rpc('cuartel_anadir_pase_permiso', { p_persona:persona, p_tipo:tipo, p_fecha:fecha, p_fecha_fin:fin, p_hora_inicio:hini, p_hora_fin:hfin, p_motivo:motivo, p_autoriza:mando, p_autorizacion:aut,
     p_device_id:idDispositivo(), p_dispositivo:describirDispositivo(), p_compania:CURRENT.compania, ...cuNombreRpc() });
-  if(error){ if(btn) btn.disabled = false; showToast('No se pudo guardar: '+cuErrorParche(error, 111)); return; }
+  if(error){ if(btn) btn.disabled = false; showToast('No se pudo guardar: '+cuErrorParche(error, 113)); return; }
   cerrarModalGlobal();
-  showToast('✅ Pase de hora apuntado.');
+  showToast(tipo==='pase' ? '✅ Pase de hora apuntado.' : '✅ Permiso extraordinario apuntado.');
   if(CUP.base){ (CUP.base.pases = CUP.base.pases || []).push(data); CUP.base.pases.sort((a,b)=>(a.fecha+a.hora_inicio)<(b.fecha+b.hora_inicio) ? -1 : 1); cuartelPersonalPintarBase(); }
   if(CUP.res){ const r = (CUP.res.resultados||[]).find(x=>x.id===persona); if(r){ (r.pases = r.pases || []).push(data); cuartelPersonalPintarRes(); } }
 }
@@ -7583,7 +7876,7 @@ async function guardarPaseCuartel(){
 async function renderMandosPersonal(){
   const c = CURRENT.compania;
   ['cuartel-week-select','cuartel-controles'].forEach(id=>{ const e = document.getElementById(id); if(e) e.innerHTML = ''; });
-  document.getElementById('cuartel-notice').innerHTML = '<div class="notice"><span>🔒 Solo consulta</span></div>';
+  document.getElementById('cuartel-notice').innerHTML = peMandoEdita() ? '<div class="notice"><span>✏️ Puede cambiar datos del <b>personal</b> (no servicios, comidas ni pernoctas). Cada cambio pide dos confirmaciones y lo verán el Furry y el superadmin, que pueden revertirlo.</span></div>' : '<div class="notice"><span>🔒 Solo consulta</span></div>';
   document.getElementById('cuartel-vista').innerHTML = '<div class="pe-scope pe-layout"><div class="pe-main"><div id="mandos-pe-buscar"></div><div id="mandos-pe-lista"><p class="small-note">Cargando…</p></div></div><div class="pe-side"><div id="mandos-pe-pases"></div></div></div>';
   PE.multi = false; PE.soloSel = false; PE.sel.clear();
   try{
