@@ -1569,7 +1569,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-11-04T23:03:09";
+const APP_VERSION = "2026-11-05T06:39:46";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -4652,6 +4652,7 @@ function xlsxDesdeDoc(doc, nombre){
 // Helpers de datos
 const cMarca = (id,col)=> CUARTEL.data.V[id+'|'+col.type+'|'+col.day];
 const cPernVal = (id,d)=>{ const k=id+'|'+d; const m=CUARTEL.data.pernMap; return nocheObligatoriaManiobra(id,ACTIVE_WEEK,d) ? true : (m.hasOwnProperty(k)?m[k].duerme_agm:true); };
+const cPernPermiso = (id,d) => { const m = CUARTEL.data.pernMap[id+'|'+d]; return m && m.permiso && !nocheObligatoriaManiobra(id,ACTIVE_WEEK,d) ? ' <span title="Permiso extraordinario">🧳</span>' : ''; };
 const cPernFuera = id => { for(let d=0; d<CUARTEL.data.nDias; d++){ if(!cPernVal(id,d)) return true; } return false; }; // duerme fuera alguna noche de la semana
 const cBotonContactar = id => `<button type="button" class="small-btn" onclick="cuartelContactarPernocta('${id}')">📞 Contactar</button>`;
 // El cuartel NO tiene el teléfono ni la dirección en pantalla: solo se piden al pulsar «Contactar» (queda registrado, solo lo ve el superadmin)
@@ -4664,6 +4665,12 @@ async function fetchPernoctaMapCuartel(personaIds, semanaKey){
     data = await selectTodo('pernoctas', 'persona_id,dia,duerme_agm', q=>q.eq('semana_inicio', semanaKey), personaIds, ['persona_id','dia']); // sin el parche 69: solo esas tres columnas, nunca teléfono ni dirección
   }
   (data||[]).forEach(r=>{ map[r.persona_id+'|'+r.dia] = { duerme_agm:r.duerme_agm }; });
+  if(semanaKey===ACTIVE_WEEK.key){
+    try{
+      const r = await sb.rpc('cuartel_permisos_noches', { p_semana: semanaKey, p_compania: CURRENT.compania });
+      if(!r.error) aplicarPermisosNoches(map, r.data, personaIds); // sin el parche 115 simplemente no se marcan
+    }catch(e){}
+  }
   return map;
 }
 async function cuartelContactarPernocta(personaId){
@@ -4816,7 +4823,7 @@ function cuartelPernoctasSeccionHtml(){
   const tot = `<tfoot><tr><td class="name-cell">TOTAL ${CURRENT.compania}ª CÍA (${todos.length})</td>${dias.map(d=>{ const n=todos.filter(p=>cPernVal(p.id,d)).length; return `<td class="mono">${n}/${todos.length}</td>`; }).join('')}</tr></tfoot>`;
   const sec = secciones.find(s=>s.code===CUARTEL.seccion) || secciones[0];
   let det = '<thead><tr class="daynames"><th class="name-cell">'+sec.code+'</th>'+dias.map(d=>`<th>${DAY_NAMES[(d)%7]}<span class="colhead-sub">${fmt(diaPern(ACTIVE_WEEK,d))}</span></th>`).join('')+'<th>Contacto</th></tr></thead><tbody>';
-  sec.people.forEach(p=>{ det += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}</td>${dias.map(d=>{ const v=cPernVal(p.id,d); return `<td><span class="pernocta-badge ${v?'agm':'fuera'}">${v?'AGM':'FUERA'}</span></td>`; }).join('')}<td>${cPernFuera(p.id) ? cBotonContactar(p.id) : ''}</td></tr>`; });
+  sec.people.forEach(p=>{ det += `<tr><td class="${nameCellClass(p)}">${nameCellHtml(p)}</td>${dias.map(d=>{ const v=cPernVal(p.id,d); return `<td><span class="pernocta-badge ${v?'agm':'fuera'}">${v?'AGM':'FUERA'}</span>${cPernPermiso(p.id,d)}</td>`; }).join('')}<td>${cPernFuera(p.id) ? cBotonContactar(p.id) : ''}</td></tr>`; });
   det += `</tbody><tfoot><tr><td class="name-cell">Total AGM</td>${dias.map(d=>{ const n=sec.people.filter(p=>cPernVal(p.id,d)).length; return `<td class="mono">${n}/${sec.people.length}</td>`; }).join('')}<td></td></tr></tfoot>`;
   return `<h3 class="section-title">Quién duerme en la AGM, por sección</h3>
     <div class="table-scroll"><table class="roster">${thead}<tbody>${rows}</tbody>${tot}</table></div>
@@ -4842,7 +4849,7 @@ function pintarBusquedaCuartel(){
         ${['desayuno','comida','cena'].map(t=>`<tr><td class="name-cell">${tipoNombre(t)}</td>${DAY_NAMES.map((_,i)=>{ const col=cols.find(c=>c.type===t&&c.day===i); const v=cMarca(p.id,col); return `<td><span class="${v?'mark-yes':'mark-no'}">${v?'✓':'—'}</span></td>`; }).join('')}</tr>`).join('')}
       </tbody></table></div>`;
     } else {
-      cuerpo = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">${Array.from({length:CUARTEL.data.nDias},(_,d)=>{ const v=cPernVal(p.id,d); return `<span class="pernocta-badge ${v?'agm':'fuera'}">${DAY_NAMES[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))}: ${v?'AGM':'FUERA'}</span>`; }).join('')}</div>
+      cuerpo = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">${Array.from({length:CUARTEL.data.nDias},(_,d)=>{ const v=cPernVal(p.id,d); return `<span class="pernocta-badge ${v?'agm':'fuera'}">${DAY_NAMES[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))}: ${v?'AGM':'FUERA'}${cPernPermiso(p.id,d)}</span>`; }).join('')}</div>
         ${cPernFuera(p.id) ? `<div style="margin:6px 0;">${cBotonContactar(p.id)}</div>` : ''}`;
     }
     return `<div class="cuartel-card"><h4>${nameCellHtml(p)} <span style="font-weight:400;color:var(--ink-soft);">· Sección ${sec.code}</span></h4>
@@ -9305,27 +9312,6 @@ function pernoctaObligatoria(personaId, dia){
   if(viernesFueraPermitido(personaId, ACTIVE_WEEK.key)) return false; // permiso del Furry para dormir fuera este viernes (las maniobras y el AGM forzado ya han mandado arriba)
   return true;
 }
-let PASE_SECCIONES_CACHE = [];
-function onPaseSeccionChange(seccionNum){
-  const sec = PASE_SECCIONES_CACHE.find(s=>String(s.seccion)===String(seccionNum));
-  const selP = document.getElementById('pase-persona');
-  if(!sec || !selP) return;
-  selP.innerHTML = sec.people.map(p=>`<option value="${p.id}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)}</option>`).join('');
-}
-async function concederPase(){
-  const personaId = document.getElementById('pase-persona').value;
-  const dia = parseInt(document.getElementById('pase-dia').value, 10);
-  const ok = await setPernocta(personaId, dia, false); // un pase no toca la dirección, el teléfono ni la ciudad que ya hubiera
-  if(ok) showToast('Pase concedido — puede dormir fuera ese día.');
-  await renderAdminPernoctas();
-}
-async function revocarPase(){
-  const personaId = document.getElementById('pase-persona').value;
-  const dia = parseInt(document.getElementById('pase-dia').value, 10);
-  const ok = await setPernocta(personaId, dia, true, null);
-  if(ok) showToast('Pase revocado — vuelve a dormir en la AGM ese día.');
-  await renderAdminPernoctas();
-}
 let CIUDAD_OK = true; // pasa a false si la base de datos aún no tiene la columna «ciudad» (parche SQL 89)
 const PERN_COLS = () => 'duerme_agm,direccion,telefono' + (CIUDAD_OK ? ',ciudad' : '');
 async function fetchPernoctaOwn(personaId, semanaKey){
@@ -9341,6 +9327,33 @@ async function fetchPernoctaSeccion(compania, seccion, semanaKey){
   (data||[]).forEach(r=>{ map[r.persona_id+'|'+r.dia] = r.duerme_agm; });
   return map;
 }
+// Un permiso extraordinario aceptado cuenta como «fuera» la noche en que está fuera (a las 00:00 del día siguiente ya ha salido y aún no ha vuelto).
+// Si se marcó como «realizado» antes de tiempo, la vuelta es esa hora. Los pases de horas no cuentan (solo afectan a comidas).
+function aplicarPermisosNoches(map, filas, personaIds){
+  if(!filas || !filas.length) return map;
+  const ids = new Set(personaIds), n = pernoctaDiasCount();
+  filas.forEach(x=>{
+    if(!ids.has(x.persona_id)) return;
+    const ini = new Date(paseIni(x)+'T'+hh(x.hora_inicio)+':00');
+    let fin = new Date((x.fecha_fin||paseIni(x))+'T'+hh(x.hora_fin)+':00');
+    if(x.fase==='realizado' && x.fase_en){ const fe = new Date(x.fase_en); if(fe < fin) fin = fe; }
+    for(let d=0; d<n; d++){
+      const dia = diaPern(ACTIVE_WEEK, d), medianoche = new Date(dia.getFullYear(), dia.getMonth(), dia.getDate()+1);
+      if(ini <= medianoche && medianoche < fin){
+        const k = x.persona_id+'|'+d, ya = map[k];
+        map[k] = Object.assign({}, ya || {}, { duerme_agm:false, permiso:true });
+      }
+    }
+  });
+  return map;
+}
+async function fetchPermisosNochesAdmin(){
+  try{
+    const ini = ymd(diaPern(ACTIVE_WEEK,0)), fin = ymd(diaPern(ACTIVE_WEEK, pernoctaDiasCount()));
+    const { data, error } = await sb.from('pases_permisos').select('persona_id,fecha_inicio,fecha_fin,hora_inicio,hora_fin,fase,fase_en').eq('compania', CURRENT.compania).eq('tipo','permiso').eq('estado','aceptado').gte('fecha_fin', ini).lte('fecha_inicio', fin);
+    return error ? [] : (data||[]);
+  }catch(e){ return []; }
+}
 async function fetchPernoctaMapAdmin(personaIds, semanaKey){
   const map = {};
   if(personaIds.length===0) return map;
@@ -9348,6 +9361,7 @@ async function fetchPernoctaMapAdmin(personaIds, semanaKey){
   try{ data = await selectTodo('pernoctas', 'persona_id,dia,'+PERN_COLS(), q=>q.eq('semana_inicio',semanaKey), personaIds, ['persona_id','dia']); }
   catch(e){ if(!CIUDAD_OK || !/ciudad/i.test((e&&e.message)||'')) throw e; CIUDAD_OK = false; data = await selectTodo('pernoctas', 'persona_id,dia,'+PERN_COLS(), q=>q.eq('semana_inicio',semanaKey), personaIds, ['persona_id','dia']); }
   data.forEach(r=>{ map[r.persona_id+'|'+r.dia] = { duerme_agm:r.duerme_agm, direccion:r.direccion, telefono:r.telefono, ciudad:r.ciudad || (r.duerme_agm ? '' : ciudadDeDireccion(r.direccion)) }; });
+  if(semanaKey===ACTIVE_WEEK.key) aplicarPermisosNoches(map, await fetchPermisosNochesAdmin(), personaIds);
   return map;
 }
 async function fetchConfirmMapPernocta(personaIds, semanaKey){
@@ -9399,9 +9413,16 @@ async function renderAlumnoPernoctas(){
   ]);
   HABITUAL = habitual;
   await cargarCiudadesSug(persona.compania);
+  // Permisos extraordinarios aceptados (los suyos y los de su sección): esas noches están fuera y no se pueden cambiar
+  const permSet = new Set();
+  try{
+    const r = await sb.rpc('pernoctas_permisos_seccion', { p_compania:persona.compania, p_seccion:persona.seccion, p_semana:ACTIVE_WEEK.key });
+    if(!r.error) Object.keys(aplicarPermisosNoches({}, r.data, seccionPeople.map(x=>x.id))).forEach(k=>permSet.add(k)); // sin el parche 115 no se marcan
+  }catch(e){}
   if(gen !== MARCAS_GEN) return; // se ha pulsado otra casilla mientras se pedían los datos: ya son viejos
   function valFor(id, dia){
     if(nocheObligatoriaManiobra(id, ACTIVE_WEEK, dia)) return true; // en maniobras se duerme "en la AGM" (obligatorio)
+    if(permSet.has(id+'|'+dia)) return false; // permiso extraordinario aceptado: duerme fuera
     if(id===persona.id && ownMap.hasOwnProperty(dia)) return ownMap[dia].duerme_agm;
     const key = id+'|'+dia;
     if(seccionMap.hasOwnProperty(key)) return seccionMap[key];
@@ -9425,7 +9446,9 @@ async function renderAlumnoPernoctas(){
       const tieneExcepcion = (p.id===persona.id) ? (ownMap.hasOwnProperty(d) && ownMap[d].duerme_agm===false) : (seccionMap.hasOwnProperty(p.id+'|'+d) && seccionMap[p.id+'|'+d]===false);
       // Las noches de maniobras quedan bloqueadas aunque la compañía tenga el desbloqueo del viernes o la persona tuviera algo guardado de antes
       const locked = nocheObligatoriaManiobra(p.id, ACTIVE_WEEK, d) || (pernoctaObligatoria(p.id, d) && !unlocked && !tieneExcepcion);
-      if(locked){
+      if(!nocheObligatoriaManiobra(p.id, ACTIVE_WEEK, d) && permSet.has(p.id+'|'+d)){
+        days += `<div class="pernocta-day"><span class="daylabel">${DAY_NAMES[(d)%7]}</span><span class="pernocta-badge fuera" title="Permiso extraordinario">X 🧳</span></div>`;
+      } else if(locked){
         days += `<div class="pernocta-day"><span class="daylabel">${DAY_NAMES[(d)%7]}${nocheEnManiobras(ACTIVE_WEEK,d)?' ⛺':''}</span><span class="pernocta-badge agm">AGM</span></div>`;
       } else if(isMe && open){
         days += `<div class="pernocta-day"><span class="daylabel">${DAY_NAMES[(d)%7]}${nocheEnManiobras(ACTIVE_WEEK,d)?' ⛺':''}</span>
@@ -9438,7 +9461,7 @@ async function renderAlumnoPernoctas(){
       }
     }
     if(isMe && open){
-      const anyFuera = Array.from({length:pernoctaDiasCount()},(_,i)=>i).some(d=>!valFor(p.id,d));
+      const anyFuera = Array.from({length:pernoctaDiasCount()},(_,i)=>i).some(d=>!valFor(p.id,d) && !permSet.has(p.id+'|'+d));
       if(anyFuera){
         // Dirección y teléfono guardados en CUALQUIERA de las noches "Fuera" (antes solo se miraban las dos primeras noches)
         const filasFuera = Object.values(ownMap).filter(r=>r && !r.duerme_agm);
@@ -9493,14 +9516,14 @@ async function renderAlumnoPernoctas(){
     </div>`;
   // Resumen que se enseña antes de confirmar + barra de aviso si ha tocado la lista y no ha confirmado
   const nNoches = pernoctaDiasCount();
-  const hayFuera = Array.from({length:nNoches},(_,i)=>i).some(d=>!valFor(persona.id,d));
+  const hayFuera = Array.from({length:nNoches},(_,i)=>i).some(d=>!valFor(persona.id,d) && !permSet.has(persona.id+'|'+d)); // por un permiso no hace falta ciudad
   const filasFueraR = Object.values(ownMap).filter(r=>r && !r.duerme_agm);   // (antes solo se miraban las noches 0 y 1: en un puente con más noches decía «sin dirección»)
   const contactoFuera = filasFueraR.map(r=>r.direccion).find(Boolean);
   const telFuera = filasFueraR.map(r=>r.telefono).find(Boolean);
   const ciudadFuera = filasFueraR.map(r=>r.ciudad).find(Boolean);
   PERN_ESTADO = { hayFuera, ciudad: ciudadFuera || '' };
   RESUMEN_CONFIRM.pernoctas = Array.from({length:nNoches},(_,d)=>
-    `<div class="res-dia"><b>${DAY_NAMES[d%7]} ${fmt(diaPern(ACTIVE_WEEK,d))}</b> — ${valFor(persona.id,d) ? '🏠 duermes en la AGM' : '🚶 duermes FUERA'}</div>`
+    `<div class="res-dia"><b>${DAY_NAMES[d%7]} ${fmt(diaPern(ACTIVE_WEEK,d))}</b> — ${valFor(persona.id,d) ? '🏠 duermes en la AGM' : (permSet.has(persona.id+'|'+d) ? '🧳 fuera por tu permiso extraordinario' : '🚶 duermes FUERA')}</div>`
   ).join('') + (hayFuera ? `<div class="res-dia">📍 ${contactoFuera ? escHtml(contactoFuera) : '<i>sin dirección</i>'}${CIUDAD_OK ? ' · 🏙️ '+(ciudadFuera ? escHtml(ciudadFuera) : '<i>sin ciudad</i>') : ''} · 📞 ${telFuera ? escHtml(telFuera) : '<i>sin teléfono</i>'}</div>` : '');
   pintarBarraPendiente('pernoctas', open && Object.keys(ownMap).length>0 && !confirmado);
 }
@@ -9793,13 +9816,14 @@ function pernoctaDetailTable(sec, pernMap, confirmMap){
       const addr = escHtml(addrFor(p.id,d));
       const tel = escHtml(telFor(p.id,d));
       const ciu = escHtml(ciuFor(p.id,d));
-      const faltaDireccion = !val && !addr && !tel && !ciu;
-      const faltaCiudad = CIUDAD_OK && !val && !ciu;
+      const permiso = !val && !!(pernMap[p.id+'|'+d] && pernMap[p.id+'|'+d].permiso);
+      const faltaDireccion = !val && !permiso && !addr && !tel && !ciu;
+      const faltaCiudad = CIUDAD_OK && !val && !permiso && !ciu;
       tbody += `<td>
-        <select class="pernocta-select" onchange="onAdminPernoctaSelect('${p.id}',${d},this.value)" ${nocheObligatoriaManiobra(p.id,ACTIVE_WEEK,d) ? 'disabled title="Noche obligatoria por las maniobras. Para librar a alguien, ponlo en «Personas que no van» de esas maniobras."' : ''}>
+        <select class="pernocta-select" onchange="onAdminPernoctaSelect('${p.id}',${d},this.value)" ${nocheObligatoriaManiobra(p.id,ACTIVE_WEEK,d) ? 'disabled title="Noche obligatoria por las maniobras. Para librar a alguien, ponlo en «Personas que no van» de esas maniobras."' : (permiso ? 'disabled title="Fuera por un permiso extraordinario aceptado. Para cambiarlo, cancele el permiso en la pestaña Personal."' : '')}>
           <option value="agm" ${val?'selected':''}>AGM</option>
           <option value="fuera" ${!val?'selected':''}>Fuera</option>
-        </select>${nocheObligatoriaManiobra(p.id,ACTIVE_WEEK,d) ? ' ⛺' : ''}
+        </select>${nocheObligatoriaManiobra(p.id,ACTIVE_WEEK,d) ? ' ⛺' : (permiso ? ' <span title="Permiso extraordinario">🧳</span>' : '')}
         <input type="tel" class="pernocta-addr ${val?'hidden':''}" id="admin-pernocta-tel-${p.id}-${d}" value="${tel}" placeholder="Teléfono" onchange="onAdminPernoctaContacto('${p.id}',${d})">
         ${CIUDAD_OK ? `<input type="text" class="pernocta-addr ${val?'hidden':''}${faltaCiudad?' falta-dato':''}" id="admin-pernocta-ciu-${p.id}-${d}" list="ciudades-lista-admin" value="${ciu}" placeholder="Ciudad" onchange="onAdminPernoctaContacto('${p.id}',${d})" autocomplete="off">` : ''}
         <input type="text" class="pernocta-addr ${val?'hidden':''}" id="admin-pernocta-addr-${p.id}-${d}" value="${addr}" placeholder="Dirección" onchange="onAdminPernoctaContacto('${p.id}',${d})">
@@ -9838,8 +9862,10 @@ function pernoctaViewOnlyTable(sec, pernMap, confirmMap){
       const addr = addrFor(p.id,d);
       const tel = telFor(p.id,d);
       const ciu = (pernMap.hasOwnProperty(p.id+'|'+d) ? (pernMap[p.id+'|'+d].ciudad||'') : '');
+      const permiso = !val && !!(pernMap[p.id+'|'+d] && pernMap[p.id+'|'+d].permiso);
       let extra = '';
-      if(!val && (tel || addr || ciu)) extra = `<div style="font-size:.65rem;color:var(--ink-soft);margin-top:3px;">${tel?'📞 '+escHtml(tel):''}${(tel&&(addr||ciu))?' · ':''}${ciu?'<b>🏙️ '+escHtml(ciu)+'</b>':(CIUDAD_OK?'<b style="color:var(--danger);">⚠ sin ciudad</b>':'')}${addr?' · '+escHtml(addr):''}</div>`;
+      if(permiso && !(tel || addr || ciu)) extra = `<div style="font-size:.65rem;color:var(--ink-soft);margin-top:3px;">🧳 permiso extraordinario</div>`;
+      else if(!val && (tel || addr || ciu)) extra = `<div style="font-size:.65rem;color:var(--ink-soft);margin-top:3px;">${tel?'📞 '+escHtml(tel):''}${(tel&&(addr||ciu))?' · ':''}${ciu?'<b>🏙️ '+escHtml(ciu)+'</b>':(CIUDAD_OK?'<b style="color:var(--danger);">⚠ sin ciudad</b>':'')}${addr?' · '+escHtml(addr):''}</div>`;
       else if(!val && !addr && !tel) extra = `<div style="font-size:.65rem;color:var(--danger);margin-top:3px;font-weight:700;">⚠ sin apuntar</div>`;
       tbody += `<td><span class="pernocta-badge ${val?'agm':'fuera'}">${val?'AGM':'X'}</span>${extra}</td>`;
     }
@@ -9898,7 +9924,7 @@ async function guardarCiudadFurry(personaId){
   const el = document.getElementById('sc-ciu-'+personaId), ciudad = el ? el.value.trim() : '';
   if(!ciudad){ showToast('Escribe la ciudad.'); return; }
   const mapa = await fetchPernoctaMapAdmin([personaId], ACTIVE_WEEK.key);
-  const noches = Object.keys(mapa).filter(k=>!mapa[k].duerme_agm).map(k=>parseInt(k.split('|')[1],10));
+  const noches = Object.keys(mapa).filter(k=>!mapa[k].duerme_agm && !mapa[k].permiso).map(k=>parseInt(k.split('|')[1],10));
   if(!noches.length){ showToast('Esa persona ya no duerme fuera esta semana.'); await renderAdminPernoctas(); return; }
   for(const d of noches){ if(!(await setPernocta(personaId, d, false, undefined, undefined, undefined, undefined, ciudad))) return; }
   showToast('Ciudad guardada: '+ciudad);
@@ -10127,7 +10153,6 @@ async function _renderAdminPernoctasImpl(){
   const secciones = await fetchCompanySections(c);
   const allPeople = secciones.flatMap(s=>s.people);
   const allIds = allPeople.map(p=>p.id);
-  PASE_SECCIONES_CACHE = secciones;
 
   // Panel de admin: a la vista solo "Exportar"; todo lo demás va en desplegables
   const styP = 'padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.85rem;';
@@ -10146,26 +10171,6 @@ async function _renderAdminPernoctasImpl(){
         </div>
         <label class="switch"><input type="checkbox" ${SEMANAS_OCULTAS_REAL.has(ACTIVE_WEEK.key)?'checked':''} onchange="toggleSemanaOculta(this.checked)"><span class="track"></span><span class="thumb"></span></label>
       </div>`;
-  const filaPase = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
-        <div class="switch-label">Pase de horas / permiso extraordinario individual
-          <span class="sub2">Da permiso a UN alumno concreto para dormir fuera un día, sin tocar al resto de la compañía</span>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-          <select id="pase-seccion" onchange="onPaseSeccionChange(this.value)" style="${styP}">
-            ${secciones.map(sec=>`<option value="${sec.seccion}">Sección ${sec.code}</option>`).join('')}
-          </select>
-          <select id="pase-persona" style="${styP}">
-            ${secciones[0].people.map(p=>`<option value="${p.id}">${escHtml(p.apellidos)}, ${escHtml(p.nombre)}</option>`).join('')}
-          </select>
-          <select id="pase-dia" style="${styP}">
-            ${Array.from({length: pernoctaDiasCount()}, (_,d)=>`<option value="${d}">${DAY_NAMES[(d)%7]} ${fmt(diaPern(ACTIVE_WEEK,d))}</option>`).join('')}
-          </select>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-          <button class="small-btn" onclick="concederPase()">✅ Conceder pase (duerme fuera)</button>
-          <button class="small-btn" onclick="revocarPase()">↩️ Revocar (vuelve a AGM)</button>
-        </div>
-      </div>`;
   const filaExcelP = `<div class="panel-row" style="flex-direction:column;align-items:stretch;">
         <div class="switch-label">Comprobar un Excel de pernoctas contra la app<span class="sub2">Sube un Excel de pernoctas exportado (aunque lo hayas abierto en Google Sheets) y la app lo compara persona por persona y día por día con lo que hay ahora en la base de datos, y revisa que cada total cuadra. Elige antes la misma semana que el Excel.</span></div>
         <label class="small-btn" style="margin-top:8px;align-self:flex-start;cursor:pointer;">🔍 Elegir Excel y comprobar<input type="file" accept=".xlsx,.xls" style="display:none;" onchange="comprobarExcelPernoctas(this)"></label>
@@ -10180,7 +10185,6 @@ async function _renderAdminPernoctasImpl(){
     { id:'semana', icono:'📅', titulo:'Ajustes de semana', sub:'Dormir fuera, AGM forzada, ocultar y cierre', tituloPanel:'Ajustes de esta semana',
       cuerpo: cajaSub('ps-fuera','🌙 Permitir dormir fuera el viernes', filaPermitirFuera) + cajaSub('ps-forzar','🏠 Forzar AGM', filaForzar) + cajaSub('ps-oculta','🙈 Ocultar esta semana a los alumnos', filaOcultaP)
         + cajaSub('ps-corte','⏰ Plazo de cierre de la semana', corteEspecialPanelHtml(companiaInfo.hora_corte,'pernoctas')) },
-    { id:'pase', icono:'🛂', titulo:'Pase de horas', sub:'Individual: dormir fuera un día', tituloPanel:'Pase de horas / permiso extraordinario individual', cuerpo:filaPase },
     { id:'maniobras', icono:'⛺', titulo:'Semana de maniobras', sub:'Añadir o quitar', tituloPanel:'Añadir semana de maniobras', cuerpo:maniobrasPanelHtml('compania') },
     { id:'generales', icono:'⚙️', titulo:'Ajustes generales', sub:'Plazos hasta fin de curso y confirmar a todos', tituloPanel:'Ajustes generales',
       cuerpo: cajaSub('pg-plazos','📆 Abrir plazos hasta fin de curso', plazosFilaHtml()) + cajaSub('pg-confirmar','✅ Confirmar a todos', filaConfirmarTodosP) },
@@ -10196,7 +10200,7 @@ async function _renderAdminPernoctasImpl(){
   await cargarCiudadesSug(c);
   const nNochesP = pernoctaDiasCount();
   const sinCiudad = !CIUDAD_OK ? [] : allPeople.filter(p=>{
-    const fuera = Array.from({length:nNochesP},(_,d)=>d).filter(d=>!valFor(p.id,d));
+    const fuera = Array.from({length:nNochesP},(_,d)=>d).filter(d=>!valFor(p.id,d) && !(pernMap[p.id+'|'+d] && pernMap[p.id+'|'+d].permiso));
     return fuera.length && !fuera.some(d=>{ const r = pernMap[p.id+'|'+d]; return r && r.ciudad; });
   });
   const cuerpoSinCiudad = sinCiudad.length
