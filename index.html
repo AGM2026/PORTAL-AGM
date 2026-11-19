@@ -801,6 +801,28 @@ body.blq-editando .toast{bottom:auto;top:12px;pointer-events:none;} /* que el av
 /* ---- Pestaña «Personal» del Furry ---- */
 #screen-admin .module-switch{gap:4px;}
 #screen-admin .module-btn{min-width:0;padding:10px 4px;font-size:.8rem;position:relative;overflow-wrap:anywhere;}
+/* con 4 o 5 pestañas (Personal, Arrestados) en el móvil: más compactas y sin salirse */
+.module-switch .module-btn{min-width:0;}
+@media(max-width:560px){ #screen-cuartel .module-switch{gap:3px;padding:4px;} #screen-cuartel .module-btn{padding:10px 1px;font-size:.7rem;letter-spacing:-.01em;} #screen-alumno .module-btn{padding:11px 3px;font-size:.84rem;} }
+.arr-banner{display:flex;gap:10px;align-items:flex-start;margin:0 0 10px;padding:12px 14px;border:1.5px solid var(--danger);border-radius:12px;background:rgba(192,57,43,.08);color:var(--danger);font-weight:700;line-height:1.35;}
+.arr-banner small{display:block;font-weight:500;color:var(--ink-soft);margin-top:2px;}
+.arr-grupo{margin:12px 0 4px;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
+.arr-it{border-bottom:1px solid var(--line);padding:8px 0 !important;}
+.arr-it:last-child{border-bottom:none;}
+.arr-it.pasado{opacity:.7;}
+.arr-it .pe-t{margin-left:4px;}
+.arr-m{font-size:.8rem;color:var(--ink-soft);margin-top:2px;}
+.arr-sol{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:0 0 8px;background:var(--card,var(--paper));}
+.arr-sol-q{font-size:.92rem;}
+.pr-card{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 14px;background:var(--card,var(--paper));}
+.pr-card h3.section-title{margin-top:0;}
+.pr-btns{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px;}
+.pr-tabla{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:8px;}
+.pr-tabla th,.pr-tabla td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line);}
+.pr-tabla th{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);}
+.pr-perfil{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:.9rem;}
+.pr-perfil dt{color:var(--ink-soft);}
+.pr-perfil dd{margin:0;font-weight:600;min-width:0;overflow-wrap:anywhere;}
 .mod-badge{display:inline-block;margin-left:4px;background:var(--danger);color:#fff;font-size:.62rem;font-weight:700;border-radius:999px;padding:1px 6px;vertical-align:1px;}
 .pe-chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px;}
 .pe-chips .small-btn{white-space:normal;}
@@ -1323,6 +1345,7 @@ aplicarTema();
       <button class="module-btn" id="alumno-mod-comidas-btn" onclick="setModule('comidas')">🍽️ Comidas</button>
       <button class="module-btn" id="alumno-mod-pernoctas-btn" onclick="setModule('pernoctas')">🛏️ Pernoctas</button>
       <button class="module-btn" id="alumno-mod-servicios-btn" onclick="setModule('servicios')">📋 Servicios</button>
+      <button class="module-btn" id="alumno-mod-personal-btn" onclick="setModule('personal')">👤 Personal<span id="alumno-pr-badge" class="mod-badge hidden"></span></button>
     </div>
     <div class="blq" data-blq="semana"><div id="alumno-week-select"></div></div>
     <div class="blq" data-blq="plazo"><div id="alumno-desbloqueo"></div>
@@ -1398,6 +1421,13 @@ aplicarTema();
       <div class="blq" data-blq="s-deudas"><h3 class="section-title">Debo / me deben</h3>
       <div id="alumno-deudas-lista"></div></div>
     </div>
+
+    <div id="alumno-personal-mod" class="hidden blq-mod">
+      <div class="blq" data-blq="pr-arrestos"><div id="alumno-pr-arrestos"></div></div>
+      <div class="blq" data-blq="pr-pases"><div id="alumno-pr-pases"></div></div>
+      <div class="blq" data-blq="pr-servicios"><div id="alumno-pr-servicios"></div></div>
+      <div class="blq" data-blq="pr-perfil"><div id="alumno-pr-perfil"></div></div>
+    </div>
   </div>
 
   <!-- ADMIN -->
@@ -1439,7 +1469,7 @@ aplicarTema();
     <div id="admin-personal-mod" class="hidden blq-mod pe-scope">
       <div class="blq" data-blq="a-pe-buscar"><div id="admin-pe-buscar"></div></div>
       <div class="blq" data-blq="a-pe-lista"><div id="admin-pe-lista"></div></div>
-      <div class="blq" data-blq="a-pe-solicitudes"><div id="admin-pe-solicitudes"></div></div>
+      <div class="blq" data-blq="a-pe-solicitudes"><div id="admin-pe-arrsol"></div><div id="admin-pe-solicitudes"></div></div>
       <div class="blq" data-blq="a-pe-cambios"><div id="admin-pe-cambios"></div></div>
       <div class="blq" data-blq="a-pe-pases"><div id="admin-pe-pases"></div></div>
       <div class="blq" data-blq="a-pe-alta"><div id="admin-pe-alta"></div></div>
@@ -1655,6 +1685,7 @@ aplicarTema();
       <button class="module-btn" id="cuartel-mod-pernoctas-btn" onclick="setCuartelModulo('pernoctas')">🛏️ Pernoctas</button>
       <button class="module-btn" id="cuartel-mod-servicios-btn" onclick="setCuartelModulo('servicios')">📋 Servicios</button>
       <button class="module-btn hidden" id="cuartel-mod-personal-btn" onclick="setCuartelModulo('personal')">👥 Personal</button>
+      <button class="module-btn hidden" id="cuartel-mod-arrestados-btn" onclick="setCuartelModulo('arrestados')">🚨 Arrestados</button>
     </div>
     <div id="cuartel-week-select"></div>
     <div id="cuartel-notice"></div>
@@ -1733,7 +1764,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-11-17T23:22:08";
+const APP_VERSION = "2026-11-19T18:00:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -2265,6 +2296,12 @@ const BLQ_DEF = {
     { id:'s-dudas',     nom:'❓ Mis dudas' },
     { id:'s-deudas',    nom:'🤝 Debo / me deben' }
   ],
+  personal:[
+    { id:'pr-arrestos',  nom:'🚨 Arrestos' },
+    { id:'pr-pases',     nom:'📝 Pases de hora y permisos' },
+    { id:'pr-servicios', nom:'📋 Mis servicios' },
+    { id:'pr-perfil',    nom:'👤 Mi perfil' }
+  ],
   // Pantalla del Furry (modo admin): sus bloques llevan «a-» delante y se guardan aparte (DISENO.layout['admin-…'])
   'admin-comidas':[
     { id:'a-semana',    nom:'📅 Calendario / semana',            fijoArriba:true },
@@ -2588,6 +2625,18 @@ function novedadesAdminItems(){
    En ⚙️ → «Ver actualizaciones» se puede elegir cuál ver. Los alumnos ven lo suyo; los Furrys y el superadmin, lo suyo y (plegado) lo de los alumnos.
    especial:true la marca con una estrella. Al entrar, se enseña SOLO la última, una vez por cuenta. ---- */
 const ACTUALIZACIONES = [
+  { id:'2026-11-19-personal', fecha:'2026-11-19T18:00', titulo:'Pestaña Personal y arrestos con autorización', especial:true,
+    alumno: ()=>[
+      { ico:'👤', t:'Nueva pestaña Personal', abierto:true, puntos:[
+        'Arriba del todo, tus arrestos: en curso, próximos y anteriores, con su estado y quién los autorizó.',
+        'Ahora el arresto se SOLICITA (botón «Solicitar arresto»): lo autoriza tu Furry o un mando. Mientras esté pendiente puedes retirarlo; cuándo empieza solo lo pueden cambiar ellos.',
+        'También tus pases de hora y permisos (en activo, próximos y anteriores) con los botones para pedirlos, una tabla con los servicios que has hecho y tu perfil.' ] } ],
+    furry: ()=>[
+      { ico:'🚨', t:'Arrestos con autorización', abierto:true, puntos:[
+        'Los alumnos ya no se apuntan el arresto: lo solicitan. Te llega en Personal («Solicitudes de arresto», cuenta en el numerito de la pestaña) y lo autorizas o rechazas. Solo un arresto autorizado obliga a comidas y pernocta.',
+        'Nuevo «Posponer»: cambia el día de inicio (el número de días se mantiene). El alumno lo ve como pospuesto y le llega un aviso. El alumno no puede cambiarlo.',
+        'Los mandos también pueden autorizar, rechazar y posponer (con dos confirmaciones; tú lo ves y puedes revertirlo).',
+        'Hace falta ejecutar el parche SQL 121.' ] } ] },
   { id:'2026-11-04-pases', fecha:'2026-11-04T19:00', titulo:'Pases y permisos, Personal renovado y mandos', especial:false,
     alumno: null, // solo para Furrys y superadmin
     furry: ()=>[
@@ -3240,7 +3289,7 @@ async function aplicarIr(dest, ref){
   try{
     // Los avisos son PERSONALES (tus comidas, tus servicios, tus avisos): si eres Furry o superadmin y la app está en tu modo Furry/superadmin, se pasa a tu modo alumno
     if(CURRENT && CURRENT.mode!=='cuartel' && modoActual()!=='alumno' && modosDisponibles().includes('alumno')){ await switchToAlumno(); }
-    if(['comidas','pernoctas','servicios'].includes(dest) && CURRENT && CURRENT.mode!=='cuartel' && modoActual()!=='super'){
+    if(['comidas','pernoctas','servicios','personal'].includes(dest) && CURRENT && CURRENT.mode!=='cuartel' && modoActual()!=='super'){
       const btn = document.getElementById((CURRENT.mode==='admin' ? 'admin' : 'alumno')+'-mod-'+dest+'-btn');
       if(btn && btn.offsetParent!==null && currentModule!==dest) await setModule(dest);
     }
@@ -3390,7 +3439,7 @@ function pintarConfig(){
     ${modos.length ? `<div class="cfg-label">Modo</div>
     <div class="cfg-fila">${modos.map(([fn,txt])=>`<button class="small-btn" onclick="cerrarConfig();${fn}">${txt}</button>`).join('')}</div>` : ''}
     <div class="cfg-fila">${['alumno','admin'].includes(modoActual()) ? '<button class="small-btn" onclick="cerrarConfig();toggleEditarPantalla()">🧩 Editar pantalla</button>' : ''}<button class="small-btn" onclick="cerrarConfig();abrirInformacion()">ℹ️ Información</button></div>
-    ${modoPant==='alumno' && CURRENT.persona ? `<div class="cfg-fila"><button class="small-btn" onclick="cerrarConfig();abrirArrestoAlumno()">🚨 Apuntarme un arresto</button><button class="small-btn" onclick="cerrarConfig();abrirViernesAlumno()">📅 Pedir viernes libres</button></div>` : ''}
+    ${modoPant==='alumno' && CURRENT.persona ? `<div class="cfg-fila"><button class="small-btn" onclick="cerrarConfig();abrirArrestoAlumno()">🚨 Solicitar un arresto</button><button class="small-btn" onclick="cerrarConfig();abrirViernesAlumno()">📅 Pedir viernes libres</button></div>` : ''}
     <div class="cfg-fila"><button class="small-btn" onclick="cerrarConfig();abrirNotificaciones()">🔔 Notificaciones</button></div>
     ${disenoOcultasHtml()}
     <div class="cfg-label">Semana</div>
@@ -3554,7 +3603,7 @@ async function setModule(mod){
   if(mod!=='servicios' && typeof servRtParar==='function') servRtParar(); // el tiempo real solo está activo en la pestaña Servicios
   guardarEstado();
   if(mod!=='comidas'){ const db = document.getElementById('alumno-desbloqueo'); if(db) db.innerHTML = ''; } // el aviso del desbloqueo solo vale en Comidas
-  if(mod==='servicios') pintarBarraPendiente('comidas', false); // la barra de "sin confirmar" solo vale en Comidas y Pernoctas
+  if(mod==='servicios' || mod==='personal') pintarBarraPendiente('comidas', false); // la barra de "sin confirmar" solo vale en Comidas y Pernoctas
   document.body.classList.toggle('mod-pernoctas', mod==='pernoctas');
   document.body.classList.toggle('mod-servicios', mod==='servicios');
   const isAdmin = CURRENT && CURRENT.mode==='admin';
@@ -3565,9 +3614,10 @@ async function setModule(mod){
   document.getElementById(prefix+'-comidas-mod').classList.toggle('hidden', mod!=='comidas');
   document.getElementById(prefix+'-pernoctas-mod').classList.toggle('hidden', mod!=='pernoctas');
   document.getElementById(prefix+'-servicios-mod').classList.toggle('hidden', mod!=='servicios');
+  if(!isAdmin){ const b = document.getElementById('alumno-mod-personal-btn'), m = document.getElementById('alumno-personal-mod'); if(b) b.classList.toggle('active', mod==='personal'); if(m) m.classList.toggle('hidden', mod!=='personal'); }
   if(isAdmin){ document.getElementById('admin-mod-personal-btn').classList.toggle('active', mod==='personal'); document.getElementById('admin-personal-mod').classList.toggle('hidden', mod!=='personal'); } // «Personal» solo existe en el panel del Furry
   try{ blqAplicar(); }catch(e){}
-  if(mod==='personal'){ if(isAdmin) await renderAdminPersonal(); else await setModule('comidas'); }
+  if(mod==='personal'){ if(isAdmin) await renderAdminPersonal(); else if(CURRENT && CURRENT.persona) await renderAlumnoPersonal(); else await setModule('comidas'); }
   else if(mod==='pernoctas'){ await (isAdmin ? renderAdminPernoctas() : renderAlumnoPernoctas()); }
   else if(mod==='servicios'){
     if(!servWeekIndexInitialized){ servWeekIndex = defaultServWeekIndex(); servWeekIndexInitialized = true; }
@@ -3966,11 +4016,11 @@ let EXTERNADOS = new Set();          // externados (de fin de semana o totales):
 let EXTERNADOS_TOTAL = new Set();    // externados TOTALES: sin desayunos, comidas ni cenas obligatorios (salvo maniobras y salvo lo que configure el superadmin)
 /* Configuración del personal (una sola fila en personal_config, la cambia el superadmin):
    obl = comidas «tipo|día» que SÍ son obligatorias para los externados totales; viernesDos = viernes libres del grupo «2 viernes» (null = regla de siempre: 1.º y 3.º del mes) */
-let PERSONAL_CFG = { obl: new Set(), viernesDos: null };
+let PERSONAL_CFG = { obl: new Set(), viernesDos: null, arrPestana: false };
 async function fetchPersonalCfg(){
   try{
     const { data, error } = await sb.from('personal_config').select('*').eq('id', 1).maybeSingle();
-    if(!error && data) PERSONAL_CFG = { obl: new Set(data.externado_obligatorias || []), viernesDos: Array.isArray(data.viernes_dos) ? new Set(data.viernes_dos) : null };
+    if(!error && data) PERSONAL_CFG = { obl: new Set(data.externado_obligatorias || []), viernesDos: Array.isArray(data.viernes_dos) ? new Set(data.viernes_dos) : null, arrPestana: !!data.arrestados_pestana };
   }catch(e){}
 }
 /* ================= Arrestos y solicitudes de viernes (parche SQL 101) =================
@@ -3978,13 +4028,20 @@ async function fetchPersonalCfg(){
    puentes desbloqueados… Solo se puede apuntar (el alumno el suyo, el Furry los de su compañía); quitarlo o cambiarlo es cosa del Furry. */
 let ARRESTOS = new Map();          // persona_id -> [{ id, persona_id, desde, hasta, origen, creado_en }] (el alumno solo ve los suyos; el Furry, los de su compañía)
 let ARRESTOS_FALTA = false;        // true si la tabla no existe todavía (parche 101 sin ejecutar)
-const arrestoEn = (personaId, fecha) => { const l = ARRESTOS.get(personaId); return l ? (l.find(a=>a.desde<=fecha && fecha<=a.hasta) || null) : null; };
+let ARRESTOS_V2 = true;             // false si falta el parche 121 (sin estado): todos los arrestos cuentan como autorizados
+const arrAut = a => !a.estado || a.estado==='autorizado'; // solo un arresto AUTORIZADO obliga a comidas y pernocta
+const arrPend = a => a.estado==='pendiente';
+const arrestoEn = (personaId, fecha) => { const l = ARRESTOS.get(personaId); return l ? (l.find(a=>arrAut(a) && a.desde<=fecha && fecha<=a.hasta) || null) : null; };
 const arrestado = (personaId, fecha) => !!arrestoEn(personaId, fecha);
 async function fetchArrestos({ personaIds, compania } = {}){
   try{
-    let q = sb.from('arrestos').select('id,persona_id,compania,desde,hasta,origen,creado_en');
-    if(compania) q = q.eq('compania', compania); else if(personaIds && personaIds.length) q = q.in('persona_id', personaIds); else { ARRESTOS = new Map(); return []; }
-    const { data, error } = await q.order('desde').limit(3000);
+    const mk = cols => { let q = sb.from('arrestos').select(cols); return compania ? q.eq('compania', compania) : q.in('persona_id', personaIds); };
+    if(!compania && !(personaIds && personaIds.length)){ ARRESTOS = new Map(); return []; }
+    let { data, error } = await mk('id,persona_id,compania,desde,hasta,origen,creado_en,estado,motivo,resuelto_por,resuelto_en,rechazo_motivo,desde_original,pospuesto_por,pospuesto_en').order('desde').limit(3000);
+    if(error && /estado|motivo|resuelto|pospuesto|desde_original|column/i.test(error.message||'') && !/relation .*arrestos.* does not exist/i.test(error.message||'')){
+      ARRESTOS_V2 = false; // falta el parche 121: todos cuentan como autorizados, como antes
+      ({ data, error } = await mk('id,persona_id,compania,desde,hasta,origen,creado_en').order('desde').limit(3000));
+    } else if(!error) ARRESTOS_V2 = true;
     if(error){ ARRESTOS_FALTA = /relation|does not exist|schema cache/i.test(error.message||''); return []; }
     ARRESTOS_FALTA = false;
     const m = new Map(); (data||[]).forEach(a=>{ if(!m.has(a.persona_id)) m.set(a.persona_id, []); m.get(a.persona_id).push(a); });
@@ -3994,11 +4051,12 @@ async function fetchArrestos({ personaIds, compania } = {}){
 const arrestoTxt = a => `${fmtFecha(a.desde)} → ${fmtFecha(a.hasta)} (${diasEntre(a.desde, a.hasta)+1} día${diasEntre(a.desde, a.hasta)===0?'':'s'})`;
 const arrestoVigente = a => a.hasta >= ymd(new Date());
 // Apuntar un arresto (alumno: el suyo; Furry: cualquiera de su compañía). Devuelve { ok, error }
-async function guardarArresto(personaId, desde, hasta){
+async function guardarArresto(personaId, desde, hasta, motivo){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(desde||'') || !/^\d{4}-\d{2}-\d{2}$/.test(hasta||'')) return { ok:false, error:'Elige las fechas.' };
   if(hasta < desde) return { ok:false, error:'La fecha final no puede ser anterior a la de inicio.' };
   if(diasEntre(desde, hasta) > 120) return { ok:false, error:'Un arresto no puede durar más de 120 días.' };
-  const { error } = await sb.from('arrestos').insert({ persona_id: personaId, desde, hasta });
+  const fila = { persona_id: personaId, desde, hasta }; if(motivo && ARRESTOS_V2) fila.motivo = String(motivo).slice(0, 300);
+  const { error } = await sb.from('arrestos').insert(fila);
   if(error){
     const m = error.message || '';
     return { ok:false, error: /relation|does not exist|schema cache/i.test(m) ? 'Falta ejecutar el parche SQL 101.' : /Ya tiene un arresto/i.test(m) ? 'Ya tiene un arresto apuntado en esas fechas.' : /fecha de inicio/i.test(m) ? 'La fecha de inicio no es válida (como mucho 30 días atrás o 90 adelante).' : /Demasiados/i.test(m) ? 'Demasiados arrestos apuntados. Habla con tu Furry.' : m };
@@ -4283,6 +4341,7 @@ async function enterCuartel(compania, opts){
   CUARTEL.semanaKey = null; // los mandos empiezan en la semana en curso y luego eligen en el calendario
   CURRENT = { mode:'cuartel', compania, companiaInfo, vistaPrevia, previo, pantallaPrevia, mandos: !!(opts && opts.mandos) }; // mandos: cuenta de capitán / comandantes (parche 103)
   document.querySelector('#screen-cuartel .mh-quien').textContent = CURRENT.mandos ? '🎖️ Mandos' : '🪖 Servicio de cuartel';
+  await fetchPersonalCfg(); arrPestanaAplicar(); // «Arrestados» en pestaña propia si lo ha elegido el superadmin
   document.getElementById('cuartel-mod-personal-btn').classList.remove('hidden'); // «Personal»: los mandos ven la lista de su sección; el servicio de cuartel, un buscador acotado y con registro
   await Promise.all([ fetchCortesEspeciales(compania), fetchPernoctaForzarAgm(compania), fetchComidaDesbloqueoDias(compania) ]);
   setActiveWeek(semanaEnCursoIndex());
@@ -4456,6 +4515,8 @@ async function setCuartelModulo(m){
   document.getElementById('cuartel-mod-pernoctas-btn').classList.toggle('active', m==='pernoctas');
   document.getElementById('cuartel-mod-servicios-btn').classList.toggle('active', m==='servicios');
   document.getElementById('cuartel-mod-personal-btn').classList.toggle('active', m==='personal');
+  { const b = document.getElementById('cuartel-mod-arrestados-btn'); if(b) b.classList.toggle('active', m==='arrestados'); }
+  if(m==='arrestados'){ await renderArrestadosTab(); return; }
   if(m==='personal'){ if(CURRENT.mandos) await renderMandosPersonal(); else await renderCuartelPersonal(); return; }
   if(m==='servicios'){ await cargarCuartelServicios(); return; }
   await cargarCuartel();
@@ -5219,6 +5280,217 @@ function pintarBusquedaCuartel(){
       ${isIntol(p) ? `<div style="font-size:.8rem;">🍽️⚠️ Intolerancias: ${escHtml(p.intolerancias.trim())}</div>` : ''}${cuerpo}</div>`;
   }).join('') + (gente.length>60 ? '<p class="small-note">Hay más resultados: afina la búsqueda.</p>' : '');
 }
+/* ================= Arrestos con autorización y pestaña «Personal» del alumno (parche SQL 121) =================
+   El alumno SOLICITA el arresto (queda «pendiente»); lo autoriza o rechaza el Furry o un mando. Solo un arresto AUTORIZADO obliga a comidas y pernocta.
+   El Furry y los mandos pueden posponerlo (cambiar el día de inicio); queda anotado y el alumno lo ve. El alumno solo puede retirar su solicitud pendiente. */
+const ARR_EST = { pendiente:['aviso','⏳ Pendiente de autorizar'], autorizado:['ok','✅ Autorizado'], rechazado:['rojo','✖ Rechazado'] };
+function arrFechaHora(iso){ try{ return iso ? new Date(iso).toLocaleString('es-ES',{ day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : ''; }catch(e){ return ''; } }
+function arrEstadoHtml(a){ if(!ARRESTOS_V2) return ''; const e = ARR_EST[a.estado||'autorizado'] || ARR_EST.autorizado; return `<span class="pe-t ${e[0]}">${e[1]}</span>`; }
+const arrPospuesto = a => !!(a.desde_original && a.desde_original!==a.desde);
+function arrDetalleHtml(a){
+  const l = [];
+  if(a.motivo) l.push(`Motivo: ${escHtml(a.motivo)}`);
+  if(a.estado==='autorizado' && a.resuelto_por) l.push(`Autorizado por ${escHtml(a.resuelto_por)}${a.resuelto_en ? ' · '+arrFechaHora(a.resuelto_en) : ''}`);
+  if(a.estado==='rechazado') l.push(`Rechazado${a.resuelto_por ? ' por '+escHtml(a.resuelto_por) : ''}${a.resuelto_en ? ' · '+arrFechaHora(a.resuelto_en) : ''}${a.rechazo_motivo ? ': «'+escHtml(a.rechazo_motivo)+'»' : ''}`);
+  if(a.estado==='pendiente' && a.creado_en) l.push(`Solicitado ${arrFechaHora(a.creado_en)}`);
+  if(arrPospuesto(a)) l.push(`📅 Pospuesto: empezaba el ${escHtml(fechaCortaTxt(a.desde_original))}${a.pospuesto_por ? ' · lo cambió '+escHtml(a.pospuesto_por) : ''}${a.pospuesto_en ? ' ('+arrFechaHora(a.pospuesto_en)+')' : ''}`);
+  return l.map(t=>`<div class="arr-m">${t}</div>`).join('');
+}
+// Una línea de arresto para el Furry ('furry'), los mandos ('mando') o solo lectura ('ro')
+function arrItemStaffHtml(p, a, rol){
+  const hoy = ymd(new Date()), id = escHtml(p.id), aid = escHtml(String(a.id));
+  const cuando = !arrAut(a) ? '' : a.desde<=hoy && hoy<=a.hasta ? '🚨 <b>Ahora</b> · ' : a.desde>hoy ? '⏳ Próximo · ' : '';
+  let btn = '';
+  if(rol==='furry' || rol==='mando'){
+    if(arrPend(a)) btn += `<button type="button" class="small-btn active" onclick="arrResolver('${id}','${aid}','autorizado')">✅ Autorizar</button><button type="button" class="small-btn danger" onclick="arrResolver('${id}','${aid}','rechazado')">✖ Rechazar</button>`;
+    if(a.estado!=='rechazado' && arrestoVigente(a)) btn += `<button type="button" class="small-btn" onclick="${rol==='furry' ? 'peArrestoModal' : 'mandoArrestoModal'}('${id}','${aid}')">📅 Posponer / fechas</button>`;
+    btn += `<button type="button" class="small-btn danger" onclick="${rol==='furry' ? 'peBorrarArresto' : 'mandoBorrarArresto'}('${id}','${aid}')">🗑 Borrar</button>`;
+  }
+  const vivo = arrestoVigente(a) && a.estado!=='rechazado';
+  return `<div class="pe-it arr-it${vivo ? '' : ' pasado'}"><span>${cuando}${escHtml(arrestoTxt(a))} ${arrEstadoHtml(a)}${a.origen==='alumno' ? ' <span class="pe-sec">(lo pidió el alumno)</span>' : ''}${arrDetalleHtml(a)}</span>${btn ? `<span class="pe-btns">${btn}</span>` : ''}</div>`;
+}
+// Autorizar o rechazar (Furry: directamente; mandos: con sus dos confirmaciones y su registro)
+function arrResolver(pid, aid, estado){
+  const p = pePersona(pid), a = p && (ARRESTOS.get(p.id)||[]).find(x=>String(x.id)===String(aid)); if(!a) return;
+  if(estado==='autorizado'){ arrResolverHacer(pid, aid, 'autorizado', ''); return; }
+  abrirModalGlobal(`<h3>✖ Rechazar la solicitud de arresto</h3>
+    <p class="modal-nota" style="margin-top:0;"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)} · ${escHtml(arrestoTxt(a))}</p>
+    <div class="field"><label for="arr-rech-motivo">Motivo (opcional, lo verá el alumno)</label><input type="text" id="arr-rech-motivo" maxlength="200" placeholder="Ej. Las fechas no son correctas"></div>
+    <div class="modal-botones"><button type="button" class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button type="button" class="primary-btn" onclick="arrResolverHacer('${escHtml(p.id)}','${escHtml(String(a.id))}','rechazado', (document.getElementById('arr-rech-motivo')||{}).value || '')">Rechazar</button></div>`);
+}
+async function arrResolverHacer(pid, aid, estado, motivo){
+  const p = pePersona(pid), a = p && (ARRESTOS.get(p.id)||[]).find(x=>String(x.id)===String(aid)); if(!a){ cerrarModalGlobal(); return; }
+  motivo = String(motivo||'').trim().slice(0, 200);
+  const txt = `${estado==='autorizado' ? 'Autorizar' : 'Rechazar'} el arresto de ${p.nombre} ${p.apellidos}: ${arrestoTxt(a)}`;
+  const tras = async ()=>{ cerrarModalGlobal(); await peRecargarArrestos(pid); };
+  if(peMandoEdita()){ await mandoCambio(pid, estado==='autorizado' ? 'arresto_autorizar' : 'arresto_rechazar', { id:a.id, motivo }, txt, tras); return; }
+  if(peRO()) return;
+  if(estado==='autorizado' && !await confirmarApp(`${txt}\n\nDesde ese momento tendrá obligatorias en la AGM la pernocta y todas las comidas de esos días.`, { si:'Autorizar' })) return;
+  const { data, error } = await sb.from('arrestos').update({ estado, rechazo_motivo: estado==='rechazado' ? (motivo || null) : null }).eq('id', a.id).select('id');
+  if(error || !data || !data.length){
+    const m = (error && error.message) || '';
+    showToast('No se pudo: ' + (!error ? 'no tienes permiso.' : /Ya tiene un arresto/i.test(m) ? 'se solapa con otro arresto autorizado de esa persona.' : /estado|column/i.test(m) ? 'falta ejecutar el parche SQL 121.' : m));
+    return;
+  }
+  logFurry('arresto', `Arresto ${estado}: ${a.desde} → ${a.hasta}`);
+  showToast(estado==='autorizado' ? '✅ Arresto autorizado. Ya tiene comidas y pernocta obligatorias esos días.' : 'Solicitud de arresto rechazada.');
+  await tras();
+}
+// Solicitudes de arresto pendientes (Personal del Furry y de los mandos; o la pestaña «Arrestados»)
+const arrPendLista = () => { const r = []; (PE.personas||[]).forEach(p=>(ARRESTOS.get(p.id)||[]).filter(arrPend).forEach(a=>r.push({ p, a }))); return r.sort((x,y)=>String(x.a.creado_en||'').localeCompare(String(y.a.creado_en||''))); };
+const arrPendientesN = () => (CURRENT && CURRENT.mode==='admin') ? arrPendLista().length : 0;
+function arrSolicitudesHtml(){
+  const l = arrPendLista(); if(!l.length) return '';
+  const rol = peRO() ? (peMandoEdita() ? 'mando' : 'ro') : 'furry';
+  return `<div class="pr-card"><h3 class="section-title">🚨 Solicitudes de arresto <span class="mod-badge">${l.length}</span></h3>
+    <p class="small-note" style="margin-top:0;">Solo cuenta un arresto autorizado. Al autorizarlo, esos días quedan con la pernocta y todas las comidas obligatorias en la AGM.</p>
+    ${l.map(({ p, a })=>`<div class="arr-sol"><div class="arr-sol-q"><b>${escHtml(p.apellidos)}, ${escHtml(p.nombre)}</b> <span class="pe-sec">${escHtml(String(CURRENT.compania))}${escHtml(String(p.seccion))}</span></div>${arrItemStaffHtml(p, a, rol)}</div>`).join('')}</div>`;
+}
+function arrPintarSolicitudes(forzar){
+  const ver = ARRESTOS_V2 && (forzar || !peRO() || personalVis('arrestados'));
+  pePonerHtml('admin-pe-arrsol', ver ? arrSolicitudesHtml() : '');
+}
+/* ---- Pestaña «Arrestados» (mandos y cuartel), si el superadmin la elige en vez de tenerlos dentro de Personal ---- */
+function arrPestanaAplicar(){
+  const b = document.getElementById('cuartel-mod-arrestados-btn'); if(!b) return;
+  b.classList.toggle('hidden', !(CURRENT && CURRENT.mode==='cuartel' && PERSONAL_CFG.arrPestana && personalVisBase('arrestados')));
+}
+async function renderArrestadosTab(){
+  ['cuartel-week-select','cuartel-controles'].forEach(id=>{ const e = document.getElementById(id); if(e) e.innerHTML = ''; });
+  const nt = document.getElementById('cuartel-notice'); if(nt) nt.innerHTML = '';
+  const v = document.getElementById('cuartel-vista'); if(!v) return;
+  if(!personalVisBase('arrestados')){ v.innerHTML = '<p class="small-note">El Furry no ha dejado ver los arrestados en esta cuenta.</p>'; return; }
+  v.innerHTML = '<p class="small-note">Cargando…</p>';
+  const c = CURRENT.compania, hoy = ymd(new Date());
+  if(CURRENT.mandos){
+    try{
+      const secciones = await fetchCompanySections(c);
+      PE.todas = secciones.flatMap(s=>s.people).map(p=>Object.assign(p, { _n: cuartelNorm(p.apellidos+' '+p.nombre) })).sort(peOrden);
+      peAplicarVisibles();
+    }catch(e){ v.innerHTML = `<p class="small-note" style="color:var(--danger);">No se pudo cargar: ${escHtml((e && e.message) || String(e))}</p>`; return; }
+    const rol = peMandoEdita() ? 'mando' : 'ro', filas = [];
+    (PE.personas||[]).forEach(p=>(ARRESTOS.get(p.id)||[]).filter(arrAut).forEach(a=>filas.push({ p, a })));
+    const ahora = filas.filter(({ a })=>a.desde<=hoy && hoy<=a.hasta).sort((x,y)=>x.a.hasta<y.a.hasta ? -1 : 1), prox = filas.filter(({ a })=>a.desde>hoy).sort((x,y)=>x.a.desde<y.a.desde ? -1 : 1);
+    const lista = l => l.length ? l.map(({ p, a })=>`<div class="arr-sol"><div class="arr-sol-q"><b>${escHtml(p.apellidos)}, ${escHtml(p.nombre)}</b> <span class="pe-sec">${c}${escHtml(String(p.seccion))}</span></div>${arrItemStaffHtml(p, a, rol)}</div>`).join('') : '<p class="small-note" style="margin:0;">Nadie.</p>';
+    v.innerHTML = `<div class="pe-scope"><div id="mandos-pe-arrsol"></div>
+      <div class="pr-card"><h3 class="section-title">🚨 Arrestados ahora <span class="gp-cuenta">${ahora.length}</span></h3>${lista(ahora)}</div>
+      <div class="pr-card"><h3 class="section-title">⏳ Próximos arrestos <span class="gp-cuenta">${prox.length}</span></h3>${lista(prox)}</div></div>`;
+    arrPintarSolicitudes(true);
+    return;
+  }
+  const { data, error } = await sb.rpc('cuartel_personal_base', { p_device_id:idDispositivo(), p_dispositivo:describirDispositivo(), p_compania:c, ...cuNombreRpc() });
+  if(error){ v.innerHTML = `<div class="notice closed"><span>${escHtml(cuErrorParche(error, 111))}</span></div>`; return; }
+  const arr = (data && data.arrestados) || [];
+  v.innerHTML = `<div class="pr-card"><h3 class="section-title">🚨 Arrestados esta semana <span class="gp-cuenta">${arr.length}</span></h3>
+    ${arr.length ? arr.map(x=>`<div class="pe-it arr-it"><span><b>${escHtml(x.apellidos)}, ${escHtml(x.nombre)}</b> <span class="pe-sec">${c}${escHtml(String(x.seccion))}</span></span><span class="pe-t rojo">🚨 ${x.ahora ? 'Ahora · ' : ''}${escHtml(peFC(x.desde)+' → '+peFC(x.hasta))}</span></div>`).join('') : '<p class="small-note" style="margin:0;">Nadie arrestado esta semana.</p>'}
+    <p class="small-note">Solo se ven los arrestos autorizados de esta semana.</p></div>`;
+}
+// Superadmin: el ajuste
+function arrPestanaSuperHtml(){
+  return `<div class="panel-row"><div class="switch-label">🚨 Arrestados en una pestaña propia: <b id="arr-pest-est">${PERSONAL_CFG.arrPestana ? 'Sí' : 'No (dentro de Personal)'}</b><span class="sub2">Para los mandos y el servicio de cuartel. Desactivado: los arrestados se ven dentro de «Personal», como hasta ahora. Activado: salen de «Personal» y tienen su propia pestaña «🚨 Arrestados» (con las solicitudes pendientes, para los mandos). Los datos son los mismos.</span></div>
+    <label class="switch"><input type="checkbox" id="arr-pest-chk" ${PERSONAL_CFG.arrPestana ? 'checked' : ''} onchange="arrPestanaCambiar(this)"><span class="track"></span><span class="thumb"></span></label></div>`;
+}
+async function arrPestanaSuperCargar(){ await fetchPersonalCfg(); const c = document.getElementById('arr-pest-chk'), b = document.getElementById('arr-pest-est'); if(c) c.checked = !!PERSONAL_CFG.arrPestana; if(b) b.textContent = PERSONAL_CFG.arrPestana ? 'Sí' : 'No (dentro de Personal)'; }
+async function arrPestanaCambiar(el){
+  const v = !!el.checked;
+  const { data, error } = await sb.from('personal_config').update({ arrestados_pestana: v }).eq('id', 1).select('arrestados_pestana');
+  if(error || !data || !data.length){ el.checked = !v; showToast(error ? (/arrestados_pestana|column/i.test(error.message||'') ? 'Falta ejecutar el parche SQL 121.' : 'No se pudo cambiar: '+error.message) : 'Solo el superadmin puede cambiarlo.'); return; }
+  PERSONAL_CFG.arrPestana = !!data[0].arrestados_pestana;
+  const b = document.getElementById('arr-pest-est'); if(b) b.textContent = v ? 'Sí' : 'No (dentro de Personal)';
+  showToast(v ? '🚨 Mandos y cuartel verán los arrestados en su propia pestaña.' : 'Mandos y cuartel verán los arrestados dentro de Personal.');
+}
+/* ---- Alumno: pestaña «Personal» ---- */
+function arrItemAlumnoHtml(a){
+  const hoy = ymd(new Date()), vivo = arrestoVigente(a) && a.estado!=='rechazado';
+  const cuando = arrAut(a) && a.desde<=hoy && hoy<=a.hasta ? '🚨 <b>Ahora</b> · ' : '';
+  const btn = arrPend(a) ? `<span class="pe-btns"><button type="button" class="small-btn danger" onclick="alPersRetirarArresto('${escHtml(String(a.id))}')">Retirar solicitud</button></span>` : '';
+  return `<div class="pe-it arr-it${vivo ? '' : ' pasado'}"><span>${cuando}${escHtml(arrestoTxt(a))} ${arrEstadoHtml(a)}${arrPospuesto(a) && arrAut(a) ? ' <span class="pe-t aviso">📅 Pospuesto</span>' : ''}${arrDetalleHtml(a)}</span>${btn}</div>`;
+}
+function alPersArrestosHtml(){
+  const hoy = ymd(new Date()), l = (ARRESTOS.get(CURRENT.persona.id) || []).slice();
+  const curso = l.filter(a=>arrAut(a) && a.desde<=hoy && hoy<=a.hasta);
+  const prox = l.filter(a=>a.estado!=='rechazado' && a.hasta>=hoy && !curso.includes(a)).sort((a,b)=>a.desde<b.desde ? -1 : 1);
+  const ant = l.filter(a=>!curso.includes(a) && !prox.includes(a)).sort((a,b)=>a.desde<b.desde ? 1 : -1);
+  const grupo = (t, x) => x.length ? `<div class="arr-grupo">${t} (${x.length})</div>${x.map(arrItemAlumnoHtml).join('')}` : '';
+  const banner = curso.map(a=>`<div class="arr-banner" role="status"><span>🚨</span><span>Arrestado hasta el ${escHtml(fechaCortaTxt(a.hasta))}<small>Hasta entonces, la pernocta y todas las comidas son obligatorias en la AGM.</small></span></div>`).join('');
+  return `<div class="pr-card"><h3 class="section-title">🚨 Arrestos</h3>${banner}
+    <div class="pr-btns"><button type="button" class="primary-btn" style="width:auto;margin:0;" onclick="abrirArrestoAlumno()">🚨 Solicitar arresto</button></div>
+    <p class="small-note" style="margin:4px 0 0;">Lo autoriza tu Furry o un mando. Mientras esté pendiente no cambia nada y puedes retirarlo; cuándo empieza solo lo pueden cambiar ellos.</p>
+    ${ARRESTOS_FALTA ? '<p class="small-note">Todavía no se pueden consultar los arrestos.</p>' : (l.length ? grupo('En curso', curso) + grupo('Próximos y pendientes', prox) + (ant.length ? `<details class="caja-det"><summary>Anteriores y rechazados (${ant.length})</summary><div class="caja-sub-body">${ant.map(arrItemAlumnoHtml).join('')}</div></details>` : '') : '<p class="small-note">No tienes ningún arresto.</p>')}</div>`;
+}
+async function alPersRetirarArresto(aid){
+  const a = (ARRESTOS.get(CURRENT.persona.id)||[]).find(x=>String(x.id)===String(aid)); if(!a) return;
+  if(!await confirmarApp(`¿Retirar tu solicitud de arresto (${arrestoTxt(a)})?`, { si:'Retirar', peligro:true })) return;
+  const { data, error } = await sb.from('arrestos').delete().eq('id', a.id).select('id');
+  if(error || !data || !data.length){ showToast('No se pudo retirar: ' + (error ? error.message : 'ya no está pendiente (puede que la hayan autorizado).')); }
+  else showToast('Solicitud retirada.');
+  await fetchArrestos({ personaIds:[CURRENT.persona.id] });
+  pePonerHtmlAl('alumno-pr-arrestos', alPersArrestosHtml());
+}
+function pePonerHtmlAl(id, html){ const e = document.getElementById(id); if(e) e.innerHTML = html; }
+const AL_PERS = { pases:null, paseErr:null, serv:null, servErr:null };
+async function alPersCargarPases(){
+  try{
+    const { data, error } = await sb.from('pases_permisos').select('*').eq('persona_id', CURRENT.persona.id).order('fecha_inicio', { ascending:false }).limit(200);
+    AL_PERS.pases = error ? [] : (data||[]); AL_PERS.paseErr = error ? (/relation|does not exist|schema cache/i.test(error.message||'') ? 'falta' : error.message) : null;
+  }catch(e){ AL_PERS.pases = []; AL_PERS.paseErr = String((e && e.message) || e); }
+}
+function alPersPasesHtml(){
+  if(AL_PERS.paseErr==='falta') return '';
+  const ahora = cupAhora(), l = AL_PERS.pases || [];
+  const fin = x => x.estado==='rechazado' || x.estado==='cancelado';
+  const act = l.filter(x=>!fin(x) && paseTiempo(x, ahora).k==='curso');
+  const prox = l.filter(x=>!fin(x) && !act.includes(x) && paseTiempo(x, ahora).k!=='hecho').sort((a,b)=>String(paseIni(a)+(a.hora_inicio||'')).localeCompare(String(paseIni(b)+(b.hora_inicio||''))));
+  const ant = l.filter(x=>!act.includes(x) && !prox.includes(x));
+  const grupo = (t, x, o) => x.length ? `<div class="arr-grupo">${t} (${x.length})</div>${x.map(y=>paseItemHtml(y, o)).join('')}` : '';
+  return `<div class="pr-card"><h3 class="section-title">📝 Pases de hora y permisos</h3>
+    <div class="pases-btns"><button type="button" class="pases-btn" onclick="abrirFormPase('pase')"><span class="pb-ico">🕒</span><b>Pase de horas</b><small>Un día: hora de salida y de vuelta</small></button><button type="button" class="pases-btn" onclick="abrirFormPase('permiso')"><span class="pb-ico">🧳</span><b>Permiso extraordinario</b><small>Varios días</small></button></div>
+    ${AL_PERS.paseErr ? `<p class="small-note" style="color:var(--danger);">No se pudieron cargar: ${escHtml(AL_PERS.paseErr)}</p>` : ''}
+    ${l.length ? grupo('En activo', act, { alumno:true }) + grupo('Próximos', prox, { alumno:true }) + (ant.length ? `<details class="caja-det"><summary>Anteriores (${ant.length})</summary><div class="caja-sub-body">${ant.map(y=>paseItemHtml(y, {})).join('')}</div></details>` : '') : '<p class="small-note">No has pedido ningún pase ni permiso.</p>'}</div>`;
+}
+async function alPersPintarPases(){ if(!(CURRENT && CURRENT.mode==='alumno' && CURRENT.persona)) return; await alPersCargarPases(); pePonerHtmlAl('alumno-pr-pases', alPersPasesHtml()); }
+async function alPersCargarServ(){
+  try{
+    const { data, error } = await sb.from('servicios').select('fecha,tipo,turno,estimado,codigo').eq('persona_id', CURRENT.persona.id).lt('fecha', ymd(new Date())).order('fecha', { ascending:false }).limit(1000);
+    AL_PERS.serv = error ? [] : (data||[]).filter(s=>!s.estimado); AL_PERS.servErr = error ? error.message : null;
+  }catch(e){ AL_PERS.serv = []; AL_PERS.servErr = String((e && e.message) || e); }
+}
+function alPersServHtml(){
+  const l = AL_PERS.serv || [], fila = s => `<tr><td>${escHtml(fmtFecha(s.fecha))}</td><td>${escHtml(servicioLabel(s))}</td></tr>`;
+  const tabla = x => `<table class="pr-tabla"><thead><tr><th>Fecha</th><th>Servicio</th></tr></thead><tbody>${x.map(fila).join('')}</tbody></table>`;
+  return `<div class="pr-card"><h3 class="section-title">📋 Mis servicios</h3>
+    ${AL_PERS.servErr ? `<p class="small-note" style="color:var(--danger);">No se pudieron cargar: ${escHtml(AL_PERS.servErr)}</p>` : ''}
+    ${l.length ? `<div>Has hecho <b>${l.length}</b> servicio${l.length===1?'':'s'}:</div>${cuentaServTablaHtml(l)}${tabla(l.slice(0, 8))}${l.length>8 ? `<details class="caja-det"><summary>Ver todos (${l.length})</summary><div class="caja-sub-body">${tabla(l.slice(8))}</div></details>` : ''}` : '<p class="small-note">Todavía no has hecho ningún servicio (o no está en el cuadrante oficial).</p>'}
+    <p class="small-note" style="margin-bottom:0;">Solo los servicios oficiales ya pasados. Los próximos están en la pestaña 📋 Servicios.</p></div>`;
+}
+function alPersPerfilHtml(){
+  const p = CURRENT.persona, ext = p.externado ? (p.externado_total ? 'Externado total' : 'Externado de fin de semana') : 'No';
+  const vf = p.viernes_fuera>=4 ? 'Todos' : p.viernes_fuera===2 ? '2 al mes' : 'Ninguno';
+  const fila = (k, v) => `<dt>${k}</dt><dd>${v}</dd>`;
+  return `<div class="pr-card"><h3 class="section-title">👤 Mi perfil</h3><dl class="pr-perfil">
+    ${fila('Nombre', escHtml(`${p.nombre||''} ${p.apellidos||''}`.trim()))}
+    ${fila('Compañía', escHtml(`${p.compania}ª Compañía`))}
+    ${fila('Sección', escHtml(`${p.compania}${p.seccion} (${p.seccion}ª Sección)`))}
+    ${p.email ? fila('Correo', escHtml(p.email)) : ''}
+    ${fila('Externado', escHtml(ext))}
+    ${fila('Viernes libres', escHtml(vf))}
+    ${p.promocion_interna ? fila('Promoción interna', 'Sí') : ''}
+    ${fila('Intolerancias', escHtml(String(p.intolerancias||'').trim() || 'Ninguna'))}
+  </dl><p class="small-note" style="margin-bottom:0;">Si algo no es correcto, díselo a tu Furry. Las intolerancias se piden en Comidas → Intolerancias.</p></div>`;
+}
+async function renderAlumnoPersonal(){
+  if(!(CURRENT && CURRENT.persona)) return;
+  ['alumno-week-select','alumno-notice','alumno-desbloqueo'].forEach(id=>pePonerHtmlAl(id, ''));
+  const cargando = '<div class="pr-card"><p class="small-note" style="margin:0;">Cargando…</p></div>';
+  ['alumno-pr-arrestos','alumno-pr-pases','alumno-pr-servicios'].forEach(id=>{ const e = document.getElementById(id); if(e && !e.innerHTML.trim()) e.innerHTML = cargando; });
+  pePonerHtmlAl('alumno-pr-perfil', alPersPerfilHtml());
+  try{ const r = cargarServPers(CURRENT.persona.compania); if(r && r.then) r.catch(()=>{}); }catch(e){}
+  await Promise.all([ fetchArrestos({ personaIds:[CURRENT.persona.id] }), alPersCargarPases(), alPersCargarServ() ]);
+  if(currentModule!=='personal') return;
+  pePonerHtmlAl('alumno-pr-arrestos', alPersArrestosHtml());
+  pePonerHtmlAl('alumno-pr-pases', alPersPasesHtml());
+  pePonerHtmlAl('alumno-pr-servicios', alPersServHtml());
+}
 /* ---- Alumno (y Furry en su modo alumno): apuntarse un arresto y pedir viernes libres. Solo se apunta o se pide: quitarlo o cambiarlo es cosa del Furry ---- */
 const fechaCortaTxt = k => fmtFecha(k).replace(',', '');
 function sumarDias(k, n){ const d = new Date(k+'T12:00:00'); d.setDate(d.getDate()+n); return ymd(d); }
@@ -5234,31 +5506,32 @@ function viernesCuotaHtml(){
 function arrestoAvisoHtml(){
   if(!esAlumnoConPersona() || !ACTIVE_WEEK) return '';
   const hoy = ymd(new Date()), ini = ymd(diaPern(ACTIVE_WEEK, 0)), fin = ymd(diaPern(ACTIVE_WEEK, Math.max(6, pernoctaDiasCount()-1)));
-  return (ARRESTOS.get(CURRENT.persona.id) || []).filter(a=>(a.desde<=hoy && hoy<=a.hasta) || (a.desde<=fin && a.hasta>=ini))
-    .map(a=>`<div class="notice closed" style="margin-top:8px;"><span>🚨 <strong>Arrestado del ${escHtml(fechaCortaTxt(a.desde))} al ${escHtml(fechaCortaTxt(a.hasta))}</strong>: pernocta y comidas obligatorias</span></div>`).join('');
+  const l = (ARRESTOS.get(CURRENT.persona.id) || []).filter(a=>(a.desde<=hoy && hoy<=a.hasta) || (a.desde<=fin && a.hasta>=ini));
+  return l.filter(arrAut).map(a=>`<div class="notice closed" style="margin-top:8px;"><span>🚨 <strong>Arrestado del ${escHtml(fechaCortaTxt(a.desde))} al ${escHtml(fechaCortaTxt(a.hasta))}</strong>: pernocta y comidas obligatorias</span></div>`).join('')
+    + l.filter(arrPend).map(a=>`<div class="notice" style="margin-top:8px;"><span>⏳ Tu solicitud de arresto del ${escHtml(fechaCortaTxt(a.desde))} al ${escHtml(fechaCortaTxt(a.hasta))} está <b>pendiente de autorizar</b>. Hasta entonces no cambia nada.</span></div>`).join('');
 }
 function arrestosAlumnoListaHtml(){
-  const hoy = ymd(new Date());
-  const l = (ARRESTOS.get(CURRENT.persona.id) || []).filter(arrestoVigente).sort((a,b)=>a.desde<b.desde?-1:1);
-  return l.length ? l.map(a=>`<div class="history-row">🚨 ${escHtml(arrestoTxt(a))} · ${a.desde<=hoy ? '<b>vigente</b>' : 'próximo'}</div>`).join('')
-    : '<p class="modal-nota" style="margin:4px 0;">No tienes ningún arresto vigente ni próximo.</p>';
+  const l = (ARRESTOS.get(CURRENT.persona.id) || []).filter(a=>arrestoVigente(a) && a.estado!=='rechazado').sort((a,b)=>a.desde<b.desde?-1:1);
+  return l.length ? l.map(a=>arrItemAlumnoHtml(a)).join('')
+    : '<p class="modal-nota" style="margin:4px 0;">No tienes ningún arresto vigente, próximo ni pendiente.</p>';
 }
 function abrirArrestoAlumno(){
   if(!esAlumnoConPersona()) return;
   const hoy = ymd(new Date()), desde = viernesCercano();
-  abrirModalGlobal(`<h3>🚨 Apuntarme un arresto</h3>
-    <div class="notice closed" style="margin:0 0 12px;"><strong>Durante el arresto la pernocta y TODAS las comidas son obligatorias en la AGM. Solo tu Furry podrá cambiarlo o quitarlo.</strong></div>
+  abrirModalGlobal(`<h3>🚨 Solicitar un arresto</h3>
+    <div class="notice closed" style="margin:0 0 12px;"><strong>Tu solicitud la tiene que autorizar tu Furry o un mando. Desde que la autoricen, durante el arresto la pernocta y TODAS las comidas son obligatorias en la AGM. Solo ellos pueden cambiar cuándo empieza.</strong></div>
     <div class="field"><label for="arr-desde">¿Desde qué día?</label><input type="date" id="arr-desde" value="${desde}" min="${sumarDias(hoy,-30)}" max="${sumarDias(hoy,90)}" onchange="arrSincronizar('desde')"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
       <div class="field" style="flex:1 1 100px;min-width:0;"><label for="arr-dias">¿Cuántos días?</label><input type="number" id="arr-dias" min="1" max="120" step="1" value="3" inputmode="numeric" oninput="arrSincronizar('dias')" onchange="arrSincronizar('dias')"></div>
       <div class="field" style="flex:1 1 140px;min-width:0;"><label for="arr-hasta">Hasta</label><input type="date" id="arr-hasta" value="${sumarDias(desde,2)}" onchange="arrSincronizar('hasta')"></div>
     </div>
     <p class="modal-nota" id="arr-resumen" style="margin-top:0;font-weight:700;color:var(--ink);"></p>
+    <div class="field"><label for="arr-motivo">Motivo o comentario (opcional)</label><input type="text" id="arr-motivo" maxlength="300" placeholder="Ej. Arresto impuesto el 18/11 por el capitán"></div>
     <div id="arr-error" role="alert" style="color:var(--danger);font-weight:700;font-size:.85rem;margin-bottom:8px;"></div>
-    <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" id="arr-guardar" onclick="enviarArrestoAlumno()">Apuntar arresto</button></div>
-    <h4 style="margin:16px 0 6px;font-size:.9rem;">Tus arrestos</h4>
+    <div class="modal-botones"><button class="small-btn" onclick="cerrarModalGlobal()">Cancelar</button><button class="primary-btn" id="arr-guardar" onclick="enviarArrestoAlumno()">Enviar solicitud</button></div>
+    <h4 style="margin:16px 0 6px;font-size:.9rem;">Tus arrestos y solicitudes</h4>
     <div id="arr-lista">${arrestosAlumnoListaHtml()}</div>
-    <p class="modal-nota" style="margin-bottom:0;">Si te has equivocado, díselo a tu Furry.</p>`);
+    <p class="modal-nota" style="margin-bottom:0;">Mientras esté pendiente puedes retirarla desde la pestaña 👤 Personal. Si ya está autorizada y hay un error, díselo a tu Furry.</p>`);
   arrSincronizar('desde');
   fetchArrestos({ personaIds:[CURRENT.persona.id] }).then(()=>{ const l = document.getElementById('arr-lista'); if(l && esAlumnoConPersona()) l.innerHTML = arrestosAlumnoListaHtml(); });
 }
@@ -5293,12 +5566,13 @@ async function enviarArrestoAlumno(){
   if(n && !(parseInt(n.value, 10) >= 1)){ err.textContent = 'Escribe cuántos días.'; return; }
   const desde = d.value, hasta = h.value, personaId = CURRENT.persona.id;
   if(btn) btn.disabled = true;
-  let r; try{ r = await guardarArresto(personaId, desde, hasta); }catch(e){ r = { ok:false, error:(e && e.message) || 'No se pudo apuntar.' }; }
+  const motivo = ((document.getElementById('arr-motivo')||{}).value || '').trim();
+  let r; try{ r = await guardarArresto(personaId, desde, hasta, motivo); }catch(e){ r = { ok:false, error:(e && e.message) || 'No se pudo enviar.' }; }
   if(!r || !r.ok){ const e2 = document.getElementById('arr-error'); if(e2) e2.textContent = (r && r.error) || 'No se pudo apuntar.'; const b2 = document.getElementById('arr-guardar'); if(b2) b2.disabled = false; return; }
   cerrarModalGlobal();
   await fetchArrestos({ personaIds:[personaId] });
-  showToast(`Arresto apuntado: del ${fechaCortaTxt(desde)} al ${fechaCortaTxt(hasta)}`);
-  await rerenderActual();
+  showToast(ARRESTOS_V2 ? `Solicitud enviada (del ${fechaCortaTxt(desde)} al ${fechaCortaTxt(hasta)}). Te avisaremos cuando la autoricen.` : `Arresto apuntado: del ${fechaCortaTxt(desde)} al ${fechaCortaTxt(hasta)}`);
+  if(currentModule==='personal' && esAlumnoConPersona()) await renderAlumnoPersonal(); else await rerenderActual();
 }
 // Viernes libres: «2 viernes» o «4 viernes». Lo acepta o lo rechaza el Furry
 let VF_SEL = 0;
@@ -6479,6 +6753,7 @@ async function renderSuperadmin(){
     </div>` +
     `<div class="admin-panel">${filaIrCompania}</div>` +
     adminCajas('super', [
+      { id:'arrestados', icono:'🚨', titulo:'Arrestados (mandos y cuartel)', sub: PERSONAL_CFG.arrPestana ? 'En pestaña propia' : 'Dentro de Personal', tituloPanel:'Dónde ven los arrestados los mandos y el cuartel', alAbrir:'arrPestanaSuperCargar()', cuerpo:arrPestanaSuperHtml() },
       { id:'navidad', icono:'🎄', titulo:'Modo Navidad', sub: NAVIDAD_GLOBAL ? 'Activado' : 'Desactivado', tituloPanel:'Modo Navidad para todo el portal', alAbrir:'navidadCargar(true)', cuerpo:navidadSuperHtml() },
       { id:'solicitudes', icono:'👤', titulo:'Solicitudes de Furry', sub: nSol ? 'Pendientes de aprobar' : 'Ninguna pendiente', badge:(nSol||''), tituloPanel:'Solicitudes de Furry', cuerpo:filaSolicitudes },
       { id:'puentes', icono:'🌉', titulo:'Puentes y festivos', sub:'Creador de puentes', cuerpo:puentesSuperHtml(puentes, errPuentes) },
@@ -7764,9 +8039,10 @@ async function paseBorrar(id){
   if(CURRENT.mode==='admin'){ pePintarPases(); peRefrescarFila(x.persona_id); pePintarChips(); peActualizarInsignia(); } else pintarPasesAlumno();
 }
 // El numerito de la pestaña Personal = solicitudes de viernes + pases/permisos sin aceptar
-function peActualizarInsignia(){ pePintarBadge((PE.sols||[]).length + pasesPendientes() + cambiosSinVer().length); }
+function peActualizarInsignia(){ pePintarBadge((PE.sols||[]).length + pasesPendientes() + cambiosSinVer().length + arrPendientesN()); }
 // Alumno: dos botones grandes y sus solicitudes (en la pestaña Pernoctas)
 async function pintarPasesAlumno(){
+  if(currentModule==='personal' && CURRENT && CURRENT.mode==='alumno') alPersPintarPases();
   const el = document.getElementById('alumno-pases'); if(!el || !CURRENT || CURRENT.mode!=='alumno') return;
   await cargarPases();
   if(PASES.falta){ el.innerHTML = ''; return; }
@@ -7824,8 +8100,8 @@ function mandoArrestoModal(pid, aid){
   const a = aid!=null ? (ARRESTOS.get(p.id)||[]).find(x=>String(x.id)===String(aid)) : null;
   const desde = a ? a.desde : ymd(new Date()), hasta = a ? a.hasta : desde;
   const sty = 'width:100%;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;';
-  abrirModalGlobal(`<h3>🚨 ${a ? 'Cambiar las fechas del arresto' : 'Apuntar arresto'}</h3>
-    <p class="modal-nota" style="margin-top:0;"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)}. Mientras dure, tiene obligatorias en la AGM la pernocta y todas las comidas. Le pedirá dos confirmaciones.</p>
+  abrirModalGlobal(`<h3>🚨 ${a ? 'Posponer o cambiar las fechas del arresto' : 'Apuntar arresto'}</h3>
+    <p class="modal-nota" style="margin-top:0;"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)}. ${a ? 'Para posponerlo, cambie el día de inicio: el número de días se mantiene y se recalcula el final (también puede cambiar el final). ' : ''}Mientras dure, tiene obligatorias en la AGM la pernocta y todas las comidas. Le pedirá dos confirmaciones.</p>
     <div class="field"><label for="pe-arr-desde">Empieza el</label><input type="date" id="pe-arr-desde" value="${desde}" oninput="peArrCalc('dias')" style="${sty}"></div>
     <div class="field"><label for="pe-arr-dias">Número de días</label><input type="number" id="pe-arr-dias" min="1" max="121" value="${diasEntre(desde, hasta)+1}" oninput="peArrCalc('dias')" style="${sty}"></div>
     <div class="field"><label for="pe-arr-hasta">Hasta el (incluido)</label><input type="date" id="pe-arr-hasta" value="${hasta}" oninput="peArrCalc('hasta')" style="${sty}"></div>
@@ -7841,11 +8117,11 @@ async function mandoGuardarArresto(pid, aid){
   if(aid!=null && !a){ showToast('Ese arresto ya no existe.'); cerrarModalGlobal(); return; }
   await mandoCambio(pid, a ? 'arresto_cambiar' : 'arresto_nuevo', a ? { id:a.id, desde, hasta } : { desde, hasta },
     a ? `Arresto: ${peFC(a.desde)} → ${peFC(a.hasta)} pasa a ${peFC(desde)} → ${peFC(hasta)}` : `Apuntar un arresto del ${peFC(desde)} al ${peFC(hasta)}`,
-    async ()=>{ cerrarModalGlobal(); await fetchArrestos({ compania:CURRENT.compania }); peRefrescarFila(pid); pePintarChips(); });
+    async ()=>{ cerrarModalGlobal(); await peRecargarArrestos(pid); });
 }
 function mandoBorrarArresto(pid, aid){
   const p = pePersona(pid), a = p && (ARRESTOS.get(p.id)||[]).find(x=>String(x.id)===String(aid)); if(!a) return;
-  mandoCambio(pid, 'arresto_borrar', { id:a.id }, `Borrar el arresto del ${peFC(a.desde)} al ${peFC(a.hasta)}`, async ()=>{ await fetchArrestos({ compania:CURRENT.compania }); peRefrescarFila(pid); pePintarChips(); });
+  mandoCambio(pid, 'arresto_borrar', { id:a.id }, `Borrar el arresto del ${peFC(a.desde)} al ${peFC(a.hasta)}`, async ()=>{ await peRecargarArrestos(pid); });
 }
 // Ficha de la persona para los mandos: lo que pueden cambiar (nada de servicios, sección, acceso ni baja)
 function peDetalleMandoBase(p){
@@ -7853,10 +8129,7 @@ function peDetalleMandoBase(p){
   const op = (v, t, sel) => `<option value="${v}" ${v===sel?'selected':''}>${t}</option>`;
   const arrs = (ARRESTOS.get(p.id)||[]).slice().reverse();
   const arrHtml = (ARRESTOS_FALTA ? '<p class="small-note" style="margin:0;">Todavía no se pueden consultar los arrestos.</p>'
-    : (arrs.length ? arrs.map(a=>{ const aid = escHtml(String(a.id));
-        return `<div class="pe-it${arrestoVigente(a)?'':' pasado'}"><span>${a.desde<=hoy && hoy<=a.hasta ? '🚨 <b>Ahora</b> · ' : a.desde>hoy ? '⏳ Próximo · ' : ''}${escHtml(arrestoTxt(a))}</span>
-          <span class="pe-btns"><button type="button" class="small-btn" onclick="mandoArrestoModal('${id}','${aid}')">✏️ Fechas</button><button type="button" class="small-btn danger" onclick="mandoBorrarArresto('${id}','${aid}')">🗑 Borrar</button></span></div>`; }).join('')
-      : '<p class="small-note" style="margin:0;">Sin arrestos.</p>'))
+    : (arrs.length ? arrs.map(a=>arrItemStaffHtml(p, a, 'mando')).join('') : '<p class="small-note" style="margin:0;">Sin arrestos.</p>'))
     + (ARRESTOS_FALTA ? '' : `<div class="pe-btns" style="margin-top:6px;"><button type="button" class="small-btn" onclick="mandoArrestoModal('${id}')">➕ Apuntar arresto</button></div>`);
   return `<h4>📞 Contacto</h4>${contactarHtml(p.id)}
     <h4>🚨 Arrestos</h4>${arrHtml}
@@ -7980,7 +8253,9 @@ const PERSONAL_VIS_CAJAS = [
   ['intolerancias', '🥗 Intolerancias', 'Quién tiene intolerancias y cuáles'],
   ['servicio',      '🪖 De servicio',   'La caja «De servicio» (cuartelero, imaginaria de cuartelero y servicios especiales)']
 ];
-const personalVis = k => !(CURRENT && CURRENT.mode==='cuartel' && (((CURRENT.companiaInfo||{}).personal_cuartel_oculto) || []).includes(k));
+const personalVisBase = k => !(CURRENT && CURRENT.mode==='cuartel' && (((CURRENT.companiaInfo||{}).personal_cuartel_oculto) || []).includes(k));
+// Con «Arrestados en pestaña propia» (superadmin), los arrestados salen de «Personal» para mandos y cuartel y van a su pestaña
+const personalVis = k => personalVisBase(k) && !(k==='arrestados' && CURRENT && CURRENT.mode==='cuartel' && PERSONAL_CFG.arrPestana);
 const peOcultoPorFurry = ch => CURRENT && CURRENT.mode==='cuartel' && ((/^🚨 Arrestos/.test(ch) && !personalVis('arrestados')) || (/^🎒 Externado/.test(ch) && !personalVis('externados')) || (/^🥗 Intolerancias/.test(ch) && !personalVis('intolerancias')));
 // El servicio de cuartel y los mandos vuelven a leer cada vez lo que el Furry les deja ver
 async function refrescarPersonalVis(){
@@ -7993,7 +8268,7 @@ const peCartas = html => html.split('<h4>').filter(x=>x.trim() && !peOcultoPorFu
 const peFC = f => parseInt(f.slice(8,10),10)+'/'+parseInt(f.slice(5,7),10); // 'YYYY-MM-DD' → 'd/m'
 const peOrden = (a,b) => (a.seccion-b.seccion) || String(a.apellidos).localeCompare(String(b.apellidos),'es') || String(a.nombre).localeCompare(String(b.nombre),'es');
 const pePersona = id => (PE.personas||[]).find(p=>String(p.id)===String(id));
-const peArrestosVivos = p => (ARRESTOS.get(p.id)||[]).filter(arrestoVigente); // el de ahora o los próximos
+const peArrestosVivos = p => (ARRESTOS.get(p.id)||[]).filter(a=>arrAut(a) && arrestoVigente(a)); // el de ahora o los próximos (autorizados)
 const peCumple = (p, f) => f==='arresto' ? peArrestosVivos(p).length>0 : f==='externado' ? !!p.externado : f==='intol' ? !!String(p.intolerancias||'').trim() : f==='viernes' ? peViernes(p)>0 : f==='promo' ? !!p.promocion_interna : f==='pases' ? pasesActivosDe(p.id).length>0 : f==='sinreg' ? !p.registrado : true;
 // Solo lectura (mandos): misma lista que la del Furry, pero sin ningún botón de cambio, sin servicios hechos, sin contraseñas ni conexión ni altas
 const peRO = () => !!(CURRENT && CURRENT.mode==='cuartel');
@@ -8006,7 +8281,8 @@ async function peContarSolicitudes(){
     const { count, error } = await sb.from('solicitudes_viernes').select('id', { count:'exact', head:true }).eq('compania', CURRENT.compania).eq('estado', 'pendiente');
     const r2 = await sb.from('pases_permisos').select('id', { count:'exact', head:true }).eq('compania', CURRENT.compania).eq('estado', 'solicitado');
     const r3 = await sb.from('cambios_mandos').select('id', { count:'exact', head:true }).eq('compania', CURRENT.compania).eq('revisado', false).eq('revertido', false);
-    pePintarBadge((error ? 0 : (count||0)) + (r2.error ? 0 : (r2.count||0)) + (r3.error ? 0 : (r3.count||0)));
+    const r4 = await sb.from('arrestos').select('id', { count:'exact', head:true }).eq('compania', CURRENT.compania).eq('estado', 'pendiente');
+    pePintarBadge((error ? 0 : (count||0)) + (r2.error ? 0 : (r2.count||0)) + (r3.error ? 0 : (r3.count||0)) + (r4.error ? 0 : (r4.count||0)));
   }catch(e){}
 }
 const renderAdminPersonal = serializarRender(()=>_renderAdminPersonalImpl());
@@ -8025,6 +8301,7 @@ async function _renderAdminPersonalImpl(){
     const ids = new Set(PE.personas.map(p=>String(p.id))); PE.sel.forEach(id=>{ if(!ids.has(id)) PE.sel.delete(id); }); // la selección, solo con quien sigue en la compañía
   }catch(e){ PE.error = (e && e.message) || String(e); }
   peActualizarInsignia();
+  arrPintarSolicitudes();
   pePintarSolicitudes();
   peCambiosPintar();
   pePintarPases();
@@ -8228,7 +8505,7 @@ function peDetalleRoHtml(p){ return peCartas(peDetalleRoBase(p)); }
 function peDetalleRoBase(p){
   const hoy = ymd(new Date()), arrs = (ARRESTOS.get(p.id)||[]).slice().reverse(), ext = valorExternado(p);
   const arrHtml = ARRESTOS_FALTA ? '<p class="small-note" style="margin:0;">Todavía no se pueden consultar los arrestos.</p>'
-    : (arrs.length ? arrs.map(a=>`<div class="pe-it${arrestoVigente(a)?'':' pasado'}"><span>${a.desde<=hoy && hoy<=a.hasta ? '🚨 <b>Ahora</b> · ' : a.desde>hoy ? '⏳ Próximo · ' : ''}${escHtml(arrestoTxt(a))}</span></div>`).join('') : '<p class="small-note" style="margin:0;">Sin arrestos.</p>');
+    : (arrs.length ? arrs.map(a=>arrItemStaffHtml(p, a, 'ro')).join('') : '<p class="small-note" style="margin:0;">Sin arrestos.</p>');
   return `<h4>📞 Contacto</h4>${contactarHtml(p.id)}
     <h4>🚨 Arrestos</h4>${arrHtml}
     <h4>🎒 Externado y viernes libres</h4>
@@ -8244,10 +8521,7 @@ function peDetalleBase(p){
   const op = (v, t, sel) => `<option value="${v}" ${v===sel?'selected':''}>${t}</option>`;
   const arrs = (ARRESTOS.get(p.id)||[]).slice().reverse(); // el más reciente primero
   const arrHtml = ARRESTOS_FALTA ? '<p class="small-note" style="margin:0;">Falta ejecutar el parche SQL 101 para poder apuntar arrestos.</p>'
-    : (arrs.length ? arrs.map(a=>{ const aid = escHtml(String(a.id));
-        return `<div class="pe-it${arrestoVigente(a)?'':' pasado'}"><span>${a.desde<=hoy && hoy<=a.hasta ? '🚨 <b>Ahora</b> · ' : a.desde>hoy ? '⏳ Próximo · ' : ''}${escHtml(arrestoTxt(a))}${a.origen==='alumno' ? ' <span class="pe-sec">(lo apuntó el alumno)</span>' : ''}</span>
-          <span class="pe-btns"><button type="button" class="small-btn" onclick="peArrestoModal('${id}','${aid}')">✏️ Fechas</button><button type="button" class="small-btn danger" onclick="peBorrarArresto('${id}','${aid}')">🗑 Borrar</button></span></div>`; }).join('')
-      : '<p class="small-note" style="margin:0;">Sin arrestos.</p>')
+    : (arrs.length ? arrs.map(a=>arrItemStaffHtml(p, a, 'furry')).join('') : '<p class="small-note" style="margin:0;">Sin arrestos.</p>')
       + `<div class="pe-btns" style="margin-top:6px;"><button type="button" class="small-btn" onclick="peArrestoModal('${id}')">➕ Apuntar arresto</button></div>`;
   return `<h4>📞 Contacto</h4>${contactarHtml(p.id)}
     <h4>🚨 Arrestos</h4>${arrHtml}
@@ -8539,7 +8813,7 @@ async function renderMandosPersonal(){
   PE.filtros.clear(); PE.q = ''; PE.sec = ''; PE.abiertos.clear(); PE.secAb.clear(); PE.secMax = {};
   ['cuartel-week-select','cuartel-controles'].forEach(id=>{ const e = document.getElementById(id); if(e) e.innerHTML = ''; });
   document.getElementById('cuartel-notice').innerHTML = peMandoEdita() ? '<div class="notice"><span>✏️ Puede cambiar datos del <b>personal</b>. Cada cambio pide dos confirmaciones y lo verán el Furry y el superadmin, que pueden revertirlo.</span></div>' : '<div class="notice"><span>🔒 Solo consulta</span></div>';
-  document.getElementById('cuartel-vista').innerHTML = '<div class="pe-scope pe-layout"><div class="pe-main"><div id="mandos-pe-buscar"></div><div id="mandos-pe-lista"><p class="small-note">Cargando…</p></div></div><div class="pe-side"><div id="mandos-pe-pases"></div></div></div>';
+  document.getElementById('cuartel-vista').innerHTML = '<div class="pe-scope pe-layout"><div class="pe-main"><div id="mandos-pe-buscar"></div><div id="mandos-pe-lista"><p class="small-note">Cargando…</p></div></div><div class="pe-side"><div id="mandos-pe-arrsol"></div><div id="mandos-pe-pases"></div></div></div>';
   PE.multi = false; PE.soloSel = false; PE.sel.clear();
   await refrescarPersonalVis();
   try{
@@ -8551,6 +8825,7 @@ async function renderMandosPersonal(){
   pePonerHtml('admin-pe-buscar', peBuscadorHtml());
   pePintarLista();
   pePintarPases();
+  arrPintarSolicitudes();
 }
 /* ---- Servicios de la persona: se piden al abrir su ficha (una sola consulta) ---- */
 function peServHtml(pid){
@@ -8578,8 +8853,8 @@ function peArrestoModal(pid, aid){
   const a = aid!=null ? (ARRESTOS.get(p.id)||[]).find(x=>String(x.id)===String(aid)) : null;
   const desde = a ? a.desde : ymd(new Date()), hasta = a ? a.hasta : desde;
   const sty = 'width:100%;padding:9px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.9rem;';
-  abrirModalGlobal(`<h3>🚨 ${a ? 'Cambiar las fechas del arresto' : 'Apuntar arresto'}</h3>
-    <p class="modal-nota" style="margin-top:0;"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)}. Mientras dure, tiene obligatorias en la AGM la pernocta y todas las comidas.</p>
+  abrirModalGlobal(`<h3>🚨 ${a ? 'Posponer o cambiar las fechas del arresto' : 'Apuntar arresto'}</h3>
+    <p class="modal-nota" style="margin-top:0;"><b>${escHtml(p.apellidos)}</b>, ${escHtml(p.nombre)}. ${a ? 'Para posponerlo, cambia el día de inicio: el número de días se mantiene y se recalcula el final (también puedes cambiar el final). El alumno lo verá como pospuesto. ' : ''}Mientras dure, tiene obligatorias en la AGM la pernocta y todas las comidas.</p>
     <div class="field"><label for="pe-arr-desde">Empieza el</label><input type="date" id="pe-arr-desde" value="${desde}" oninput="peArrCalc('dias')" style="${sty}"></div>
     <div class="field"><label for="pe-arr-dias">Número de días</label><input type="number" id="pe-arr-dias" min="1" max="121" value="${diasEntre(desde, hasta)+1}" oninput="peArrCalc('dias')" style="${sty}"></div>
     <div class="field"><label for="pe-arr-hasta">Hasta el (incluido)</label><input type="date" id="pe-arr-hasta" value="${hasta}" oninput="peArrCalc('hasta')" style="${sty}"></div>
@@ -8613,7 +8888,7 @@ async function peBorrarArresto(pid, aid){
   showToast('Arresto borrado.');
   await peRecargarArrestos(pid);
 }
-async function peRecargarArrestos(pid){ await fetchArrestos({ compania:CURRENT.compania }); peRefrescarFila(pid); pePintarChips(); }
+async function peRecargarArrestos(pid){ await fetchArrestos({ compania:CURRENT.compania }); peRefrescarFila(pid); pePintarChips(); arrPintarSolicitudes(); peActualizarInsignia(); if(CURRENT && CURRENT.mode==='cuartel' && CUARTEL.modulo==='arrestados') await renderArrestadosTab(); }
 /* ---- Externado, viernes, intolerancias, sección, acceso y baja ---- */
 function peSyncMapas(){
   const ps = PE.personas || [];
