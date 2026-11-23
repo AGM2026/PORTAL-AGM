@@ -18,6 +18,8 @@ self.addEventListener('push', e => {
     vibrate: [120, 60, 120],
     actions: [{ action: 'abrir', title: '📂 Abrir' }],
     data: { url: d.url || './' }
+  }).then(() => { // recordatorio de confirmar: numerito en el icono de la app instalada
+    if (d.tag === 'cierre' && self.navigator && 'setAppBadge' in self.navigator) return self.navigator.setAppBadge(1).catch(() => {});
   }));
 });
 
