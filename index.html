@@ -1155,7 +1155,7 @@ table.roster.roster-totales thead th{font-size:.68rem;}
 .fiab-bloque h4{margin:0 0 6px;font-size:.9rem;}
 details.caja-det.pe-caja-abierta{border:1px solid var(--brass);box-shadow:0 2px 12px rgba(0,0,0,.10);}
 details.caja-det.pe-caja-abierta > summary::after{content:'Cerrar ✕';margin-left:auto;font-size:.75rem;font-weight:600;color:var(--ink-soft);}
-/* ✅ Confirmar semana (alumno): tarjeta grande */
+/* ✅ Confirmar semana (alumno): tarjeta compacta (la tabla es lo importante) */
 .conf-semana{border-radius:18px;padding:16px 16px 14px;margin:0 0 14px;border:2px solid var(--line);background:var(--card);box-shadow:0 6px 18px -10px rgba(0,0,0,.45);}
 .conf-semana.pend{border-color:#c0392b;background:linear-gradient(160deg,rgba(192,57,43,.14),rgba(192,57,43,.04));}
 .conf-semana.done{border-color:#2e7d32;background:linear-gradient(160deg,rgba(46,125,50,.16),rgba(46,125,50,.04));}
@@ -1168,6 +1168,35 @@ details.caja-det.pe-caja-abierta > summary::after{content:'Cerrar ✕';margin-le
 .conf-semana .cs-f.ok b{color:#2e7d32;} .conf-semana .cs-f.no b{color:#c0392b;} .conf-semana .cs-f.cerr b{color:var(--ink-soft);}
 .cs-btn{display:block;width:100%;margin-top:12px;padding:16px 14px;border:none;border-radius:14px;background:#2e7d32;color:#fff;font-family:inherit;font-size:1.15rem;font-weight:800;letter-spacing:.04em;cursor:pointer;box-shadow:0 6px 16px -6px rgba(46,125,50,.8);}
 .cs-btn:hover{background:#256b2a;}
+/* — tarjeta compacta — */
+.conf-semana{padding:10px 12px 8px;border-radius:14px;margin:0 0 10px;border-width:1.5px;box-shadow:none;}
+.conf-semana .cs-cab{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;}
+.conf-semana .cs-tit{font-size:1rem;letter-spacing:.01em;}
+.conf-semana .cs-sub{font-size:.78rem;margin:0 0 8px;}
+.conf-semana .cs-filas{grid-template-columns:1fr 1fr;gap:6px;}
+.conf-semana .cs-f{padding:6px 9px;border-radius:10px;font-size:.82rem;}
+.conf-semana .cs-f b{font-size:.78rem;white-space:nowrap;}
+.conf-semana .cs-btn{margin-top:8px;padding:10px 12px;font-size:.95rem;border-radius:11px;letter-spacing:.02em;box-shadow:none;}
+.conf-semana .cs-mas{margin-top:6px;font-size:.8rem;}
+.conf-semana .cs-mas > summary{cursor:pointer;color:var(--ink-soft);font-weight:700;padding:4px 0;list-style:none;}
+.conf-semana .cs-mas > summary::after{content:' ▾';} .conf-semana .cs-mas[open] > summary::after{content:' ▴';}
+.conf-semana .cs-fiab{margin-top:6px;padding:6px 10px;font-size:.8rem;}
+.conf-semana .cs-fiab > b{font-size:1rem;}
+.conf-semana .cs-grupo{margin-top:8px;}
+.conf-semana.flota{max-width:560px;}
+@media(max-width:560px){ .conf-semana .cs-f{flex-direction:column;align-items:flex-start;gap:1px;padding:5px 8px;} .conf-semana .cs-tit{font-size:.95rem;} }
+/* Barra «% de tu sección»: fuera de la tabla, pegada arriba mientras se ve la tabla */
+.sec-sem-bar{position:sticky;top:6px;z-index:6;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:6px 10px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:.78rem;line-height:1.3;box-shadow:0 4px 12px -8px rgba(0,0,0,.35);}
+.sec-sem-bar:empty{display:none;}
+.sec-sem-bar .sec-sem-pill{font-size:.85rem;padding:1px 9px;border-width:1.5px;}
+/* Avisos de la semana (maniobras, puente): pequeños, justo debajo del selector */
+.avisos-sem{display:flex;flex-direction:column;gap:6px;}
+.avisos-sem:has(> div:not(:empty)){margin:8px 0 2px;}
+.aviso-sem{display:flex;gap:10px;align-items:flex-start;padding:7px 11px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);font-size:.8rem;line-height:1.35;}
+.aviso-sem .as-ico{font-size:1.15rem;line-height:1.2;}
+.aviso-sem small{display:block;color:var(--ink-soft);font-size:.72rem;margin-top:1px;}
+.aviso-sem.mani{border-color:#4B5320;background:linear-gradient(90deg,rgba(75,83,32,.14),transparent 70%);}
+.aviso-sem.puente{border-color:var(--brass);}
 .cs-fiab{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:12px;padding:8px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);font-size:.85rem;}
 .cs-fiab > b{font-size:1.2rem;} .cs-fiab small{flex-basis:100%;color:var(--ink-soft);font-size:.74rem;}
 .cs-grupo{margin-top:12px;font-size:.8rem;}
@@ -1501,16 +1530,16 @@ aplicarTema();
       <button class="module-btn" id="alumno-mod-servicios-btn" onclick="setModule('servicios')">📋 Servicios</button>
       <button class="module-btn" id="alumno-mod-personal-btn" onclick="setModule('personal')">👤 Personal<span id="alumno-pr-badge" class="mod-badge hidden"></span></button>
     </div>
-    <div class="blq" data-blq="semana"><div id="alumno-week-select"></div></div>
-    <div class="blq" data-blq="plazo"><div id="alumno-desbloqueo"></div>
-    <div id="alumno-notice"></div></div>
+    <div class="blq" data-blq="semana"><div id="alumno-week-select"></div>
+    <div class="avisos-sem"><div id="alumno-maniobras"></div><div id="alumno-pernocta-maniobras"></div><div id="alumno-desbloqueo"></div></div></div>
+    <div class="blq" data-blq="plazo"><div id="alumno-notice"></div></div>
 
     <div id="alumno-comidas-mod" class="blq-mod">
       <div class="blq" data-blq="c-confirm"><div id="alumno-confirm"></div></div>
       <div class="blq" data-blq="c-avisos"><div id="alumno-avisos"></div></div>
-      <div class="blq" data-blq="c-maniobras"><div id="alumno-maniobras"></div></div>
       <div class="blq" data-blq="c-tabla"><h3 class="section-title">Comidas de la semana </h3>
       <div id="alumno-view-toggle"></div>
+      <div class="sec-sem-bar sec-sem-slot" data-mod="comidas"></div>
       <div class="table-scroll" id="alumno-table-scroll"><table class="roster" id="alumno-table"></table></div>
       <div id="alumno-desayuno-domingo-aviso"></div></div>
       <div class="blq-cajas"><div class="cajas-grid" id="alumno-cajas">
@@ -1549,9 +1578,9 @@ aplicarTema();
 
     <div id="alumno-pernoctas-mod" class="hidden blq-mod">
       <div class="blq" data-blq="p-confirm"><div id="alumno-pernocta-confirm"></div></div>
-      <div class="blq" data-blq="p-maniobras"><div id="alumno-pernocta-maniobras"></div></div>
       <div class="blq" data-blq="p-tabla"><h3 class="section-title">Pernoctas del fin de semana</h3>
       <div id="alumno-pernocta-view-toggle"></div>
+      <div class="sec-sem-bar sec-sem-slot" data-mod="pernoctas"></div>
       <div class="pernocta-list" id="alumno-pernocta-table"></div></div>
       <div class="blq" data-blq="p-pases"><div id="alumno-pases"></div></div>
       <div class="blq" data-blq="p-resumen"><div class="summary-grid" id="alumno-pernocta-summary"></div></div>
@@ -1918,7 +1947,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-11-24T00:01:08";
+const APP_VERSION = "2026-11-24T01:30:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
@@ -3755,7 +3784,8 @@ async function setModule(mod){
   currentModule = mod;
   if(mod!=='servicios' && typeof servRtParar==='function') servRtParar(); // el tiempo real solo está activo en la pestaña Servicios
   guardarEstado();
-  if(mod!=='comidas'){ const db = document.getElementById('alumno-desbloqueo'); if(db) db.innerHTML = ''; } // el aviso del desbloqueo solo vale en Comidas
+  if(mod!=='comidas'){ ['alumno-desbloqueo','alumno-maniobras'].forEach(i=>{ const db = document.getElementById(i); if(db) db.innerHTML = ''; }); } // los avisos de Comidas (puente, maniobras) solo valen en Comidas
+  if(mod!=='pernoctas'){ const pm = document.getElementById('alumno-pernocta-maniobras'); if(pm) pm.innerHTML = ''; }
   if(mod==='servicios' || mod==='personal') pintarBarraPendiente('comidas', false); // la barra de "sin confirmar" solo vale en Comidas y Pernoctas
   document.body.classList.toggle('mod-pernoctas', mod==='pernoctas');
   document.body.classList.toggle('mod-servicios', mod==='servicios');
@@ -5826,9 +5856,10 @@ async function renderAlumno(){
   const diasDesbloqueados = Array.from({length:7},(_,d)=>d).filter(d=>diaComidaDesbloqueado(d) || colsPuente.some(c=>c.day===d && comidaLiberadaPorPuente(ACTIVE_WEEK, c)));
   const diasDesbloqueadosTxt = diasDesbloqueados.map(d=>DAY_NAMES[(d)%7]+' '+fmt(diaPern(ACTIVE_WEEK,d))).join(', ');
   pintarSelectorSemanas('comidas', 'alumno', 'onAlumnoWeekChange', horaCorte, true);
-  document.getElementById('alumno-maniobras').innerHTML = maniobrasBannerHtml(ACTIVE_WEEK, false); // el aviso de maniobras va debajo del mensaje de confirmación
+  document.getElementById('alumno-maniobras').innerHTML = maniobrasMiniHtml(ACTIVE_WEEK, false); // aviso pequeño, justo debajo del selector de semana
+  { const pm = document.getElementById('alumno-pernocta-maniobras'); if(pm) pm.innerHTML = ''; }
   document.getElementById('alumno-notice').innerHTML = noticeHtmlBase(ACTIVE_WEEK, horaCorte) + arrestoAvisoHtml();
-  document.getElementById('alumno-desbloqueo').innerHTML = diasDesbloqueados.length ? `<div class="notice" style="border-color:var(--brass);margin-top:8px;"><span>🌉 Tu compañía ha abierto el desbloqueo de obligatorias esta semana (puente)</span><strong>Puedes desmarcar desayuno y comida el ${diasDesbloqueadosTxt}</strong></div>` : '';
+  document.getElementById('alumno-desbloqueo').innerHTML = diasDesbloqueados.length ? `<div class="aviso-sem puente" role="note"><span class="as-ico" aria-hidden="true">🌉</span><span><b>Puente:</b> puedes desmarcar desayuno y comida el ${escHtml(diasDesbloqueadosTxt)}<small>Tu compañía ha abierto el desbloqueo de obligatorias esta semana.</small></span></div>` : '';
 
   const cols = COLS();
   const personaIds = seccionPeople.map(p=>p.id);
@@ -5949,7 +5980,7 @@ async function renderAlumno(){
     const n = seccionPeople.filter(p=>getVal(p.id,c,apuntesMap)).length;
     tfoot += `<td class="mono ${isCurrentMealColumn(c)?'col-today':''} ${countCellClass(n, seccionPeople.length)}">${n}/${seccionPeople.length}</td>`;
   });
-  tfoot += `</tr><tr class="sec-sem-fila"><td class="name-cell">📊 Tu sección: comidas confirmadas</td><td colspan="${cols.length}" style="text-align:left;"><div class="sec-sem-slot" data-mod="comidas"></div></td></tr></tfoot>`;
+  tfoot += `</tr></tfoot>`; // el % de la sección va fuera de la tabla (barra .sec-sem-bar), para que no se mueva al desplazarla
   table.innerHTML = thead+tbody+tfoot;
   secSemanaPintar(ACTIVE_WEEK.key);
 
@@ -6093,7 +6124,7 @@ async function secSemanaPintar(base){
   const col = fiabColor(v.pct), cuando = v.cerrada ? 'esa semana' : 'esta semana';
   document.querySelectorAll('.cs-circ-slot').forEach(el=>{ el.innerHTML = `<div class="cs-circ" style="--p:${v.pct};--c:${col};" title="Media de tu sección: comidas ${v.comidas.pct} % (${v.comidas.n}/${v.total}) y pernoctas ${v.pernoctas.pct} % (${v.pernoctas.n}/${v.total})"><div class="cs-circ-in"><b style="color:${col};">${v.pct}%</b><small>Tu sección ${v.sec}</small><small>${cuando}</small><small>🍽️ ${v.comidas.pct}% · 🛏️ ${v.pernoctas.pct}%</small></div></div>`; });
   document.querySelectorAll('.sec-sem-slot').forEach(el=>{ const m = el.dataset.mod==='pernoctas' ? 'pernoctas' : 'comidas', o = v[m], c2 = fiabColor(o.pct);
-    el.innerHTML = `<span class="sec-sem-pill" style="color:${c2};border-color:${c2};">📊 ${o.pct} %</span> <span>de tu sección (${v.sec}) ha confirmado ${m==='pernoctas' ? 'las pernoctas' : 'las comidas'}${o.cerrada ? ' a tiempo' : ' hasta ahora'} · ${o.n} de ${v.total}${v.total-o.n ? ` · faltan <b>${v.total-o.n}</b>` : ''}</span>`; });
+    el.innerHTML = `<span class="sec-sem-pill" style="color:${c2};border-color:${c2};">📊 ${o.pct} %</span><span>de tu sección (${v.sec}) ha confirmado ${m==='pernoctas' ? 'las pernoctas' : 'las comidas'}${o.cerrada ? ' a tiempo' : ''} · ${o.n}/${v.total}${v.total-o.n ? ` · faltan <b>${v.total-o.n}</b>` : ''}</span>`; });
 }
 function alFiabHtml(f, m){
   const o = f && (m ? f[m] : null), t = m ? (o && o.total ? { pct:Math.round(100*o.ok/o.total), ok:o.ok, total:o.total } : null) : alFiabTotal(f);
@@ -6150,12 +6181,14 @@ async function pintarConfSemana(elId, mod){
   const ahora = new Date(), pn = confPendiente(st), todo = st.confC && st.confP;
   const fila = (ico, nom, conf, corte) => `<div class="cs-f ${conf ? 'ok' : ahora>corte ? 'cerr' : 'no'}"><span>${ico} ${nom}</span><b>${conf ? '✓ Confirmadas' : ahora>corte ? '🔒 Plazo cerrado' : '✗ Sin confirmar'}</b></div>`;
   const quedan = Math.max(0, Math.min(st.corteC, st.corteP) - ahora), h = Math.floor(quedan/3600000);
-  el.innerHTML = `<div class="conf-semana ${todo ? 'done' : (pn.c||pn.p) ? 'pend' : 'cerr'}"><div class="cs-cuerpo"><div class="cs-izq">
-    <div class="cs-tit">${todo ? '✅ SEMANA CONFIRMADA' : (pn.c||pn.p) ? '✅ CONFIRMA TU SEMANA' : '🔒 PLAZO CERRADO'}</div>
-    <div class="cs-sub">Semana del viernes ${fmt(st.wC.days[0])}${(pn.c||pn.p) ? ` · cierra el <b>${escHtml(fmtCutoff(st.wC, st.hora))}</b>${h<48 ? ` (quedan ${h<1 ? 'menos de 1 hora' : h+' h'})` : ''}` : ''}</div>
+  const masAb = (()=>{ try{ return localStorage.getItem('cs_mas_ab')==='1'; }catch(e){ return false; } })();
+  el.innerHTML = `<div class="conf-semana ${todo ? 'done' : (pn.c||pn.p) ? 'pend' : 'cerr'}">
+    <div class="cs-cab"><div class="cs-tit">${todo ? '✅ Semana confirmada' : (pn.c||pn.p) ? '✅ Confirma tu semana' : '🔒 Plazo cerrado'}</div>
+    <div class="cs-sub">Semana del viernes ${fmt(st.wC.days[0])}${(pn.c||pn.p) ? ` · cierra ${escHtml(fmtCutoff(st.wC, st.hora))}${h<48 ? ` (quedan ${h<1 ? 'menos de 1 h' : h+' h'})` : ''}` : ''}</div></div>
     <div class="cs-filas">${fila('🍽️','Comidas', st.confC, st.corteC)}${fila('🛏️','Pernoctas', st.confP, st.corteP)}</div>
-    ${(pn.c||pn.p) ? '<button type="button" class="cs-btn" onclick="confirmarSemana()">✅ CONFIRMAR SEMANA</button>' : ''}
-    <div id="${elId}-fiab"></div></div><div class="cs-circ-slot"></div></div><div id="${elId}-grupo"></div>
+    ${(pn.c||pn.p) ? '<button type="button" class="cs-btn" onclick="confirmarSemana()">✅ Confirmar semana</button>' : ''}
+    <details class="cs-mas" ${masAb ? 'open' : ''} ontoggle="try{localStorage.setItem('cs_mas_ab', this.open?'1':'0')}catch(e){}"><summary>📊 Tu fiabilidad y cómo va cada sección</summary>
+    <div id="${elId}-fiab"></div><div id="${elId}-grupo"></div></details>
   </div>`;
   confBadge(st); confFlotaAplicar(); secSemanaPintar(st.base);
   alFiabCargar().then(f=>{ const x = document.getElementById(elId+'-fiab'); if(x) x.innerHTML = alFiabHtml(f, mod); });
@@ -6436,12 +6469,19 @@ let CONF_FLOTA = false, CONF_CAMBIO = false;
 function confFlotaAplicar(){
   ['conf-semana-c','conf-semana-p'].forEach(id=>{
     const box = document.getElementById(id), card = box && box.querySelector('.conf-semana'); if(!card) return;
-    const on = CONF_FLOTA && card.classList.contains('pend') && box.offsetParent!==null;
+    const on = CONF_FLOTA && card.classList.contains('pend') && box.offsetParent!==null && confUltimas24h();
     if(on && !card.classList.contains('flota')) box.style.minHeight = card.offsetHeight + 'px'; // deja su hueco para que no salte la página
     if(!on){ box.style.minHeight = ''; card.style.top = ''; }
     card.classList.toggle('flota', on);
     if(on) confFlotaPos(card);
   });
+}
+// ¿Faltan 24 h o menos para que cierre lo que le queda por confirmar? Antes de eso la tarjeta no persigue al alumno mientras edita
+function confUltimas24h(){
+  const st = _confSt; if(!st) return false;
+  const pn = confPendiente(st); if(!pn.c && !pn.p) return false;
+  const corte = (pn.c && pn.p) ? Math.min(st.corteC, st.corteP) : pn.c ? st.corteC : st.corteP, q = corte - new Date();
+  return q > 0 && q <= 24*3600000;
 }
 function confFlotaPos(card){ const H = window.innerHeight, h = card.offsetHeight; card.style.top = Math.max(8, Math.min(H*0.58 - h/2, H - h - 10)) + 'px'; }
 window.addEventListener('resize', ()=>{ document.querySelectorAll('.conf-semana.flota').forEach(confFlotaPos); });
@@ -10210,6 +10250,14 @@ function maniobraDia(key){
   return r;
 }
 function maniobrasTexto(m){ return `del ${fmtCorteCorto(maniDT(m,'ini'))} al ${fmtCorteCorto(maniDT(m,'fin'))}`; }
+// Versión pequeña (alumno): una línea con salida y vuelta, debajo del selector de semana
+function maniobrasMiniHtml(week, esPern){
+  const corto = d => d.toLocaleDateString('es-ES', { weekday:'short', day:'numeric', month:'numeric' });
+  return maniobrasDeSemana(week, esPern).map(m=>{
+    const ini = maniDT(m,'ini'), fin = maniDT(m,'fin'), dias = diasEntre(m.fecha_inicio, m.fecha_fin) + 1;
+    return `<div class="aviso-sem mani" role="note"><span class="as-ico" aria-hidden="true">⛺</span><span><b>Maniobras</b> · ${dias} día${dias===1?'':'s'}${m.nota && !/^\s*maniobras?\s*$/i.test(m.nota) ? ' · '+escHtml(m.nota) : ''}<br>Salida <b>${escHtml(corto(ini))}</b> ${escHtml(hhmm(m.hora_inicio)||'')} · vuelta <b>${escHtml(corto(fin))}</b> ${escHtml(hhmm(m.hora_fin)||'')}<small>${esPern ? 'Esas noches' : 'Esas comidas'} salen con ⛺ en la tabla.</small></span></div>`;
+  }).join('');
+}
 function maniobrasBannerHtml(week, esPern){
   const largo = d => d.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
   return maniobrasDeSemana(week, esPern).map(m=>{
@@ -10877,7 +10925,8 @@ async function renderAlumnoPernoctas(){
   pernoctaListEl.classList.toggle('plazo-abierto', open);
   pernoctaListEl.classList.toggle('plazo-cerrado', !open);
   pintarSelectorSemanas('pernoctas', 'alumno', 'onAlumnoWeekChange', horaCorte, true);
-  document.getElementById('alumno-pernocta-maniobras').innerHTML = maniobrasBannerHtml(ACTIVE_WEEK, true); // debajo del mensaje de confirmación
+  document.getElementById('alumno-pernocta-maniobras').innerHTML = maniobrasMiniHtml(ACTIVE_WEEK, true); // aviso pequeño, justo debajo del selector de semana
+  ['alumno-maniobras','alumno-desbloqueo'].forEach(i=>{ const e = document.getElementById(i); if(e) e.innerHTML = ''; });
   document.getElementById('alumno-notice').innerHTML = noticeHtmlWeekendBase(ACTIVE_WEEK, horaCorte) + arrestoAvisoHtml() + viernesCuotaHtml();
   pintarPasesAlumno(); // los pases de horas y permisos del alumno (sin esperar)
 
@@ -10975,7 +11024,6 @@ async function renderAlumnoPernoctas(){
       <div class="pernocta-days">${days}</div>
     </div>`;
   });
-  html += `<div class="pernocta-row sec-sem-fila"><div class="pernocta-name">📊 Tu sección: pernoctas confirmadas</div><div class="pernocta-days sec-sem-slot" data-mod="pernoctas"></div></div>`;
   list.innerHTML = html;
   secSemanaPintar(ACTIVE_WEEK.key);
 
