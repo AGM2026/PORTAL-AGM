@@ -1344,7 +1344,10 @@ function navidadAplicar(){
   r.classList.toggle('navidad-disp', NAVIDAD_GLOBAL);
   r.classList.toggle('navidad', on);
   document.querySelectorAll('.navidad-btn').forEach(b=>b.setAttribute('aria-pressed', on ? 'true' : 'false'));
-  if(on){ navidadPreparar(); navidadPintarCuenta(); navidadAvisoQuizas(0); }
+  // El botón 🎄 tiene que existir siempre que el superadmin lo tenga activado, aunque este dispositivo lo haya apagado:
+  // si no, al recargar con el modo apagado desaparecía el botón y ya no había forma de volver a encenderlo.
+  if(NAVIDAD_GLOBAL) navidadPreparar();
+  if(on){ navidadPintarCuenta(); navidadAvisoQuizas(0); }
 }
 /* Aviso de bienvenida («novedad») la primera vez que alguien ve el modo Navidad en esta temporada:
    por qué se pone y que puede apagarlo cuando quiera con el botón 🎄 de la cabecera. Una vez por temporada y dispositivo. */
@@ -1947,7 +1950,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // texto distinto al anterior) junto a él en el repo. La app comprueba ese
 // archivo cada 2 minutos y, si cambió, recarga la página sola — así nadie
 // se queda usando una versión vieja sin darse cuenta.
-const APP_VERSION = "2026-11-24T01:30:00";
+const APP_VERSION = "2026-11-26T11:45:00";
 document.querySelectorAll('.ver-tag').forEach(e=>{ e.textContent = 'v'+APP_VERSION; }); // la versión se ve pequeña, arriba a la derecha de la cabecera
 // Devuelve true si hay versión nueva (y en ese caso recarga la página).
 let _verTs = 0;
